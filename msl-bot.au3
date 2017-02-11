@@ -5,8 +5,8 @@ Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/config.ini", "general"
 
 ;defining globals
 Global $chkBackground ;checkbox, declare first to remove warning
-Global $strScript = ""
-Global $strConfig = ""
+Global $strScript = "" ;script section
+Global $strConfig = "" ;all keys
 
 #include "core/imports.au3"
 #include "core/gui.au3"
@@ -26,16 +26,40 @@ FileClose($tempFile)
 
 #include "script/imports.au3"
 
-While 1
-	Sleep(100)
+;main loop
+While True
+	If $boolRunning = True Then
+		If Not $strScript = "" Then ;check if script is set
+			Call(IniRead(@ScriptDir & "/config.ini", $strScript, "function", ""))
+			If @error = 0xDEAD And @extended = 0xBEEF Then MsgBox($MB_OK, $botName & " " & $botVersion, "Script function does not exist.")
+		Else
+			MsgBox($MB_OK, $botName & " " & $botVersion, "Load a script before starting.")
+		EndIf
+	EndIf
 WEnd
 
+;function: btnRunClick
 Func btnRunClick()
+	If $boolRunning = False Then ;starting bot
+		$boolRunning = True
 
+		GUICtrlSetData($btnRun, "Stop")
+	Else ;ending bot
+		$boolRunning = False
+
+		GUICtrlSetData($btnRun, "Start")
+	EndIf
 EndFunc
 
+;function: btnAdjustClick()
+;-Adjusts most images for optimization for certain computers
+;pre:
+;	-no script must be running
+;post:
+;	-new images will be generated or replaced
+;author: GkevinOD(2017)
 Func btnAdjustClick()
-
+	MsgBox($MB_SYSTEMMODAL, $botName & " " & $botVersion, "Adjust is currently being worked on.")
 EndFunc
 
 ;function: frmMainClose
