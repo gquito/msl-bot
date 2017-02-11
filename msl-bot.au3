@@ -19,8 +19,11 @@ Func frmMainClose()
 	Exit 0
 EndFunc
 
+;function: btnClearClick()
+;-Clears the output.
+;-author: GkevinOD (2017)
 Func btnClearClick()
-
+	GUICtrlSetData($textOutput, "")
 EndFunc
 
 ;function: btnDebugTestCodeClick
