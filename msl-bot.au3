@@ -1,8 +1,12 @@
 ;Initialize Bot
 Global $botVersion = IniRead(@ScriptDir & "/config.ini", "general", "version", "")
 Global $botName = IniRead(@ScriptDir & "/config.ini", "general", "title", "MSL Bot")
+Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "scripts", ""), ",", 2)
+
+;defining globals
+Global $chkBackground ;checkbox, declare first to remove warning
 Global $strScript = ""
-Global $strconfig = ""
+Global $strConfig = ""
 
 #include "core/imports.au3"
 #include "core/gui.au3"
@@ -10,6 +14,17 @@ Global $strconfig = ""
 GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1)) 
 GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1)) 
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
+
+;importing scripts
+$tempFile = FileOpen(@ScriptDir & "/script/imports.au3", $FO_OVERWRITE + $FO_CREATEPATH)
+$tempVar = ""
+For $tempScript In $arrayScripts
+	$tempVar = '#include "' & $tempScript & '.au3"' & @CRLF
+Next
+FileWrite($tempFile, $tempVar)
+FileClose($tempFile)
+
+#include "script/imports.au3"
 
 While 1
 	Sleep(100)
@@ -20,7 +35,7 @@ Func btnRunClick()
 EndFunc
 
 Func btnAdjustClick()
-	
+
 EndFunc
 
 ;function: frmMainClose

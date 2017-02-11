@@ -22,11 +22,6 @@
 
 Func enterStage($strImage, $intMode = 1, $boolAuto = False, $boolLog = True)
 	If waitLocation("map") = 1 Then
-		;closing open map stages list
-		For $imageClose In $imagesClose
-			clickImage($imageClose)
-		Next
-
 		Local $errorCounter = 0
 		While findImageWait($strImage, 2, 100) = False
 			If _Sleep(100) Then Return
