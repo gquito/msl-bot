@@ -36,10 +36,10 @@ Func navigate($strMainLocation, $strLocation = "")
 				clickPointUntil($village_coorQuests, "quests")
 			;map
 			Case "guardian-dungeons"
-				clickImageUntil("dungeons", "starstone-dungeons", 50)
+				clickImageUntil("map-dungeons", "starstone-dungeons", 50)
 				clickPointUntil($map_coorGuardianDungeons, "guardian-dungeons")
 			Case "golem-dungeons"
-				clickImageUntil("dungeons", "starstone-dungeons", 50)
+				clickImageUntil("map-dungeons", "starstone-dungeons", 50)
 				clickPointUntil($map_coorGolemDungeons, "golem-dungeons")
 			;battle
 			Case "catch-mode"
@@ -48,7 +48,7 @@ Func navigate($strMainLocation, $strLocation = "")
 			Case ""
 				Return 1
 			Case Else
-				MsgBox(0, "MSLBot v3", "Unknown location.")
+				MsgBox(0, $botName & " " & $botVersion, "Unknown location.")
 		EndSwitch
 
 		Return waitLocation($strLocation)

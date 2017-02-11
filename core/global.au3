@@ -46,12 +46,7 @@
 		Global $village_coorAstroguide = [324, 503]
 		Global $village_coorMonsters = [253, 505]
 
-		Global $village_coorArrayQuestsTab = ["village_coorQuestsDaily", "village_coorQuestsWeekly", "village_coorQuestsMonthly", "village_coorQuestsChallenges", "village_coorQuestsCapture"]
-		Global $village_coorQuestsDaily = [717, 127]
-		Global $village_coorQuestsWeekly = [592, 125]
-		Global $village_coorQuestsMonthly = [463, 126]
-		Global $village_coorQuestsChallenges = [333, 125]
-		Global $village_coorQuestsCapture = [213, 127]
+		Global $village_coorArrayQuestsTab = [[717, 127], [592, 125], [463, 126], [333, 125], [213, 127]]
 
 		Global $village_coorManage = [739, 199]
 		Global $village_coorUpgrade = [392, 415]
@@ -114,4 +109,4 @@
 		Global $battle_pixelCatchMode = [417, 88, 0x2E1E19]
 		Global $battle_pixelUnavailable = [743, 279, 0x53100C]
 
-		Global $battle_pixelQuest = [343, 377, 0xE30A2D]
+		Global $battle_pixelQuest = [343, 379, 0xDA071E]

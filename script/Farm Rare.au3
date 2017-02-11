@@ -56,15 +56,13 @@ Func farmRare()
                     If checkPixel($battle_pixelQuest) = True Then
                         setLog("Detected quest complete, navigating to village.", 1)
                         If navigate("village", "quests") = 1 Then
-                            setLog("Collecting quests", 1)
-                            $intTemp = 0
-                            While $intTemp < 5
-                                clickPoint(Eval($village_coorArrayQuestsTab[$intTemp]))
-                                While isArray(findImageWait("quests-get-reward", 3, 100)) = True
-                                    clickImage("quests-get-reward", 100)
+                            setLog("Collecting quests.", 1)
+                            For $point In $village_coorArrayQuestsTab ;quest tabs
+                                clickPoint($point)
+                                While isArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
+                                    clickImage("misc-quests-get-reward", 100)
                                 WEnd
-                               $intTemp += 1
-                            WEnd
+                            Next
                         EndIf
                     EndIf
                     ExitLoop
@@ -95,6 +93,7 @@ Func farmRare()
             EndIf
         WEnd
 
+        setLog("Checking for guardian dungeons...")
         If $guardian = 1 And navigate("map", "guardian-dungeons") = 1 Then
             While checkLocations("guardian-dungeons") = 1
                 If clickImageUntil("misc-dungeon-energy", "map-battle", 50) = 1 Then

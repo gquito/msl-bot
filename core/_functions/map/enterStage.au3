@@ -24,7 +24,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 	If waitLocation("map") = 1 Then
 		Local $errorCounter = 0
 		While findImageWait($strImage, 2, 100) = False
-			If _Sleep(100) Then Return
+			If _Sleep(500) Then Return
 
 			If checkLocations("astroleague", "map-stage", "association") = 1 Then ControlSend($hWindow, "", "", "{ESC}")
 

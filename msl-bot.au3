@@ -12,6 +12,7 @@ Global $strConfig = "" ;all keys
 #include "core/imports.au3"
 #include "core/gui.au3"
 
+_GDIPlus_Startup()
 GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1)) 
 GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1)) 
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
@@ -35,6 +36,7 @@ While True
 			If @error = 0xDEAD And @extended = 0xBEEF Then MsgBox($MB_OK, $botName & " " & $botVersion, "Script function does not exist.")
 		Else
 			MsgBox($MB_OK, $botName & " " & $botVersion, "Load a script before starting.")
+			btnRunClick()
 		EndIf
 	EndIf
 WEnd
@@ -69,6 +71,7 @@ EndFunc
 Func frmMainClose()
 	Dim $strOutput = GUICtrlRead($textOutput)
 	If Not $strOutput = "" Then FileWrite(@ScriptDir & "/core/data/logs/" & StringReplace(_NowDate(), "/", "."), $strOutput)
+	_GDIPlus_Shutdown()
 	Exit 0
 EndFunc
 
