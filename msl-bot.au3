@@ -104,22 +104,14 @@ EndFunc
 ;-Overwrites config.ini file and updates new data.
 ;author: GkevinOD (2017)
 Func chkBackgroundClick()
-	If(GUICtrlGetState($chkBackGround) = 80) Then
-		IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", 1)
-	Else
-		IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", 0)
-	EndIf
+	IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", GUICtrlRead($chkBackGround))
 EndFunc
 
 ;function: chkOutputClick()
 ;-Overwrites config.ini file and updates new data.
 ;author: GkevinOD (2017)
 Func chkOutputClick()
-	If(GUICtrlGetState($chkOutput) = 80) Then
-		IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", 1)
-	Else
-		IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", 0)
-	EndIf
+	IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", GUICtrlRead($chkOutput))
 EndFunc
 
 ;function: chkDebugFindImageClick()
@@ -142,10 +134,14 @@ Func chkDebugFindImageClick()
 
 		;process
 		_CaptureRegion()
-		Dim $arrayPoints = findImage(StringReplace($strImage, ".bmp", ""))
+		Dim $arrayPoints = findImage(StringReplace($strImage, ".bmp", ""), 50)
+		If Not isArray($arrayPoints) Then ;if not found
+			GUICtrlSetData($lblDebugImage, "Found: 0")
+			Return
+		EndIf
 
 		GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1])
-		_Sleep(2000)
+		Sleep(2000);
 	WEnd
 EndFunc
 
