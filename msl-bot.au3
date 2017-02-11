@@ -15,14 +15,29 @@ While 1
 	Sleep(100)
 WEnd
 
+Func btnRunClick()
+
+EndFunc
+
+Func btnAdjustClick()
+
+EndFunc
+
+;function: frmMainClose
+;-Exits application and saves the log
+;author: GkevinOD (2017)
 Func frmMainClose()
+	Dim $strOutput = GUICtrlRead($textOutput)
+	If Not $strOutput = "" Then FileWrite(@ScriptDir & "/core/data/logs/" & StringReplace(_NowDate(), "/", "."), $strOutput)
 	Exit 0
 EndFunc
 
 ;function: btnClearClick()
-;-Clears the output.
-;-author: GkevinOD (2017)
+;-Clears the output and saves it to a file.
+;author: GkevinOD (2017)
 Func btnClearClick()
+	Dim $strOutput = GUICtrlRead($textOutput)
+	If Not $strOutput = "" Then FileWrite(@ScriptDir & "/core/data/logs/" & StringReplace(_NowDate(), "/", "."), $strOutput)
 	GUICtrlSetData($textOutput, "")
 EndFunc
 
@@ -31,7 +46,7 @@ EndFunc
 ;pre:
 ;	-must be a call to function
 ;	-no script must be running
-;-author: GkevinOD (2017)
+;author: GkevinOD (2017)
 Func btnDebugTestCodeClick()
 	;running line of code using execute
 	Execute(GUICtrlRead($textDebugTestCode))
@@ -90,14 +105,6 @@ Func btnEditClick()
 
 	GUICtrlSetData($listScript, "") ;clear data
 	GUICtrlSetData($listScript, StringReplace($strConfig, $strRaw, $key & "=" & $value)) ;input new data
-EndFunc
-
-Func btnRunClick()
-
-EndFunc
-
-Func btnAdjustClick()
-
 EndFunc
 
 ;function: chkBackgroundClick()
