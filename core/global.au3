@@ -17,13 +17,8 @@
 	Global $hHBitmap; Handle Image for pixel functions.
 
 ;image name arrays
-	Global $imagesOneStarCombo = ["catch-legendary1", "catch-legendary2", "catch-legendary3", "catch-legendary4", "catch-legendary5", "catch-super-rare", "catch-super-rare2", "catch-exotic", "catch-exotic2", "catch-exotic3", "catch-rare", "catch-rare2", "catch-rare3", "battle-four-star", "catch-four-star", "catch-variant", "catch-variant2", "catch-variant3", "battle-one-star"]
-	Global $imagesRareCombo = ["catch-legendary1", "catch-legendary2", "catch-legendary3", "catch-legendary4", "catch-legendary5", "catch-super-rare", "catch-super-rare2", "catch-exotic", "catch-exotic2", "catch-exotic3", "catch-rare", "catch-rare2", "catch-rare3", "battle-four-star", "catch-four-star", "battle-three-star", "catch-variant", "catch-variant2", "catch-variant3"]
 	Global $imagesRareAstromon = ["battle-legendary1", "battle-legendary2", "battle-super-rare", "battle-rare", "battle-variant", "battle-exotic"]
 	Global $imagesCatch = ["catch-normal-success", "catch-rare-success", "catch-super-rare-success", "catch-legendary-success"]
-	Global $imagesClose = ["inbox-close", "dungeon-close", "stage-close", "manage-close", "village-close"]
-	Global $imagesFarmMap = ["phantom-forest", "aria-lake", "mirage-ruins", "seabed-caves"]
-	Global $imagesMap = ["dungeons", "phantom-forest", "lunar-valley", "aria-lake", "mirage-ruins", "astromon-league", "pagos-coast", "seabed-caves", "magma-crags", "star-sanctuary"]
 	Global $imagesUnwantedGems = ["manage-one-star", "manage-two-star", "manage-three-star", "manage-four-star", "manage-new"]
 
 	Global $imagesGemGrades = ["\gem record\six-star", "\gem record\five-star", "\gem record\four-star", "battle-three-star", "battle-two-star", "battle-one-star"]

@@ -20,7 +20,7 @@ Func btnRunClick()
 EndFunc
 
 Func btnAdjustClick()
-
+	
 EndFunc
 
 ;function: frmMainClose

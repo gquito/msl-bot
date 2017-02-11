@@ -17,7 +17,6 @@
 
 #ce ----------------------------------------------------------------------------
 
-
 Func _CaptureRegion($strScreen = "", $iLeft = 0, $iTop = 0, $iRight = 800, $iBottom = 600)
 	If GUICtrlRead($chkBackground) = 1 Then
 		_GDIPlus_BitmapDispose($hBitmap)
