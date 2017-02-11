@@ -115,7 +115,7 @@ Func chkOutputClick()
 EndFunc
 
 ;function: chkDebugFindImageClick()
-;-Intervals of 2 seconds, tries to find image within bluestacks window
+;-Intervals of 1/2 seconds, tries to find image within bluestacks window
 ;pre:
 ;	-must not have script running
 ;	-image file exist
@@ -129,7 +129,7 @@ Func chkDebugFindImageClick()
 		;first check if file exist
 		If Not FileExists($strImageDir & $strImage) Then
 			GUICtrlSetData($lblDebugImage, "Found: 0")
-			Return
+			ExitLoop
 		EndIf
 
 		;process
@@ -137,15 +137,26 @@ Func chkDebugFindImageClick()
 		Dim $arrayPoints = findImage(StringReplace($strImage, ".bmp", ""), 50)
 		If Not isArray($arrayPoints) Then ;if not found
 			GUICtrlSetData($lblDebugImage, "Found: 0")
-			Return
+			ExitLoop
 		EndIf
 
 		GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1])
-		Sleep(2000);
+		Sleep(500);
 	WEnd
 EndFunc
 
+;function: chkDebugLocationClick()
+;-Intervals of 1/2 seconds, tries to find the location of the game
+;pre:
+;	-must not have script running
+;	-image file exist
+;post:
+;	-edit the lblDebugLocation to result
+;author: GkevinOD (2017)
 Func chkDebugLocationClick()
-
+	While(GUICtrlRead($chkDebugLocation) = 1) ;if it is checked
+		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())
+		Sleep(500);
+	WEnd
 EndFunc
 
