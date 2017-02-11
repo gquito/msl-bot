@@ -23,11 +23,27 @@ Func btnClearClick()
 
 EndFunc
 
+;function: btnDebugTestCodeClick
+;-Runs a line of code and performs it.
+;pre:
+;	-must be a call to function
+;	-no script must be running
+;-author: GkevinOD (2017)
 Func btnDebugTestCodeClick()
-
+	;running line of code using execute
+	Execute(GUICtrlRead($textDebugTestCode))
 EndFunc
 
+;function: cmbLoadClick
+;-Load a script from the list of scripts written in the config
+;pre:
+;	-configs must be set
+;	-no script must be running
+;author: GkevinOD (2017)
 Func cmbLoadClick()
+	;pre
+	If GUICtrlRead($cmbLoad) = "Select a script.." Then Return
+
 	;clearing data
 	GUICtrlSetData($listScript, "")
 
@@ -44,14 +60,20 @@ Func cmbLoadClick()
 	GUICtrlSetData($listScript, $strConfig)
 EndFunc
 
+;functon: btnEditClick
+;-Modify a config of the selected config from the $listScript
+;pre:
+;	-something selected for $listScript
+;	-no script must be running
+;author: GkevinOD (2017)
 Func btnEditClick()
 	;initial variables
 	Dim $strRaw = GUICtrlRead($listScript)
 	Dim $arrayRaw = StringSplit($strRaw, "=", 2)
 
-	If UBound($arrayRaw) = 0 Then ;check if no config selected
-		MsgBox($botName & " " & $botVersion, 0, "No config selected.")
-		Return 0
+	If UBound($arrayRaw) = 1 Then ;check if no config selected
+		MsgBox(0, $botName & " " & $botVersion, "No config selected.")
+		Return
 	EndIf
 	
 	;getting keys and values to modify
