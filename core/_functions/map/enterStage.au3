@@ -8,7 +8,7 @@
 
 	strImage - Image name of the map.
 
-	intMode - Modes include: Normal(1), Hard(2), Extreme(3).
+	strMode - Modes include: normal, hard, extreme
 
 	boolAuto - Boolean for autobattle mode.
 
@@ -20,7 +20,7 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func enterStage($strImage, $intMode = 1, $boolAuto = False, $boolLog = True)
+Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = True)
 	If waitLocation("map") = 1 Then
 		Local $errorCounter = 0
 		While findImageWait($strImage, 2, 100) = False
@@ -38,26 +38,26 @@ Func enterStage($strImage, $intMode = 1, $boolAuto = False, $boolLog = True)
 
 		;clicking map list and selecting difficulty
 		clickImage($strImage, 100)
-		Switch $intMode
-			Case 1 ;Normal
-				If $boolLog Then setLog("Entering " & _StringProper(StringReplace($strImage, "-", " ")) & " on Normal.")
+		Switch $strMode
+			Case "normal" ;Normal
+				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Normal.", 1)
 				clickPoint($map_coorMode)
 				clickPoint($map_coorNormal)
-			Case 2 ;Hard
-				If $boolLog Then setLog("Entering " & _StringProper(StringReplace($strImage, "-", " ")) & " on Hard.")
+			Case "hard" ;Hard
+				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Hard.", 1)
 				clickPoint($map_coorMode)
 				clickPoint($map_coorHard)
-			Case 3 ;Extreme
-				If $boolLog Then setLog("Entering " & _StringProper(StringReplace($strImage, "-", " ")) & " on Extreme.")
+			Case "extreme" ;Extreme
+				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Extreme.", 1)
 				clickPoint($map_coorMode)
 				clickPoint($map_coorExtreme)
 			Case Else
-				If $boolLog Then setLog("Input error: " & $intMode & " not within 1-3 modes.")
+				If $boolLog Then setLog("Input error: " & $strMode & " not within 1-3 modes.", 1)
 				Return 0
 		EndSwitch
 
 		;selecting a stage (not yet complete)
-		clickPoint(findImageWait("stage-energy", 5, 100))
+		clickPoint(findImageWait("misc-stage-energy", 5, 100))
 
 		;applying autobattle mode
 		If $boolAuto = True Then

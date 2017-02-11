@@ -5,6 +5,7 @@ Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/config.ini", "general"
 
 ;defining globals
 Global $chkBackground ;checkbox, declare first to remove warning
+Global $chkOutput ;^^
 Global $strScript = "" ;script section
 Global $strConfig = "" ;all keys
 
@@ -99,7 +100,10 @@ EndFunc
 ;author: GkevinOD (2017)
 Func cmbLoadClick()
 	;pre
-	If GUICtrlRead($cmbLoad) = "Select a script.." Then Return
+	If GUICtrlRead($cmbLoad) = "Select a script.." Then 
+		GUICtrlSetData($listScript, "") ;reset list
+		Return
+	EndIf
 
 	;clearing data
 	GUICtrlSetData($listScript, "")
@@ -143,7 +147,7 @@ Func btnEditClick()
 	IniWrite(@ScriptDir & "/config.ini", $strScript, $key, $value)	;write to config file
 
 	GUICtrlSetData($listScript, "") ;clear data
-	GUICtrlSetData($listScript, StringReplace($strConfig, $strRaw, $key & "=" & $value)) ;input new data
+	GUICtrlSetData($listScript, StringReplace($strConfig, $strRaw, $key & '=' & $value)) ;input new data
 EndFunc
 
 ;function: chkBackgroundClick()

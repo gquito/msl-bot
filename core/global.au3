@@ -17,6 +17,12 @@
 	Global $hHBitmap; Handle Image for pixel functions.
 
 ;image name arrays
+	Global $imagesVariant = ["catch-variant", "catch-variant2", "catch-variant3"]
+	Global $imagesLegendary = ["catch-legendary", "catch-legendary2", "catch-legendary3", "catch-legendary4", "catch-legendary5"]
+	Global $imagesRare = ["catch-rare", "catch-rare2", "catch-rare3"]
+	Global $imagesSuperRare = ["catch-super-rare", "catch-super-rare2"]
+	Global $imagesExotic = ["catch-exotic", "catch-exotic2", "catch-exotic3"]
+
 	Global $imagesRareAstromon = ["battle-legendary1", "battle-legendary2", "battle-super-rare", "battle-rare", "battle-variant", "battle-exotic"]
 	Global $imagesCatch = ["catch-normal-success", "catch-rare-success", "catch-super-rare-success", "catch-legendary-success"]
 	Global $imagesUnwantedGems = ["manage-one-star", "manage-two-star", "manage-three-star", "manage-four-star", "manage-new"]

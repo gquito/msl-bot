@@ -28,7 +28,7 @@
 
 Func findImage($strImage, $intTolerance = 10)
 	If StringInStr($strImage, "-") Then ;image with specified folder
-		$strImage = StringSplit($strImage, "-", 2)[0] & "/" & $strImage
+		$strImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage
 	EndIf
 
 	Local $pointArray = [-1, -1]
@@ -75,10 +75,11 @@ Func findImages($strImages, $intTolerance = 10)
 	Local $arrayImages[UBound($strImages)]
 
 	For $i = 0 To UBound($strImages)-1
+		Dim $strTemp = ""
 		If StringInStr($strImages[$i], "-") Then ;image with specified folder
-			$strImages[$i] = StringSplit($strImages[$i], "-", 2)[0] & "/" & $strImages[$i]
+			$strTemp = StringSplit($strImages[$i], "-", 2)[0] & "\" & $strImages[$i]
 		EndIf
-		$arrayImages[$i] = $strImageDir & StringLower($strImages[$i]) & ".bmp"
+		$arrayImages[$i] = $strImageDir & StringLower($strTemp) & ".bmp"
 	Next
 
 	Local $pointArray = [-1, -1]
@@ -126,7 +127,7 @@ EndFunc
 
 Func findImageWait($strImage, $intDuration = 5, $intTolerance = 10)
 	If StringInStr($strImage, "-") Then ;image with specified folder
-		$strImage = StringSplit($strImage, "-", 2)[0] & "/" & $strImage
+		$strImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage
 	EndIf
 
 	Local $pointArray = [-1, -1]
@@ -175,10 +176,11 @@ Func findImagesWait($strImages, $intDuration = 5, $intTolerance = 10)
 	Local $arrayImages[UBound($strImages)]
 
 	For $i = 0 To UBound($strImages)-1
+		Dim $strTemp = ""
 		If StringInStr($strImages[$i], "-") Then ;image with specified folder
-			$strImages[$i] = StringSplit($strImages[$i], "-", 2)[0] & "/" & $strImages[$i]
+			$strTemp = StringSplit($strImages[$i], "-", 2)[0] & "\" & $strImages[$i]
 		EndIf
-		$arrayImages[$i] = $strImageDir & StringLower($strImages[$i]) & ".bmp"
+		$arrayImages[$i] = $strImageDir & StringLower($strTemp) & ".bmp"
 	Next
 
 	Local $pointArray = [-1, -1]

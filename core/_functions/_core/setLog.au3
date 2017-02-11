@@ -9,9 +9,7 @@ Global $setLogOld = ""
 #ce ----------------------------------------------------------------------------
 
 Func setLog($strStatus, $option = 0) ;0 is normal, 1 is unimportant
-	If GUICtrlRead($chkOutput) = 1 Then ;check for output all
-		If $option = 1 Then Return
-	EndIf
+	If GUICtrlRead($chkOutput) = 0 And $option = 1 Then Return 
 	
 	_GUICtrlEdit_AppendText($textOutput, "[" & _NowTime(5) & "] " & $strStatus & @CRLF)
 	$setLogOld = GUICtrlRead($textOutput)
