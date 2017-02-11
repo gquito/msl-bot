@@ -104,18 +104,49 @@ EndFunc
 ;-Overwrites config.ini file and updates new data.
 ;author: GkevinOD (2017)
 Func chkBackgroundClick()
-	IniWrite(@ScriptDir & "/config.ini", "general", "background-mode"), GUICtrlGetState($chkBackGround))
+	If(GUICtrlGetState($chkBackGround) = 80) Then
+		IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", 1)
+	Else
+		IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", 0)
+	EndIf
 EndFunc
 
 ;function: chkOutputClick()
 ;-Overwrites config.ini file and updates new data.
 ;author: GkevinOD (2017)
 Func chkOutputClick()
-	IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process"), GUICtrlGetState($chkBackGround))
+	If(GUICtrlGetState($chkOutput) = 80) Then
+		IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", 1)
+	Else
+		IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", 0)
+	EndIf
 EndFunc
 
+;function: chkDebugFindImageClick()
+;-Intervals of 2 seconds, tries to find image within bluestacks window
+;pre:
+;	-must not have script running
+;	-image file exist
+;post:
+;	-edit the lblDebugFindImage to result
+;author: GkevinOD (2017)
 Func chkDebugFindImageClick()
+	While(GUICtrlRead($chkDebugFindImage) = 1) ;if it is checked
+		Dim $strImage = GUICtrlRead($textDebugImage)
 
+		;first check if file exist
+		If Not FileExists($strImageDir & $strImage) Then
+			GUICtrlSetData($lblDebugImage, "Found: 0")
+			Return
+		EndIf
+
+		;process
+		_CaptureRegion()
+		Dim $arrayPoints = findImage(StringReplace($strImage, ".bmp", ""))
+
+		GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1])
+		_Sleep(2000)
+	WEnd
 EndFunc
 
 Func chkDebugLocationClick()

@@ -6,8 +6,8 @@
 	Global Const $hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 
 ;directory
-	Global Const $strImageSearchDir = @ScriptDir & "\MSLBot\_functions\_core\imagesearch\ImageSearchDLL.dll"
-	Global Const $strImageDir = @ScriptDir & "\MSLBot\images\"
+	Global Const $strImageSearchDir = @ScriptDir & "\core\_functions\_core\imagesearch\ImageSearchDLL.dll"
+	Global Const $strImageDir = @ScriptDir & "\core\images\"
 
 ;bot data
 	Global $boolRunning = False ;State of the bot.
