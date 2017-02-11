@@ -10,7 +10,8 @@
 	Global Const $strImageDir = @ScriptDir & "\MSLBot\images\"
 
 ;bot data
-	Global $boolRunning = False;State of the bot.
+	Global $boolRunning = False ;State of the bot.
+	Global $version = "v1.0.0" ; bot version
 
 ;bitmaps
 	Global $hBitmap; Image for pixel functions.
