@@ -104,14 +104,14 @@ EndFunc
 ;-Overwrites config.ini file and updates new data.
 ;author: GkevinOD (2017)
 Func chkBackgroundClick()
-	IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", GUICtrlRead($chkBackGround))
+	IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", StringReplace(GUICtrlRead($chkBackGround), "4", "0"))
 EndFunc
 
 ;function: chkOutputClick()
 ;-Overwrites config.ini file and updates new data.
 ;author: GkevinOD (2017)
 Func chkOutputClick()
-	IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", GUICtrlRead($chkOutput))
+	IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", StringReplace(GUICtrlRead($chkOutput), "4", "0"))
 EndFunc
 
 ;function: chkDebugFindImageClick()
