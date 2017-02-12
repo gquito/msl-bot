@@ -37,6 +37,7 @@
 ;coordinations
 	Global $game_coorTap = [759, 482]
 	Global $game_coorConnectionRetry = [332, 322]
+	Global $game_coorDialogueSkip = [755, 25]
 
 	;village
 		Global $village_coorPlay = [711, 507]

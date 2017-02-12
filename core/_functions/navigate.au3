@@ -71,6 +71,10 @@ Func navigate($strMainLocation, $strLocation = "")
 				clickPoint($battle_coorGiveUpConfirm)
 			EndIf
 
+			If checkLocations("dialogue") = 1 Then
+				clickPoint($game_coorDialogueSkip)
+			EndIf
+
 			Switch $strMainLocation
 				Case "village"
 					ControlSend($hWindow, "", "", "{ESC}")

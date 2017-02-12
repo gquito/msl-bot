@@ -33,10 +33,9 @@ Func farmRare()
         EndSwitch
     Next
 
-    ;defining variables
     While True
         While True
-            If _Sleep(100) Then ExitLoop(2)
+            If _Sleep(100) Then ExitLoop(2) ;to stop farming
             If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle") = 1 Then
                 setLog("Going into battle...", 1)
                 If navigate("map") = 1 Then
@@ -93,9 +92,9 @@ Func farmRare()
             EndIf
         WEnd
 
-        setLog("Checking for guardian dungeons...")
         Dim $foundDungeon = 0
         If $guardian = 1 And navigate("map", "guardian-dungeons") = 1 Then
+            setLog("Checking for guardian dungeons...")
             While checkLocations("guardian-dungeons") = 1
                 If clickImageUntil("misc-dungeon-energy", "map-battle", 50) = 1 Then
                     clickPointWait($map_coorBattle, "map-battle", 5)
