@@ -149,8 +149,7 @@ Func btnEditClick()
 
 	IniWrite(@ScriptDir & "/config.ini", $strScript, $key, $value)	;write to config file
 
-	GUICtrlSetData($listScript, "") ;clear data
-	GUICtrlSetData($listScript, StringReplace($strConfig, $strRaw, $key & '=' & $value)) ;input new data
+	cmbLoadClick()
 EndFunc
 
 ;function: chkBackgroundClick()
