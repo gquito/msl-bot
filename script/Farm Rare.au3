@@ -57,8 +57,8 @@ Func farmRare()
                         setLog("Detected quest complete, navigating to village.", 1)
                         If navigate("village", "quests") = 1 Then
                             setLog("Collecting quests.", 1)
-                            For $point In $village_coorArrayQuestsTab ;quest tabs
-                                clickPoint($point)
+                            For $questTab In $village_coorArrayQuestsTab ;quest tabs
+                                clickPoint(StringSplit($questTab, ",", 2))
                                 While isArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
                                     clickImage("misc-quests-get-reward", 100)
                                 WEnd
@@ -94,6 +94,7 @@ Func farmRare()
         WEnd
 
         setLog("Checking for guardian dungeons...")
+        Dim $foundDungeon = 0
         If $guardian = 1 And navigate("map", "guardian-dungeons") = 1 Then
             While checkLocations("guardian-dungeons") = 1
                 If clickImageUntil("misc-dungeon-energy", "map-battle", 50) = 1 Then
@@ -110,6 +111,8 @@ Func farmRare()
                         clickImageUntil("misc-dungeon-energy", "map-battle", 50)
                         clickPointWait($map_coorBattle, "map-battle", 5)
                     EndIf
+                    $foundDungeon += 1
+                    setLogReplace("Found dungeon, attacking x" & $foundDungeon & ".")
                     
                     If waitLocation("battle-end-exp", 240) = 0 Then
                         setLog("Unable to finish golem in 5 minutes!", 1)
@@ -122,6 +125,7 @@ Func farmRare()
                     
                     clickImageUntil("battle-exit", "guardian-dungeons")
                 Else
+                    setLog("Guardian dungeon not found, going back to map.")
                     navigate("map")
                 EndIf
             WEnd

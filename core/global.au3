@@ -46,7 +46,7 @@
 		Global $village_coorAstroguide = [324, 503]
 		Global $village_coorMonsters = [253, 505]
 
-		Global $village_coorArrayQuestsTab = [[717, 127], [592, 125], [463, 126], [333, 125], [213, 127]]
+		Global $village_coorArrayQuestsTab = ["717,127", "592,125", "463,126", "333,125", "213,127"]
 
 		Global $village_coorManage = [739, 199]
 		Global $village_coorUpgrade = [392, 415]

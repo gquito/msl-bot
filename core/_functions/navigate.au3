@@ -90,7 +90,6 @@ Func navigate($strMainLocation, $strLocation = "")
 					If Not(getLocation() = "battle") Then Return 0
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
-					;btnStart_Click()
 			EndSwitch
 			If waitLocation($strMainLocation, 1) = 1 Then ExitLoop
 		WEnd

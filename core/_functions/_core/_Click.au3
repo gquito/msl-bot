@@ -213,7 +213,10 @@ Func clickImageUntil($strImage, $strLocation, $intTolerance = 10, $intNum = 5, $
 	While TimerDiff($startTime) < $intNum*$intDuration
 		If _Sleep(100) Then Return
 		If (getLocation() = $strLocation) = False Then
-			clickPointUntil(findImage($strImage, $intTolerance), $strLocation, $intNum, $intDuration)
+			Dim $arrayPoint = findImage($strImage, $intTolerance)
+			If Not isArray($arrayPoint) Then Return 0
+
+			clickPointUntil($arrayPoint, $strLocation, $intNum, $intDuration)
 			If _Sleep($intDuration) Then Return
 		Else
 			Return 1
