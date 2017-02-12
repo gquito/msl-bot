@@ -22,10 +22,10 @@
 
 Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = True)
 	If waitLocation("map") = 1 Then
-		Local $errorCounter = 0
-		While findImageWait($strImage, 2, 100) = False
-			If _Sleep(500) Then Return
+		Dim $imgPoint = findImageWait($strImage, 2, 100)
 
+		Local $errorCounter = 0
+		While Not isArray($imgPoint)
 			If checkLocations("astroleague", "map-stage", "association") = 1 Then ControlSend($hWindow, "", "", "{ESC}")
 
 			If $errorCounter > 20 Then
@@ -34,23 +34,25 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 
 			ControlSend($hWindow, "", "", "{LEFT}")
 			$errorCounter+=1
+
+			$imgPoint = findImageWait($strImage, 1, 100)
 		WEnd
 
 		;clicking map list and selecting difficulty
-		clickImageUntil($strImage, "map-stage", 100, 1, 2000)
+		clickPointUntil($imgPoint, "map-stage")
 		Switch $strMode
 			Case "normal" ;Normal
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Normal.", 1)
-				clickPoint($map_coorMode, 1, 500)
-				clickPoint($map_coorNormal, 1, 500)
+				clickPoint($map_coorMode)
+				clickPoint($map_coorNormal)
 			Case "hard" ;Hard
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Hard.", 1)
-				clickPoint($map_coorMode, 1, 500)
-				clickPoint($map_coorHard, 1, 500)
+				clickPoint($map_coorMode)
+				clickPoint($map_coorHard)
 			Case "extreme" ;Extreme
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Extreme.", 1)
-				clickPoint($map_coorMode, 1, 500)
-				clickPoint($map_coorExtreme, 1, 500)
+				clickPoint($map_coorMode)
+				clickPoint($map_coorExtreme)
 			Case Else
 				If $boolLog Then setLog("Input error: " & $strMode & " not within 1-3 modes.", 1)
 				Return 0

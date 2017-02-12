@@ -50,7 +50,7 @@ Func farmRare()
             
             If checkLocations("battle-end") = 1 Then
                 clickPoint($game_coorTap)
-                If waitLocation("battle", 13) = 0 Then
+                If waitLocation("battle", 20) = 0 Then
                     setLog("Autobattle finished.", 1)
                     If checkPixel($battle_pixelQuest) = True Then
                         setLog("Detected quest complete, navigating to village.", 1)
