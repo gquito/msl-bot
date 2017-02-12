@@ -1,3 +1,5 @@
+#AutoIt3Wrapper_UseX64=n
+
 ;Initialize Bot
 Global $botVersion = IniRead(@ScriptDir & "/config.ini", "general", "version", "")
 Global $botName = IniRead(@ScriptDir & "/config.ini", "general", "title", "MSL Bot")
