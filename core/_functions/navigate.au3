@@ -86,7 +86,7 @@ Func navigate($strMainLocation, $strLocation = "")
 						WEnd
 					Else
 						ControlSend($hWindow, "", "", "{ESC}")
-						waitLocation("map", 3)
+						waitLocation("map", 1)
 					EndIf
 
 					If getLocation() = "battle-end" Then clickPoint($battle_coorMap)
