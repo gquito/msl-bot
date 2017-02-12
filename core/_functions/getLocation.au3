@@ -44,6 +44,7 @@ Func getLocation()
 	If isArray(findImage("location-starstone-dungeons")) = True Then Return "starstone-dungeons"
 	If isArray(findImage("location-map-astromon-full")) = True Then Return "map-astromon-full"
 	If isArray(findImage("location-map-gem-full")) = True Then Return "map-gem-full"
+	If isArray(findImage("location-autobattle-prompt")) = True Then Return "autobattle-prompt"
 	
 	If isArray(findImage("location-map")) = True Then Return "map"
 	

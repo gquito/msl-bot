@@ -37,20 +37,20 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 		WEnd
 
 		;clicking map list and selecting difficulty
-		clickImage($strImage, 100)
+		clickImageUntil($strImage, "map-stage", 100, 1, 2000)
 		Switch $strMode
 			Case "normal" ;Normal
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Normal.", 1)
-				clickPoint($map_coorMode)
-				clickPoint($map_coorNormal)
+				clickPoint($map_coorMode, 1, 500)
+				clickPoint($map_coorNormal, 1, 500)
 			Case "hard" ;Hard
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Hard.", 1)
-				clickPoint($map_coorMode)
-				clickPoint($map_coorHard)
+				clickPoint($map_coorMode, 1, 500)
+				clickPoint($map_coorHard, 1, 500)
 			Case "extreme" ;Extreme
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Extreme.", 1)
-				clickPoint($map_coorMode)
-				clickPoint($map_coorExtreme)
+				clickPoint($map_coorMode, 1, 500)
+				clickPoint($map_coorExtreme, 1, 500)
 			Case Else
 				If $boolLog Then setLog("Input error: " & $strMode & " not within 1-3 modes.", 1)
 				Return 0
@@ -62,12 +62,11 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 		;applying autobattle mode
 		If $boolAuto = True Then
 			clickPointWait($map_pixelAutoBattle20xUnchecked, "map-battle", 5)
-			clickPoint($map_coorConfirmAutoBattle)
+			clickPointWait($map_coorConfirmAutoBattle, "autobattle-prompt", 5)
 		EndIf
 
 		;launching stage
-		clickPoint($map_coorBattle, 3, 1000)
-
+		clickPointUntil($map_coorBattle, "battle", 5)
 		If checkLocations("map-gem-full", "battle-gem-full") = 1 Then Return 0
 
 		Return waitLocation("battle", 10)

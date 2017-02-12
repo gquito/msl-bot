@@ -126,6 +126,7 @@ Func farmRare()
                 Else
                     setLog("Guardian dungeon not found, going back to map.")
                     navigate("map")
+                    ExitLoop
                 EndIf
             WEnd
         EndIf
