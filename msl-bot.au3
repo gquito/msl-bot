@@ -45,6 +45,9 @@ WEnd
 
 ;function: btnRunClick
 Func btnRunClick()
+	$hWindow = WinGetHandle("BlueStacks App Player")
+	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
+
 	If $boolRunning = False Then ;starting bot
 		$boolRunning = True
 
@@ -177,6 +180,8 @@ EndFunc
 ;	-edit the lblDebugFindImage to result
 ;author: GkevinOD (2017)
 Func chkDebugFindImageClick()
+	$hWindow = WinGetHandle("BlueStacks App Player")
+	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 	While(GUICtrlRead($chkDebugFindImage) = 1) ;if it is checked
 		Dim $strImage = GUICtrlRead($textDebugImage)
 
@@ -208,6 +213,8 @@ EndFunc
 ;	-edit the lblDebugLocation to result
 ;author: GkevinOD (2017)
 Func chkDebugLocationClick()
+	$hWindow = WinGetHandle("BlueStacks App Player")
+	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 	While(GUICtrlRead($chkDebugLocation) = 1) ;if it is checked
 		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())
 		Sleep(500);
