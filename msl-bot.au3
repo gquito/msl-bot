@@ -7,7 +7,8 @@ Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/config.ini", "general"
 
 ;defining globals
 Global $chkBackground ;checkbox, declare first to remove warning
-Global $chkOutput ;^^
+Global $chkMouse ;^
+Global $chkOutput ;^
 Global $strScript = "" ;script section
 Global $strConfig = "" ;all keys
 
@@ -17,6 +18,7 @@ Global $strConfig = "" ;all keys
 _GDIPlus_Startup()
 GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1)) 
 GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1)) 
+GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1)) 
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
 
 ;importing scripts
@@ -30,6 +32,14 @@ FileClose($tempFile)
 
 #include "script/imports.au3"
 
+;Hotkeys =====================================
+HotKeySet("^s", "hotkeyStopBot")
+
+Func hotkeyStopBot()
+	$boolRunning = False
+	GUICtrlSetData($btnRun, "Start")
+EndFunc
+
 ;main loop
 While True
 	If $boolRunning = True Then
@@ -41,6 +51,7 @@ While True
 			btnRunClick()
 		EndIf
 	EndIf
+	Sleep(10)
 WEnd
 
 ;function: btnRunClick
@@ -49,6 +60,7 @@ Func btnRunClick()
 	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 
 	If $boolRunning = False Then ;starting bot
+		If GUICtrlRead($chkMouse) = 1 Then MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "You have real mouse on! You will not be able to use your mouse. To stop script press SHIFT+S")
 		$boolRunning = True
 
 		GUICtrlSetData($btnRun, "Stop")
@@ -186,6 +198,13 @@ EndFunc
 ;author: GkevinOD (2017)
 Func chkOutputClick()
 	IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", StringReplace(GUICtrlRead($chkOutput), "4", "0"))
+EndFunc
+
+;function: chkMouse()
+;-Overwrites config.ini file and updates new data.
+;author: GkevinOD (2017)
+Func chkMouse()
+	IniWrite(@ScriptDir & "/config.ini", "general", "real-mouse-mode", StringReplace(GUICtrlRead($chkMouse), "4", "0"))
 EndFunc
 
 ;function: chkDebugFindImageClick()

@@ -26,7 +26,15 @@ Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500)
 	EndIf
 
 	For $i = 1 To $intNum
-		ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+		If GUICtrlRead($chkMouse) = 1 Then
+			WinActivate($hWindow)
+
+			Dim $desktopCoor = WinGetPos($hControl)
+			MouseClick("left", $desktopCoor[0]+$coorPoint[0], $desktopCoor[1]+$coorPoint[1], 1, 0)
+		Else
+			ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+		EndIf
+
 		If _Sleep($intDuration) Then Return
 	Next
 EndFunc
