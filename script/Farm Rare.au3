@@ -39,7 +39,10 @@ Func farmRare()
             If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle") = 1 Then
                 setLog("Going into battle...", 1)
                 If navigate("map") = 1 Then
-                    enterStage($map, $difficulty, True, True)
+                    If enterStage($map, $difficulty, True, True) = 0 Then
+                        setLog("Error: Could not enter map stage.")
+                        ExitLoop(2)
+                    EndIf
                     setLog("Waiting for astromon.", 1)
                 EndIf
             EndIf
@@ -133,4 +136,5 @@ Func farmRare()
     WEnd
 
     setLog("~~~Finished 'Farm Rare' script~~~")
+    btnRunClick() ;stops script
 EndFunc

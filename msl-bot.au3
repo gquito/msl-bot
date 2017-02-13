@@ -147,11 +147,28 @@ Func btnEditClick()
 	
 	;getting keys and values to modify
 	Dim $key = $arrayRaw[0]
-	Dim $value = $arrayRaw[1]
+	Dim $value = "!" ;temp value
+	Dim $boolPass = False ;if meets restriction
 
-	$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'")
-	If $value = "" Then $value = $arrayRaw[1]
+	Dim $rawRestrictions = IniRead(@ScriptDir & "/config.ini", $strScript, $key & "-restrictions", "")
+	If Not $rawRestrictions = "" Then
+		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
+		
+		While $value = "!"
+			$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'" & @CRLF & "You are limited to: " & StringReplace($rawRestrictions, ",", ", "))
+			If $value = "" Then $value = $arrayRaw[1]
 
+			For $element In $restrictions
+				If $element = $value Then ExitLoop(2)
+			Next
+			$value = "!"
+		WEnd
+	Else
+		$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'")
+		If $value = "" Then $value = $arrayRaw[1]
+	EndIf
+
+	;overwrite file
 	IniWrite(@ScriptDir & "/config.ini", $strScript, $key, $value)	;write to config file
 
 	cmbLoadClick()

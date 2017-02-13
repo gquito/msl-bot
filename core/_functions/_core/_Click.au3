@@ -20,6 +20,11 @@
 #ce ----------------------------------------------------------------------------
 
 Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500)
+	If Not isArray($coorPoint) Then
+		setLog("Error (clickPoint): variable passed in is not an Array.")
+		Return
+	EndIf
+
 	For $i = 1 To $intNum
 		ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
 		If _Sleep($intDuration) Then Return
@@ -54,7 +59,7 @@ Func clickPointUntil($coorPoint, $strLocation, $intNum = 5, $intDuration = 2000)
 	While TimerDiff($startTime) < $intNum*$intDuration
 		If _Sleep(100) Then Return
 		If (getLocation() = $strLocation) = False Then
-			ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+			clickPoint($coorPoint, 1, 0)
 			If _Sleep($intDuration) Then Return
 		Else
 			Return 1
@@ -91,7 +96,7 @@ Func clickPointUntilImage($coorPoint, $strImage, $intNum = 5, $intDuration = 200
 	While TimerDiff($startTime) < $intNum*$intDuration
 		If _Sleep(100) Then Return
 		If findImageWait($strImage, 1) Then
-			ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+			clickPoint($coorPoint, 1, 0)
 			If _Sleep($intDuration) Then Return
 		Else
 			Return 1
@@ -138,7 +143,7 @@ Func clickPointWait($coorPoint, $strLocation, $intWaitDuration = 5, $intNum = 1,
 		If _Sleep(100) Then Return
 		If getLocation() = $strLocation Then
 			For $i = 1 To $intNum
-				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+			clickPoint($coorPoint, 1, 0)
 				If _Sleep($intDuration) Then Return
 			Next
 			Return 1
