@@ -25,7 +25,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 		Dim $imgPoint = findImageWait($strImage, 2, 100)
 
 		Local $errorCounter = 0
-		
+
 		setLog("Locating map stage.")
 		While Not isArray($imgPoint)
 			If checkLocations("astroleague", "map-stage", "association") = 1 Then ControlSend($hWindow, "", "", "{ESC}")
@@ -61,7 +61,10 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 		EndSwitch
 
 		;selecting a stage (not yet complete)
-		clickPoint(findImageWait("misc-stage-energy", 5, 100))
+		Dim $arrayEnergy = findImageWait("misc-stage-energy", 5, 100)
+		If Not isArray($arrayEnergy) Then Return 0
+
+		clickPoint($arrayEnergy)
 
 		;applying autobattle mode
 		If $boolAuto = True Then

@@ -136,5 +136,4 @@ Func farmRare()
     WEnd
 
     setLog("~~~Finished 'Farm Rare' script~~~")
-    btnRunClick() ;stops script
 EndFunc
