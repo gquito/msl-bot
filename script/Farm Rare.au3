@@ -17,24 +17,31 @@ Func farmRare()
 
     Dim $rawCapture = StringSplit(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "capture", "legendary,super rare,rare,exotic"), ",", 2)
     For $capture In $rawCapture
-        Switch($capture)
-            Case "legendary"
-                _ArrayAdd($captures, $imagesLegendary)
-            Case "super rare"
-                _ArrayAdd($captures, $imagesSuperRare)
-            Case "rare"
-                _ArrayAdd($captures, $imagesRare)
-            Case "exotic"
-                _ArrayAdd($captures, $imagesExotic)
-            Case "variant"
-                _ArrayAdd($captures, $imagesVariant)
-            Case Else
-                _ArrayAdd($captures, "catch-" & $capture)
-        EndSwitch
+        Local $grade = StringReplace($capture, " ", "-")
+        If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
+            _ArrayAdd($captures, "catch-" & $grade)
+
+            Local $tempInt = 2
+            While FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & $tempInt & ".bmp")
+                _ArrayAdd($captures, "catch-" & $grade & $tempInt)
+                $tempInt += 1
+            WEnd
+        EndIf
     Next
+
+    ;setting up data capture
+    GUICtrlSetData($cmbLoad, "Select a script..")
+
+    Local $dataRuns = 0
+    Local $dataGuardians = 0
+    Local $dataEncounter = 0
+    Local $dataStrCaught = ""
 
     While True
         While True
+            GUICtrlSetData($listScript, "")
+            GUICtrlSetData($listScript, "# of Runs: " & $dataRuns & "|# of Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2))
+
             If _Sleep(100) Then ExitLoop(2) ;to stop farming
             If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle") = 1 Then
                 setLog("Going into battle...", 1)
@@ -43,6 +50,7 @@ Func farmRare()
                         setLog("Error: Could not enter map stage.")
                         ExitLoop(2)
                     EndIf
+                    $dataRuns += 1
                     setLog("Waiting for astromon.", 1)
                 EndIf
             EndIf
@@ -69,16 +77,19 @@ Func farmRare()
                     EndIf
                     ExitLoop
                 EndIf
+                $dataRuns += 1
             EndIf
             
             If checkLocations("battle") = 1 Then
                 If isArray(findImagesWait($imagesRareAstromon, 5, 100)) Then
-                    setLog("An astromon has been found!")
+                    $dataEncounter += 1
+                    setLog("An astromon has been found!", 1)
                     If navigate("battle", "catch-mode") = 1 Then
-                        catch($captures, True)
+                        Local $tempStr = catch($captures, True)
         
+                        If Not $tempStr = "" Then $dataStrCaught &= ", " & $tempStr
+                        setLog("Finish catching, attacking..", 1)
                         clickPoint($battle_coorAuto)
-                        $strGrade = ""
                     EndIf
                 EndIf
             EndIf
@@ -97,7 +108,7 @@ Func farmRare()
 
         Dim $foundDungeon = 0
         If $guardian = 1 And navigate("map", "guardian-dungeons") = 1 Then
-            setLog("Checking for guardian dungeons...")
+            setLog("Checking for guardian dungeons...", 1)
             While checkLocations("guardian-dungeons") = 1
                 If clickImageUntil("misc-dungeon-energy", "map-battle", 50) = 1 Then
                     clickPointWait($map_coorBattle, "map-battle", 5)
@@ -115,7 +126,7 @@ Func farmRare()
                     EndIf
                     $foundDungeon += 1
                     setLogReplace("Found dungeon, attacking x" & $foundDungeon & ".")
-                    
+
                     If waitLocation("battle-end-exp", 240) = 0 Then
                         setLog("Unable to finish golem in 5 minutes!", 1)
                         ExitLoop
@@ -127,12 +138,13 @@ Func farmRare()
                     
                     clickImageUntil("battle-exit", "guardian-dungeons")
                 Else
-                    setLog("Guardian dungeon not found, going back to map.")
+                    setLog("Guardian dungeon not found, going back to map.", 1)
                     navigate("map")
                     ExitLoop
                 EndIf
             WEnd
         EndIf
+        $dataGuardians += $foundDungeon
     WEnd
 
     setLog("~~~Finished 'Farm Rare' script~~~")
