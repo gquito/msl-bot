@@ -63,7 +63,8 @@ Func navigate($strMainLocation, $strLocation = "")
 			If _Sleep(50) Then Return
 
 			If checkLocations("battle") = 1 Then
-				While checkLocations("battle-pause") = 0
+				If ($strMainLocation = "battle") Then ExitLoop
+				While waitLocation("pause", 1) = 0
 					ControlSend($hWindow, "", "", "{ESC}")
 				WEnd
 
@@ -91,7 +92,7 @@ Func navigate($strMainLocation, $strLocation = "")
 
 					If getLocation() = "battle-end" Then clickPoint($battle_coorMap)
 				Case "battle"
-					If Not(getLocation() = "battle") Then Return 0
+					Return waitLocation("battle", 3)
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
 			EndSwitch

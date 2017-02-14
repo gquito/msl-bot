@@ -68,6 +68,8 @@ Func catch($varImages, $boolLog = True)
 
 					setLog("Could not recognize astromon, saving to NotRecognized" & $tempInt & ".bmp")
 					_CaptureRegion("NotRecognized" & $tempInt & ".bmp")
+
+					Return ""
 				EndIf
 
 				If $strCaught = "" Then setLog("Missed a " & $strAstromonGrade & ".") ;if missed astromon

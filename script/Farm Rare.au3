@@ -6,7 +6,6 @@
 ;author: GkevinOD
 Func farmRare()
     ;beginning script
-    setLog("~~~Starting 'Farm Rare' script~~~")
     setLog("*Loading config for Farm Rare.")
 
     ;getting configs
@@ -28,6 +27,8 @@ Func farmRare()
             WEnd
         EndIf
     Next
+
+    setLog("~~~Starting 'Farm Rare' script~~~")
 
     ;setting up data capture
     GUICtrlSetData($cmbLoad, "Select a script..")
@@ -75,6 +76,7 @@ Func farmRare()
                             Next
                         EndIf
                     EndIf
+                    navigate("map")
                     ExitLoop
                 EndIf
                 $dataRuns += 1
