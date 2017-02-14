@@ -18,9 +18,10 @@
 #ce ----------------------------------------------------------------------------
 
 Func _CaptureRegion($strScreen = "", $iLeft = 0, $iTop = 0, $iRight = 800, $iBottom = 600)
+	_GDIPlus_BitmapDispose($hBitmap)
+	_WinAPI_DeleteObject($hHBitmap)
+
 	If GUICtrlRead($chkBackground) = 1 Then
-		_GDIPlus_BitmapDispose($hBitmap)
-		_WinAPI_DeleteObject($hHBitmap)
 		Local $iW = Number($iRight) - Number($iLeft), $iH = Number($iBottom) - Number($iTop)
 
 		Local $hDC_Capture = _WinAPI_GetWindowDC($hControl)
