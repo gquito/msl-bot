@@ -12,6 +12,7 @@ Global $listScript = GUICtrlCreateList("", 4, 53, 276, 104, BitOR($WS_BORDER, $W
 GUICtrlSetData(-1, "")
 GUICtrlSetFont(-1, 8, 400, 0, "Arial")
 Global $btnEdit = GUICtrlCreateButton("Edit", 228, 28, 43, 25)
+_GUICtrlEdit_SetLimitText($btnEdit, 100000000)
 GUICtrlSetFont(-1, 8, 400, 0, "Arial")
 GUICtrlSetOnEvent(-1, "btnEditClick")
 Global $TabSheet2 = GUICtrlCreateTabItem("Config")
