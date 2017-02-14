@@ -33,7 +33,7 @@ FileClose($tempFile)
 #include "script/imports.au3"
 
 ;Hotkeys =====================================
-HotKeySet("^s", "hotkeyStopBot")
+HotKeySet("{END}", "hotkeyStopBot")
 
 Func hotkeyStopBot()
 	$boolRunning = False
@@ -60,7 +60,7 @@ Func btnRunClick()
 	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 
 	If $boolRunning = False Then ;starting bot
-		If GUICtrlRead($chkMouse) = 1 Then MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "You have real mouse on! You will not be able to use your mouse. To stop script press SHIFT+S")
+		If GUICtrlRead($chkMouse) = 1 Then MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "You have real mouse on! You will not be able to use your mouse. To stop script press End key.")
 		$boolRunning = True
 
 		GUICtrlSetData($btnRun, "Stop")
