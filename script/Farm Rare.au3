@@ -94,10 +94,11 @@ Func farmRare()
                             If $tempStr = -2 Then ;double check
                                 setLog("Did not recognize astromon, trying again..", 1)
 
+                                navigate("battle", "catch-mode")
                                 $tempStr = catch($captures, True)
                             EndIf
                             
-                            If Not $tempStr = "" Then $dataStrCaught &= ", " & $tempStr
+                            If Not $tempStr = "" And Not $tempStr = "-2" Then $dataStrCaught &= ", " & $tempStr
                             setLog("Finish catching, attacking..", 1)
                             clickPoint($battle_coorAuto)
                         EndIf

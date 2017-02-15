@@ -58,7 +58,10 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True)
 					navigate("battle", "catch-mode")
 					ExitLoop ;going back to inner loop to check for more astromon
 				Else
-					setLog("No more astromon chips!", 1)
+					setLog("Out of astromon chips!", 1)
+
+					$strAstromonGrade = _StringProper(StringRegExpReplace(StringReplace(StringReplace(StringReplace($varImages[$pointArray[2]], "catch-", ""), "battle-", ""), "-", " "), "[0-9]", ""))
+					setLog("Missed a " & $strAstromonGrade & ".") ;if missed astromon
 					Return $strCaught
 				EndIf
 			Else
@@ -76,8 +79,6 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True)
 
 					Return -2
 				EndIf
-
-				If $strCaught = "" Then setLog("Missed a " & $strAstromonGrade & ".") ;if missed astromon
 
 				While Not(getLocation() = "battle") ;exit catch mode
 					If _Sleep(200) Then Return
