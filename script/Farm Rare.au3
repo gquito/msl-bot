@@ -44,7 +44,7 @@ Func farmRare()
             GUICtrlSetData($listScript, "# of Runs: " & $dataRuns & "|# of Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2))
 
             If _Sleep(100) Then ExitLoop(2) ;to stop farming
-            If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle") = 1 Then
+            If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan") = 1 Then
                 setLog("Going into battle...", 1)
                 If navigate("map") = 1 Then
                     If enterStage($map, $difficulty, True, True) = 0 Then
@@ -86,11 +86,23 @@ Func farmRare()
                 If isArray(findImagesWait($imagesRareAstromon, 5, 100)) Then
                     $dataEncounter += 1
                     setLog("An astromon has been found!", 1)
-                    If navigate("battle", "catch-mode") = 1 Then
-                        Local $tempStr = catch($captures, True)
-        
-                        If Not $tempStr = "" Then $dataStrCaught &= ", " & $tempStr
-                        setLog("Finish catching, attacking..", 1)
+
+                    _CaptureRegion()
+                    If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
+                        If navigate("battle", "catch-mode") = 1 Then
+                            Local $tempStr = catch($captures, True, False)
+                            If $tempStr = -2 Then ;double check
+                                setLog("Did not recognize astromon, trying again..", 1)
+
+                                $tempStr = catch($captures, True)
+                            EndIf
+                            
+                            If Not $tempStr = "" Then $dataStrCaught &= ", " & $tempStr
+                            setLog("Finish catching, attacking..", 1)
+                            clickPoint($battle_coorAuto)
+                        EndIf
+                    Else ;if no more astrochips
+                        setLog("Unable to catch astromons, out of astrochips.", 1)
                         clickPoint($battle_coorAuto)
                     EndIf
                 EndIf

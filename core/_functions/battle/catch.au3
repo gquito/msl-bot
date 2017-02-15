@@ -14,10 +14,12 @@
 
 	On astromon bag full - Returns -1
 
+	On not tried - Returns -2
+
 
 #ce ----------------------------------------------------------------------------
 
-Func catch($varImages, $boolLog = True)
+Func catch($varImages, $boolLog = True, $boolCreateIMG = True)
 	Local $strCaught = ""
 	Local $strAstromonGrade = ""
 	Local $boolTried = False
@@ -61,16 +63,18 @@ Func catch($varImages, $boolLog = True)
 				EndIf
 			Else
 				If $boolTried = False Then ;if astromon was not recognized
-					Local $tempInt = 0
-					While(FileExists(@ScriptDir & "/NotRecognized" & $tempInt & ".bmp"))
-						$tempInt += 1
-					WEnd
-
 					setLog("Could not recognize astromon.")
-					setLog("Saving to NotRecognized" & $tempInt & ".bmp")
-					_CaptureRegion("NotRecognized" & $tempInt & ".bmp")
+					If $boolCreateIMG = True Then
+						Local $tempInt = 0
+						While(FileExists(@ScriptDir & "/NotRecognized" & $tempInt & ".bmp"))
+							$tempInt += 1
+						WEnd
 
-					Return ""
+						setLog("Saving to NotRecognized" & $tempInt & ".bmp")
+						_CaptureRegion("NotRecognized" & $tempInt & ".bmp")
+					EndIf
+
+					Return -2
 				EndIf
 
 				If $strCaught = "" Then setLog("Missed a " & $strAstromonGrade & ".") ;if missed astromon
