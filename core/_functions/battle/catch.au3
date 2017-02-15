@@ -66,7 +66,7 @@ Func catch($varImages, $boolLog = True)
 						$tempInt += 1
 					WEnd
 
-					setLog("Could not recognize astromon."
+					setLog("Could not recognize astromon.")
 					setLog("Saving to NotRecognized" & $tempInt & ".bmp")
 					_CaptureRegion("NotRecognized" & $tempInt & ".bmp")
 
