@@ -32,6 +32,8 @@ Func farmRare()
 
     ;setting up data capture
     GUICtrlSetData($cmbLoad, "Select a script..")
+    $strScript = "" ;script section
+    $strConfig = "" ;all keys
 
     Local $dataRuns = 0
     Local $dataGuardians = 0
@@ -41,7 +43,7 @@ Func farmRare()
     While True
         While True
             GUICtrlSetData($listScript, "")
-            GUICtrlSetData($listScript, "# of Runs: " & $dataRuns & "|# of Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2))
+            GUICtrlSetData($listScript, "~Farm Rare Data~|# of Runs: " & $dataRuns & "|# of Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2))
 
             If _Sleep(100) Then ExitLoop(2) ;to stop farming
             If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan") = 1 Then
@@ -91,12 +93,12 @@ Func farmRare()
                     _CaptureRegion()
                     If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
                         If navigate("battle", "catch-mode") = 1 Then
-                            Local $tempStr = catch($captures, True, False)
+                            Local $tempStr = catch($captures, True, False, False, True)
                             If $tempStr = -2 Then ;double check
                                 If setLog("Did not recognize astromon, trying again..", 1) Then ExitLoop(2)
 
                                 navigate("battle", "catch-mode")
-                                $tempStr = catch($captures, True)
+                                $tempStr = catch($captures, True, False, False, True)
                             EndIf
                             If $tempStr = "-2" Then $tempStr = ""
 

@@ -16,9 +16,9 @@ Global $strConfig = "" ;all keys
 #include "core/gui.au3"
 
 _GDIPlus_Startup()
-GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1)) 
-GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1)) 
-GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1)) 
+GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1))
+GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1))
+GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1))
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
 
 ;importing scripts
@@ -120,7 +120,7 @@ EndFunc
 ;author: GkevinOD (2017)
 Func cmbLoadClick()
 	;pre
-	If GUICtrlRead($cmbLoad) = "Select a script.." Then 
+	If GUICtrlRead($cmbLoad) = "Select a script.." Then
 		GUICtrlSetData($listScript, "") ;reset list
 		Return
 	EndIf

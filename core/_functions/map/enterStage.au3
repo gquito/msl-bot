@@ -26,7 +26,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 
 		Local $errorCounter = 0
 
-		setLog("Locating map stage.", 1)
+		If setLog("Locating map stage.", 1) Then Return 0
 		While Not isArray($imgPoint)
 			If _Sleep(10) Then Return
 			If checkLocations("astroleague", "map-stage", "association") = 1 Then ControlSend($hWindow, "", "", "{ESC}")
