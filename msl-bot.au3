@@ -25,7 +25,7 @@ GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "gene
 $tempFile = FileOpen(@ScriptDir & "/script/imports.au3", $FO_OVERWRITE + $FO_CREATEPATH)
 $tempVar = ""
 For $tempScript In $arrayScripts
-	$tempVar = '#include "' & $tempScript & '.au3"' & @CRLF
+	$tempVar &= '#include "' & $tempScript & '.au3"' & @CRLF
 Next
 FileWrite($tempFile, $tempVar)
 FileClose($tempFile)
@@ -220,16 +220,20 @@ Func chkDebugFindImageClick()
 	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 	While(GUICtrlRead($chkDebugFindImage) = 1) ;if it is checked
 		Dim $strImage = GUICtrlRead($textDebugImage)
-
+		Dim $dirImage = ""
 		;first check if file exist
-		If Not FileExists($strImageDir & $strImage) Then
-			GUICtrlSetData($lblDebugImage, "Found: 0")
+		If StringInStr($strImage, "-") Then ;image with specified folder
+			$dirImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage
+		EndIf
+		
+		If Not FileExists($strImageDir & $dirImage & ".bmp") Then
+			GUICtrlSetData($lblDebugImage, "Found: Non-Existent")
 			ExitLoop
 		EndIf
 
 		;process
 		_CaptureRegion()
-		Dim $arrayPoints = findImage(StringReplace($strImage, ".bmp", ""), 50)
+		Dim $arrayPoints = findImage($strImage, 100)
 		If Not isArray($arrayPoints) Then ;if not found
 			GUICtrlSetData($lblDebugImage, "Found: 0")
 			ExitLoop

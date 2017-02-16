@@ -1,3 +1,9 @@
+;function: farmSlime
+;-Automatically farms slimes
+;pre:
+;   -config must be set for script
+;   -required config keys: map, capture, guardian-dungeon
+;author: GkevinOD
 Func farmSlime()
 	;beginning script
     setLog("*Loading config for Farm Slime.", 2)
