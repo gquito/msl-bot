@@ -76,6 +76,12 @@ Func farmGolem()
             setLog("Gem inventory is full!")
             ExitLoop
         EndIf
+
+        If _Sleep(10) Then ExitLoop 
+        If checkLocations("battle-defeat") = 1 Then
+            clickPoint($battle_coorGiveUp)
+            clickPointUntil($game_coorTap, "battle-end", 20, 1000)
+        EndIf
         
         If _Sleep(10) Then ExitLoop
         If checkLocations("lost-connection") = 1 Then
