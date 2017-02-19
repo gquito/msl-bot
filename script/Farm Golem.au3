@@ -7,7 +7,7 @@
 Func farmGolem()
 	;beginning script
     setLog("*Loading config for Farm Golem.", 2)
-    
+
     Dim $strGolem = Int(IniRead(@ScriptDir & "/config.ini", "Farm Golem", "dungeon", 7))
     Dim $intGoldEnergy  = 12244
     Dim $intGolem = 7
@@ -44,7 +44,7 @@ Func farmGolem()
 
         If checkLocations("battle-end") = 1 Then
             clickImageUntil("battle-quick-restart", "battle")
-            
+
             $intRunCount += 1
         EndIf
 
@@ -52,7 +52,7 @@ Func farmGolem()
             If navigate("map", "golem-dungeons") = 1 Then
                 clickPointUntil(Eval("map_coorB" & $strGolem), "map-battle")
                 clickPointUntil($map_coorBattle, "battle")
-                
+
                 $intRunCount += 1
             Else
                 setLog("Unable to navigate to dungeon.")
@@ -70,19 +70,19 @@ Func farmGolem()
                 $intGoldPrediction += $intGoldEnergy
             EndIf
         EndIf
-        
+
         If _Sleep(10) Then ExitLoop
         If checkLocations("battle-gem-full") = 1 Then
             setLog("Gem inventory is full!")
             ExitLoop
         EndIf
 
-        If _Sleep(10) Then ExitLoop 
-        If checkLocations("battle-defeat") = 1 Then
-            clickPoint($battle_coorGiveUp)
+        If _Sleep(10) Then ExitLoop
+        If checkLocations("defeat") = 1 Then
+            clickImage("battle-give-up")
             clickPointUntil($game_coorTap, "battle-end", 20, 1000)
         EndIf
-        
+
         If _Sleep(10) Then ExitLoop
         If checkLocations("lost-connection") = 1 Then
             clickPoint($game_coorConnectionRetry)
