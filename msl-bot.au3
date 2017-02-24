@@ -156,7 +156,7 @@ Func btnEditClick()
 		MsgBox(0, $botName & " " & $botVersion, "No config selected.")
 		Return
 	EndIf
-	
+
 	;getting keys and values to modify
 	Dim $key = $arrayRaw[0]
 	Dim $value = "!" ;temp value
@@ -165,7 +165,7 @@ Func btnEditClick()
 	Dim $rawRestrictions = IniRead(@ScriptDir & "/config.ini", $strScript, $key & "-restrictions", "")
 	If Not $rawRestrictions = "" Then
 		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
-		
+
 		While $value = "!"
 			$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'" & @CRLF & "You are limited to: " & StringReplace($rawRestrictions, ",", ", "))
 			If $value = "" Then $value = $arrayRaw[1]
@@ -225,21 +225,20 @@ Func chkDebugFindImageClick()
 		If StringInStr($strImage, "-") Then ;image with specified folder
 			$dirImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage
 		EndIf
-		
-		If Not FileExists($strImageDir & $dirImage & ".bmp") Then
-			GUICtrlSetData($lblDebugImage, "Found: Non-Existent")
-			ExitLoop
-		EndIf
 
 		;process
-		_CaptureRegion()
-		Dim $arrayPoints = findImage($strImage, 100)
-		If Not isArray($arrayPoints) Then ;if not found
-			GUICtrlSetData($lblDebugImage, "Found: 0")
-			ExitLoop
+		If Not FileExists($strImageDir & $dirImage & ".bmp") Then
+			GUICtrlSetData($lblDebugImage, "Found: Non-Existent")
+		Else
+			_CaptureRegion()
+			Local $arrayPoints = findImage($strImage, 100)
+			If Not isArray($arrayPoints) Then ;if not found
+				GUICtrlSetData($lblDebugImage, "Found: 0")
+			Else
+				GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1])
+			EndIf
 		EndIf
 
-		GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1])
 		Sleep(500);
 	WEnd
 EndFunc
