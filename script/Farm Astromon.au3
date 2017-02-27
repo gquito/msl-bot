@@ -1,36 +1,47 @@
-;function: farmSlime
-;-Automatically farms slimes
+;function: farmAstromon
+;-Automatically farms an astromon
 ;pre:
 ;   -config must be set for script
 ;   -required config keys: map, capture, guardian-dungeon
 ;author: GkevinOD
-Func farmSlime()
+Func farmAstromon()
 	;beginning script
-    setLog("*Loading config for Farm Slime.", 2)
+    setLog("*Loading config for Farm Astromon.", 2)
 
     ;getting configs
     Dim $captures[0];
+	Dim $map = StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "map", "phantom forest"), " ", "-")
 
-    Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,one star", ",", 2)
-    For $capture In $rawCapture
-        Local $grade = StringReplace($capture, " ", "-")
-        If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
-            _ArrayAdd($captures, "catch-" & $grade)
+	If IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "catch-rares", 0) = 1 Then
+		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
+		For $capture In $rawCapture
+			Local $grade = StringReplace($capture, " ", "-")
+			If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
+				_ArrayAdd($captures, "catch-" & $grade)
 
-            Local $tempInt = 2
-            While FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & $tempInt & ".bmp")
-                _ArrayAdd($captures, "catch-" & $grade & $tempInt)
-                $tempInt += 1
-            WEnd
-        EndIf
-    Next
+				Local $tempInt = 2
+				While FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & $tempInt & ".bmp")
+					_ArrayAdd($captures, "catch-" & $grade & $tempInt)
+					$tempInt += 1
+				WEnd
+			EndIf
+		Next
+	EndIf
 
-	Dim $limit = Int(IniRead(@ScriptDir & "/config.ini", "Farm Slime", "limit", 16))
+	Local $imgName = IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "image-name", null)
+	If ($imgName = null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
+		setLog("*Error: Image file does not exist!")
+		Return 0
+	EndIf
+
+	_ArrayAdd($captures, $imgName)
+
+	Dim $limit = Int(IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "limit", 16))
 	If $limit = 0 Then
 		setLog("*Limit is 0, will farm until inv full.", 2)
 	EndIf
 
-    setLog("~~~Starting 'Farm Slime' script~~~", 2)
+    setLog("~~~Starting 'Farm Astromon' script~~~", 2)
 	;set up data info
     GUICtrlSetData($cmbLoad, "Select a script..")
     $strScript = "" ;script section
@@ -39,12 +50,12 @@ Func farmSlime()
 	Dim $intCounter = 0
 	While $intCounter < $limit
 		GUICtrlSetData($listScript, "")
-		GUICtrlSetData($listScript, "~Farm Slime Data~|# of Slimes: " & $intCounter & "/" & $limit)
+		GUICtrlSetData($listScript, "~Farm Astromon Data~|# of Astromons: " & $intCounter & "/" & $limit)
 
 		If _Sleep(10) Then ExitLoop
 		If checkLocations("battle") = 1 Then
 			If checkPixelWait($battle_pixelUnavailable, 2) = False Then
-				While True ;while there are slimes
+				While True ;while there are Astromons
 					navigate("battle", "catch-mode")
 					$tempStr = catch($captures, True, False, True, False)
 					If ($tempStr = -1) or ($tempStr = "") Then ExitLoop
@@ -52,7 +63,7 @@ Func farmSlime()
 					$intCounter += 1
 
 					GUICtrlSetData($listScript, "")
-					GUICtrlSetData($listScript, "~Farm Slime Data~|# of Slimes: " & $intCounter & "/" & $limit)
+					GUICtrlSetData($listScript, "~Farm Astromon Data~|# of Astromons: " & $intCounter & "/" & $limit)
 					If $intCounter = $limit Then ExitLoop(2)
 				WEnd
 					
@@ -92,7 +103,7 @@ Func farmSlime()
 		If _Sleep(10) Then ExitLoop
 		If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests") = 1 Then
 			If navigate("map") = 1 Then
-				enterStage("map-phantom-forest", "normal")
+				enterStage($map, "normal")
 				
 				If waitLocation("map-astromon-full", 3) = 1 Then
 					setLog("Inventory is full.", 1)
@@ -115,5 +126,5 @@ Func farmSlime()
 		EndIf
 	WEnd
 
-    setLog("~~~Finished 'Farm Slime' script~~~", 2)
+    setLog("~~~Finished 'Farm Astromon' script~~~", 2)
 EndFunc

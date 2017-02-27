@@ -22,7 +22,7 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon = False, $boolCheckTried = False)
+Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon = False, $boolCheckTried = True)
 	Local $strCaught = ""
 	Local $strAstromonGrade = ""
 	Local $boolTried = False
@@ -42,7 +42,7 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 
 			If isArray($pointArray) = True Then ;if found
 				setLog("Found the astromon, attempting to catch...", 1)
-				While Not(getLocation() = "battle") 
+				While Not(getLocation() = "battle")
 					$boolTried = True ;indicate that catching was attempted
 					If getLocation() = "battle-astromon-full" Then Return -1
 

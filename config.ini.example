@@ -47,5 +47,5 @@ keep-grade-min-sub=5
 keep-grade-min-sub-restrictions=1,2,3,4,5,6
 min-sub=3
 min-sub-restrictions=1,2,3,4
-current-gold=1525374
-current-energy=726
+current-gold=123456
+current-energy=123

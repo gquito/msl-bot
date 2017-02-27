@@ -22,14 +22,6 @@ GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
 
 ;importing scripts
-$tempFile = FileOpen(@ScriptDir & "/script/imports.au3", $FO_OVERWRITE + $FO_CREATEPATH)
-$tempVar = ""
-For $tempScript In $arrayScripts
-	$tempVar &= '#include "' & $tempScript & '.au3"' & @CRLF
-Next
-FileWrite($tempFile, $tempVar)
-FileClose($tempFile)
-
 #include "script/imports.au3"
 
 ;Hotkeys =====================================
@@ -46,6 +38,7 @@ While True
 		If Not $strScript = "" Then ;check if script is set
 			Call(IniRead(@ScriptDir & "/config.ini", $strScript, "function", ""))
 			If @error = 0xDEAD And @extended = 0xBEEF Then MsgBox($MB_OK, $botName & " " & $botVersion, "Script function does not exist.")
+			btnRunClick()
 		Else
 			MsgBox($MB_OK, $botName & " " & $botVersion, "Load a script before starting.")
 			btnRunClick()
@@ -130,6 +123,7 @@ Func cmbLoadClick()
 
 	;process of getting info
 	$strScript = GUICtrlRead($cmbLoad)
+	If $strScript = "null" Then $strScript = ""
 
 	Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/config.ini", $strScript, "keys", ""), ",", 2)
 	$strConfig = ""
@@ -231,7 +225,7 @@ Func chkDebugFindImageClick()
 			GUICtrlSetData($lblDebugImage, "Found: Non-Existent")
 		Else
 			_CaptureRegion()
-			Local $arrayPoints = findImage($strImage, 100)
+			Local $arrayPoints = findImage($strImage, 30)
 			If Not isArray($arrayPoints) Then ;if not found
 				GUICtrlSetData($lblDebugImage, "Found: 0")
 			Else
@@ -259,4 +253,3 @@ Func chkDebugLocationClick()
 		Sleep(500);
 	WEnd
 EndFunc
-

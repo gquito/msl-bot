@@ -42,6 +42,7 @@
 		Global $village_coorMonsters = [253, 505]
 
 		Global $village_coorArrayQuestsTab = ["717,127", "592,125", "463,126", "333,125", "213,127"]
+		Global $village_coorHourly = ["296,115|486,67|683,107|685,289", "182,390|173,94|577,81|627,186", "686,123|503,113|241,160|166,402"] ;pos1, pos2, pos3 -> hourly1|hourly2|hourly3|shop
 
 		Global $village_coorManage = [739, 199]
 		Global $village_coorUpgrade = [392, 415]

@@ -57,11 +57,11 @@ Func farmRare()
                     If setLog("Waiting for astromon.", 1) Then ExitLoop(2)
                 EndIf
             EndIf
-            
+
             If checkLocations("battle-end-exp", "battle-sell") = 1 Then
                 clickPointUntil($game_coorTap, "battle-end")
             EndIf
-            
+
             If checkLocations("battle-end") = 1 Then
                 clickPoint($game_coorTap, 5)
                 If waitLocation("unknown", 10) = 0 Then
@@ -84,7 +84,7 @@ Func farmRare()
                 EndIf
                 $dataRuns += 1
             EndIf
-            
+
             If checkLocations("battle") = 1 Then
                 If isArray(findImagesWait($imagesRareAstromon, 5, 100)) Then
                     $dataEncounter += 1
@@ -98,7 +98,7 @@ Func farmRare()
                                 If setLog("Did not recognize astromon, trying again..", 1) Then ExitLoop(2)
 
                                 navigate("battle", "catch-mode")
-                                $tempStr = catch($captures, True, False, False, True)
+                                $tempStr = catch($captures, True, True, False, True)
                             EndIf
                             If $tempStr = "-2" Then $tempStr = ""
 
@@ -112,14 +112,14 @@ Func farmRare()
                     EndIf
                 EndIf
             EndIf
-            
+
             If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
                 If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop(2)
                 If navigate("village", "manage") = 1 Then
                     sellGems($imagesUnwantedGems)
                 EndIf
             EndIf
-            
+
             If checkLocations("lost-connection") = 1 Then
                 clickPoint($game_coorConnectionRetry)
             EndIf
@@ -131,7 +131,7 @@ Func farmRare()
             While checkLocations("guardian-dungeons") = 1
                 If clickImageUntil("misc-dungeon-energy", "map-battle", 50) = 1 Then
                     clickPointWait($map_coorBattle, "map-battle", 5)
-                    
+
                     If _Sleep(3000) Then ExitLoop(2)
 
                     If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
@@ -150,12 +150,12 @@ Func farmRare()
                         If setLog("Unable to finish golem in 5 minutes!", 1) Then ExitLoop(2)
                         ExitLoop
                     EndIf
-                    
+
                     While checkLocations("battle-end") = 0
                         clickPoint($game_coorTap)
                         If _Sleep(10) Then ExitLoop(2)
                     WEnd
-                    
+
                     clickImageUntil("battle-exit", "guardian-dungeons")
                 Else
                     If setLog("Guardian dungeon not found, going back to map.", 1) Then ExitLoop(2)
