@@ -16,16 +16,16 @@ Global $strConfig = "" ;all keys
 #include "core/gui.au3"
 
 _GDIPlus_Startup()
-GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1)) 
-GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1)) 
-GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1)) 
+GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1))
+GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1))
+GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1))
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
 
 ;importing scripts
 $tempFile = FileOpen(@ScriptDir & "/script/imports.au3", $FO_OVERWRITE + $FO_CREATEPATH)
 $tempVar = ""
 For $tempScript In $arrayScripts
-	$tempVar = '#include "' & $tempScript & '.au3"' & @CRLF
+	$tempVar &= '#include "' & $tempScript & '.au3"' & @CRLF
 Next
 FileWrite($tempFile, $tempVar)
 FileClose($tempFile)
@@ -120,7 +120,7 @@ EndFunc
 ;author: GkevinOD (2017)
 Func cmbLoadClick()
 	;pre
-	If GUICtrlRead($cmbLoad) = "Select a script.." Then 
+	If GUICtrlRead($cmbLoad) = "Select a script.." Then
 		GUICtrlSetData($listScript, "") ;reset list
 		Return
 	EndIf
@@ -156,7 +156,7 @@ Func btnEditClick()
 		MsgBox(0, $botName & " " & $botVersion, "No config selected.")
 		Return
 	EndIf
-	
+
 	;getting keys and values to modify
 	Dim $key = $arrayRaw[0]
 	Dim $value = "!" ;temp value
@@ -165,7 +165,7 @@ Func btnEditClick()
 	Dim $rawRestrictions = IniRead(@ScriptDir & "/config.ini", $strScript, $key & "-restrictions", "")
 	If Not $rawRestrictions = "" Then
 		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
-		
+
 		While $value = "!"
 			$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'" & @CRLF & "You are limited to: " & StringReplace($rawRestrictions, ",", ", "))
 			If $value = "" Then $value = $arrayRaw[1]
@@ -220,22 +220,25 @@ Func chkDebugFindImageClick()
 	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 	While(GUICtrlRead($chkDebugFindImage) = 1) ;if it is checked
 		Dim $strImage = GUICtrlRead($textDebugImage)
-
+		Dim $dirImage = ""
 		;first check if file exist
-		If Not FileExists($strImageDir & $strImage) Then
-			GUICtrlSetData($lblDebugImage, "Found: 0")
-			ExitLoop
+		If StringInStr($strImage, "-") Then ;image with specified folder
+			$dirImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage
 		EndIf
 
 		;process
-		_CaptureRegion()
-		Dim $arrayPoints = findImage(StringReplace($strImage, ".bmp", ""), 50)
-		If Not isArray($arrayPoints) Then ;if not found
-			GUICtrlSetData($lblDebugImage, "Found: 0")
-			ExitLoop
+		If Not FileExists($strImageDir & $dirImage & ".bmp") Then
+			GUICtrlSetData($lblDebugImage, "Found: Non-Existent")
+		Else
+			_CaptureRegion()
+			Local $arrayPoints = findImage($strImage, 100)
+			If Not isArray($arrayPoints) Then ;if not found
+				GUICtrlSetData($lblDebugImage, "Found: 0")
+			Else
+				GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1])
+			EndIf
 		EndIf
 
-		GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1])
 		Sleep(500);
 	WEnd
 EndFunc

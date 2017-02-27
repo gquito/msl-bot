@@ -28,13 +28,14 @@
 
 Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAll = 6, $intMinStarForSub = 5, $intMinSub = 4)
 	Local $boolLog = Not(StringInStr($strRecord, "!"))
+	Local $sold = ""
 	$strRecord = StringReplace($strRecord, "!", "")
 
 	If waitLocation("battle-sell", 2) Then
-		Local $arrayData = ["-", "-", "-", "", "-", "-"]
+		Local $arrayData = ["-", "-", "-", "", "-", "-", ""]
 
 		;egg check
-		If isArray(findImage("\gem record\egg", 75)) Then
+		If isArray(findImage("gem-egg", 75)) Then
 			$arrayData[0] = "EGG"
 			If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
@@ -48,11 +49,13 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 			If ($arrayData[3] = "F.") And ($boolSellFlat = True) Then
 				clickPoint($battle_coorSell, 1, 1000)
 				clickPointUntil($battle_coorSellConfirm, "battle-end")
+				$sold = "!"
 			Else
 				If (($arrayData[0] <= $intMinStar) And ($arrayData[0] < $intKeepAll)) Then
 					If Not (($arrayData[0] >= $intMinStarForSub) And ($arrayData[5] >= $intMinSub)) Then
 						clickPoint($battle_coorSell, 1, 1000)
 						clickPointUntil($battle_coorSellConfirm, "battle-end")
+						$sold = "!"
 					EndIf
 				EndIf
 			EndIf
@@ -60,7 +63,7 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 		EndIf
 
 		If $boolLog = True Then
-			Local $strData = "Grade: " & $arrayData[0] & "* |Shape: "
+			Local $strData = $sold & "Grade: " & $arrayData[0] & "* |Shape: "
 			If $arrayData[1] = "D" Then $strData &= "Diamond |Type: "
 			If $arrayData[1] = "S" Then $strData &= "Square |Type: "
 			If $arrayData[1] = "T" Then $strData &= "Triangle |Type: "
@@ -69,7 +72,8 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 			If $arrayData[3] = "P." Then $strData &= "Percent "
 			$strData &= _StringProper($arrayData[4]) & " |Substat: " & $arrayData[5]
 
-			setLog($strData)
+			setLog($strData, 1)
+			$arrayData[6] = $strData
 		EndIf
 
 		Return $arrayData
@@ -118,22 +122,22 @@ Func gatherData(ByRef $arrayData)
 
 		For $strType In $imagesGemType
 			If isArray(findImage($strType, 75)) Then
-				$arrayData[2] = StringUpper(StringReplace($strType, "\gem record\", ""))
+				$arrayData[2] = StringUpper(StringReplace($strType, "gem-", ""))
 				ExitLoop
 			EndIf
 		Next
 
-		If isArray(findImage("\gem record\crit rate", 75)) Then
+		If isArray(findImage("gem-crit-rate", 75)) Then
 			$arrayData[3] = ""
 			$arrayData[4] = "CRIT RATE"
-		ElseIf isArray(findImage("\gem record\crit dmg", 75)) Then
+		ElseIf isArray(findImage("gem-crit-dmg", 75)) Then
 			$arrayData[3] = ""
 			$arrayData[4] = "CRIT DMG"
-		ElseIf isArray(findImage("\gem record\resist", 75)) Then
+		ElseIf isArray(findImage("gem-resist", 75)) Then
 			$arrayData[3] = ""
 			$arrayData[4] = "RESIST"
 		Else
-			If isArray(findImage("\gem record\percent", 75)) Then
+			If isArray(findImage("gem-percent", 75)) Then
 				$arrayData[3] = "P."
 			Else
 				$arrayData[3] = "F."
@@ -141,7 +145,7 @@ Func gatherData(ByRef $arrayData)
 
 			For $strStat In $imagesGemStat
 				If isArray(findImage($strStat, 75)) Then
-					$arrayData[4] = StringUpper(StringReplace($strStat, "\gem record\", ""))
+					$arrayData[4] = StringUpper(StringReplace($strStat, "gem-", ""))
 					ExitLoop
 				EndIf
 			Next

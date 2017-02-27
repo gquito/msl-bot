@@ -21,9 +21,9 @@
 	Global $imagesCatch = ["catch-normal-success", "catch-rare-success", "catch-super-rare-success", "catch-legendary-success"]
 	Global $imagesUnwantedGems = ["manage-one-star", "manage-two-star", "manage-three-star", "manage-four-star", "manage-new"]
 
-	Global $imagesGemGrades = ["\gem record\six-star", "\gem record\five-star", "\gem record\four-star", "battle-three-star", "battle-two-star", "battle-one-star"]
-	Global $imagesGemType = ["\gem record\conviction", "\gem record\ferocity", "\gem record\fortitude", "\gem record\healing", "\gem record\intuition", "\gem record\life", "\gem record\protection", "\gem record\ruin", "\gem record\tenacity", "\gem record\valor", "\gem record\vitality"]
-	Global $imagesGemStat = ["\gem record\atk", "\gem record\def", "\gem record\rec", "\gem record\hp", "\gem record\crit dmg"]
+	Global $imagesGemGrades = ["gem-six-star", "gem-five-star", "gem-four-star", "gem-three-star", "gem-two-star", "gem-one-star"]
+	Global $imagesGemType = ["gem-conviction", "gem-ferocity", "gem-fortitude", "gem-healing", "gem-intuition", "gem-life", "gem-protection", "gem-ruin", "gem-tenacity", "gem-valor", "gem-vitality"]
+	Global $imagesGemStat = ["gem-atk", "gem-def", "gem-rec", "gem-hp", "gem-crit-dmg"]
 
 ;parallel arrays
 	Global $parallel_imagesCatch = ["normal", "rare"]

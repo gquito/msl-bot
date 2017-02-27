@@ -12,16 +12,17 @@
 
 Func getLocation()
 	_CaptureRegion()
-	
+
 	;village
 	If isArray(findImage("location-manage")) = True Then Return "manage"
 	If isArray(findImage("location-monsters")) = True Then Return "monsters"
 	If isArray(findImage("location-quests")) = True Then Return "quests"
 
 	If isArray(findImage("location-village")) = True Then Return "village"
-	
+
 	;battle
 	If isArray(findImage("location-pause")) = True Then Return "pause"
+	If isArray(findImage("location-defeat")) = True Then Return "defeat"
 	If isArray(findImage("location-battle-sell")) = True Then Return "battle-sell"
 	If isArray(findImage("location-battle-end")) = True Then Return "battle-end"
 	If isArray(findImage("location-battle-end-exp")) = True Then Return "battle-end-exp"
@@ -29,9 +30,9 @@ Func getLocation()
 	If isArray(findImage("location-battle-astromon-full")) = True Then Return "battle-astromon-full"
 	If isArray(findImage("location-battle-gem-full")) = True Then Return "battle-gem-full"
 	If isArray(findImage("location-battle-pause"))= True Then Return "battle-pause"
-	
+
 	If isArray(findImage("location-battle"))= True Then Return "battle"
-	
+
 	;map
 	If isArray(findImage("location-map-stage")) = True Then Return "map-stage"
 	If isArray(findImage("location-astroleague")) = True Then Return "astroleague"
@@ -45,12 +46,12 @@ Func getLocation()
 	If isArray(findImage("location-map-astromon-full")) = True Then Return "map-astromon-full"
 	If isArray(findImage("location-map-gem-full")) = True Then Return "map-gem-full"
 	If isArray(findImage("location-autobattle-prompt")) = True Then Return "autobattle-prompt"
-	
+
 	If isArray(findImage("location-map")) = True Then Return "map"
-	
+
 	;other
 	If isArray(findImage("location-dialogue")) = True Then Return "dialogue"
 	If isArray(findImage("location-lost-connection")) = True Then Return "lost-connection"
-	
+
 	Return "unknown"
 EndFunc
