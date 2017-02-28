@@ -31,11 +31,14 @@ Func farmGolem()
     Dim $intGoldPrediction = 0
     Dim $intRunCount = 0
     Dim $intTimeElapse = 0
+    Dim $getHourly = False
 
     setLog("~~~Starting 'Farm Golem' script~~~", 2)
     While True
         If _Sleep(10) Then ExitLoop
         $intTimeElapse = Int(TimerDiff($intStartTime)/1000)
+
+        If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
 
         Dim $strData = "# of Run: " & $intRunCount & ".|Predicted Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Predicted Gold: " & StringRegExpReplace(String($intGold+$intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Current Energy: " & ($intEnergy-($intRunCount*$intGolem)) & "|Total Time Elapse: " & StringFormat("%.2f", $intTimeElapse/60) & " Min." & "|Average Time Per Run: " & StringFormat("%.2f", $intTimeElapse/$intRunCount/60) & " Min." & "|Predicted No-Energy In: " & StringFormat("%.2f", $intTimeElapse/$intRunCount*(($intEnergy-($intRunCount*$intGolem))/$intGolem)/60) & " Min."
 
@@ -43,9 +46,13 @@ Func farmGolem()
 		GUICtrlSetData($listScript, $strData)
 
         If checkLocations("battle-end") = 1 Then
-            clickImageUntil("battle-quick-restart", "battle")
-
-            $intRunCount += 1
+            If $getHourly = True Then
+                getHourly()
+                $getHourly = False
+            Else
+                clickImageUntil("battle-quick-restart", "battle")
+                $intRunCount += 1
+            EndIf
         EndIf
 
         If checkLocations("map", "village", "astroleague", "map-stage", "map-battle") = 1 Then

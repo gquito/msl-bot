@@ -69,7 +69,10 @@ Func farmRare()
                 clickPoint($game_coorTap, 5)
                 If waitLocation("unknown", 10) = 0 Then
                     If setLog("Autobattle finished.", 1) Then ExitLoop(2)
-                    If $getHourly = True Then getHourly()
+                    If $getHourly = True Then 
+                        getHourly()
+                        $getHourly = False
+                    EndIf
                     If checkPixel($battle_pixelQuest) = True Then
                         If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop(2)
                         If navigate("village", "quests") = 1 Then
