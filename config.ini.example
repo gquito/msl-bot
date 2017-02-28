@@ -2,7 +2,6 @@
 
 [general]
 title=MSL Bot
-version=v1.6.0.0
 scripts=General Config,Farm Rare,Farm Astromon,Farm Golem
 background-mode=1
 output-all-process=1
@@ -10,7 +9,8 @@ real-mouse-mode=0
 
 [General Config]
 function=null
-keys=get-hourly,buy-eggs
+keys=sell-gems,refill-astrogems,get-hourly,buy-eggs
+sell-gems=four star,three star,two star,one star
 refill-astrogems=0
 get-hourly=1
 buy-eggs=0
@@ -30,7 +30,7 @@ guardian-dungeon-restrictions=0,1
 function=farmAstromon
 keys=image,limit,map,catch-rares
 image=catch-one-star
-limit=16
+limit=0
 map=phantom forest
 map-restrictions=phantom forest,lunar valley,aria lake,mirage ruins,pagos coast,seabed caves,magma crags,star sanctuary
 catch-rares=1
@@ -38,7 +38,7 @@ catch-rares-restriction=0,1
 
 [Farm Golem]
 function=farmGolem
-keys=dungeon,sell-grade-min,keep-grade-min-sub,min-sub,current-gold,current-energy
+keys=dungeon,sell-grade-min,keep-grade-min-sub,min-sub,max-spend-gem
 dungeon=8
 dungeon-restrictions=1,2,3,4,5,6,7,8,9,10
 sell-grade-min=5
@@ -47,5 +47,3 @@ keep-grade-min-sub=5
 keep-grade-min-sub-restrictions=1,2,3,4,5,6
 min-sub=3
 min-sub-restrictions=1,2,3,4
-current-gold=123456
-current-energy=123

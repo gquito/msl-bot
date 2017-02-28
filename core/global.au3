@@ -36,6 +36,9 @@
 	Global $game_coorRefillConfirm = [396, 310]
 
 	;village
+		Global $village_coorAccept = [645, 190]
+		Global $village_coorTab = [10, 247]
+		Global $village_coorInbox = [163, 125]
 		Global $village_coorPlay = [711, 507]
 		Global $village_coorShop = [524, 503]
 		Global $village_coorQuests = [459, 502]

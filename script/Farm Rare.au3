@@ -13,6 +13,8 @@ Func farmRare()
     Dim $guardian = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "guardian-dungeon", "0")
     Dim $difficulty = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "difficulty", "normal")
     Dim $captures[0];
+    Dim $intGem = Int(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "max-spend-gem", 0))
+    Dim $intGemUsed = 0
 
     Dim $rawCapture = StringSplit(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "capture", "legendary,super rare,rare,exotic"), ",", 2)
     For $capture In $rawCapture
@@ -44,7 +46,7 @@ Func farmRare()
     While True
         While True
             GUICtrlSetData($listScript, "")
-            GUICtrlSetData($listScript, "~Farm Rare Data~|# of Runs: " & $dataRuns & "|# of Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2))
+            GUICtrlSetData($listScript, "~Farm Rare Data~|# of Runs: " & $dataRuns & "|# of Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem))
 
             If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
 
@@ -90,6 +92,27 @@ Func farmRare()
                     ExitLoop
                 EndIf
                 $dataRuns += 1
+            EndIf
+
+            If checkLocations("refill") = 1 Then
+                If $intGemUsed < $intGem Then 
+                    clickPointUntil($game_coorRefill, "refill-confirm")
+                    clickPointUntil($game_coorRefillConfirm, "refill")
+
+                    If checkLocations("buy-gem") Then
+                        setLog("Out of gems!", 1)
+                        ExitLoop(2)
+                    EndIf
+
+                    ControlSend($hWindow, "", "", "{ESC}")
+
+                    setLog("Refill gems: " & $intGemUsed+30 & "/" & $intGem)
+                    $intGemUsed += 30
+                Else
+                    setLog("Gem used exceed max gems!")
+                    ExitLoop(2)
+                EndIf
+                clickPointUntil($map_coorBattle, "battle")
             EndIf
 
             If checkLocations("battle") = 1 Then
@@ -151,6 +174,28 @@ Func farmRare()
                         clickImageUntil("misc-dungeon-energy", "map-battle", 50)
                         clickPointWait($map_coorBattle, "map-battle", 5)
                     EndIf
+
+                    If checkLocations("refill") = 1 Then
+                        If $intGemUsed < $intGem Then 
+                            clickPointUntil($game_coorRefill, "refill-confirm")
+                            clickPointUntil($game_coorRefillConfirm, "refill")
+
+                            If checkLocations("buy-gem") Then
+                                setLog("Out of gems!", 1)
+                                ExitLoop
+                            EndIf
+
+                            ControlSend($hWindow, "", "", "{ESC}")
+
+                            setLog("Refill gems: " & $intGemUsed+30 & "/" & $intGem)
+                            $intGemUsed += 30
+                        Else
+                            setLog("Gem used exceed max gems!")
+                            ExitLoop
+                        EndIf
+                        clickPointWait($map_coorBattle, "map-battle", 5)
+                    EndIf
+
                     $foundDungeon += 1
                     setLogReplace("Found dungeon, attacking x" & $foundDungeon & ".", 1)
 

@@ -50,6 +50,7 @@ Func getLocation()
 	If isArray(findImage("location-map")) = True Then Return "map"
 
 	;other
+	If isArray(findImage("location-inbox")) = True Then Return "inbox"
 	If isArray(findImage("location-refill")) = True Then Return "refill"
 	If isArray(findImage("location-refill-confirm")) = True Then Return "refill-confirm"
 	If isArray(findImage("location-buy-gem")) = True Then Return "buy-gem"

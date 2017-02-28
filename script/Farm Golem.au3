@@ -25,7 +25,7 @@ Func farmGolem()
     Dim $intSellGradeMin = Int(IniRead(@ScriptDir & "/config.ini", "Farm Golem", "sell-grade-min", 4))
     Dim $intKeepGradeMinSub = Int(IniRead(@ScriptDir & "/config.ini", "Farm Golem", "keep-grade-min-sub", 5))
     Dim $intMinSub = Int(IniRead(@ScriptDir & "/config.ini", "Farm Golem", "min-sub", 4))
-    Dim $intGem = Int(IniRead(@ScriptDir & "/config.ini", "Farm Golem", "max-spend-gem", 300))
+    Dim $intGem = Int(IniRead(@ScriptDir & "/config.ini", "Farm Golem", "max-spend-gem", 0))
     Dim $intGemUsed = 0
 
     Dim $intStartTime = TimerInit()
