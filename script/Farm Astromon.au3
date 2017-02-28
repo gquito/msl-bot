@@ -10,7 +10,7 @@ Func farmAstromon()
 
     ;getting configs
     Dim $captures[0];
-	Dim $map = StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "map", "phantom forest"), " ", "-")
+	Dim $map = "map-" & StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "map", "phantom forest"), " ", "-")
 
 	If IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "catch-rares", 0) = 1 Then
 		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
