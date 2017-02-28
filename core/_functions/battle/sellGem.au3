@@ -59,7 +59,7 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 					EndIf
 				EndIf
 			EndIf
-			;clickPointUntil($game_coorTap, "battle-end")
+			clickPointUntil($game_coorTap, "battle-end")
 		EndIf
 
 		If $boolLog = True Then
