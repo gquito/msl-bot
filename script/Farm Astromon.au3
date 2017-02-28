@@ -28,7 +28,7 @@ Func farmAstromon()
 		Next
 	EndIf
 
-	Local $imgName = IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "image-name", null)
+	Local $imgName = IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "image", null)
 	If ($imgName = null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
 		setLog("*Error: Image file does not exist!")
 		Return 0
@@ -39,6 +39,7 @@ Func farmAstromon()
 	Dim $limit = Int(IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "limit", 16))
 	If $limit = 0 Then
 		setLog("*Limit is 0, will farm until inventory is full.", 2)
+		$limit = 9999 ;really high number so counter never hits
 	EndIf
 
     setLog("~~~Starting 'Farm Astromon' script~~~", 2)
