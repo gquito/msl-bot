@@ -70,32 +70,38 @@ Func farmRare()
             If checkLocations("battle-end") = 1 Then
                 clickPoint($game_coorTap, 5)
                 If waitLocation("unknown", 10) = 0 Then
-                    If setLog("Autobattle finished.", 1) Then ExitLoop(2)
-                    If $getHourly = True Then 
-                        getHourly()
-                        $getHourly = False
-                    EndIf
-                    If checkPixel($battle_pixelQuest) = True Then
-                        If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop(2)
-                        If navigate("village", "quests") = 1 Then
-                            If setLog("Collecting quests.", 1) Then ExitLoop(2)
-                            For $questTab In $village_coorArrayQuestsTab ;quest tabs
-                                clickPoint(StringSplit($questTab, ",", 2))
-                                While isArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
-                                    If _Sleep(10) Then ExitLoop(4)
-                                    clickImage("misc-quests-get-reward", 100)
-                                WEnd
-                            Next
+                    While True
+                        If checkLocations("refill") Then 
+                            $dataRuns -= 1
+                            ExitLoop
                         EndIf
-                    EndIf
-                    navigate("map")
-                    ExitLoop
+                        If setLog("Autobattle finished.", 1) Then ExitLoop(3)
+                        If $getHourly = True Then 
+                            getHourly()
+                            $getHourly = False
+                        EndIf
+                        If checkPixel($battle_pixelQuest) = True Then
+                            If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop(2)
+                            If navigate("village", "quests") = 1 Then
+                                If setLog("Collecting quests.", 1) Then ExitLoop(3)
+                                For $questTab In $village_coorArrayQuestsTab ;quest tabs
+                                    clickPoint(StringSplit($questTab, ",", 2))
+                                    While isArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
+                                        If _Sleep(10) Then ExitLoop(5)
+                                        clickImage("misc-quests-get-reward", 100)
+                                    WEnd
+                                Next
+                            EndIf
+                        EndIf
+                        navigate("map")
+                        ExitLoop(2)
+                    WEnd
                 EndIf
                 $dataRuns += 1
             EndIf
 
             If checkLocations("refill") = 1 Then
-                If $intGemUsed < $intGem Then 
+                If $intGemUsed+30 < $intGem Then 
                     clickPointUntil($game_coorRefill, "refill-confirm")
                     clickPointUntil($game_coorRefillConfirm, "refill")
 

@@ -2,6 +2,8 @@
 
 [general]
 title=MSL Bot
+version=v0.0
+version-complex=v0.0.0.0
 scripts=General Config,Farm Rare,Farm Astromon,Farm Golem
 background-mode=1
 output-all-process=1
@@ -25,6 +27,7 @@ difficulty-restrictions=normal,hard,extreme
 capture=legendary,super rare,rare,exotic,variant
 guardian-dungeon=0
 guardian-dungeon-restrictions=0,1
+max-spend-gem=0
 
 [Farm Astromon]
 function=farmAstromon
@@ -47,3 +50,4 @@ keep-grade-min-sub=5
 keep-grade-min-sub-restrictions=1,2,3,4,5,6
 min-sub=3
 min-sub-restrictions=1,2,3,4
+max-spend-gem=0

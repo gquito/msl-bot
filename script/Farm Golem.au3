@@ -51,9 +51,8 @@ Func farmGolem()
                 getHourly()
                 $getHourly = False
             Else
-                If clickImageUntil("battle-quick-restart", "battle") = 1 Then 
-                    $intRunCount += 1
-                EndIf
+                clickImageUntil("battle-quick-restart", "battle")
+                $intRunCount += 1
 
                 If checkLocations("battle-end") Then navigate("map")
             EndIf

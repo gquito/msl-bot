@@ -30,9 +30,9 @@ Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500)
 			WinActivate($hWindow)
 
 			Dim $desktopCoor = WinGetPos($hControl)
-			MouseClick("left", $desktopCoor[0]+$coorPoint[0], $desktopCoor[1]+$coorPoint[1], 1, 0)
+			MouseClick("left", $desktopCoor[0]+$coorPoint[0]+Random(0, 5, 1), $desktopCoor[1]+$coorPoint[1]+Random(0, 5, 1), 1, 0)
 		Else
-			ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+			ControlClick($hWindow, "", "", "left", 1, $coorPoint[0]+Random(0, 5, 1), $coorPoint[1]+Random(0, 5, 1))
 		EndIf
 
 		If _Sleep($intDuration) Then Return
@@ -226,7 +226,7 @@ Func clickImageUntil($strImage, $strLocation, $intTolerance = 10, $intNum = 5, $
 	$startTime = TimerInit()
 	While TimerDiff($startTime) < $intNum*$intDuration
 		If _Sleep(100) Then Return
-		If (getLocation() = $strLocation) = False Then
+		If checkLocations($strLocation) = 0 Then
 			Dim $arrayPoint = findImage($strImage, $intTolerance)
 			If Not isArray($arrayPoint) Then Return 0
 
