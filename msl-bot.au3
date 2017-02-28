@@ -38,10 +38,12 @@ While True
 		If Not $strScript = "" Then ;check if script is set
 			Call(IniRead(@ScriptDir & "/config.ini", $strScript, "function", ""))
 			If @error = 0xDEAD And @extended = 0xBEEF Then MsgBox($MB_OK, $botName & " " & $botVersion, "Script function does not exist.")
-			btnRunClick()
+			$boolRunning = False
+			GUICtrlSetData($btnRun, "Start")
 		Else
 			MsgBox($MB_OK, $botName & " " & $botVersion, "Load a script before starting.")
-			btnRunClick()
+			$boolRunning = False
+			GUICtrlSetData($btnRun, "Start")
 		EndIf
 	EndIf
 	Sleep(10)
@@ -102,7 +104,9 @@ EndFunc
 ;author: GkevinOD (2017)
 Func btnDebugTestCodeClick()
 	;running line of code using execute
+	$boolRunning = True
 	Execute(GUICtrlRead($textDebugTestCode))
+	$boolRunning = False
 EndFunc
 
 ;function: cmbLoadClick

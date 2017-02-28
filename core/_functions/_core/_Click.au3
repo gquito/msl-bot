@@ -103,7 +103,8 @@ Func clickPointUntilImage($coorPoint, $strImage, $intNum = 5, $intDuration = 200
 	$startTime = TimerInit()
 	While TimerDiff($startTime) < $intNum*$intDuration
 		If _Sleep(100) Then Return
-		If findImageWait($strImage, 1) Then
+		_CaptureRegion()
+		If isArray(findImage($strImage)) = False Then
 			clickPoint($coorPoint, 1, 0)
 			If _Sleep($intDuration) Then Return
 		Else

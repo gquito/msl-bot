@@ -42,7 +42,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 		WEnd
 
 		;clicking map list and selecting difficulty
-		clickPointUntil($imgPoint, "map-stage")
+		clickPointUntil($imgPoint, "map-stage", 5, 2000)
 		Switch $strMode
 			Case "normal" ;Normal
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Normal.", 1)

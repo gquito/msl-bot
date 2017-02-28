@@ -38,7 +38,7 @@ Func farmAstromon()
 
 	Dim $limit = Int(IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "limit", 16))
 	If $limit = 0 Then
-		setLog("*Limit is 0, will farm until inv full.", 2)
+		setLog("*Limit is 0, will farm until inventory is full.", 2)
 	EndIf
 
     setLog("~~~Starting 'Farm Astromon' script~~~", 2)

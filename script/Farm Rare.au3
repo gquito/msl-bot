@@ -39,22 +39,25 @@ Func farmRare()
     Local $dataGuardians = 0
     Local $dataEncounter = 0
     Local $dataStrCaught = ""
+    Local $getHourly = False
 
     While True
         While True
             GUICtrlSetData($listScript, "")
             GUICtrlSetData($listScript, "~Farm Rare Data~|# of Runs: " & $dataRuns & "|# of Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2))
 
+            If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
+
             If _Sleep(100) Then ExitLoop(2) ;to stop farming
             If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan") = 1 Then
                 If setLog("Going into battle...", 1) Then ExitLoop(2)
                 If navigate("map") = 1 Then
                     If enterStage($map, $difficulty, True, True) = 0 Then
-                        If setLog("Error: Could not enter map stage.") Then ExitLoop(2)
-                        ExitLoop(2)
+                        If setLog("Error: Could not enter map stage.", 1) Then ExitLoop(2)
+                    Else
+                        $dataRuns += 1
+                        If setLog("Waiting for astromon.", 1) Then ExitLoop(2)
                     EndIf
-                    $dataRuns += 1
-                    If setLog("Waiting for astromon.", 1) Then ExitLoop(2)
                 EndIf
             EndIf
 
@@ -66,6 +69,7 @@ Func farmRare()
                 clickPoint($game_coorTap, 5)
                 If waitLocation("unknown", 10) = 0 Then
                     If setLog("Autobattle finished.", 1) Then ExitLoop(2)
+                    If $getHourly = True Then getHourly()
                     If checkPixel($battle_pixelQuest) = True Then
                         If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop(2)
                         If navigate("village", "quests") = 1 Then
@@ -89,6 +93,7 @@ Func farmRare()
                 If isArray(findImagesWait($imagesRareAstromon, 5, 100)) Then
                     $dataEncounter += 1
                     If setLog("An astromon has been found!", 1) Then ExitLoop(2)
+                    waitLocation("battle")
 
                     _CaptureRegion()
                     If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
