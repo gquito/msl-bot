@@ -32,6 +32,8 @@
 	Global $game_coorTap = [759, 482]
 	Global $game_coorConnectionRetry = [332, 322]
 	Global $game_coorDialogueSkip = [755, 25]
+	Global $game_coorRefill = [358, 422]
+	Global $game_coorRefillConfirm = [396, 310]
 
 	;village
 		Global $village_coorPlay = [711, 507]
