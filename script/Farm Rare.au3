@@ -210,12 +210,8 @@ Func farmRare()
                         ExitLoop
                     EndIf
 
-                    While checkLocations("battle-end") = 0
-                        clickPoint($game_coorTap)
-                        If _Sleep(10) Then ExitLoop(2)
-                    WEnd
-
-                    clickImageUntil("battle-exit", "guardian-dungeons")
+                    clickPointUntil($game_coorTap, "battle-end", 20, 1000)
+                    clickImageUntil("battle-exit", "guardian-dungeons", 50)
                 Else
                     If setLog("Guardian dungeon not found, going back to map.", 1) Then ExitLoop(2)
                     navigate("map")
