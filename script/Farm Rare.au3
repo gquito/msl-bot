@@ -67,6 +67,10 @@ Func farmRare()
                 clickPointUntil($game_coorTap, "battle-end")
             EndIf
 
+            If checkLocations("unknown") = 1 Then
+                clickPoint($game_coorTap)
+            EndIf
+
             If checkLocations("battle-end") = 1 Then
                 clickPoint($game_coorTap, 5)
                 If waitLocation("unknown", 10) = 0 Then
@@ -101,7 +105,7 @@ Func farmRare()
             EndIf
 
             If checkLocations("refill") = 1 Then
-                If $intGemUsed+30 < $intGem Then 
+                If $intGemUsed+30 <= $intGem Then 
                     clickPointUntil($game_coorRefill, "refill-confirm")
                     clickPointUntil($game_coorRefillConfirm, "refill")
 
@@ -182,7 +186,7 @@ Func farmRare()
                     EndIf
 
                     If checkLocations("refill") = 1 Then
-                        If $intGemUsed < $intGem Then 
+                        If $intGemUsed+30 <= $intGem Then 
                             clickPointUntil($game_coorRefill, "refill-confirm")
                             clickPointUntil($game_coorRefillConfirm, "refill")
 

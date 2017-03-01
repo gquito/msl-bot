@@ -68,7 +68,7 @@ Func farmGolem()
             EndIf
 
             If checkLocations("refill") = 1 Then
-                If $intGemUsed+30 < $intGem Then 
+                If $intGemUsed+30 <= $intGem Then 
                     clickPointUntil($game_coorRefill, "refill-confirm")
                     clickPointUntil($game_coorRefillConfirm, "refill")
 
@@ -105,7 +105,9 @@ Func farmGolem()
                     clickPoint($game_coorTap)
                 WEnd
                 If _Sleep(10) Then ExitLoop(2)
-                If StringInStr(sellGem("B" & $strGolem, $intSellGradeMin, True, 6, $intKeepGradeMinSub, $intMinSub)[6], "!") Then
+                
+                Local $gemInfo = sellGem("B" & $strGolem, $intSellGradeMin, True, 6, $intKeepGradeMinSub, $intMinSub)
+                If isArray($gemInfo) And StringInStr($gemInfo[6], "!") Then
                     $intGoldPrediction += $intGoldEnergy
                 EndIf
             EndIf
@@ -145,7 +147,7 @@ Func farmGolem()
                     EndIf
 
                     If checkLocations("refill") = 1 Then
-                        If $intGemUsed < $intGem Then 
+                         If $intGemUsed+30 <= $intGem Then 
                             clickPointUntil($game_coorRefill, "refill-confirm")
                             clickPointUntil($game_coorRefillConfirm, "refill")
 
