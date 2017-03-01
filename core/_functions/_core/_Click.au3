@@ -222,11 +222,12 @@ EndFunc
 
 #ce ----------------------------------------------------------------------------
 
-Func clickImageUntil($strImage, $strLocation, $intTolerance = 10, $intNum = 5, $intDuration = 2000)
+Func clickImageUntil($strImage, $strLocation, $intTolerance = 30, $intNum = 5, $intDuration = 2000)
 	$startTime = TimerInit()
 	While TimerDiff($startTime) < $intNum*$intDuration
 		If _Sleep(100) Then Return
 		If checkLocations($strLocation) = 0 Then
+			_CaptureRegion()
 			Dim $arrayPoint = findImage($strImage, $intTolerance)
 			If Not isArray($arrayPoint) Then Return 0
 
