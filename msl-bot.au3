@@ -1,4 +1,10 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=..\favicon.ico
+#AutoIt3Wrapper_Outfile=msl-bot v1.7.exe
 #AutoIt3Wrapper_UseX64=n
+#AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
+#AutoIt3Wrapper_Res_Fileversion=1.7.0.0
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botVersion = IniRead(@ScriptDir & "/config.ini", "general", "version", "")
@@ -20,6 +26,13 @@ GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "
 GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1))
 GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1))
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
+
+Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "keys", ""), ",", 2)
+Dim $generalConfig = ""
+For $key In $arrayKeys
+	$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/config.ini", "general", $key, "???") & "|"
+Next
+GUICtrlSetData($listConfig, $generalConfig)
 
 ;importing scripts
 #include "script/imports.au3"
@@ -66,17 +79,6 @@ Func btnRunClick()
 	EndIf
 EndFunc
 
-;function: btnAdjustClick()
-;-Adjusts most images for optimization for certain computers
-;pre:
-;	-no script must be running
-;post:
-;	-new images will be generated or replaced
-;author: GkevinOD(2017)
-Func btnAdjustClick()
-	MsgBox($MB_SYSTEMMODAL, $botName & " " & $botVersion, "Adjust is currently being worked on.")
-EndFunc
-
 ;function: frmMainClose
 ;-Exits application and saves the log
 ;author: GkevinOD (2017)
@@ -107,6 +109,55 @@ Func btnDebugTestCodeClick()
 	$boolRunning = True
 	Execute(GUICtrlRead($textDebugTestCode))
 	$boolRunning = False
+EndFunc
+
+;functon: btnConfigEdit
+;-Modify a config of the general config
+;pre:
+;	-no script must be running
+;author: GkevinOD (2017)
+Func btnConfigEdit()
+	;initial variables
+	Dim $strRaw = GUICtrlRead($listConfig)
+	Dim $arrayRaw = StringSplit($strRaw, "=", 2)
+
+	If UBound($arrayRaw) = 1 Then ;check if no config selected
+		MsgBox(0, $botName & " " & $botVersion, "No config selected.")
+		Return
+	EndIf
+
+	;getting keys and values to modify
+	Dim $key = $arrayRaw[0]
+	Dim $value = "!" ;temp value
+	Dim $boolPass = False ;if meets restriction
+
+	Dim $rawRestrictions = IniRead(@ScriptDir & "/config.ini", "general", $key & "-restrictions", "")
+	If Not $rawRestrictions = "" Then
+		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
+
+		While $value = "!"
+			$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'" & @CRLF & "You are limited to: " & StringReplace($rawRestrictions, ",", ", "))
+			If $value = "" Then $value = $arrayRaw[1]
+
+			For $element In $restrictions
+				If $element = $value Then ExitLoop(2)
+			Next
+			$value = "!"
+		WEnd
+	Else
+		$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'")
+		If $value = "" Then $value = $arrayRaw[1]
+	EndIf
+
+	;overwrite file
+	IniWrite(@ScriptDir & "/config.ini", "general", $key, $value)	;write to config file
+
+	Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "keys", ""), ",", 2)
+	Dim $generalConfig = ""
+	For $key In $arrayKeys
+		$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/config.ini", "general", $key, "???") & "|"
+	Next
+	GUICtrlSetData($listConfig, $generalConfig)
 EndFunc
 
 ;function: cmbLoadClick
@@ -182,27 +233,6 @@ Func btnEditClick()
 	IniWrite(@ScriptDir & "/config.ini", $strScript, $key, $value)	;write to config file
 
 	cmbLoadClick()
-EndFunc
-
-;function: chkBackgroundClick()
-;-Overwrites config.ini file and updates new data.
-;author: GkevinOD (2017)
-Func chkBackgroundClick()
-	IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", StringReplace(GUICtrlRead($chkBackGround), "4", "0"))
-EndFunc
-
-;function: chkOutputClick()
-;-Overwrites config.ini file and updates new data.
-;author: GkevinOD (2017)
-Func chkOutputClick()
-	IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", StringReplace(GUICtrlRead($chkOutput), "4", "0"))
-EndFunc
-
-;function: chkMouse()
-;-Overwrites config.ini file and updates new data.
-;author: GkevinOD (2017)
-Func chkMouse()
-	IniWrite(@ScriptDir & "/config.ini", "general", "real-mouse-mode", StringReplace(GUICtrlRead($chkMouse), "4", "0"))
 EndFunc
 
 ;function: chkDebugFindImageClick()

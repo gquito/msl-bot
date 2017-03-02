@@ -10,7 +10,6 @@ Func farmAstromon()
 
     ;getting configs
     Dim $captures[0];
-	Dim $map = "map-" & StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "map", "phantom forest"), " ", "-")
 
 	If IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "catch-rares", 0) = 1 Then
 		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
@@ -103,14 +102,7 @@ Func farmAstromon()
 
 		If _Sleep(10) Then ExitLoop
 		If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests") = 1 Then
-			If navigate("map") = 1 Then
-				enterStage($map, "normal")
-				
-				If waitLocation("map-astromon-full", 3) = 1 Then
-					setLog("Inventory is full.", 1)
-					ExitLoop
-				EndIf
-			EndIf
+			MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "Enter battle and turn auto off, then click ok.")
 		EndIf
 
 		If _Sleep(10) Then ExitLoop
