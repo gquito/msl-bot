@@ -32,8 +32,13 @@
 	Global $game_coorTap = [759, 482]
 	Global $game_coorConnectionRetry = [332, 322]
 	Global $game_coorDialogueSkip = [755, 25]
+	Global $game_coorRefill = [358, 422]
+	Global $game_coorRefillConfirm = [396, 310]
 
 	;village
+		Global $village_coorAccept = [645, 190]
+		Global $village_coorTab = [10, 247]
+		Global $village_coorInbox = [163, 125]
 		Global $village_coorPlay = [711, 507]
 		Global $village_coorShop = [524, 503]
 		Global $village_coorQuests = [459, 502]
@@ -42,6 +47,7 @@
 		Global $village_coorMonsters = [253, 505]
 
 		Global $village_coorArrayQuestsTab = ["717,127", "592,125", "463,126", "333,125", "213,127"]
+		Global $village_coorHourly = ["296,115|486,67|683,107|685,289", "182,390|173,94|577,81|627,186", "686,123|503,113|241,160|166,402"] ;pos1, pos2, pos3 -> hourly1|hourly2|hourly3|shop
 
 		Global $village_coorManage = [739, 199]
 		Global $village_coorUpgrade = [392, 415]
