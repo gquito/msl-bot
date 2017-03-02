@@ -3,25 +3,25 @@
 ;author: GkevinOD (2017)
 
 Func getHourly()
-	If navigate("village") = 1 Then 
-		If setLog("Collecting hourly rewards..", 1) Then Return 
+	If navigate("village") = 1 Then
+		If setLog("Collecting hourly rewards..", 1) Then Return
 		Local $posVillage = null; The village position
 
 		_CaptureRegion()
-		If isArray(findImage("misc-village-pos1")) Then
+		If isArray(findImage("misc-village-pos1", 50)) Then
 			$posVillage = 0
-		ElseIf isArray(findImage("misc-village-pos2")) Then
+		ElseIf isArray(findImage("misc-village-pos2", 50)) Then
 			$posVillage = 1
-		ElseIf isArray(findImage("misc-village-pos3")) Then
+		ElseIf isArray(findImage("misc-village-pos3", 50)) Then
 			$posVillage = 2
 		EndIf
 
-		If $posVillage = null Then 
+		If $posVillage = null Then
 			setLog("Could not recognize village position.", 1)
 			Return 0
 		EndIf
 
-		If setLog("Village position recognized: " & $posVillage, 2) Then Return 
+		If setLog("Village position recognized: " & $posVillage, 2) Then Return
 		Local $arrayCoor = StringSplit($village_coorHourly[$posVillage], "|", 2) ;format: {"#,#", "#,#"..}
 		For $i = 0 To 2 ;collecting the rewards
 			If _Sleep(100) Then Return
