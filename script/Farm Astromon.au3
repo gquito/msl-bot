@@ -6,10 +6,10 @@
 ;author: GkevinOD
 Func farmAstromon()
 	;beginning script
-    setLog("*Loading config for Farm Astromon.", 2)
+	setLog("*Loading config for Farm Astromon.", 2)
 
-    ;getting configs
-    Dim $captures[0];
+	;getting configs
+	Dim $captures[0] ;
 
 	If IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "catch-rares", 0) = 1 Then
 		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
@@ -27,8 +27,8 @@ Func farmAstromon()
 		Next
 	EndIf
 
-	Local $imgName = IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "image", null)
-	If ($imgName = null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
+	Local $imgName = IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "image", Null)
+	If ($imgName = Null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
 		setLog("*Error: Image file does not exist!")
 		Return 0
 	EndIf
@@ -41,11 +41,11 @@ Func farmAstromon()
 		$limit = 9999 ;really high number so counter never hits
 	EndIf
 
-    setLog("~~~Starting 'Farm Astromon' script~~~", 2)
+	setLog("~~~Starting 'Farm Astromon' script~~~", 2)
 	;set up data info
-    GUICtrlSetData($cmbLoad, "Select a script..")
-    $strScript = "" ;script section
-    $strConfig = "" ;all keys
+	GUICtrlSetData($cmbLoad, "Select a script..")
+	$strScript = "" ;script section
+	$strConfig = "" ;all keys
 
 	Dim $intCounter = 0
 	While $intCounter < $limit
@@ -58,15 +58,15 @@ Func farmAstromon()
 				While True ;while there are Astromons
 					navigate("battle", "catch-mode")
 					$tempStr = catch($captures, True, False, True, False)
-					If ($tempStr = -1) or ($tempStr = "") Then ExitLoop
+					If ($tempStr = -1) Or ($tempStr = "") Then ExitLoop
 
 					$intCounter += 1
 
 					GUICtrlSetData($listScript, "")
 					GUICtrlSetData($listScript, "~Farm Astromon Data~|# of Astromons: " & $intCounter & "/" & $limit)
-					If $intCounter = $limit Then ExitLoop(2)
+					If $intCounter = $limit Then ExitLoop (2)
 				WEnd
-					
+				
 				If _Sleep(10) Then ExitLoop
 				clickPoint($battle_coorAuto, 2, 10)
 			Else
@@ -77,7 +77,7 @@ Func farmAstromon()
 						ExitLoop
 					EndIf
 					
-					If _Sleep(500) Then ExitLoop(2)
+					If _Sleep(500) Then ExitLoop (2)
 				WEnd
 
 				clickPoint($battle_coorGiveUp)
@@ -113,11 +113,11 @@ Func farmAstromon()
 		EndIf
 
 		If _Sleep(10) Then ExitLoop
-		If checkLocations("battle-astromon-full", "map-astromon-full") = 1 Then 
+		If checkLocations("battle-astromon-full", "map-astromon-full") = 1 Then
 			setLog("Inventory is full.", 1)
 			ExitLoop
 		EndIf
 	WEnd
 
-    setLog("~~~Finished 'Farm Astromon' script~~~", 2)
-EndFunc
+	setLog("~~~Finished 'Farm Astromon' script~~~", 2)
+EndFunc   ;==>farmAstromon
