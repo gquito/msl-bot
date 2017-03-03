@@ -1,13 +1,14 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
-#AutoIt3Wrapper_Icon=..\favicon.ico
+#AutoIt3Wrapper_Icon=..\..\favicon.ico
 #AutoIt3Wrapper_Outfile=msl-bot v1.7.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.7.0.1
+#AutoIt3Wrapper_Res_Fileversion=1.7.1.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botVersion = IniRead(@ScriptDir & "/config.ini", "general", "version", "")
+Global $botVersionComplex = IniRead(@ScriptDir & "/config.ini", "general", "version-complex", "")
 Global $botName = IniRead(@ScriptDir & "/config.ini", "general", "title", "MSL Bot")
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "scripts", ""), ",", 2)
 
@@ -22,6 +23,7 @@ Global $strConfig = "" ;all keys
 #include "core/gui.au3"
 
 _GDIPlus_Startup()
+GUICtrlSetData($lblVersion, "Current version: " & $botVersionComplex)
 GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1))
 GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1))
 GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1))
@@ -39,6 +41,30 @@ GUICtrlSetData($listConfig, $generalConfig)
 
 ;Hotkeys =====================================
 HotKeySet("{END}", "hotkeyStopBot")
+HotKeySet("{F6}", "debugPoint1")
+HotKeySet("{F7}", "debugPoint2")
+
+Func debugPoint1()
+	$pointDebug1[0] = MouseGetPos(0) - WinGetPos($hControl)[0]
+	$pointDebug1[1] = MouseGetPos(1) - WinGetPos($hControl)[1]
+	If $pointDebug1[0] > 800 Or $pointDebug1[0] < 0 Or $pointDebug1[1] > 600 Or $pointDebug1[1] < 0 Then
+		$pointDebug1[0] = "?"
+		$pointDebug1[1] = "?"
+	EndIf
+
+	GUICtrlSetData($lblDebugCoordinations, "F6: (" & $pointDebug1[0] & ", " & $pointDebug1[1] & ") | F7: (" & $pointDebug2[0] & ", " & $pointDebug2[1] & ")")
+EndFunc
+
+Func debugPoint2()
+	$pointDebug2[0] = MouseGetPos(0) - WinGetPos($hControl)[0]
+	$pointDebug2[1] = MouseGetPos(1) - WinGetPos($hControl)[1]
+	If $pointDebug2[0] > 800 Or $pointDebug2[0] < 0 Or $pointDebug2[1] > 600 Or $pointDebug2[1] < 0 Then
+		$pointDebug2[0] = "?"
+		$pointDebug2[1] = "?"
+	EndIf
+
+	GUICtrlSetData($lblDebugCoordinations, "F6: (" & $pointDebug1[0] & ", " & $pointDebug1[1] & ") | F7: (" & $pointDebug2[0] & ", " & $pointDebug2[1] & ")")
+EndFunc
 
 Func hotkeyStopBot()
 	$boolRunning = False
@@ -286,4 +312,14 @@ Func chkDebugLocationClick()
 		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())
 		Sleep(500);
 	WEnd
+EndFunc
+
+;function: btnCopyPointsClick()
+;-Copying points from lblDebugCoordinations to the Clipboard
+;post:
+;	-clipboard will change to coordinations of 0,0,0,0 (based on lblDebugCoordinations)
+;author: GkevinOD (2017)
+Func btnCopyPointsClick()
+	ClipPut($pointDebug1[0] & "," & $pointDebug1[1] & "," & $pointDebug2[0] & "," & $pointDebug2[1])
+	MsgBox($MB_OK, $botName & " " & $botVersion, "The coordinations have been saved to your Clipboard.")
 EndFunc
