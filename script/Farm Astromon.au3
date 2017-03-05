@@ -29,7 +29,7 @@ Func farmAstromon()
 
 	Local $imgName = IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "image", Null)
 	If ($imgName = Null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
-		setLog("*Error: Image file does not exist!")
+		setLog("*Error: Image file does not exist!", 2)
 		Return 0
 	EndIf
 
@@ -66,17 +66,17 @@ Func farmAstromon()
 					GUICtrlSetData($listScript, "~Farm Astromon Data~|# of Astromons: " & $intCounter & "/" & $limit)
 					If $intCounter = $limit Then ExitLoop (2)
 				WEnd
-				
+
 				If _Sleep(10) Then ExitLoop
 				clickPoint($battle_coorAuto, 2, 10)
 			Else
-				setLog("Out of astrochips, restarting..")
+				setLog("Out of astrochips, restarting..", 1)
 				While True
 					ControlSend($hWindow, "", "", "{ESC}")
 					If checkLocations("battle-end-exp", "battle-sell", "pause") = 1 Then
 						ExitLoop
 					EndIf
-					
+
 					If _Sleep(500) Then ExitLoop (2)
 				WEnd
 
@@ -94,7 +94,7 @@ Func farmAstromon()
 		If checkLocations("battle-end") = 1 Then
 			clickImage("battle-play-again")
 		EndIf
-		
+
 		If _Sleep(10) Then ExitLoop
 		If checkLocations("map-battle") = 1 Then
 			clickPointUntil($map_coorBattle, "battle")

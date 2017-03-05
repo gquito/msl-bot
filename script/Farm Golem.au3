@@ -74,16 +74,16 @@ Func farmGolem()
 					clickPointUntil($game_coorRefillConfirm, "refill")
 
 					If checkLocations("buy-gem") Then
-						setLog("Out of gems!", 1)
+						setLog("Out of gems!", 2)
 						ExitLoop (2)
 					EndIf
 
 					ControlSend($hWindow, "", "", "{ESC}")
 
-					setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem)
+					setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem, 0)
 					$intGemUsed += 30
 				Else
-					setLog("Gem used exceed max gems!")
+					setLog("Gem used exceed max gems!", 0)
 					ExitLoop (2)
 				EndIf
 			EndIf
@@ -95,7 +95,7 @@ Func farmGolem()
 
 					$intRunCount += 1
 				Else
-					setLog("Unable to navigate to dungeon.")
+					setLog("Unable to navigate to dungeon.", 1)
 					ExitLoop (2)
 				EndIf
 			EndIf
@@ -114,7 +114,7 @@ Func farmGolem()
 			EndIf
 
 			If checkLocations("battle-gem-full") = 1 Then
-				setLog("Gem inventory is full!")
+				setLog("Gem inventory is full!", 2)
 				ExitLoop (2)
 			EndIf
 
@@ -138,13 +138,7 @@ Func farmGolem()
 					If _Sleep(3000) Then ExitLoop (2)
 
 					If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
-						If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
-						If navigate("village", "manage") = 1 Then
-							sellGems($imagesUnwantedGems)
-						EndIf
-
-						clickImageUntil("misc-dungeon-energy", "map-battle", 50)
-						clickPointWait($map_coorBattle, "map-battle", 5)
+						If setLog("Gem inventory is full.", 2) Then ExitLoop (2)
 					EndIf
 
 					If checkLocations("refill") = 1 Then
@@ -159,10 +153,10 @@ Func farmGolem()
 
 							ControlSend($hWindow, "", "", "{ESC}")
 
-							setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem)
+							setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem, 0)
 							$intGemUsed += 30
 						Else
-							setLog("Gem used exceed max gems!")
+							setLog("Gem used exceed max gems!", 2)
 							ExitLoop
 						EndIf
 						clickPointWait($map_coorBattle, "map-battle", 5)
