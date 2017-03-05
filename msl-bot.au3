@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=msl-bot v1.7.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.7.2.0
+#AutoIt3Wrapper_Res_Fileversion=1.7.3.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
@@ -190,6 +190,7 @@ Func btnConfigEdit()
 	$iniRealMouse =  IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1);^
 	$iniOutput = IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1);^
 
+	GUICtrlSetData($listConfig, "")
 	GUICtrlSetData($listConfig, $generalConfig)
 EndFunc
 

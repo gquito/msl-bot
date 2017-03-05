@@ -22,7 +22,7 @@
 
 Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = True)
 	If waitLocation("map") = 1 Then
-		Dim $imgPoint = findImageWait($strImage, 2, 100)
+		Dim $imgPoint = findImageWait($strImage, 2, 50)
 
 		Local $errorCounter = 0
 
@@ -38,7 +38,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 			ControlSend($hWindow, "", "", "{LEFT}")
 			$errorCounter+=1
 
-			$imgPoint = findImageWait($strImage, 1, 100)
+			$imgPoint = findImageWait($strImage, 1, 50)
 		WEnd
 
 		;clicking map list and selecting difficulty
