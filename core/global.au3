@@ -11,6 +11,8 @@
 
 ;bot data
 	Global $boolRunning = False ;State of the bot.
+	Global $pointDebug1 = ["?", "?"] ;Point in debug1
+	Global $pointDebug2 = ["?", "?"] ;Point in debug2
 
 ;bitmaps
 	Global $hBitmap; Image for pixel functions.

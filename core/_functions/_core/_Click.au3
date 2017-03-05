@@ -26,7 +26,7 @@ Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500)
 	EndIf
 
 	For $i = 1 To $intNum
-		If GUICtrlRead($chkMouse) = 1 Then
+		If $iniRealMouse = 1 Then
 			WinActivate($hWindow)
 
 			Dim $desktopCoor = WinGetPos($hControl)

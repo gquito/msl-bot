@@ -11,8 +11,8 @@ Global $setLogOld = ""
 Func setLog($strStatus, $option = 0) ;0 is normal, 1 is unimportant, 2 is forced
 	If (Not $option = 2) And ($boolRunning = False) Then Return True
 
-	If GUICtrlRead($chkOutput) = 0 And $option = 1 Then Return 
-	
+	If $iniOutput = 0 And $option = 1 Then Return
+
 	_GUICtrlEdit_AppendText($textOutput, "[" & _NowTime(5) & "] " & $strStatus & @CRLF)
 	$setLogOld = GUICtrlRead($textOutput)
 	_Sleep(100)
@@ -30,6 +30,8 @@ EndFunc
 
 Func setLogReplace($strStatus, $option = 0) ;0 is normal, 1 is unimportant, 2 is forced
 	If (Not $option = 2) And ($boolRunning = False) Then Return True
+
+	If $iniOutput = 0 And $option = 1 Then Return
 
 	_GUICtrlEdit_SetText($textOutput, "")
 	_GUICtrlEdit_AppendText($textOutput, $setLogOld & "[" & _NowTime(5) & "] " & $strStatus & @CRLF)

@@ -1,31 +1,72 @@
+#Region ;**** Directives created by AutoIt3Wrapper_GUI ****
+#AutoIt3Wrapper_Icon=..\..\favicon.ico
+#AutoIt3Wrapper_Outfile=msl-bot v1.7.exe
 #AutoIt3Wrapper_UseX64=n
+#AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
+#AutoIt3Wrapper_Res_Fileversion=1.7.5.1
+#EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botVersion = IniRead(@ScriptDir & "/config.ini", "general", "version", "")
+Global $botVersionComplex = IniRead(@ScriptDir & "/config.ini", "general", "version-complex", "")
 Global $botName = IniRead(@ScriptDir & "/config.ini", "general", "title", "MSL Bot")
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "scripts", ""), ",", 2)
 
 ;defining globals
-Global $chkBackground ;checkbox, declare first to remove warning
-Global $chkMouse ;^
-Global $chkOutput ;^
 Global $strScript = "" ;script section
 Global $strConfig = "" ;all keys
+
+Global $iniBackground = IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1) ;checkbox, declare first to remove warning
+Global $iniRealMouse =  IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1);^
+Global $iniOutput = IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1);^
 
 #include "core/imports.au3"
 #include "core/gui.au3"
 
 _GDIPlus_Startup()
-GUICtrlSetState($chkBackground, IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1))
-GUICtrlSetState($chkOutput, IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1))
-GUICtrlSetState($chkMouse, IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1))
+GUICtrlSetData($lblVersion, "Current version: " & $botVersionComplex)
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
+
+Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "keys", ""), ",", 2)
+Dim $generalConfig = ""
+For $key In $arrayKeys
+	$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/config.ini", "general", $key, "???") & "|"
+Next
+GUICtrlSetData($listConfig, $generalConfig)
 
 ;importing scripts
 #include "script/imports.au3"
 
 ;Hotkeys =====================================
 HotKeySet("{END}", "hotkeyStopBot")
+HotKeySet("{F6}", "debugPoint1")
+HotKeySet("{F7}", "debugPoint2")
+
+Func debugPoint1()
+	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
+
+	$pointDebug1[0] = MouseGetPos(0) - WinGetPos($hControl)[0]
+	$pointDebug1[1] = MouseGetPos(1) - WinGetPos($hControl)[1]
+	If $pointDebug1[0] > 800 Or $pointDebug1[0] < 0 Or $pointDebug1[1] > 600 Or $pointDebug1[1] < 0 Then
+		$pointDebug1[0] = "?"
+		$pointDebug1[1] = "?"
+	EndIf
+
+	GUICtrlSetData($lblDebugCoordinations, "F6: (" & $pointDebug1[0] & ", " & $pointDebug1[1] & ") | F7: (" & $pointDebug2[0] & ", " & $pointDebug2[1] & ")")
+EndFunc
+
+Func debugPoint2()
+	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
+
+	$pointDebug2[0] = MouseGetPos(0) - WinGetPos($hControl)[0]
+	$pointDebug2[1] = MouseGetPos(1) - WinGetPos($hControl)[1]
+	If $pointDebug2[0] > 800 Or $pointDebug2[0] < 0 Or $pointDebug2[1] > 600 Or $pointDebug2[1] < 0 Then
+		$pointDebug2[0] = "?"
+		$pointDebug2[1] = "?"
+	EndIf
+
+	GUICtrlSetData($lblDebugCoordinations, "F6: (" & $pointDebug1[0] & ", " & $pointDebug1[1] & ") | F7: (" & $pointDebug2[0] & ", " & $pointDebug2[1] & ")")
+EndFunc
 
 Func hotkeyStopBot()
 	$boolRunning = False
@@ -55,7 +96,7 @@ Func btnRunClick()
 	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 
 	If $boolRunning = False Then ;starting bot
-		If GUICtrlRead($chkMouse) = 1 Then MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "You have real mouse on! You will not be able to use your mouse. To stop script press End key.")
+		If $iniRealMouse = 1 Then MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "You have real mouse on! You will not be able to use your mouse. To stop script press End key.")
 		$boolRunning = True
 
 		GUICtrlSetData($btnRun, "Stop")
@@ -64,17 +105,6 @@ Func btnRunClick()
 
 		GUICtrlSetData($btnRun, "Start")
 	EndIf
-EndFunc
-
-;function: btnAdjustClick()
-;-Adjusts most images for optimization for certain computers
-;pre:
-;	-no script must be running
-;post:
-;	-new images will be generated or replaced
-;author: GkevinOD(2017)
-Func btnAdjustClick()
-	MsgBox($MB_SYSTEMMODAL, $botName & " " & $botVersion, "Adjust is currently being worked on.")
 EndFunc
 
 ;function: frmMainClose
@@ -107,6 +137,61 @@ Func btnDebugTestCodeClick()
 	$boolRunning = True
 	Execute(GUICtrlRead($textDebugTestCode))
 	$boolRunning = False
+EndFunc
+
+;functon: btnConfigEdit
+;-Modify a config of the general config
+;pre:
+;	-no script must be running
+;author: GkevinOD (2017)
+Func btnConfigEdit()
+	;initial variables
+	Dim $strRaw = GUICtrlRead($listConfig)
+	Dim $arrayRaw = StringSplit($strRaw, "=", 2)
+
+	If UBound($arrayRaw) = 1 Then ;check if no config selected
+		MsgBox(0, $botName & " " & $botVersion, "No config selected.")
+		Return
+	EndIf
+
+	;getting keys and values to modify
+	Dim $key = $arrayRaw[0]
+	Dim $value = "!" ;temp value
+	Dim $boolPass = False ;if meets restriction
+
+	Dim $rawRestrictions = IniRead(@ScriptDir & "/config.ini", "general", $key & "-restrictions", "")
+	If Not $rawRestrictions = "" Then
+		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
+
+		While $value = "!"
+			$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'" & @CRLF & "You are limited to: " & StringReplace($rawRestrictions, ",", ", "))
+			If $value = "" Then $value = $arrayRaw[1]
+
+			For $element In $restrictions
+				If $element = $value Then ExitLoop(2)
+			Next
+			$value = "!"
+		WEnd
+	Else
+		$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'")
+		If $value = "" Then $value = $arrayRaw[1]
+	EndIf
+
+	;overwrite file
+	IniWrite(@ScriptDir & "/config.ini", "general", $key, $value)	;write to config file
+
+	Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "keys", ""), ",", 2)
+	Dim $generalConfig = ""
+	For $key In $arrayKeys
+		$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/config.ini", "general", $key, "???") & "|"
+	Next
+
+	$iniBackground = IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1) ;checkbox, declare first to remove warning
+	$iniRealMouse =  IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1);^
+	$iniOutput = IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1);^
+
+	GUICtrlSetData($listConfig, "")
+	GUICtrlSetData($listConfig, $generalConfig)
 EndFunc
 
 ;function: cmbLoadClick
@@ -184,27 +269,6 @@ Func btnEditClick()
 	cmbLoadClick()
 EndFunc
 
-;function: chkBackgroundClick()
-;-Overwrites config.ini file and updates new data.
-;author: GkevinOD (2017)
-Func chkBackgroundClick()
-	IniWrite(@ScriptDir & "/config.ini", "general", "background-mode", StringReplace(GUICtrlRead($chkBackGround), "4", "0"))
-EndFunc
-
-;function: chkOutputClick()
-;-Overwrites config.ini file and updates new data.
-;author: GkevinOD (2017)
-Func chkOutputClick()
-	IniWrite(@ScriptDir & "/config.ini", "general", "output-all-process", StringReplace(GUICtrlRead($chkOutput), "4", "0"))
-EndFunc
-
-;function: chkMouse()
-;-Overwrites config.ini file and updates new data.
-;author: GkevinOD (2017)
-Func chkMouse()
-	IniWrite(@ScriptDir & "/config.ini", "general", "real-mouse-mode", StringReplace(GUICtrlRead($chkMouse), "4", "0"))
-EndFunc
-
 ;function: chkDebugFindImageClick()
 ;-Intervals of 1/2 seconds, tries to find image within bluestacks window
 ;pre:
@@ -256,4 +320,14 @@ Func chkDebugLocationClick()
 		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())
 		Sleep(500);
 	WEnd
+EndFunc
+
+;function: btnCopyPointsClick()
+;-Copying points from lblDebugCoordinations to the Clipboard
+;post:
+;	-clipboard will change to coordinations of 0,0,0,0 (based on lblDebugCoordinations)
+;author: GkevinOD (2017)
+Func btnCopyPointsClick()
+	ClipPut($pointDebug1[0] & "," & $pointDebug1[1] & "," & $pointDebug2[0] & "," & $pointDebug2[1])
+	MsgBox($MB_OK, $botName & " " & $botVersion, "The coordinations have been saved to your Clipboard.")
 EndFunc
