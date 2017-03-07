@@ -29,7 +29,7 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 
 	While True
 		While True
-			If Not checkLocations("catch-mode") Then Return ""
+			If Not checkLocations("catch-mode") = 1 Then Return ""
 			If Not $boolTried Then setLogReplace("Locating astromon...", 1)
 			If isArray($varImages) Then ;finding astromon within list
 				_CaptureRegion()
@@ -41,11 +41,11 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 			If getLocation() = "battle-astromon-full" Then Return -1
 
 			If isArray($pointArray) = True Then ;if found
-				setLog("Found the astromon, attempting to catch...", 1)
-				While Not(getLocation() = "battle")
+				setLogReplace("Locating astromon... Found!", 1)
+				While checkLocations("battle") = 0
 					$boolTried = True ;indicate that catching was attempted
-					If checkLocations("battle-astromon-full") Then Return -1
-					If checkLocations("battle-end-exp", "battle-sell", "battle-end") Then Return $strCaught
+					If checkLocations("battle-astromon-full") = 1 Then Return -1
+					If checkLocations("battle-end-exp", "battle-sell", "battle-end") = 1 Then Return $strCaught
 
 					Local $checkCatch = findImages($imagesCatch, 50) ;checking if caught
 					If isArray($checkCatch) = True Then ;if caught
@@ -87,7 +87,8 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 					Return -2
 				EndIf
 
-				While Not checkLocations("battle") ;exit catch mode
+				setLogReplace("Locating astromon... Not found.", 1)
+				While checkLocations("battle") = 0 ;exit catch mode
 					If _Sleep(200) Then Return
 					clickPoint($battle_coorCatchCancel)
 				WEnd

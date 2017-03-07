@@ -68,6 +68,8 @@ Func farmAstromon()
 				WEnd
 
 				If _Sleep(10) Then ExitLoop
+
+				setLog("Attaking astromons..", 1)
 				clickPoint($battle_coorAuto, 2, 10)
 			Else
 				setLog("Out of astrochips, restarting..", 1)
