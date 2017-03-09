@@ -28,6 +28,7 @@ Func sellGems($arraySet)
 		While isArray(findImages($arraySet, 50)) = True
 			For $b = 0 To 136 Step 66
 				For $a = 0 To 460 Step 66
+					_CaptureRegion("", $x1+$a, $y1+$b, $x2+$a, $y2+$b)
 					If isArray(findImages($arraySet, 50)) = True Then
 						$gemCounter += 1
 						Local $point[2]
