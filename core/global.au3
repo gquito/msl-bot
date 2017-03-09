@@ -21,7 +21,6 @@
 ;image name arrays
 	Global $imagesRareAstromon = ["battle-legendary1", "battle-legendary2", "battle-super-rare", "battle-rare", "battle-variant", "battle-exotic"]
 	Global $imagesCatch = ["catch-normal-success", "catch-rare-success", "catch-super-rare-success", "catch-legendary-success"]
-	Global $imagesUnwantedGems = ["manage-one-star", "manage-two-star", "manage-three-star", "manage-four-star", "manage-new"]
 
 	Global $imagesGemGrades = ["gem-six-star", "gem-five-star", "gem-four-star", "gem-three-star", "gem-two-star", "gem-one-star"]
 	Global $imagesGemType = ["gem-conviction", "gem-ferocity", "gem-fortitude", "gem-healing", "gem-intuition", "gem-life", "gem-protection", "gem-ruin", "gem-tenacity", "gem-valor", "gem-vitality"]

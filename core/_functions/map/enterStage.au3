@@ -28,17 +28,19 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 
 		If setLog("Locating map stage.", 1) Then Return 0
 		While Not isArray($imgPoint)
-			If _Sleep(10) Then Return
 			If checkLocations("astroleague", "map-stage", "association") = 1 Then ControlSend($hWindow, "", "", "{ESC}")
 
-			If $errorCounter > 20 Then
+			If $errorCounter > 50 Then
 				Return 0
 			EndIf
 
 			ControlSend($hWindow, "", "", "{LEFT}")
 			$errorCounter+=1
 
-			$imgPoint = findImageWait($strImage, 1, 50)
+			If _Sleep(500) Then Return
+
+			_CaptureRegion()
+			$imgPoint = findImage($strImage, 100)
 		WEnd
 
 		;clicking map list and selecting difficulty
