@@ -37,7 +37,7 @@ BlueStacks Rooted 0.10.7.5601 (google that)
     - Copy the points with the button then use the Test Code to save the image. You clipboard should have #,#,#,# saved onto it.
     - On the Test Code:, type _CaptureRegion("/core/images/\<FOLDER>/\<IMAGENAME>.bmp", x1, y1, x2, y2)
       - Paste your points where it says x1, y1, x2, y2
-      
+      - Ex. _CaptureRegion("/core/images/location/location-village.bmp", 142, 50, 151, 53)
   - Use a third-party software such as Greenshot to replace the image.
   - Lastly just print screen and crop the portion you want.
 
