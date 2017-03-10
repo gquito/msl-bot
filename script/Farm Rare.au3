@@ -6,6 +6,7 @@
 ;author: GkevinOD
 Func farmRare()
 	;beginning script
+	setLog("*Report any issues/bugs in GitHub", 2)
 	setLog("*Loading config for Farm Rare.", 2)
 
 	;getting configs
@@ -13,6 +14,11 @@ Func farmRare()
 	Dim $guardian = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "guardian-dungeon", "0")
 	Dim $difficulty = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "difficulty", "normal")
 	Dim $captures[0] ;
+	Dim $sellGems = StringSplit(StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "sell-gems", "one star,two star, three star"), " ", "-"), ",", 2)
+	For $i = 0 To UBound($sellGems)-1
+		$sellGems[$i] = "manage-" & $sellGems[$i]
+	Next
+
 	Dim $intGem = Int(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "max-spend-gem", 0))
 	Dim $intGemUsed = 0
 
@@ -160,7 +166,10 @@ Func farmRare()
 			If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
 				If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
 				If navigate("village", "manage") = 1 Then
-					sellGems($imagesUnwantedGems)
+					navigate("village") ;removes the 'new' on the gems
+					If navigate("village", "manage") = 1 Then
+						sellGems($sellGems)
+					EndIf
 				EndIf
 			EndIf
 
@@ -181,7 +190,10 @@ Func farmRare()
 					If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
 						If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
 						If navigate("village", "manage") = 1 Then
-							sellGems($imagesUnwantedGems)
+							navigate("village") ;removes the 'new' on the gems
+							If navigate("village", "manage") = 1 Then
+								sellGems($sellGems)
+							EndIf
 						EndIf
 
 						clickImageUntil("misc-dungeon-energy", "map-battle", 50)

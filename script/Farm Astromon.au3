@@ -109,9 +109,16 @@ Func farmAstromon()
 
 		If _Sleep(10) Then ExitLoop
 		If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
-			If navigate("village", "manage") = 1 Then
-				sellGems($imagesUnwantedGems)
-			EndIf
+			setLog("Gem inventory is full", 1)
+			ExitLoop
+		EndIf
+
+		If checkLocations("lost-connection") = 1 Then
+			clickPoint($game_coorConnectionRetry)
+		EndIf
+
+		If checkLocations("dialogue") = 1 Then
+			clickPoint($game_coorDialogueSkip)
 		EndIf
 
 		If _Sleep(10) Then ExitLoop
