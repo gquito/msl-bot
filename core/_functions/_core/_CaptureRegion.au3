@@ -22,7 +22,9 @@ Func _CaptureRegion($strScreen = "", $iLeft = 0, $iTop = 0, $iRight = 800, $iBot
 	_WinAPI_DeleteObject($hHBitmap)
 
 	If $iniBackground = 1 Then
-		Local $iW = Number($iRight) - Number($iLeft), $iH = Number($iBottom) - Number($iTop)
+		Local $iW = Abs(Number($iRight) - Number($iLeft)), $iH = Abs(Number($iBottom) - Number($iTop))
+		If $iRight < $iLeft Then $iLeft = $iRight
+		If $iBottom < $iTop Then $iTop = $iBottom
 
 		Local $hDC_Capture = _WinAPI_GetWindowDC($hControl)
 		Local $hMemDC = _WinAPI_CreateCompatibleDC($hDC_Capture)
