@@ -76,8 +76,10 @@ Func farmRare()
 			If checkLocations("unknown") = 1 Then
 				clickPoint($game_coorTap)
 
-				_CaptureRegion()
-				clickPoint(findImageFiles("misc-close", 30)) ;to close any windows open
+				Local $closePoint = findImageFiles("misc-close", 30)
+				If isArray($closePoint) Then
+					clickPoint() ;to close any windows open
+				EndIf
 			EndIf
 
 			If checkLocations("battle-end") = 1 Then

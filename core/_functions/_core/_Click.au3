@@ -201,6 +201,44 @@ EndFunc
 
 #cs ----------------------------------------------------------------------------
 
+ Function: clickImageFiles
+
+ Clicks an image or the alternative image in the BlueStacks window.
+
+ Parameters:
+
+	strImage - The main image file to click without extension.
+
+	intTolerance - Tolerance for imagesearch
+
+	intNum - Number of times to click.
+
+	intDuration - Duration in between clicks in milliseconds.
+
+ Returns:
+
+	On Success - Returns 1
+
+	On Fail - Returns 0
+
+ See Also:
+
+	<clickPoint>
+	<clickPointWait>
+
+#ce ----------------------------------------------------------------------------
+
+Func clickImageFiles($strImage, $intTolerance = 10, $intNum = 1, $intDuration = 500)
+	Local $pointImage = findImageFiles($strImage, $intTolerance)
+
+	If isArray($pointImage) = False Then Return 0
+
+	clickPoint($pointImage, $intNum, $intDuration)
+	Return 1
+EndFunc
+
+#cs ----------------------------------------------------------------------------
+
  Function: clickImageUntil
 
  Clicks an image on the BlueStacks window until location is present

@@ -52,9 +52,24 @@ Func farmGolem()
 			GUICtrlSetData($listScript, $strData)
 
 			If checkLocations("battle-end") = 1 Then
+				If checkPixel($battle_pixelQuest) = True Then
+					If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop (2)
+					If navigate("village", "quests") = 1 Then
+						If setLog("Collecting quests.", 1) Then ExitLoop (3)
+						For $questTab In $village_coorArrayQuestsTab ;quest tabs
+							clickPoint(StringSplit($questTab, ",", 2))
+							While IsArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
+								If _Sleep(10) Then ExitLoop (5)
+								clickImage("misc-quests-get-reward", 100)
+							WEnd
+						Next
+					EndIf
+				EndIf
+
 				If $getHourly = True Then
-					getHourly()
-					$getHourly = False
+					If getHourly() = 1 Then
+						$getHourly = False
+					EndIf
 					If $getGuardian = True Then ExitLoop
 				Else
 					If $getGuardian = True Then
@@ -119,12 +134,21 @@ Func farmGolem()
 			EndIf
 
 			If checkLocations("defeat") = 1 Then
-				clickImage("battle-give-up")
+				clickImageFiles("battle-give-up")
 				clickPointUntil($game_coorTap, "battle-end", 20, 1000)
 			EndIf
 
 			If checkLocations("lost-connection") = 1 Then
 				clickPoint($game_coorConnectionRetry)
+			EndIf
+
+			If checkLocations("unknown") = 1 Then
+				clickPoint($game_coorTap)
+
+				Local $closePoint = findImageFiles("misc-close", 30)
+				If isArray($closePoint) Then
+					clickPoint() ;to close any windows open
+				EndIf
 			EndIf
 		WEnd
 
