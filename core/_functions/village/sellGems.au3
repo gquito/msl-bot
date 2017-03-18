@@ -25,11 +25,11 @@ Func sellGems($arraySet)
 		Local $y2 = 241
 
 		_CaptureRegion()
-		While isArray(findImages($arraySet, 50)) = True
+		While isArray(findImages($arraySet, 100)) = True
 			For $b = 0 To 136 Step 66
 				For $a = 0 To 460 Step 66
 					_CaptureRegion("", $x1+$a, $y1+$b, $x2+$a, $y2+$b)
-					If isArray(findImages($arraySet, 50)) = True Then
+					If isArray(findImages($arraySet, 100)) = True Then
 						$gemCounter += 1
 						Local $point[2]
 						$point[0] = $x1+20+$a

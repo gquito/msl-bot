@@ -1,9 +1,9 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=..\..\favicon.ico
-#AutoIt3Wrapper_Outfile=msl-bot v1.7.exe
+#AutoIt3Wrapper_Outfile=msl-bot v1.8.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.7.9.0
+#AutoIt3Wrapper_Res_Fileversion=1.8.0.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
@@ -290,19 +290,59 @@ Func chkDebugFindImageClick()
 
 		;process
 		If Not FileExists($strImageDir & $dirImage & ".bmp") Then
-			GUICtrlSetData($lblDebugImage, "Found: Non-Existent")
+			GUICtrlSetData($lblDebugImage, "Found: Non-Existent" & @CRLF & "Size: 0")
 		Else
 			_CaptureRegion()
 			Local $arrayPoints = findImage($strImage, 30)
 			If Not isArray($arrayPoints) Then ;if not found
-				GUICtrlSetData($lblDebugImage, "Found: 0")
+				GUICtrlSetData($lblDebugImage, "Found: 0" & @CRLF & "Size: 0")
 			Else
-				GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1])
+				Local $hImage = _GDIPlus_ImageLoadFromFile($strImageDir & $dirImage & ".bmp")
+				GUICtrlSetData($lblDebugImage, "Found: " & $arrayPoints[0] & ", " & $arrayPoints[1] & @CRLF & "Size: " & _GDIPlus_ImageGetWidth($hImage) & ", " & _GDIPlus_ImageGetHeight($hImage))
 			EndIf
 		EndIf
 
 		Sleep(500);
 	WEnd
+EndFunc
+
+;function: btnSetClick()
+;-If in debug, location is 'unknown' this button can set the location of the unknown.
+;pre:
+;	-location must be unknown.
+; 	-location input must exist.
+;post:
+;	-create an image to be the new location or alternative location
+;author: GkevinOD (2017)
+Func btnSetClick()
+	Local $strLocation = "unknown"
+	While $strLocation = "unknown"
+		$strLocation = InputBox($botName & " " & $botVersion, "Enter CURRENT location:" & @CRLF & @CRLF & "You are limited to: " & StringReplace($strKnownLocation, ",", ", "), "", default, default, 300)
+		If $strLocation = "" Then Return
+
+		For $element In StringSplit($strKnownLocation, ",", 2)
+			If $element = $strLocation Then ExitLoop(2)
+		Next
+		$strLocation = "unknown"
+	WEnd
+
+	Local $dim_location = StringSplit(Eval("dim_" & $strLocation), ",", 2)
+	Local $fileDir = "core\images\location\location-" & StringReplace($strLocation, "_", "-") ;no '.bmp'
+	Local $fileCounter = 2; to check if there is already alt file that exist
+
+	Local $intLeft = Int($dim_location[0]) - Int(Int($dim_location[2])/2)
+	Local $intTop = Int($dim_location[1]) - Ceiling(Int($dim_location[3])/2)
+	If FileExists($fileDir & ".bmp") Then
+		While FileExists($fileDir & $fileCounter & ".bmp")
+			$fileCounter += 1 ;increment and check if alt exists
+		WEnd
+		_CaptureRegion($fileDir & $fileCounter & ".bmp", $intLeft, $intTop, $intLeft+Int($dim_location[2]), $intTop+Int($dim_location[3]))
+		MsgBox(0, "", $fileDir & $fileCounter & ".bmp")
+	Else
+		_CaptureRegion($fileDir & ".bmp", $intLeft, $intTop, $intLeft+Int($dim_location[2]), $intTop+Int($dim_location[3]))
+	EndIf
+
+	MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "New location has been added. Test using the debug 'Location' to see if it worked.")
 EndFunc
 
 ;function: chkDebugLocationClick()
@@ -317,17 +357,43 @@ Func chkDebugLocationClick()
 	$hWindow = WinGetHandle("BlueStacks App Player")
 	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
 	While(GUICtrlRead($chkDebugLocation) = 1) ;if it is checked
+		GUICtrlSetState($btnSet, $GUI_DISABLE)
 		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())
 		Sleep(500);
 	WEnd
+
+	If getLocation() = "unknown" Then
+		GUICtrlSetState($btnSet, $GUI_ENABLE)
+	Else
+		GUICtrlSetState($btnSet, $GUI_DISABLE)
+	EndIf
 EndFunc
 
-;function: btnCopyPointsClick()
-;-Copying points from lblDebugCoordinations to the Clipboard
+;function: btnSaveImage()
+;-Save Image using the points given
 ;post:
-;	-clipboard will change to coordinations of 0,0,0,0 (based on lblDebugCoordinations)
+;	-create an image using points
 ;author: GkevinOD (2017)
-Func btnCopyPointsClick()
-	ClipPut($pointDebug1[0] & "," & $pointDebug1[1] & "," & $pointDebug2[0] & "," & $pointDebug2[1])
-	MsgBox($MB_OK, $botName & " " & $botVersion, "The coordinations have been saved to your Clipboard.")
+Func btnSaveImage()
+	Local $strImage = "unknown"
+	While $strImage = "unknown"
+		Local $strAvailableFolders = "battle,catch,gem,location,manage,map,misc"
+		$strImage = InputBox($botName & " " & $botVersion, "Enter image name:" & @CRLF & @CRLF & "The folder is limited to (FOLDER-IMAGENAME): " & StringReplace($strAvailableFolders, ",", ", "))
+		If $strImage = "" Then Return
+
+		For $element In StringSplit($strAvailableFolders, ",", 2)
+			If StringSplit($strImage, "-", 2)[0] = $element Then ExitLoop(2)
+		Next
+		$strImage = "unknown"
+	WEnd
+
+	Local $fileDir = "core\images\" & StringSplit($strImage, "-", 2)[0] & "\" & $strImage & ".bmp"
+	If FileExists($fileDir) Then
+		MsgBox($MB_ICONWARNING, $botName & " " & $botVersion, "File already exists! If you want to replace it, delete it from the folders and try again.")
+		Return
+	Else
+		_CaptureRegion($fileDir, $pointDebug1[0], $pointDebug1[1], $pointDebug2[0], $pointDebug2[1])
+	EndIf
+
+	MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "The image has been saved to: " & @CRLF & $fileDir)
 EndFunc
