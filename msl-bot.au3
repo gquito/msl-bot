@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=msl-bot v1.8.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.8.0.0
+#AutoIt3Wrapper_Res_Fileversion=1.8.1.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
@@ -387,13 +387,26 @@ Func btnSaveImage()
 		$strImage = "unknown"
 	WEnd
 
-	Local $fileDir = "core\images\" & StringSplit($strImage, "-", 2)[0] & "\" & $strImage & ".bmp"
-	If FileExists($fileDir) Then
-		MsgBox($MB_ICONWARNING, $botName & " " & $botVersion, "File already exists! If you want to replace it, delete it from the folders and try again.")
-		Return
-	Else
-		_CaptureRegion($fileDir, $pointDebug1[0], $pointDebug1[1], $pointDebug2[0], $pointDebug2[1])
+	Local $fileDir = "core\images\" & StringSplit($strImage, "-", 2)[0] & "\" & $strImage
+	If FileExists($fileDir & ".bmp") Then
+		#Region --- CodeWizard generated code Start ---
+		;MsgBox features: Title=Yes, Text=Yes, Buttons=Yes, No, and Cancel, Icon=Warning, Modality=System Modal
+		If Not IsDeclared("iMsgBoxAnswer") Then Local $iMsgBoxAnswer
+		$iMsgBoxAnswer = MsgBox(4147, $botName & " " & $botVersion, ' "' & $strImage & '" already exist! Do you want to make an alternative image?')
+		Select
+			Case $iMsgBoxAnswer = 6 ;Yes
+				Local $fileCounter = 2
+				While FileExists($fileDir & $fileCounter & ".bmp")
+					$fileCounter += 1 ;increment until file does not exist
+				WEnd
+				$fileDir = $fileDir & $fileCounter
+			Case $iMsgBoxAnswer = 7 ;No
+				Return null
+			Case $iMsgBoxAnswer = 2 ;Cancel
+				Return null
+		EndSelect
+		#EndRegion --- CodeWizard generated code End ---
 	EndIf
-
-	MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "The image has been saved to: " & @CRLF & $fileDir)
+	_CaptureRegion($fileDir & ".bmp", $pointDebug1[0], $pointDebug1[1], $pointDebug2[0], $pointDebug2[1])
+	MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "The image has been saved to: " & @CRLF & $fileDir & ".bmp")
 EndFunc

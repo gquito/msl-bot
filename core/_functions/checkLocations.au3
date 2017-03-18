@@ -16,9 +16,9 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func checkLocations($strLoc1, $strLoc2 = "", $strLoc3 = "", $strLoc4 = "", $strLoc5 = "", $strLoc6 = "", $strLoc7 = "", $strLoc8 = "", $strLoc9 = "", $strLoc10 = "")
+Func checkLocations($strLoc1, $strLoc2 = "", $strLoc3 = "", $strLoc4 = "", $strLoc5 = "", $strLoc6 = "", $strLoc7 = "", $strLoc8 = "", $strLoc9 = "", $strLoc10 = "", $strLoc11 = "", $strLoc12 = "", $strLoc13 = "", $strLoc14 = "", $strLoc15 = "")
 	;traverse through parameters
-	For $intLoc = 1 To 10
+	For $intLoc = 1 To 15
 		If getLocation() = Eval("strLoc" & $intLoc) Then Return 1
 		If Eval("strLoc" & $intLoc) = "" Then Return 0
 	Next

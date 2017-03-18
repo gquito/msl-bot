@@ -57,7 +57,7 @@ Func farmRare()
 			If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
 
 			If _Sleep(100) Then ExitLoop (2) ;to stop farming
-			If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan") = 1 Then
+			If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan", "esc", "inbox") = 1 Then
 				If setLog("Going into battle...", 1) Then ExitLoop (2)
 				If navigate("map") = 1 Then
 					If enterStage($map, $difficulty, True, True) = 0 Then
@@ -75,6 +75,9 @@ Func farmRare()
 
 			If checkLocations("unknown") = 1 Then
 				clickPoint($game_coorTap)
+
+				_CaptureRegion()
+				clickPoint(findImageFiles("misc-close", 30)) ;to close any windows open
 			EndIf
 
 			If checkLocations("battle-end") = 1 Then
@@ -102,8 +105,9 @@ Func farmRare()
 						EndIf
 
 						If $getHourly = True Then
-							getHourly()
-							$getHourly = False
+							If getHourly() = 1 Then
+								$getHourly = False
+							EndIf
 						EndIf
 
 						navigate("map")
@@ -166,9 +170,13 @@ Func farmRare()
 			If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
 				If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
 				If navigate("village", "manage") = 1 Then
-					navigate("village") ;removes the 'new' on the gems
-					If navigate("village", "manage") = 1 Then
-						sellGems($sellGems)
+					ControlSend($hWindow, "", "", "{ESC}")
+					clickPointWait($village_coorManage, "monsters")
+
+					navigate("village", "manage")
+					Local $soldGems = sellGems($sellGems)
+					If Not $soldGems = -1 Then
+						If setLog("Sold " & $soldGems & " gems!", 1) Then ExitLoop (2)
 					EndIf
 				EndIf
 			EndIf
@@ -190,10 +198,11 @@ Func farmRare()
 					If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
 						If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
 						If navigate("village", "manage") = 1 Then
-							navigate("village") ;removes the 'new' on the gems
-							If navigate("village", "manage") = 1 Then
-								sellGems($sellGems)
-							EndIf
+							ControlSend($hWindow, "", "", "{ESC}")
+							clickPointWait($village_coorManage, "monsters")
+
+							navigate("village", "manage")
+							sellGems($sellGems)
 						EndIf
 
 						clickImageUntil("misc-dungeon-energy", "map-battle", 50)

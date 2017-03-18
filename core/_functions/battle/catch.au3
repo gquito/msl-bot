@@ -47,10 +47,10 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 					If checkLocations("battle-astromon-full") = 1 Then Return -1
 					If checkLocations("battle-end-exp", "battle-sell", "battle-end") = 1 Then Return $strCaught
 
-					Local $checkCatch = findImages($imagesCatch, 50) ;checking if caught
+					Local $checkCatch = findImagesWait($imagesCatch, 2, 70) ;checking if caught
 					If isArray($checkCatch) = True Then ;if caught
 						$strAstromonGrade = _StringProper(StringRegExpReplace(StringReplace(StringReplace(StringReplace($varImages[$pointArray[2]], "catch-", ""), "battle-", ""), "-", " "), "[0-9]", ""))
-						$strCaught &= $strAstromonGrade
+						$strCaught &= StringMid($strAstromonGrade, 0, 2)
 
 						If $boolLog = True Then setLog("*Caught: " & $strAstromonGrade & "!")
 						waitLocation("battle")

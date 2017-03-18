@@ -17,6 +17,7 @@ Func getLocation()
 	If isArray(findImageFiles("location-manage")) Then Return "manage"
 	If isArray(findImageFiles("location-monsters")) = True Then Return "monsters"
 	If isArray(findImageFiles("location-quests")) = True Then Return "quests"
+	If isArray(findImageFiles("location-esc")) = True Then Return "esc"
 
 	If isArray(findImageFiles("location-village")) = True Then Return "village"
 
