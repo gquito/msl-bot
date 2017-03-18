@@ -53,4 +53,4 @@ BlueStacks Rooted 0.10.7.5601 (google that)
     
 ### License
 
-This project is licensed under the terms of [GPL-3.0 Open Source License] (https://github.com/GkevinOD/msl-bot/blob/master/LICENSE).
+This project is licensed under the terms of [GPL-3.0 Open Source License](https://github.com/GkevinOD/msl-bot/blob/master/LICENSE).
