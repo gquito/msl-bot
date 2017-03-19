@@ -71,7 +71,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 
 		;applying autobattle mode
 		If $boolAuto = True Then
-			clickPointWait($map_pixelAutoBattle20xUnchecked, "map-battle", 5)
+			clickPointUntil($map_pixelAutoBattle20xUnchecked, "autobattle-prompt", 5)
 			clickPointWait($map_coorConfirmAutoBattle, "autobattle-prompt", 5)
 		EndIf
 

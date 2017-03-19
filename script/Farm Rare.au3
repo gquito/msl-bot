@@ -10,6 +10,12 @@ Func farmRare()
 	setLog("*Loading config for Farm Rare.", 2)
 
 	;getting configs
+	Dim $intStartTime = TimerInit()
+	Dim $intTimeElapse = 0;
+
+	Dim $intCheckStartTime; check if stuck
+	Dim $intCheckTime; check if stuck
+
 	Dim $map = "map-" & StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "map", "phantom forest"), " ", "-")
 	Dim $guardian = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "guardian-dungeon", "0")
 	Dim $difficulty = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "difficulty", "normal")
@@ -51,8 +57,10 @@ Func farmRare()
 
 	While True
 		While True
+			$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
+
 			GUICtrlSetData($listScript, "")
-			GUICtrlSetData($listScript, "~Farm Rare Data~|Total Runs: " & $dataRuns & "|Total Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem))
+			GUICtrlSetData($listScript, "~Farm Rare Data~|Total Runs: " & $dataRuns & "|Total Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Total Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
 
 			If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
 
@@ -78,11 +86,12 @@ Func farmRare()
 
 				Local $closePoint = findImageFiles("misc-close", 30)
 				If isArray($closePoint) Then
-					clickPoint() ;to close any windows open
+					clickPoint($closePoint) ;to close any windows open
 				EndIf
 			EndIf
 
 			If checkLocations("battle-end") = 1 Then
+				$intCheckStartTime = 0
 				clickPoint($game_coorTap, 5)
 				If waitLocation("unknown", 10) = 0 Then
 					While True
@@ -141,6 +150,12 @@ Func farmRare()
 			EndIf
 
 			If checkLocations("battle") = 1 Then
+				$intCheckTime = Int(TimerDiff($intCheckStartTime) / 1000)
+				If (Not $intCheckStartTime = 0) And ($intCheckTime > 180) Then
+					If setLog("Battle has not finished in 3 minutes! Attacking..", 1) Then ExitLoop (2)
+					clickPoint($battle_coorAuto)
+				EndIf
+
 				If IsArray(findImagesWait($imagesRareAstromon, 5, 100)) Then
 					$dataEncounter += 1
 					If setLog("An astromon has been found!", 1) Then ExitLoop (2)
@@ -166,6 +181,7 @@ Func farmRare()
 						If setLog("Unable to catch astromons, out of astrochips.", 1) Then ExitLoop (2)
 						clickPoint($battle_coorAuto)
 					EndIf
+					$intCheckStartTime = TimerInit()
 				EndIf
 			EndIf
 
@@ -177,9 +193,7 @@ Func farmRare()
 
 					navigate("village", "manage")
 					Local $soldGems = sellGems($sellGems)
-					If Not $soldGems = -1 Then
-						If setLog("Sold " & $soldGems & " gems!", 1) Then ExitLoop (2)
-					EndIf
+					If setLog("Sold " & $soldGems & " gems!", 1) Then ExitLoop (2)
 				EndIf
 			EndIf
 

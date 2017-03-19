@@ -75,10 +75,12 @@ Func farmGolem()
 					If $getGuardian = True Then
 						ExitLoop
 					Else
-						clickImageUntil("battle-quick-restart", "battle")
-						$intRunCount += 1
+						If checkLocations("battle-end") = 1 Then
+							clickImageUntil("battle-quick-restart", "battle")
+							$intRunCount += 1
 
-						If checkLocations("battle-end") Then navigate("map")
+							If checkLocations("battle-end") Then navigate("map")
+						EndIf
 					EndIf
 				EndIf
 			EndIf
@@ -147,7 +149,7 @@ Func farmGolem()
 
 				Local $closePoint = findImageFiles("misc-close", 30)
 				If isArray($closePoint) Then
-					clickPoint() ;to close any windows open
+					clickPoint($closePoint) ;to close any windows open
 				EndIf
 			EndIf
 		WEnd

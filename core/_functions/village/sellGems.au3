@@ -19,25 +19,17 @@
 Func sellGems($arraySet)
 	If checkLocations("manage") = 1 Then
 		Local $gemCounter = 0
+		Local $foundGem = findImages($arraySet, 100)
+		While isArray($foundGem) = True
+			clickPoint(findImages($arraySet, 100), 1, 100)
 
-		While isArray(findImages($arraySet, 100)) = True
-			For $imageGem In $arraySet
-				Local $arrayGem = findImage($imageGem, 100)
-				While isArray($arrayGem) = True
-					$gemCounter += 1
-					clickPoint($arrayGem, 1, 100)
-					_CaptureRegion()
-					$arrayGem = findImage($arraySet, 100)
-				WEnd
-			Next
-
-			If $gemCounter > 0 Then
-				clickPoint($village_coorSell)
-				clickPoint($village_coorSellConfirm)
-			EndIf
+			clickPoint($village_coorSell)
+			clickPoint($village_coorSellConfirm)
+			$gemCounter += 1
 
 			waitLocation("manage")
 			_CaptureRegion()
+			$foundGem = findImages($arraySet, 100)
 		WEnd
 
 		Return $gemCounter
