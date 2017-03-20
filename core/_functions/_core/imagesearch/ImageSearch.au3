@@ -84,7 +84,6 @@ EndFunc   ;==>_ImageSearchArea
 ;===============================================================================
 Func _ImagesSearch($findImage, $resultPosition, ByRef $x, ByRef $y, $tolerance = 30, $HBMP = $hHBitmap)
 	For $i = 0 To UBound($findImage)-1
-		If _Sleep(100) Then Return
 		$result = _ImageSearch($findImage[$i], $resultPosition, $x, $y, $tolerance, $HBMP)
 		If $result > 0 Then
 			Return $i

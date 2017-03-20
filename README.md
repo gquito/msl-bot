@@ -31,18 +31,19 @@ BlueStacks Rooted 0.10.7.5601 (google that)
 ### Optimizing the image recognition for the bot
 - If certain locations or objects are not recognized within game you will need to replace them.
 
+- To replace or create alternative images for locations:
+   - Using the Location checkbox, check it and see if the location is 'unknown'
+   - If it is 'unknown' then uncheck and the 'Set Location' button will be enabled.
+   - Enter whichever location the screen is suppose to be.
+      - There is a list of the available locations you can enter.
+   - Test the location again. If it does not work create an issue on this GitHub.
+
 - To replace an image you can use various methods:
   - The bot has a debug tab in which you can use to replace images.
     - Use F6 to target the top-left of the image you want to save, F7 for the bottom-right.
-    - Copy the points with the button then use the Test Code to save the image. You clipboard should have #,#,#,# saved onto it.
-    - On the Test Code:, type _CaptureRegion("/core/images/\<FOLDER>/\<IMAGENAME>.bmp", x1, y1, x2, y2)
-      - Paste your points where it says x1, y1, x2, y2
-      - Ex. _CaptureRegion("/core/images/location/location-village.bmp", 142, 50, 151, 53)
+    - Use 'Save Image As' button to save image in a certain folder. Format: [folder]-[imagename]
   - Use a third-party software such as Greenshot to replace the image.
   - Lastly just print screen and crop the portion you want.
-
-- Within the folders: core/images/... All images that the bot uses fall into the different folders. 
-  - Locations are most important so to replace those, you can find where the existing images are in the game and capture a static images distinct to that scene. Ex: In the village (airship) location, the compass (on-going events) is a static image which the bot looks for to identify the village location.
   
 - When running Farm Rare script, the bot will not attack the rares that show up.
   - If it gets stuck on the battle screen with a rare, you must replace the images that recognize the rares. The folder location is located in core/images/battle/.. Ex: battle-rare, battle-super-rare..
@@ -52,4 +53,4 @@ BlueStacks Rooted 0.10.7.5601 (google that)
     
 ### License
 
-This project is licensed under the terms of [GPL-3.0 Open Source License] (https://github.com/GkevinOD/msl-bot/blob/master/LICENSE).
+This project is licensed under the terms of [GPL-3.0 Open Source License](https://github.com/GkevinOD/msl-bot/blob/master/LICENSE).

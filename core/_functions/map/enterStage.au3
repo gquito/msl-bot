@@ -40,11 +40,11 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 			If _Sleep(500) Then Return
 
 			_CaptureRegion()
-			$imgPoint = findImage($strImage, 100)
+			$imgPoint = findImageFiles($strImage, 100)
 		WEnd
 
 		;clicking map list and selecting difficulty
-		clickPointUntil($imgPoint, "map-stage", 5, 2000)
+		clickPointUntil(findImageFiles($strImage, 100), "map-stage", 5, 2000)
 		Switch $strMode
 			Case "normal" ;Normal
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Normal.", 1)
@@ -71,7 +71,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 
 		;applying autobattle mode
 		If $boolAuto = True Then
-			clickPointWait($map_pixelAutoBattle20xUnchecked, "map-battle", 5)
+			clickPointUntil($map_pixelAutoBattle20xUnchecked, "autobattle-prompt", 5)
 			clickPointWait($map_coorConfirmAutoBattle, "autobattle-prompt", 5)
 		EndIf
 

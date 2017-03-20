@@ -10,6 +10,12 @@ Func farmRare()
 	setLog("*Loading config for Farm Rare.", 2)
 
 	;getting configs
+	Dim $intStartTime = TimerInit()
+	Dim $intTimeElapse = 0;
+
+	Dim $intCheckStartTime; check if stuck
+	Dim $intCheckTime; check if stuck
+
 	Dim $map = "map-" & StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "map", "phantom forest"), " ", "-")
 	Dim $guardian = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "guardian-dungeon", "0")
 	Dim $difficulty = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "difficulty", "normal")
@@ -51,13 +57,15 @@ Func farmRare()
 
 	While True
 		While True
+			$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
+
 			GUICtrlSetData($listScript, "")
-			GUICtrlSetData($listScript, "~Farm Rare Data~|Total Runs: " & $dataRuns & "|Total Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem))
+			GUICtrlSetData($listScript, "~Farm Rare Data~|Total Runs: " & $dataRuns & "|Total Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Total Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
 
 			If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
 
 			If _Sleep(100) Then ExitLoop (2) ;to stop farming
-			If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan") = 1 Then
+			If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan", "esc", "inbox") = 1 Then
 				If setLog("Going into battle...", 1) Then ExitLoop (2)
 				If navigate("map") = 1 Then
 					If enterStage($map, $difficulty, True, True) = 0 Then
@@ -75,9 +83,15 @@ Func farmRare()
 
 			If checkLocations("unknown") = 1 Then
 				clickPoint($game_coorTap)
+
+				Local $closePoint = findImageFiles("misc-close", 30)
+				If isArray($closePoint) Then
+					clickPoint($closePoint) ;to close any windows open
+				EndIf
 			EndIf
 
 			If checkLocations("battle-end") = 1 Then
+				$intCheckStartTime = 0
 				clickPoint($game_coorTap, 5)
 				If waitLocation("unknown", 10) = 0 Then
 					While True
@@ -102,8 +116,9 @@ Func farmRare()
 						EndIf
 
 						If $getHourly = True Then
-							getHourly()
-							$getHourly = False
+							If getHourly() = 1 Then
+								$getHourly = False
+							EndIf
 						EndIf
 
 						navigate("map")
@@ -135,6 +150,12 @@ Func farmRare()
 			EndIf
 
 			If checkLocations("battle") = 1 Then
+				$intCheckTime = Int(TimerDiff($intCheckStartTime) / 1000)
+				If (Not $intCheckStartTime = 0) And ($intCheckTime > 180) Then
+					If setLog("Battle has not finished in 3 minutes! Attacking..", 1) Then ExitLoop (2)
+					clickPoint($battle_coorAuto)
+				EndIf
+
 				If IsArray(findImagesWait($imagesRareAstromon, 5, 100)) Then
 					$dataEncounter += 1
 					If setLog("An astromon has been found!", 1) Then ExitLoop (2)
@@ -160,16 +181,19 @@ Func farmRare()
 						If setLog("Unable to catch astromons, out of astrochips.", 1) Then ExitLoop (2)
 						clickPoint($battle_coorAuto)
 					EndIf
+					$intCheckStartTime = TimerInit()
 				EndIf
 			EndIf
 
 			If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
 				If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
 				If navigate("village", "manage") = 1 Then
-					navigate("village") ;removes the 'new' on the gems
-					If navigate("village", "manage") = 1 Then
-						sellGems($sellGems)
-					EndIf
+					ControlSend($hWindow, "", "", "{ESC}")
+					clickPointWait($village_coorManage, "monsters")
+
+					navigate("village", "manage")
+					Local $soldGems = sellGems($sellGems)
+					If setLog("Sold " & $soldGems & " gems!", 1) Then ExitLoop (2)
 				EndIf
 			EndIf
 
@@ -190,10 +214,11 @@ Func farmRare()
 					If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
 						If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
 						If navigate("village", "manage") = 1 Then
-							navigate("village") ;removes the 'new' on the gems
-							If navigate("village", "manage") = 1 Then
-								sellGems($sellGems)
-							EndIf
+							ControlSend($hWindow, "", "", "{ESC}")
+							clickPointWait($village_coorManage, "monsters")
+
+							navigate("village", "manage")
+							sellGems($sellGems)
 						EndIf
 
 						clickImageUntil("misc-dungeon-energy", "map-battle", 50)

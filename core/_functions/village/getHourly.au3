@@ -1,11 +1,18 @@
 ;function: getHourly()
 ;-Goes into village and gets hourly rewards
 ;author: GkevinOD (2017)
+;returns:
+;	-if success: return 1
+;	-if fail: return 0
 
 Func getHourly()
 	If navigate("village") = 1 Then
 		If setLog("Collecting hourly rewards..", 1) Then Return
 		Local $posVillage = null; The village position
+
+		While navigate("village") = 0
+			If _Sleep(2000) Then Return 0
+		WEnd
 
 		_CaptureRegion()
 		If isArray(findImage("misc-village-pos1", 50)) Then
@@ -26,9 +33,9 @@ Func getHourly()
 		For $i = 0 To 2 ;collecting the rewards
 			If _Sleep(100) Then Return
 			clickPointUntilImage(StringSplit($arrayCoor[$i], ",", 2), "misc-hourly", 10, 1000)
-			clickImage("misc-hourly")
+			clickImage("misc-hourly", 30)
 
-			Local $checkRecommended = findImage("misc-close")
+			Local $checkRecommended = findImageFiles("misc-close", 30)
 			If isArray($checkRecommended) Then
 				clickImage($checkRecommended)
 				$i -= 1
@@ -46,4 +53,5 @@ Func getHourly()
 	EndIf
 
 	setLog("Complete collecting hourly rewards.", 1)
+	Return 1
 EndFunc
