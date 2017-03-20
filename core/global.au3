@@ -36,8 +36,8 @@ Global $dim_association = "106,273,98,27"
 Global $dim_astroleague = "96,464,86,10"
 Global $dim_autobattle_prompt = "400,195,118,11"
 Global $dim_battle = "33,338,25,10"
-Global $dim_battle_astromon_full;
-Global $dim_battle_gem_full = "313,227,33,9";
+Global $dim_battle_astromon_full = "398,239,293,7"
+Global $dim_battle_gem_full = "313,227,33,9"
 Global $dim_battle_end = "399,396,9,18"
 Global $dim_battle_end_exp = "246,330,38,14"
 Global $dim_battle_sell = "405,467,53,45"
@@ -56,8 +56,8 @@ Global $dim_manage = "748,456,22,130"
 Global $dim_map = "450,18,16,20"
 Global $dim_map_battle = "149,384,262,7"
 Global $dim_map_stage = "738,199,61,9"
-Global $dim_map_astromon_full;
-Global $dim_map_gem_full = "311,230,106,6";
+Global $dim_map_astromon_full = "340,230,179,8"
+Global $dim_map_gem_full = "311,230,106,6"
 Global $dim_monsters = "747,507,62,15"
 Global $dim_pause = "40,508,1,15"
 Global $dim_quests = "70,220,30,144"
