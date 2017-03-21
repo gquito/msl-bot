@@ -44,20 +44,22 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 		WEnd
 
 		;clicking map list and selecting difficulty
-		clickPointUntil(findImageFiles($strImage, 100), "map-stage", 5, 2000)
+		clickPoint($imgPoint, 1, 2000, False)
+
+		If checkLocations("map-stage") = 0 Then Return 0
 		Switch $strMode
 			Case "normal" ;Normal
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Normal.", 1)
-				clickPoint($map_coorMode)
-				clickPoint($map_coorNormal)
+				clickPoint($map_coorMode, 1, 500, False)
+				clickPoint($map_coorNormal, 1, 500, False)
 			Case "hard" ;Hard
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Hard.", 1)
-				clickPoint($map_coorMode)
-				clickPoint($map_coorHard)
+				clickPoint($map_coorMode, 1, 500, False)
+				clickPoint($map_coorHard, 1, 500, False)
 			Case "extreme" ;Extreme
 				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Extreme.", 1)
-				clickPoint($map_coorMode)
-				clickPoint($map_coorExtreme)
+				clickPoint($map_coorMode, 1, 500, False)
+				clickPoint($map_coorExtreme, 1, 500, False)
 			Case Else
 				If $boolLog Then setLog("Input error: " & $strMode & " not within 1-3 modes.", 1)
 				Return 0

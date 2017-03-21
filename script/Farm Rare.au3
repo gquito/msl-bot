@@ -154,9 +154,10 @@ Func farmRare()
 				If (Not $intCheckStartTime = 0) And ($intCheckTime > 180) Then
 					If setLog("Battle has not finished in 3 minutes! Attacking..", 1) Then ExitLoop (2)
 					clickPoint($battle_coorAuto)
+					$intCheckStartTime = TimerInit() ;reset timer
 				EndIf
 
-				If IsArray(findImagesWait($imagesRareAstromon, 5, 100)) Then
+				If IsArray(findImagesFilesWait($imagesRareAstromon, 5, 100)) Then
 					$dataEncounter += 1
 					If setLog("An astromon has been found!", 1) Then ExitLoop (2)
 					waitLocation("battle")

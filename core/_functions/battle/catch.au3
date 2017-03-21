@@ -42,32 +42,35 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 
 			If isArray($pointArray) = True Then ;if found
 				setLogReplace("Locating astromon... Found!", 1)
+				$strAstromonGrade = _StringProper(StringRegExpReplace(StringReplace(StringReplace(StringReplace($varImages[$pointArray[2]], "catch-", ""), "battle-", ""), "-", " "), "[0-9]", ""))
 				While checkLocations("battle") = 0
 					$boolTried = True ;indicate that catching was attempted
 					If checkLocations("battle-astromon-full") = 1 Then Return -1
 					If checkLocations("battle-end-exp", "battle-sell", "battle-end") = 1 Then Return $strCaught
 
-					If isArray(findImages($imagesCatch, 100)) = True Then ;if caught
-						$strAstromonGrade = _StringProper(StringRegExpReplace(StringReplace(StringReplace(StringReplace($varImages[$pointArray[2]], "catch-", ""), "battle-", ""), "-", " "), "[0-9]", ""))
-						$strCaught &= StringMid($strAstromonGrade, 1, 2)
-
-						If $boolLog = True Then setLog("Astromon Caught: " & $strAstromonGrade & "!")
-						waitLocation("battle")
-					EndIf
-
 					If _Sleep(100) Then Return
 					clickPoint($pointArray, 1, 0)
 				WEnd
 
-				If $boolOneAstromon Then Return $strCaught ;stops after one catch or no catch
 				If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
+					$strCaught &= StringMid($strAstromonGrade, 1, 2)
+					If $boolLog = True Then setLog("Astromon Caught: " & $strAstromonGrade & "!")
+					If $boolOneAstromon Then Return $strCaught ;stops after one catch or no catch
+
+					If $boolLog = True Then setLog("Checking for more astromons..", 1)
 					navigate("battle", "catch-mode")
 					ExitLoop ;going back to inner loop to check for more astromon
 				Else
-					If $boolLog = True Then setLog("Out of astromon chips!", 1)
+					If $boolLog = True Then setLog("Checking if caught...", 1)
+					If IsArray(findImagesFilesWait($imagesRareAstromon, 30, 100)) Then
+						If $boolLog = True Then setLog("Out of astromon chips!", 1)
+						If $boolLog = True Then setLog("Missed a " & $strAstromonGrade & ".", 1) ;if missed astromon
+					Else
+						$strCaught &= StringMid($strAstromonGrade, 1, 2)
+						If $boolLog = True Then setLog("Astromon Caught: " & $strAstromonGrade & "!")
+						If $boolOneAstromon Then Return $strCaught ;stops after one catch or no catch
+					EndIf
 
-					$strAstromonGrade = _StringProper(StringRegExpReplace(StringReplace(StringReplace(StringReplace($varImages[$pointArray[2]], "catch-", ""), "battle-", ""), "-", " "), "[0-9]", ""))
-					If $boolLog = True Then setLog("Missed a " & $strAstromonGrade & ".", 1) ;if missed astromon
 					Return $strCaught
 				EndIf
 			Else

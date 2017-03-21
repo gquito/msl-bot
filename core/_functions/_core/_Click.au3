@@ -19,7 +19,7 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500)
+Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500, $boolRandom = True)
 	If Not isArray($coorPoint) Then
 		setLog("Error (clickPoint): variable passed in is not an Array.")
 		Return
@@ -30,9 +30,17 @@ Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500)
 			WinActivate($hWindow)
 
 			Dim $desktopCoor = WinGetPos($hControl)
-			MouseClick("left", $desktopCoor[0]+$coorPoint[0]+Random(0, 5, 1), $desktopCoor[1]+$coorPoint[1]+Random(0, 5, 1), 1, 0)
+			If $boolRandom = True Then
+				MouseClick("left", $desktopCoor[0]+$coorPoint[0]+Random(0, 5, 1), $desktopCoor[1]+$coorPoint[1]+Random(0, 5, 1), 1, 0)
+			Else
+				MouseClick("left", $desktopCoor[0]+$coorPoint[0], $desktopCoor[1]+$coorPoint[1], 1, 0)
+			EndIf
 		Else
-			ControlClick($hWindow, "", "", "left", 1, $coorPoint[0]+Random(0, 5, 1), $coorPoint[1]+Random(0, 5, 1))
+			If $boolRandom = True Then
+				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0]+Random(0, 5, 1), $coorPoint[1]+Random(0, 5, 1))
+			Else
+				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+			EndIf
 		EndIf
 
 		If _Sleep($intDuration) Then Return
@@ -63,16 +71,14 @@ EndFunc
 #ce ----------------------------------------------------------------------------
 
 Func clickPointUntil($coorPoint, $strLocation, $intNum = 5, $intDuration = 2000)
-	$startTime = TimerInit()
-	While TimerDiff($startTime) < $intNum*$intDuration
-		If _Sleep(100) Then Return
-		If (getLocation() = $strLocation) = False Then
-			clickPoint($coorPoint, 1, 0)
-			If _Sleep($intDuration) Then Return
-		Else
-			Return 1
-		EndIf
-	WEnd
+	For $numClick = 0 To $intNum-1
+		clickPoint($coorPoint, 1, 0)
+		Local $startTime = TimerInit()
+		While TimerDiff($startTime) < $intDuration
+			If _Sleep(50) Then Return 0
+			If checkLocations($strLocation) = 1 Then Return 1
+		WEnd
+	Next
 	Return 0
 EndFunc
 
@@ -100,17 +106,15 @@ EndFunc
 #ce ----------------------------------------------------------------------------
 
 Func clickPointUntilImage($coorPoint, $strImage, $intNum = 5, $intDuration = 2000)
-	$startTime = TimerInit()
-	While TimerDiff($startTime) < $intNum*$intDuration
-		If _Sleep(100) Then Return
-		_CaptureRegion()
-		If isArray(findImage($strImage)) = False Then
-			clickPoint($coorPoint, 1, 0)
-			If _Sleep($intDuration) Then Return
-		Else
-			Return 1
-		EndIf
-	WEnd
+	For $numClick = 0 To $intNum-1
+		clickPoint($coorPoint, 1, 0)
+		Local $startTime = TimerInit()
+		While TimerDiff($startTime) < $intDuration
+			If _Sleep(50) Then Return 0
+			_CaptureRegion()
+			If isArray(findImage($strImage)) = True Then Return 1
+		WEnd
+	Next
 	Return 0
 EndFunc
 
