@@ -64,7 +64,9 @@ Func farmGolem()
 							WEnd
 						Next
 					EndIf
+					navigate("map") ;go back to map to repeat golem process
 				EndIf
+
 
 				If $getHourly = True Then
 					If getHourly() = 1 Then

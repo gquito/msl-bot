@@ -19,7 +19,7 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500)
+Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500, $boolRandom = True)
 	If Not isArray($coorPoint) Then
 		setLog("Error (clickPoint): variable passed in is not an Array.")
 		Return
@@ -30,9 +30,17 @@ Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500)
 			WinActivate($hWindow)
 
 			Dim $desktopCoor = WinGetPos($hControl)
-			MouseClick("left", $desktopCoor[0]+$coorPoint[0]+Random(0, 5, 1), $desktopCoor[1]+$coorPoint[1]+Random(0, 5, 1), 1, 0)
+			If $boolRandom = True Then
+				MouseClick("left", $desktopCoor[0]+$coorPoint[0]+Random(0, 5, 1), $desktopCoor[1]+$coorPoint[1]+Random(0, 5, 1), 1, 0)
+			Else
+				MouseClick("left", $desktopCoor[0]+$coorPoint[0], $desktopCoor[1]+$coorPoint[1], 1, 0)
+			EndIf
 		Else
-			ControlClick($hWindow, "", "", "left", 1, $coorPoint[0]+Random(0, 5, 1), $coorPoint[1]+Random(0, 5, 1))
+			If $boolRandom = True Then
+				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0]+Random(0, 5, 1), $coorPoint[1]+Random(0, 5, 1))
+			Else
+				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+			EndIf
 		EndIf
 
 		If _Sleep($intDuration) Then Return
