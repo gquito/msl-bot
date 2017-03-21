@@ -157,7 +157,7 @@ Func farmRare()
 					$intCheckStartTime = TimerInit() ;reset timer
 				EndIf
 
-				If IsArray(findImagesWait($imagesRareAstromon, 5, 100)) Then
+				If IsArray(findImagesFilesWait($imagesRareAstromon, 5, 100)) Then
 					$dataEncounter += 1
 					If setLog("An astromon has been found!", 1) Then ExitLoop (2)
 					waitLocation("battle")

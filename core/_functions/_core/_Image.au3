@@ -253,3 +253,65 @@ Func findImagesWait($strImages, $intDuration = 5, $intTolerance = 10)
 		Return 0
 	EndIf
 EndFunc
+
+#cs ----------------------------------------------------------------------------
+
+ Function: findImagesFilesWait
+
+Uses the same functions as findImagesWait with combination to findImageFiles
+
+ Parameters:
+
+	strImages - Array of image name without extension.
+
+	intDuration - Duration of time to wait for image.
+
+	intTolerance - Tolerance of the image to look for.
+
+ Returns:
+
+	On image found - Returns array
+
+	On image not found - Returns 0
+
+ See Also:
+
+	<findImageWait>
+
+	<findImage>
+
+	<findImages>
+
+#ce ----------------------------------------------------------------------------
+
+Func findImagesFilesWait($strImages, $intDuration = 5, $intTolerance = 10)
+	Local $arrayImages[0] ;images list to find
+
+	For $strImage In $strImages
+		If StringInStr($strImage, "-") Then ;image with specified folder
+			$strImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage
+		EndIf
+
+		If FileExists($strImageDir & $strImage & ".bmp") Then
+			_ArrayAdd($arrayImages, $strImageDir & $strImage & ".bmp")
+
+			Local $dupCounter = 2; Ex: location-village2...
+			While FileExists($strImageDir & $strImage & $dupCounter & ".bmp")
+				_ArrayAdd($arrayImages, $strImageDir & $strImage & $dupCounter & ".bmp")
+				$dupCounter += 1
+			WEnd
+		EndIf
+	Next
+
+	Local $pointArray = [-1, -1]
+	Local $tempSearch = _WaitForImagesSearch($arrayImages, $intDuration, 1, $pointArray[0], $pointArray[1], $intTolerance)
+
+	If $pointArray[0] = -1 Then Return 0
+
+	If $tempSearch >= 0 Then
+		Local $returnArray = [$pointArray[0], $pointArray[1], $tempSearch]
+		Return $returnArray
+	Else
+		Return 0
+	EndIf
+EndFunc

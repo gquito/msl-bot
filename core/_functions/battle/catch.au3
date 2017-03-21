@@ -62,7 +62,7 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 					ExitLoop ;going back to inner loop to check for more astromon
 				Else
 					If $boolLog = True Then setLog("Checking if caught...", 1)
-					If IsArray(findImagesWait($imagesRareAstromon, 10, 100)) Then
+					If IsArray(findImagesFilesWait($imagesRareAstromon, 30, 100)) Then
 						If $boolLog = True Then setLog("Out of astromon chips!", 1)
 						If $boolLog = True Then setLog("Missed a " & $strAstromonGrade & ".", 1) ;if missed astromon
 					Else

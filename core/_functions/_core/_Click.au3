@@ -71,16 +71,14 @@ EndFunc
 #ce ----------------------------------------------------------------------------
 
 Func clickPointUntil($coorPoint, $strLocation, $intNum = 5, $intDuration = 2000)
-	$startTime = TimerInit()
-	While TimerDiff($startTime) < $intNum*$intDuration
-		If _Sleep(100) Then Return
-		If (getLocation() = $strLocation) = False Then
-			clickPoint($coorPoint, 1, 0)
-			If _Sleep($intDuration) Then Return
-		Else
-			Return 1
-		EndIf
-	WEnd
+	For $numClick = 0 To $intNum-1
+		clickPoint($coorPoint, 1, 0)
+		Local $startTime = TimerInit()
+		While TimerDiff($startTime) < $intDuration
+			If _Sleep(50) Then Return 0
+			If checkLocations($strLocation) = 1 Then Return 1
+		WEnd
+	Next
 	Return 0
 EndFunc
 
@@ -108,17 +106,15 @@ EndFunc
 #ce ----------------------------------------------------------------------------
 
 Func clickPointUntilImage($coorPoint, $strImage, $intNum = 5, $intDuration = 2000)
-	$startTime = TimerInit()
-	While TimerDiff($startTime) < $intNum*$intDuration
-		If _Sleep(100) Then Return
-		_CaptureRegion()
-		If isArray(findImage($strImage)) = False Then
-			clickPoint($coorPoint, 1, 0)
-			If _Sleep($intDuration) Then Return
-		Else
-			Return 1
-		EndIf
-	WEnd
+	For $numClick = 0 To $intNum-1
+		clickPoint($coorPoint, 1, 0)
+		Local $startTime = TimerInit()
+		While TimerDiff($startTime) < $intDuration
+			If _Sleep(50) Then Return 0
+			_CaptureRegion()
+			If isArray(findImage($strImage)) = True Then Return 1
+		WEnd
+	Next
 	Return 0
 EndFunc
 
