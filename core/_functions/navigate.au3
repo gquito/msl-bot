@@ -78,7 +78,16 @@ Func navigate($strMainLocation, $strLocation = "")
 
 			Switch $strMainLocation
 				Case "village"
-					If checkLocations("unknown") = 0 Then ControlSend($hWindow, "", "", "{ESC}")
+					If checkLocations("unknown") = 0 Then
+						clickPoint($game_coorTap, 5)
+						ControlSend($hWindow, "", "", "{ESC}")
+
+						Local $closePoint = findImageFiles("misc-close", 30)
+						If isArray($closePoint) Then
+							clickPoint($closePoint) ;to close any windows open
+						EndIf
+					EndIf
+
 					If getLocation() = "battle-end" Then clickPoint($battle_coorAirship)
 				Case "map"
 					If getLocation() = "village" Then

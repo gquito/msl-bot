@@ -30,7 +30,7 @@
 	Global $parallel_imagesCatch = ["normal", "rare"]
 
 ;location coordinates and size
-Global $strKnownLocation = "association,astroleague,autobattle_prompt,battle,battle_astromon_full,battle_gem_full,battle_end,battle_sell,buy_gem,dialogue,catch_mode,clan,defeat,inbox,gold_dungeons,golem_dungeons,guardian_dungeons,lost_connection,manage,map,map_battle,map_stage,map_astromon_full,map_gem_full,monsters,pause,quests,refill,refill_confirm,starstone_dungeons,village"
+Global $strKnownLocation = "association,astroleague,autobattle_prompt,battle,battle_astromon_full,battle_gem_full,battle_end,battle_end_exp,battle_sell,buy_gem,dialogue,catch_mode,clan,defeat,inbox,gold_dungeons,golem_dungeons,guardian_dungeons,lost_connection,manage,map,map_battle,map_stage,map_astromon_full,map_gem_full,monsters,pause,quests,refill,refill_confirm,starstone_dungeons,village"
 
 Global $dim_association = "106,273,98,27"
 Global $dim_astroleague = "96,464,86,10"
