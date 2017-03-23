@@ -89,7 +89,12 @@ Global $dim_village = "775,86,14,14"
 
 		Global $village_coorManage = [739, 199]
 		Global $village_coorUpgrade = [392, 415]
-		Global $village_coorSell = [538, 394]
+		Global $village_coor1Star = "325,389"
+		Global $village_coor2Star = "363,389"
+		Global $village_coor3Star = "401,389"
+		Global $village_coor4Star = "439,389"
+		Global $village_coor5Star = "475,389"
+		Global $village_coorSell = [665, 394]
 		Global $village_coorSellConfirm = [398, 331]
 
 	;map

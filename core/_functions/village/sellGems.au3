@@ -6,34 +6,24 @@
 
  Parameters:
 
-	arraySet - Set of images corresponding to gem grade.
+	arraySet - Set of String corresponding to gem grade.
 
  Returns:
 
-	on error - Returns -1
-
-	on sell - Returns # of Gems Sold
+	on sell - Returns 1
 
 #ce ----------------------------------------------------------------------------
 
 Func sellGems($arraySet)
 	If checkLocations("manage") = 1 Then
-		Local $gemCounter = 0
-		Local $foundGem = findImages($arraySet, 100)
-		While isArray($foundGem) = True
-			clickPoint(findImages($arraySet, 100), 1, 100)
+		For $grade in $arraySet
+			Local $coorPoint = StringSplit(Eval("village_coor" & $grade & "Star"), ",", 2)
+			clickPoint($coorPoint)
+		Next
 
-			clickPoint($village_coorSell)
-			clickPoint($village_coorSellConfirm)
-			$gemCounter += 1
+		clickPoint($village_coorSell)
+		clickPoint($village_coorSellConfirm)
 
-			waitLocation("manage")
-			_CaptureRegion()
-			$foundGem = findImages($arraySet, 100)
-		WEnd
-
-		Return $gemCounter
+		Return 1
 	EndIf
-
-	Return -1
 EndFunc

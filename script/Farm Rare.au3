@@ -20,10 +20,7 @@ Func farmRare()
 	Dim $guardian = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "guardian-dungeon", "0")
 	Dim $difficulty = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "difficulty", "normal")
 	Dim $captures[0] ;
-	Dim $sellGems = StringSplit(StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "sell-gems", "one star,two star, three star"), " ", "-"), ",", 2)
-	For $i = 0 To UBound($sellGems)-1
-		$sellGems[$i] = "manage-" & $sellGems[$i]
-	Next
+	Dim $sellGems = StringSplit(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "sell-gems-grade", "one star,two star, three star"), ",", 2)
 
 	Dim $intGem = Int(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "max-spend-gem", 0))
 	Dim $intGemUsed = 0
@@ -187,14 +184,10 @@ Func farmRare()
 			EndIf
 
 			If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
-				If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
+				If setLogReplace("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
 				If navigate("village", "manage") = 1 Then
-					ControlSend($hWindow, "", "", "{ESC}")
-					clickPointWait($village_coorManage, "monsters")
-
-					navigate("village", "manage")
-					Local $soldGems = sellGems($sellGems)
-					If setLog("Sold " & $soldGems & " gems!", 1) Then ExitLoop (2)
+					sellGems($sellGems)
+					If setLogReplace("Gem is full, going to sell gems... Done!", 1) Then ExitLoop (2)
 				EndIf
 			EndIf
 

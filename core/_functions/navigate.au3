@@ -76,31 +76,23 @@ Func navigate($strMainLocation, $strLocation = "")
 				clickPoint($game_coorDialogueSkip)
 			EndIf
 
+			If checkLocations("unknown") = 1 Then
+				clickPoint($game_coorTap)
+
+				Local $closePoint = findImageFiles("misc-close", 30)
+				If isArray($closePoint) Then
+					clickPoint($closePoint) ;to close any windows open
+				EndIf
+			EndIf
+
 			Switch $strMainLocation
 				Case "village"
-					If checkLocations("unknown") = 0 Then
-						clickPoint($game_coorTap, 5)
-						ControlSend($hWindow, "", "", "{ESC}")
-
-						Local $closePoint = findImageFiles("misc-close", 30)
-						If isArray($closePoint) Then
-							clickPoint($closePoint) ;to close any windows open
-						EndIf
-					EndIf
-
+					ControlSend($hWindow, "", "", "{ESC}")
 					If getLocation() = "battle-end" Then clickPoint($battle_coorAirship)
 				Case "map"
 					If getLocation() = "village" Then
-						Local $startTime = TimerInit()
 						While checkLocations("village", "unknown") = 1
 							clickPoint($village_coorPlay)
-
-							Local $closePoint = findImageFiles("misc-close", 30)
-							If isArray($closePoint) Then
-								clickPoint($closePoint) ;to close any windows open
-							EndIf
-
-							If TimerDiff($startTime) > 60000 Then Return 0 ;if exceed 1 minute
 						WEnd
 					Else
 						ControlSend($hWindow, "", "", "{ESC}")
