@@ -30,7 +30,7 @@
 	Global $parallel_imagesCatch = ["normal", "rare"]
 
 ;location coordinates and size
-Global $strKnownLocation = "association,astroleague,autobattle_prompt,battle,battle_astromon_full,battle_gem_full,battle_end,battle_sell,buy_gem,dialogue,catch_mode,clan,defeat,inbox,gold_dungeons,golem_dungeons,guardian_dungeons,lost_connection,manage,map,map_battle,map_stage,map_astromon_full,map_gem_full,monsters,pause,quests,refill,refill_confirm,starstone_dungeons,village"
+Global $strKnownLocation = "association,astroleague,autobattle_prompt,battle,battle_astromon_full,battle_gem_full,battle_end,battle_end_exp,battle_sell,buy_gem,dialogue,catch_mode,clan,defeat,inbox,gold_dungeons,golem_dungeons,guardian_dungeons,lost_connection,manage,map,map_battle,map_stage,map_astromon_full,map_gem_full,monsters,pause,quests,refill,refill_confirm,starstone_dungeons,village"
 
 Global $dim_association = "106,273,98,27"
 Global $dim_astroleague = "96,464,86,10"
@@ -89,7 +89,12 @@ Global $dim_village = "775,86,14,14"
 
 		Global $village_coorManage = [739, 199]
 		Global $village_coorUpgrade = [392, 415]
-		Global $village_coorSell = [538, 394]
+		Global $village_coor1Star = "325,389"
+		Global $village_coor2Star = "363,389"
+		Global $village_coor3Star = "401,389"
+		Global $village_coor4Star = "439,389"
+		Global $village_coor5Star = "475,389"
+		Global $village_coorSell = [665, 394]
 		Global $village_coorSellConfirm = [398, 331]
 
 	;map
