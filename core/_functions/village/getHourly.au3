@@ -42,7 +42,7 @@ Func getHourly()
 			EndIf
 		Next
 
-		If setLogReplace("Collect hourly..Inbox" & $posVillage, 1) Then Return
+		If setLogReplace("Collect hourly..Inbox", 1) Then Return
 		;collect inbox
 		clickPointUntilImage($village_coorTab, "misc-village-inbox")
 		clickImageUntil("misc-village-inbox", "inbox")
@@ -52,6 +52,6 @@ Func getHourly()
 		ControlSend($hWindow, "", "", "{ESC}")
 	EndIf
 
-	If setLogReplace("Collect hourly..Done!" & $posVillage, 1) Then Return
+	If setLogReplace("Collect hourly..Done!", 1) Then Return
 	Return 1
 EndFunc

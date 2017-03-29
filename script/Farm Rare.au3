@@ -16,16 +16,16 @@ Func farmRare()
 	Dim $intCheckStartTime; check if stuck
 	Dim $intCheckTime; check if stuck
 
-	Dim $map = "map-" & StringReplace(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "map", "phantom forest"), " ", "-")
-	Dim $guardian = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "guardian-dungeon", "0")
-	Dim $difficulty = IniRead(@ScriptDir & "/config.ini", "Farm Rare", "difficulty", "normal")
+	Dim $map = "map-" & StringReplace(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "map", "phantom forest"), " ", "-")
+	Dim $guardian = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "guardian-dungeon", "0")
+	Dim $difficulty = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "difficulty", "normal")
 	Dim $captures[0] ;
-	Dim $sellGems = StringSplit(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "sell-gems-grade", "one star,two star, three star"), ",", 2)
+	Dim $sellGems = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "sell-gems-grade", "one star,two star, three star"), ",", 2)
 
-	Dim $intGem = Int(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "max-spend-gem", 0))
+	Dim $intGem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "max-spend-gem", 0))
 	Dim $intGemUsed = 0
 
-	Dim $rawCapture = StringSplit(IniRead(@ScriptDir & "/config.ini", "Farm Rare", "capture", "legendary,super rare,rare,exotic"), ",", 2)
+	Dim $rawCapture = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "capture", "legendary,super rare,rare,exotic"), ",", 2)
 	For $capture In $rawCapture
 		Local $grade = StringReplace($capture, " ", "-")
 		If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
@@ -42,14 +42,11 @@ Func farmRare()
 	setLog("~~~Starting 'Farm Rare' script~~~", 2)
 
 	;setting up data capture
-	GUICtrlSetData($cmbLoad, "Select a script..")
-	$strScript = "" ;script section
-	$strConfig = "" ;all keys
-
 	Local $dataRuns = 0
 	Local $dataGuardians = 0
 	Local $dataEncounter = 0
 	Local $dataStrCaught = ""
+	Local $counterWordWrap = 0
 	Local $getHourly = False
 
 	While True
@@ -57,7 +54,7 @@ Func farmRare()
 			$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
 			GUICtrlSetData($listScript, "")
-			GUICtrlSetData($listScript, "~Farm Rare Data~|Total Runs: " & $dataRuns & "|Total Guardian Dungeons: " & $dataGuardians & "|# of Rare Encounters: " & $dataEncounter & "|Astromon Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Total Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
+			GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Rares: " & $dataEncounter & "|Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
 
 			If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
 
@@ -75,6 +72,8 @@ Func farmRare()
 					EndIf
 				Case "battle-end-exp", "battle-sell"
 					clickPointUntil($game_coorTap, "battle-end")
+				Case "pause"
+					clickPoint($battle_coorContinue)
 				Case "unknown"
 					clickPoint($game_coorTap)
 
@@ -163,7 +162,12 @@ Func farmRare()
 								EndIf
 								If $tempStr = "-2" Then $tempStr = ""
 
-								If Not $tempStr = "" Then $dataStrCaught &= ", " & $tempStr
+								If Not $tempStr = "" Then
+									$counterWordWrap += 1
+									$dataStrCaught &= ", " & $tempStr
+
+									If Mod($counterWordWrap, 11) = 0 Then $dataStrCaught &= "|........"
+								EndIf
 								If setLog("Finish catching, attacking..", 1) Then ExitLoop (2)
 								clickPoint($battle_coorAuto)
 							EndIf
