@@ -37,9 +37,9 @@ Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500, $boolRandom = True)
 			EndIf
 		Else
 			If $boolRandom = True Then
-				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0]+Random(0, 5, 1), $coorPoint[1]+Random(0, 5, 1))
+				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0]+Random(0, 5, 1)+$diff[0], $coorPoint[1]+Random(0, 5, 1)+$diff[1])
 			Else
-				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0], $coorPoint[1])
+				ControlClick($hWindow, "", "", "left", 1, $coorPoint[0]+$diff[0], $coorPoint[1]+$diff[1])
 			EndIf
 		EndIf
 

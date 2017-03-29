@@ -17,7 +17,7 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func _CaptureRegion($strScreen = "", $iLeft = 0, $iTop = 0, $iRight = 800, $iBottom = 600)
+Func _CaptureRegion($strScreen = "", $iLeft = 0, $iTop = 0, $iRight = 800, $iBottom = 552)
 	_GDIPlus_BitmapDispose($hBitmap)
 	_WinAPI_DeleteObject($hHBitmap)
 

@@ -1,10 +1,6 @@
 ;define
 	Global $textOutput; output for gui
 
-;core global variables
-	Global $hWindow = WinGetHandle("BlueStacks App Player")
-	Global $hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
-
 ;directory
 	Global Const $strImageSearchDir = @ScriptDir & "\core\_functions\_core\imagesearch\ImageSearchDLL.dll"
 	Global Const $strImageDir = @ScriptDir & "\core\images\"
