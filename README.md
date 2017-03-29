@@ -5,28 +5,51 @@ This is an open-sources bot designed to grind Monster Super League automatically
 Mainly programmed to gain experience with GitHub and because of the enjoyment of coding.
 
 ### How to start bot
-- Install BlueStacks Files:
-BlueStacks Rooted 0.10.7.5601 (google that)
-   - Note that there are graphical bugs in this version of bluestacks and it is normal.
-   - Other emulators may have different graphic that is not optimized for the current bot.
- 
-- Change the resolution to 800x600:
-  - Open up the Registry Editor (WIN+R -> regedit)
-  - Navigate to HKEY_LOCATION_MACHINE -> SOFTWARE -> BlueStacks -> Guests -> Android -> FrameBuffer -> 0
-  - Edit the GuestHeight, GuestWidth, WindowHeight, WindowWidth 
-  - Make sure the Base is 'Decimal' and the heights is 600 and width is 800.
-  - Note: If you are using other emulators, the resolution is 800x550 (BlueStacks has the bar at the bottom which is -50 height)
+#### Choose Emulator, recommended: Nox
 
-- Setting up BlueStacks key map for bot:
+- For Nox:
+   - Install from website (google that)
+   
+   - Optimal Settings: ![settings](https://i.imgur.com/ck4kF1s.png)
+   
+   ![optimal settings](https://i.imgur.com/Nggy0H9.png)
+   
+   - Setting up key map:
+   
+   ![key map](https://i.imgur.com/bHBHFWF.png)
 
-![steps](http://i.imgur.com/8f98olQ.gif "Step-by-Step")
+- For BlueStacks:
+   - Install BlueStacks Files:
+   BlueStacks Rooted 0.10.7.5601 (google that)
+      - Note that there are graphical bugs in this version of bluestacks and it is normal.
+      - Other emulators may have different graphic that is not optimized for the current bot.
+
+   - Change the resolution to 800x600:
+     - Open up the Registry Editor (WIN+R -> regedit)
+     - Navigate to HKEY_LOCATION_MACHINE -> SOFTWARE -> BlueStacks -> Guests -> Android -> FrameBuffer -> 0
+     - Edit the GuestHeight, GuestWidth, WindowHeight, WindowWidth 
+     - Make sure the Base is 'Decimal' and the heights is 600 and width is 800.
+     - Note: If you are using other emulators, the resolution is 800x552 (BlueStacks has the bar at the bottom which is -48 height)
+
+   - Setting up BlueStacks key map for bot:
+
+   ![steps](http://i.imgur.com/8f98olQ.gif "Step-by-Step")
 
 - Inside MSL turn off all settings.
   - Especially the Low-Res Mode and Low Power Mode have it set to 'OFF'
-  
-- Load a script and edit the configs to your liking.
 
-- Start the bot and let it grind for you.
+### Changing bot setting for an Emulator
+- When using a different emulator than default, check in the "Config" tab.
+
+ ![check](https://i.imgur.com/Y9efB3b.png)
+ 
+- To change look for your emulator:
+   - **Title:** Nox App Player **Instance:** [CLASS:AnglePlayer_0; INSTANCE:1]
+   - **Title:** BlueStacks App Player **Instance:** [CLASS:BlueStacksApp; INSTANCE:1]
+   
+- To manually find it, use AutoIT Window Info
+
+![manual](https://i.imgur.com/MZu5eWE.png)
 
 ### Optimizing the image recognition for the bot
 - If certain locations or objects are not recognized within game you will need to replace them.
