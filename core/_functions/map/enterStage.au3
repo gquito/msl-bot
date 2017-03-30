@@ -25,8 +25,8 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 		Dim $imgPoint = findImageWait($strImage, 2, 50)
 
 		Local $errorCounter = 0
-
-		If setLog("Locating map stage.", 1) Then Return 0
+		Local $strMap = StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "")
+		If setLogReplace("Entering " & $strMap & "..Searching", 1) Then Return 0
 		While Not isArray($imgPoint)
 			If checkLocations("astroleague", "map-stage", "association") = 1 Then ControlSend($hWindow, "", "", "{ESC}")
 
@@ -49,15 +49,15 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 		If checkLocations("map-stage") = 0 Then Return 0
 		Switch $strMode
 			Case "normal" ;Normal
-				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Normal.", 1)
+				If setLogReplace("Entering " & $strMap & "..Mode: Normal", 1) Then Return 0
 				clickPoint($map_coorMode, 1, 500, False)
 				clickPoint($map_coorNormal, 1, 500, False)
 			Case "hard" ;Hard
-				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Hard.", 1)
+				If setLogReplace("Entering " & $strMap & "..Mode: Hard", 1) Then Return 0
 				clickPoint($map_coorMode, 1, 500, False)
 				clickPoint($map_coorHard, 1, 500, False)
 			Case "extreme" ;Extreme
-				If $boolLog Then setLog("Entering " & StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") & " on Extreme.", 1)
+				If setLogReplace("Entering " & $strMap & "..Mode: Expert", 1) Then Return 0
 				clickPoint($map_coorMode, 1, 500, False)
 				clickPoint($map_coorExtreme, 1, 500, False)
 			Case Else

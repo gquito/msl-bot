@@ -11,7 +11,7 @@ Func farmAstromon()
 	;getting configs
 	Dim $captures[0] ;
 
-	If IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "catch-rares", 0) = 1 Then
+	If IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "catch-rares", 0) = 1 Then
 		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
 		For $capture In $rawCapture
 			Local $grade = StringReplace($capture, " ", "-")
@@ -27,7 +27,7 @@ Func farmAstromon()
 		Next
 	EndIf
 
-	Local $imgName = IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "image", Null)
+	Local $imgName = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "image", Null)
 	If ($imgName = Null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
 		setLog("*Error: Image file does not exist!", 2)
 		Return 0
@@ -35,98 +35,84 @@ Func farmAstromon()
 
 	_ArrayAdd($captures, $imgName)
 
-	Dim $limit = Int(IniRead(@ScriptDir & "/config.ini", "Farm Astromon", "limit", 16))
+	Dim $limit = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "limit", 16))
 	If $limit = 0 Then
 		setLog("*Limit is 0, will farm until inventory is full.", 2)
 		$limit = 9999 ;really high number so counter never hits
 	EndIf
 
 	setLog("~~~Starting 'Farm Astromon' script~~~", 2)
-	;set up data info
-	GUICtrlSetData($cmbLoad, "Select a script..")
-	$strScript = "" ;script section
-	$strConfig = "" ;all keys
 
 	Dim $intCounter = 0
 	While $intCounter < $limit
 		GUICtrlSetData($listScript, "")
-		GUICtrlSetData($listScript, "~Farm Astromon Data~|# of Astromons: " & $intCounter & "/" & $limit)
+		GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
 
-		If _Sleep(10) Then ExitLoop
-		If checkLocations("battle") = 1 Then
-			If checkPixelWait($battle_pixelUnavailable, 2) = False Then
-				While True ;while there are Astromons
-					navigate("battle", "catch-mode")
-					$tempStr = catch($captures, True, False, True, False)
-					If ($tempStr = -1) Or ($tempStr = "") Then ExitLoop
+		If _Sleep(100) Then ExitLoop
+		Switch getLocation()
+			Case "battle"
+				If checkPixelWait($battle_pixelUnavailable, 2) = False Then
+					While True ;while there are Astromons
+						navigate("battle", "catch-mode")
+						$tempStr = catch($captures, True, False, True, False)
+						If ($tempStr = -1) Or ($tempStr = "") Then ExitLoop
 
-					$intCounter += 1
+						$intCounter += 1
 
-					GUICtrlSetData($listScript, "")
-					GUICtrlSetData($listScript, "~Farm Astromon Data~|# of Astromons: " & $intCounter & "/" & $limit)
-					If $intCounter = $limit Then ExitLoop (2)
-				WEnd
+						GUICtrlSetData($listScript, "")
+						GUICtrlSetData($listScript, "~Farm Astromon Data~|# of Astromons: " & $intCounter & "/" & $limit)
+						If $intCounter = $limit Then ExitLoop (2)
+					WEnd
 
-				If _Sleep(10) Then ExitLoop
+					If _Sleep(10) Then ExitLoop
 
-				setLog("Attaking astromons..", 1)
-				clickPoint($battle_coorAuto, 2, 10)
-			Else
-				setLog("Out of astrochips, restarting..", 1)
-				While True
-					ControlSend($hWindow, "", "", "{ESC}")
-					If checkLocations("battle-end-exp", "battle-sell", "pause") = 1 Then
-						ExitLoop
-					EndIf
+					setLog("Attaking astromons..", 1)
+					clickPoint($battle_coorAuto, 2, 10)
+				Else
+					setLog("Out of astrochips, restarting..", 1)
+					While True
+						ControlSend($hWindow, "", "", "{ESC}")
+						If checkLocations("battle-end-exp", "battle-sell", "pause") = 1 Then
+							ExitLoop
+						EndIf
 
-					If _Sleep(500) Then ExitLoop (2)
-				WEnd
+						If _Sleep(500) Then ExitLoop (2)
+					WEnd
 
-				clickPoint($battle_coorGiveUp)
-				clickPoint($battle_coorGiveUpConfirm)
-			EndIf
-		EndIf
+					clickPoint($battle_coorGiveUp)
+					clickPoint($battle_coorGiveUpConfirm)
+				EndIf
+			Case "battle-end-exp", "battle-sell"
+				clickPointUntil($game_coorTap, "battle-end")
 
-		If _Sleep(10) Then ExitLoop
-		If checkLocations("battle-end-exp", "battle-sell") = 1 Then
-			clickPointUntil($game_coorTap, "battle-end")
-		EndIf
+			Case "battle-end"
+				clickImage("battle-play-again")
 
-		If _Sleep(10) Then ExitLoop
-		If checkLocations("battle-end") = 1 Then
-			clickImage("battle-play-again")
-		EndIf
+			Case "map-battle"
+				clickPointUntil($map_coorBattle, "battle")
 
-		If _Sleep(10) Then ExitLoop
-		If checkLocations("map-battle") = 1 Then
-			clickPointUntil($map_coorBattle, "battle")
-		EndIf
+			Case "map", "map-stage", "astroleague", "village", "manage", "monsters", "quests"
+				MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "Enter battle and turn auto off, then click ok.")
 
-		If _Sleep(10) Then ExitLoop
-		If checkLocations("map", "map-stage", "astroleague", "village", "manage", "monsters", "quests") = 1 Then
-			MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "Enter battle and turn auto off, then click ok.")
-		EndIf
+			Case "map-gem-full", "battle-gem-full"
+				setLog("Gem inventory is full", 1)
+				ExitLoop
 
-		If _Sleep(10) Then ExitLoop
-		If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
-			setLog("Gem inventory is full", 1)
-			ExitLoop
-		EndIf
+			Case "lost-connection"
+				clickPoint($game_coorConnectionRetry)
 
-		If checkLocations("lost-connection") = 1 Then
-			clickPoint($game_coorConnectionRetry)
-		EndIf
+			Case "dialogue"
+				clickPoint($game_coorDialogueSkip)
 
-		If checkLocations("dialogue") = 1 Then
-			clickPoint($game_coorDialogueSkip)
-		EndIf
-
-		If _Sleep(10) Then ExitLoop
-		If checkLocations("battle-astromon-full", "map-astromon-full") = 1 Then
-			setLog("Inventory is full.", 1)
-			ExitLoop
-		EndIf
+			Case "battle-astromon-full", "map-astromon-full"
+				setLog("Inventory is full.", 1)
+				ExitLoop
+		EndSwitch
 	WEnd
+
+	If getLocation() = "battle" Then
+		clickPoint($battle_coorAuto)
+	EndIf
 
 	setLog("~~~Finished 'Farm Astromon' script~~~", 2)
 EndFunc   ;==>farmAstromon

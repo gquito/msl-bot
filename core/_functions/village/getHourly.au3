@@ -7,7 +7,7 @@
 
 Func getHourly()
 	If navigate("village") = 1 Then
-		If setLog("Collecting hourly rewards..", 1) Then Return
+		If setLogReplace("Collect hourly..", 1) Then Return
 		Local $posVillage = null; The village position
 
 		While navigate("village") = 0
@@ -15,20 +15,20 @@ Func getHourly()
 		WEnd
 
 		_CaptureRegion()
-		If isArray(findImage("misc-village-pos1", 50)) Then
+		If isArray(findImageFiles("misc-village-pos1", 50)) Then
 			$posVillage = 0
-		ElseIf isArray(findImage("misc-village-pos2", 50)) Then
+		ElseIf isArray(findImageFiles("misc-village-pos2", 50)) Then
 			$posVillage = 1
-		ElseIf isArray(findImage("misc-village-pos3", 50)) Then
+		ElseIf isArray(findImageFiles("misc-village-pos3", 50)) Then
 			$posVillage = 2
 		EndIf
 
 		If $posVillage = null Then
-			setLog("Could not recognize village position.", 1)
+			If setLogReplace("Collect hourly..Failed.", 1) Then Return
 			Return 0
 		EndIf
 
-		If setLog("Village position recognized: " & $posVillage, 2) Then Return
+		If setLogReplace("Collect hourly...Position: " & $posVillage, 1) Then Return
 		Local $arrayCoor = StringSplit($village_coorHourly[$posVillage], "|", 2) ;format: {"#,#", "#,#"..}
 		For $i = 0 To 2 ;collecting the rewards
 			If _Sleep(100) Then Return
@@ -42,7 +42,7 @@ Func getHourly()
 			EndIf
 		Next
 
-		If setLog("Collecting inbox..", 2) Then Return
+		If setLogReplace("Collect hourly..Inbox", 1) Then Return
 		;collect inbox
 		clickPointUntilImage($village_coorTab, "misc-village-inbox")
 		clickImageUntil("misc-village-inbox", "inbox")
@@ -52,6 +52,6 @@ Func getHourly()
 		ControlSend($hWindow, "", "", "{ESC}")
 	EndIf
 
-	setLog("Complete collecting hourly rewards.", 1)
+	If setLogReplace("Collect hourly..Done!", 1) Then Return
 	Return 1
 EndFunc

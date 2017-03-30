@@ -1,36 +1,45 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=..\..\favicon.ico
-#AutoIt3Wrapper_Outfile=msl-bot v1.8.exe
+#AutoIt3Wrapper_Outfile=msl-bot v1.9.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.8.7
+#AutoIt3Wrapper_Res_Fileversion=1.9.1
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
-Global $botVersion = IniRead(@ScriptDir & "/config.ini", "general", "version", "")
-Global $botVersionComplex = IniRead(@ScriptDir & "/config.ini", "general", "version-complex", "")
-Global $botName = IniRead(@ScriptDir & "/config.ini", "general", "title", "MSL Bot")
-Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "scripts", ""), ",", 2)
+Global $botConfig = "config.ini"
+Global $botVersion = IniRead(@ScriptDir & "/" & $botConfig, "general", "version", "")
+Global $botVersionComplex = IniRead(@ScriptDir & "/" & $botConfig, "general", "version-complex", "")
+Global $botName = IniRead(@ScriptDir & "/" & $botConfig, "general", "title", "MSL Bot")
+Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", ""), ",", 2)
 
 ;defining globals
+Global $botTitle = IniRead(@ScriptDir & "/" & $botConfig, "general", "emulator-title", "BlueStacks App Player")
+Global $botInstance = IniRead(@ScriptDir & "/" & $botConfig, "general", "emulator-instance", "[CLASS:BlueStacksApp; INSTANCE:1]")
+
+Global $hWindow = WinGetHandle($botTitle)
+Global $hControl = ControlGetHandle($botTitle, "", $botInstance)
+
+Global $diff = ControlGetPos($botTitle, "", $hControl);
+
 Global $strScript = "" ;script section
 Global $strConfig = "" ;all keys
 
-Global $iniBackground = IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1) ;checkbox, declare first to remove warning
-Global $iniRealMouse =  IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1);^
-Global $iniOutput = IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1);^
+Global $iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
+Global $iniRealMouse =  IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1);^
+Global $iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1);^
 
 #include "core/imports.au3"
 #include "core/gui.au3"
 
 _GDIPlus_Startup()
 GUICtrlSetData($lblVersion, "Current version: " & $botVersionComplex)
-GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/config.ini", "general", "scripts", "There are no scripts available."), ",", "|"))
+GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", "There are no scripts available."), ",", "|"))
 
-Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "keys", ""), ",", 2)
+Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "keys", ""), ",", 2)
 Dim $generalConfig = ""
 For $key In $arrayKeys
-	$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/config.ini", "general", $key, "???") & "|"
+	$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/" & $botConfig, "general", $key, "???") & "|"
 Next
 GUICtrlSetData($listConfig, $generalConfig)
 
@@ -43,7 +52,7 @@ HotKeySet("{F6}", "debugPoint1")
 HotKeySet("{F7}", "debugPoint2")
 
 Func debugPoint1()
-	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
+	getEmulatorHandle()
 
 	$pointDebug1[0] = MouseGetPos(0) - WinGetPos($hControl)[0]
 	$pointDebug1[1] = MouseGetPos(1) - WinGetPos($hControl)[1]
@@ -56,7 +65,7 @@ Func debugPoint1()
 EndFunc
 
 Func debugPoint2()
-	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
+	getEmulatorHandle()
 
 	$pointDebug2[0] = MouseGetPos(0) - WinGetPos($hControl)[0]
 	$pointDebug2[1] = MouseGetPos(1) - WinGetPos($hControl)[1]
@@ -76,8 +85,9 @@ EndFunc
 ;main loop
 While True
 	If $boolRunning = True Then
+		getEmulatorHandle()
 		If Not $strScript = "" Then ;check if script is set
-			Call(IniRead(@ScriptDir & "/config.ini", $strScript, "function", ""))
+			Call(IniRead(@ScriptDir & "/" & $botConfig, $strScript, "function", ""))
 			If @error = 0xDEAD And @extended = 0xBEEF Then MsgBox($MB_OK, $botName & " " & $botVersion, "Script function does not exist.")
 			$boolRunning = False
 			GUICtrlSetData($btnRun, "Start")
@@ -92,8 +102,7 @@ WEnd
 
 ;function: btnRunClick
 Func btnRunClick()
-	$hWindow = WinGetHandle("BlueStacks App Player")
-	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
+	getEmulatorHandle()
 
 	If $boolRunning = False Then ;starting bot
 		If $iniRealMouse = 1 Then MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "You have real mouse on! You will not be able to use your mouse. To stop script press End key.")
@@ -115,6 +124,59 @@ Func frmMainClose()
 	If Not $strOutput = "" Then FileWrite(@ScriptDir & "/core/data/logs/" & StringReplace(_NowDate(), "/", "."), $strOutput)
 	_GDIPlus_Shutdown()
 	Exit 0
+EndFunc
+
+;function: btnSetConfig
+;-Sets which config is used.
+;author: GkevinOD (2017)
+Func btnSetConfig()
+	If FileExists(@ScriptDir & "/" & GUICtrlRead($textConfig)) Then
+		$botConfig = GUICtrlRead($textConfig)
+
+		Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "keys", ""), ",", 2)
+		Dim $generalConfig = ""
+		For $key In $arrayKeys
+			$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/" & $botConfig, "general", $key, "???") & "|"
+		Next
+
+		$iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
+		$iniRealMouse =  IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1);^
+		$iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1);^
+
+		GUICtrlSetData($listConfig, "")
+		GUICtrlSetData($listConfig, $generalConfig)
+
+		cmbLoadClick()
+
+		Global $botTitle = IniRead(@ScriptDir & "/" & $botConfig, "general", "emulator-title", "BlueStacks App Player")
+		Global $botInstance = IniRead(@ScriptDir & "/" & $botConfig, "general", "emulator-instance", "[CLASS:BlueStacksApp; INSTANCE:1]")
+
+		Global $hWindow = WinGetHandle($botTitle)
+		Global $hControl = ControlGetHandle($botTitle, "", $botInstance)
+
+		Global $diff = ControlGetPos($botTitle, "", $hControl);
+
+		Global $strScript = "" ;script section
+		Global $strConfig = "" ;all keys
+
+		Global $iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
+		Global $iniRealMouse =  IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1);^
+		Global $iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1);^
+	EndIf
+EndFunc
+
+;function: lblDiscordClick
+;-Label hyperlink
+;author: GkevinOD (2017)
+Func lblDiscordClick()
+	ShellExecute("https://discord.gg/UQGRnwf")
+EndFunc
+
+;function: lblDonateClick
+;-Label hyperlink
+;author: GkevinOD (2017)
+Func lblDonateClick()
+	ShellExecute("https://www.paypal.me/gkevinod")
 EndFunc
 
 ;function: btnClearClick()
@@ -159,7 +221,7 @@ Func btnConfigEdit()
 	Dim $value = "!" ;temp value
 	Dim $boolPass = False ;if meets restriction
 
-	Dim $rawRestrictions = IniRead(@ScriptDir & "/config.ini", "general", $key & "-restrictions", "")
+	Dim $rawRestrictions = IniRead(@ScriptDir & "/" & $botConfig, "general", $key & "-restrictions", "")
 	If Not $rawRestrictions = "" Then
 		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
 
@@ -178,17 +240,17 @@ Func btnConfigEdit()
 	EndIf
 
 	;overwrite file
-	IniWrite(@ScriptDir & "/config.ini", "general", $key, $value)	;write to config file
+	IniWrite(@ScriptDir & "/" & $botConfig, "general", $key, $value)	;write to config file
 
-	Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/config.ini", "general", "keys", ""), ",", 2)
+	Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "keys", ""), ",", 2)
 	Dim $generalConfig = ""
 	For $key In $arrayKeys
-		$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/config.ini", "general", $key, "???") & "|"
+		$generalConfig &= $key & "=" & IniRead(@ScriptDir & "/" & $botConfig, "general", $key, "???") & "|"
 	Next
 
-	$iniBackground = IniRead(@ScriptDir & "/config.ini", "general", "background-mode", 1) ;checkbox, declare first to remove warning
-	$iniRealMouse =  IniRead(@ScriptDir & "/config.ini", "general", "real-mouse-mode", 1);^
-	$iniOutput = IniRead(@ScriptDir & "/config.ini", "general", "output-all-process", 1);^
+	$iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
+	$iniRealMouse =  IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1);^
+	$iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1);^
 
 	GUICtrlSetData($listConfig, "")
 	GUICtrlSetData($listConfig, $generalConfig)
@@ -214,10 +276,10 @@ Func cmbLoadClick()
 	$strScript = GUICtrlRead($cmbLoad)
 	If $strScript = "null" Then $strScript = ""
 
-	Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/config.ini", $strScript, "keys", ""), ",", 2)
+	Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, $strScript, "keys", ""), ",", 2)
 	$strConfig = ""
 	For $key In $arrayKeys
-		$strConfig &= $key & "=" & IniRead(@ScriptDir & "/config.ini", $strScript, $key, "???") & "|"
+		$strConfig &= $key & "=" & IniRead(@ScriptDir & "/" & $botConfig, $strScript, $key, "???") & "|"
 	Next
 
 	;final
@@ -245,7 +307,7 @@ Func btnEditClick()
 	Dim $value = "!" ;temp value
 	Dim $boolPass = False ;if meets restriction
 
-	Dim $rawRestrictions = IniRead(@ScriptDir & "/config.ini", $strScript, $key & "-restrictions", "")
+	Dim $rawRestrictions = IniRead(@ScriptDir & "/" & $botConfig, $strScript, $key & "-restrictions", "")
 	If Not $rawRestrictions = "" Then
 		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
 
@@ -264,7 +326,7 @@ Func btnEditClick()
 	EndIf
 
 	;overwrite file
-	IniWrite(@ScriptDir & "/config.ini", $strScript, $key, $value)	;write to config file
+	IniWrite(@ScriptDir & "/" & $botConfig, $strScript, $key, $value)	;write to config file
 
 	cmbLoadClick()
 EndFunc
@@ -278,8 +340,7 @@ EndFunc
 ;	-edit the lblDebugFindImage to result
 ;author: GkevinOD (2017)
 Func chkDebugFindImageClick()
-	$hWindow = WinGetHandle("BlueStacks App Player")
-	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
+	getEmulatorHandle()
 	While(GUICtrlRead($chkDebugFindImage) = 1) ;if it is checked
 		Dim $strImage = GUICtrlRead($textDebugImage)
 		Dim $dirImage = ""
@@ -354,8 +415,7 @@ EndFunc
 ;	-edit the lblDebugLocation to result
 ;author: GkevinOD (2017)
 Func chkDebugLocationClick()
-	$hWindow = WinGetHandle("BlueStacks App Player")
-	$hControl = ControlGetHandle("BlueStacks App Player", "", "[CLASS:BlueStacksApp; INSTANCE:1]")
+	getEmulatorHandle()
 	While(GUICtrlRead($chkDebugLocation) = 1) ;if it is checked
 		GUICtrlSetState($btnSet, $GUI_DISABLE)
 		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())
@@ -409,4 +469,16 @@ Func btnSaveImage()
 	EndIf
 	_CaptureRegion($fileDir & ".bmp", $pointDebug1[0], $pointDebug1[1], $pointDebug2[0], $pointDebug2[1])
 	MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "The image has been saved to: " & @CRLF & $fileDir & ".bmp")
+EndFunc
+
+;function: getEmulatorHandle()
+;-stores window handle and control handle to global variable
+;post:
+;	-hHandle and hControl will be set to the new handle
+;author: GkevinOD (2017)
+Func getEmulatorHandle()
+	$hWindow = WinGetHandle($botTitle)
+	$hControl = ControlGetHandle($botTitle, "", $botInstance)
+
+	$diff = ControlGetPos($botTitle, "", $hControl)
 EndFunc

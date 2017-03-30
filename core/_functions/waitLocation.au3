@@ -26,7 +26,7 @@ Func waitLocation($strLocation, $intWaitDuration = 5)
 	$startTime = TimerInit()
 	While TimerDiff($startTime) < $intWaitDuration
 		If _Sleep(100) Then Return
-		If getLocation() = $strLocation Then
+		If StringInStr($strLocation, getLocation()) Then
 			Return 1
 		EndIf
 	WEnd
