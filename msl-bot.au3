@@ -8,9 +8,9 @@
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
-Global $botVersion = IniRead(@ScriptDir & "/" & $botConfig, "general", "version", "")
-Global $botVersionComplex = IniRead(@ScriptDir & "/" & $botConfig, "general", "version-complex", "")
-Global $botName = IniRead(@ScriptDir & "/" & $botConfig, "general", "title", "MSL Bot")
+Global $botVersion = "v1.9.2"
+Global $botVersionComplex = "v1.9.2.2"
+Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", ""), ",", 2)
 
 ;defining globals

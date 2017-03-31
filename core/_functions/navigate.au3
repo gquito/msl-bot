@@ -44,7 +44,7 @@ Func navigate($strMainLocation, $strLocation = "")
 			;battle
 			Case "catch-mode"
 				If checkPixel($battle_pixelUnavailable) = True Then Return 0
-				clickPointUntil($battle_pixelUnavailable, "catch-mode")
+				clickPointUntil($battle_pixelUnavailable, "catch-mode", 100, 100)
 			Case ""
 				Return 1
 			Case Else
@@ -109,7 +109,7 @@ Func navigate($strMainLocation, $strLocation = "")
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
 				Case "battle"
-					Return waitLocation("battle", 2000)
+					Return waitLocation("battle", 8000)
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
 			EndSwitch

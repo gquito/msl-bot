@@ -78,37 +78,39 @@ Func farmRare()
 				Case "battle-end"
 					$intCheckStartTime = 0
 
-					If Mod($dataRuns, 20) = 0 Then
-						clickImageUntil("battle-quick-restart", "unknown")
-						$dataRuns += 1
-					Else
-						If checkPixel($battle_pixelQuest) = True Then
-							If setLogReplace("Collecting quests...", 1) Then ExitLoop (2)
-							If navigate("village", "quests") = 1 Then
-								For $questTab In $village_coorArrayQuestsTab ;quest tabs
-									clickPoint(StringSplit($questTab, ",", 2))
-									While IsArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
-										If _Sleep(10) Then ExitLoop (5)
-										clickImage("misc-quests-get-reward", 100)
-									WEnd
-								Next
-							EndIf
-							If setLogReplace("Collecting quests... Done!", 1) Then ExitLoop (2)
+					If checkPixel($battle_pixelQuest) = True Then
+						If setLogReplace("Collecting quests...", 1) Then ExitLoop (2)
+						If navigate("village", "quests") = 1 Then
+							For $questTab In $village_coorArrayQuestsTab ;quest tabs
+								clickPoint(StringSplit($questTab, ",", 2))
+								While IsArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
+									If _Sleep(10) Then ExitLoop (5)
+									clickImage("misc-quests-get-reward", 100)
+								WEnd
+							Next
 						EndIf
+						If setLogReplace("Collecting quests... Done!", 1) Then ExitLoop (2)
+					EndIf
 
-						If $getHourly = True Then
-							If getHourly() = 1 Then
-								$getHourly = False
-							EndIf
+					If $getHourly = True Then
+						If getHourly() = 1 Then
+							$getHourly = False
 						EndIf
+					EndIf
 
-						If $guardian = 1 Then
-							ExitLoop (2)
-						EndIf
-
-						If getLocation() = "battle-end" Then
+					If getLocation() = "battle-end" Then
+						If Not Mod($dataRuns, 20) = 0 Then
 							clickImageUntil("battle-quick-restart", "unknown")
 							$dataRuns += 1
+						Else
+							If $guardian = 1 Then
+								ExitLoop
+							EndIf
+
+							If getLocation() = "battle-end" Then
+								clickImageUntil("battle-quick-restart", "unknown")
+								$dataRuns += 1
+							EndIf
 						EndIf
 					EndIf
 				Case "refill"
@@ -185,11 +187,13 @@ Func farmRare()
 		Dim $foundDungeon = 0
 		If $guardian = 1 And navigate("map", "guardian-dungeons") = 1 Then
 			If setLog("Checking for guardian dungeons...", 1) Then ExitLoop (2)
-			While checkLocations("guardian-dungeons") = 1
+			Local $currLocation = getLocation()
+
+			While $currLocation = "guardian-dungeons"
 				If clickImageUntil("misc-dungeon-energy", "map-battle", 50) = 1 Then
 					clickPointWait($map_coorBattle, "map-battle", 5)
 
-					If _Sleep(3000) Then ExitLoop (2)
+					If _Sleep(500) Then ExitLoop (2)
 
 					If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
 						If setLog("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
@@ -227,9 +231,9 @@ Func farmRare()
 					EndIf
 
 					$foundDungeon += 1
-					setLogReplace("Found dungeon, attacking x" & $foundDungeon & ".", 1)
+					If setLogReplace("Found dungeon, attacking x" & $foundDungeon & ".", 1) Then ExitLoop (2)
 
-					If waitLocation("battle-end-exp", 240) = 0 Then
+					If waitLocation("battle-end-exp", 240000) = 0 Then ;5 minutes in milliseconds
 						If setLog("Unable to finish golem in 5 minutes!", 1) Then ExitLoop (2)
 						ExitLoop
 					EndIf

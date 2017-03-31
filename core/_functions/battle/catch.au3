@@ -22,7 +22,7 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon = False, $boolCheckTried = True)
+Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon = False, $boolCheckTried = True, $boolCheckCaught = True)
 	Local $strCaught = ""
 	Local $strAstromonGrade = ""
 	Local $boolTried = False
@@ -42,7 +42,7 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 
 			If isArray($pointArray) = True Then ;if found
 				setLogReplace("Locating astromon... Found!", 1)
-				$strAstromonGrade = _StringProper(StringMid(StringReplace($pointArray[3], "catch-", ""), 1, 2))
+				$strAstromonGrade = _StringProper(StringRegExpReplace($pointArray[3], ".*catch-(.*)([0-9]\.|\.)bmp", "$1"))
 
 				$pointArray[1] += 263
 
@@ -61,14 +61,16 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 					navigate("battle", "catch-mode")
 					ExitLoop ;going back to inner loop to check for more astromon
 				Else
-					If $boolLog = True Then setLog("Checking if caught...", 1)
-					If IsArray(findImagesFilesWait($imagesRareAstromon, 10, 100)) Then
-						If $boolLog = True Then setLog("Out of astromon chips!", 1)
-						If $boolLog = True Then setLog("Missed a " & $strAstromonGrade & ".", 1) ;if missed astromon
-					Else
-						$strCaught &= StringMid($strAstromonGrade, 1, 2)
-						If $boolLog = True Then setLog("Astromon Caught: " & $strAstromonGrade & "!")
-						If $boolOneAstromon Then Return $strCaught ;stops after one catch or no catch
+					If $boolCheckCaught = True Then
+						If $boolLog = True Then setLog("Checking if caught...", 1)
+						If IsArray(findImagesFilesWait($imagesRareAstromon, 10, 100)) Then
+							If $boolLog = True Then setLog("Out of astromon chips!", 1)
+							If $boolLog = True Then setLog("Missed a " & $strAstromonGrade & ".", 1) ;if missed astromon
+						Else
+							$strCaught &= StringMid($strAstromonGrade, 1, 2)
+							If $boolLog = True Then setLog("Astromon Caught: " & $strAstromonGrade & "!")
+							If $boolOneAstromon Then Return $strCaught ;stops after one catch or no catch
+						EndIf
 					EndIf
 
 					Return $strCaught
@@ -83,7 +85,7 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 						WEnd
 
 						If $boolLog = True Then setLog("Saving to NotRecognized" & $tempInt & ".bmp", 1)
-						_CaptureRegion("NotRecognized" & $tempInt & ".bmp")
+						_CaptureRegion("NotRecognized" & $tempInt & ".bmp", 0, 263, 800, 473)
 					EndIf
 
 					Return -2
@@ -92,7 +94,7 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 				setLogReplace("Locating astromon... Not found.", 1)
 				While checkLocations("battle") = 0 ;exit catch mode
 					If _Sleep(200) Then Return
-					clickPoint($battle_coorCatchCancel)
+					clickPointUntil($battle_coorCatchCancel, "battle")
 				WEnd
 			EndIf
 
