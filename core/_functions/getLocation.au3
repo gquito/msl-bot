@@ -13,14 +13,6 @@
 Func getLocation()
 	_CaptureRegion()
 
-	;village
-	If isArray(findImageFiles("location-manage")) Then Return "manage"
-	If isArray(findImageFiles("location-monsters")) = True Then Return "monsters"
-	If isArray(findImageFiles("location-quests")) = True Then Return "quests"
-	If isArray(findImageFiles("location-esc")) = True Then Return "esc"
-
-	If isArray(findImageFiles("location-village")) = True Then Return "village"
-
 	;battle
 	If isArray(findImageFiles("location-pause")) = True Then Return "pause"
 	If isArray(findImageFiles("location-defeat")) = True Then Return "defeat"
@@ -49,6 +41,14 @@ Func getLocation()
 	If isArray(findImageFiles("location-autobattle-prompt")) = True Then Return "autobattle-prompt"
 
 	If isArray(findImageFiles("location-map")) = True Then Return "map"
+
+	;village
+	If isArray(findImageFiles("location-manage")) Then Return "manage"
+	If isArray(findImageFiles("location-monsters")) = True Then Return "monsters"
+	If isArray(findImageFiles("location-quests")) = True Then Return "quests"
+	If isArray(findImageFiles("location-esc")) = True Then Return "esc"
+
+	If isArray(findImageFiles("location-village")) = True Then Return "village"
 
 	;other
 	If isArray(findImageFiles("location-inbox")) = True Then Return "inbox"

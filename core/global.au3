@@ -63,7 +63,7 @@ Global $dim_starstone_dungeons = "356,137,110,9"
 Global $dim_village = "775,86,14,14"
 
 ;coordinations
-	Global $game_coorTap = [759, 482]
+	Global $game_coorTap = [793, 545]
 	Global $game_coorConnectionRetry = [332, 322]
 	Global $game_coorDialogueSkip = [755, 25]
 	Global $game_coorRefill = [358, 422]

@@ -12,7 +12,7 @@ Func setLog($strStatus)
 	WinSetTitle(@GUI_WinHandle, "", "MSLBot v3 - " & $strStatus)
 	_GUICtrlEdit_AppendText($textOutput, "[" & _NowTime(5) & "] " & $strStatus & @CRLF)
 	$setLogOld = GUICtrlRead($textOutput)
-	_Sleep(100)
+	If _Sleep(100) Then Return True
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -27,5 +27,5 @@ Func setLogReplace($strStatus)
 	WinSetTitle(@GUI_WinHandle, "", "MSLBot v3 - " & $strStatus)
 	_GUICtrlEdit_SetText($textOutput, "")
 	_GUICtrlEdit_AppendText($textOutput, $setLogOld & "[" & _NowTime(5) & "] " & $strStatus & @CRLF)
-	_Sleep(100)
+	If _Sleep(100) Then Return True
 EndFunc

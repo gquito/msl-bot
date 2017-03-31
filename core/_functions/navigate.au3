@@ -44,7 +44,7 @@ Func navigate($strMainLocation, $strLocation = "")
 			;battle
 			Case "catch-mode"
 				If checkPixel($battle_pixelUnavailable) = True Then Return 0
-				clickPointUntil($battle_pixelUnavailable, "catch-mode")
+				clickPointUntil($battle_pixelUnavailable, "catch-mode", 100, 100)
 			Case ""
 				Return 1
 			Case Else
@@ -53,59 +53,66 @@ Func navigate($strMainLocation, $strLocation = "")
 
 		Return waitLocation($strLocation)
 	Else
-		If getLocation() = "battle-end-exp" Then
-			While (getLocation() = "battle-end") = False
-				clickPoint($game_coorTap)
-			WEnd
-		EndIf
-
 		While True
 			If _Sleep(50) Then Return
+			Local $currLocation = getLocation()
 
-			If checkLocations("battle") = 1 Then
-				If ($strMainLocation = "battle") Then ExitLoop
-				While waitLocation("pause", 1) = 0
-					ControlSend($hWindow, "", "", "{ESC}")
-				WEnd
+			Switch $currLocation
+				Case $strMainLocation, $strLocation
+					ExitLoop
+				Case "battle"
+					While waitLocation("pause", 1000) = 0
+						ControlSend($hWindow, "", "", "{ESC}")
+					WEnd
 
-				clickPoint($battle_coorGiveUp)
-				clickPoint($battle_coorGiveUpConfirm)
-			EndIf
+					clickPoint($battle_coorGiveUp)
+					clickPoint($battle_coorGiveUpConfirm)
+				Case "dialogue"
+					clickPoint($game_coorDialogueSkip)
+				Case "unknown"
+					clickPoint($game_coorTap)
 
-			If checkLocations("dialogue") = 1 Then
-				clickPoint($game_coorDialogueSkip)
-			EndIf
-
-			If checkLocations("unknown") = 1 Then
-				clickPoint($game_coorTap)
-
-				Local $closePoint = findImageFiles("misc-close", 30)
-				If isArray($closePoint) Then
-					clickPoint($closePoint) ;to close any windows open
-				EndIf
-			EndIf
+					Local $closePoint = findImageFiles("misc-close", 30)
+					If isArray($closePoint) Then
+						clickPoint($closePoint) ;to close any windows open
+					EndIf
+				Case "battle-end-exp"
+					clickPointUntil($game_coorTap, "battle-end", 100, 100)
+			EndSwitch
 
 			Switch $strMainLocation
 				Case "village"
-					ControlSend($hWindow, "", "", "{ESC}")
-					If getLocation() = "battle-end" Then clickPoint($battle_coorAirship)
+					Switch $currLocation
+						Case "battle-end"
+							clickPoint($battle_coorAirship)
+						Case "map", "map-stage", "astroleague", "association", "clan"
+							clickPoint($game_pixelBack)
+						Case Else
+							ControlSend($hWindow, "", "", "{ESC}")
+					EndSwitch
 				Case "map"
-					If getLocation() = "village" Then
-						While checkLocations("village", "unknown") = 1
+					Switch $currLocation
+						Case "battle-end"
+							clickPoint($battle_coorMap)
+						Case "village"
 							clickPoint($village_coorPlay)
-						WEnd
-					Else
-						ControlSend($hWindow, "", "", "{ESC}")
-						waitLocation("map", 1)
-					EndIf
+						Case "astroleague", "map-stage", "map-battle", "association", "clan"
+							clickPoint($game_pixelBack)
+						Case "unknown"
+							clickPoint($game_coorTap)
 
-					If getLocation() = "battle-end" Then clickPoint($battle_coorMap)
+							Local $closePoint = findImageFiles("misc-close", 30)
+							If isArray($closePoint) Then
+								clickPoint($closePoint) ;to close any windows open
+							EndIf
+						Case Else
+							ControlSend($hWindow, "", "", "{ESC}")
+					EndSwitch
 				Case "battle"
-					Return waitLocation("battle", 3)
+					Return waitLocation("battle", 8000)
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
 			EndSwitch
-			If waitLocation($strMainLocation, 1) = 1 Then ExitLoop
 		WEnd
 		navigate($strMainLocation, $strLocation)
 	EndIf

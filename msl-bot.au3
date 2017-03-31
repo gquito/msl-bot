@@ -3,14 +3,14 @@
 #AutoIt3Wrapper_Outfile=msl-bot v1.9.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.9.1
+#AutoIt3Wrapper_Res_Fileversion=1.9.2
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
-Global $botVersion = IniRead(@ScriptDir & "/" & $botConfig, "general", "version", "")
-Global $botVersionComplex = IniRead(@ScriptDir & "/" & $botConfig, "general", "version-complex", "")
-Global $botName = IniRead(@ScriptDir & "/" & $botConfig, "general", "title", "MSL Bot")
+Global $botVersion = "v1.9.2"
+Global $botVersionComplex = "v1.9.2.2"
+Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", ""), ",", 2)
 
 ;defining globals

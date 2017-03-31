@@ -54,13 +54,13 @@ Func farmAstromon()
 				If checkPixelWait($battle_pixelUnavailable, 2) = False Then
 					While True ;while there are Astromons
 						navigate("battle", "catch-mode")
-						$tempStr = catch($captures, True, False, True, False)
+						$tempStr = catch($captures, True, False, True, False, False)
 						If ($tempStr = -1) Or ($tempStr = "") Then ExitLoop
 
 						$intCounter += 1
 
 						GUICtrlSetData($listScript, "")
-						GUICtrlSetData($listScript, "~Farm Astromon Data~|# of Astromons: " & $intCounter & "/" & $limit)
+						GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
 						If $intCounter = $limit Then ExitLoop (2)
 					WEnd
 
@@ -76,7 +76,7 @@ Func farmAstromon()
 							ExitLoop
 						EndIf
 
-						If _Sleep(500) Then ExitLoop (2)
+						If _Sleep(50) Then ExitLoop (2)
 					WEnd
 
 					clickPoint($battle_coorGiveUp)
@@ -86,7 +86,13 @@ Func farmAstromon()
 				clickPointUntil($game_coorTap, "battle-end")
 
 			Case "battle-end"
-				clickImage("battle-play-again")
+				Local $quickRestartPoint = findImageFiles("battle-quick-restart", 30)
+				If isArray($quickRestartPoint) Then
+					clickPoint($quickRestartPoint)
+				Else
+					clickImage("battle-play-again", 30)
+				EndIf
+
 
 			Case "map-battle"
 				clickPointUntil($map_coorBattle, "battle")

@@ -129,7 +129,7 @@ Func farmGolem()
 					setLog("Gem inventory is full!", 2)
 					ExitLoop (2)
 				Case "defeat"
-					clickImageFiles("battle-give-up")
+					clickImageFiles("battle-give-up", 30)
 					clickPointUntil($game_coorTap, "battle-end", 20, 1000)
 				Case "lost-connection"
 					clickPoint($game_coorConnectionRetry)
