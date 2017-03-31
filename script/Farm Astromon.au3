@@ -76,7 +76,7 @@ Func farmAstromon()
 							ExitLoop
 						EndIf
 
-						If _Sleep(500) Then ExitLoop (2)
+						If _Sleep(50) Then ExitLoop (2)
 					WEnd
 
 					clickPoint($battle_coorGiveUp)

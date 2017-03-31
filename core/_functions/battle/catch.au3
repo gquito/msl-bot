@@ -31,26 +31,26 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 		While True
 			If Not checkLocations("catch-mode") = 1 Then Return ""
 			If Not $boolTried Then setLogReplace("Locating astromon...", 1)
+
+			_CaptureRegion("", 0, 263, 800, 473)
 			If isArray($varImages) Then ;finding astromon within list
-				_CaptureRegion()
-				Local $pointArray = findImagesWait($varImages, 3, 100)
+				Local $pointArray = findImagesFiles($varImages, 100)
 			Else
-				_CaptureRegion()
-				Local $pointArray = findImage($varImages, 100)
+				Local $pointArray = findImageFiles($varImages, 100)
 			EndIf
 			If getLocation() = "battle-astromon-full" Then Return -1
 
 			If isArray($pointArray) = True Then ;if found
 				setLogReplace("Locating astromon... Found!", 1)
-				$strAstromonGrade = _StringProper(StringRegExpReplace(StringReplace(StringReplace(StringReplace($varImages[$pointArray[2]], "catch-", ""), "battle-", ""), "-", " "), "[0-9]", ""))
-				While checkLocations("battle") = 0
-					$boolTried = True ;indicate that catching was attempted
-					If checkLocations("battle-astromon-full") = 1 Then Return -1
-					If checkLocations("battle-end-exp", "battle-sell", "battle-end") = 1 Then Return $strCaught
+				$strAstromonGrade = _StringProper(StringMid(StringReplace($pointArray[3], "catch-", ""), 1, 2))
 
-					If _Sleep(100) Then Return
-					clickPoint($pointArray, 1, 0)
-				WEnd
+				$pointArray[1] += 263
+
+				$boolTried = True ;indicate that catching was attempted
+				clickPointUntil($pointArray, "battle", 200, 100)
+
+				If checkLocations("battle-astromon-full") = 1 Then Return -1
+				If checkLocations("battle-end-exp", "battle-sell", "battle-end") = 1 Then Return $strCaught
 
 				If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
 					$strCaught &= StringMid($strAstromonGrade, 1, 2)
@@ -62,7 +62,7 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 					ExitLoop ;going back to inner loop to check for more astromon
 				Else
 					If $boolLog = True Then setLog("Checking if caught...", 1)
-					If IsArray(findImagesFilesWait($imagesRareAstromon, 30, 100)) Then
+					If IsArray(findImagesFilesWait($imagesRareAstromon, 10, 100)) Then
 						If $boolLog = True Then setLog("Out of astromon chips!", 1)
 						If $boolLog = True Then setLog("Missed a " & $strAstromonGrade & ".", 1) ;if missed astromon
 					Else

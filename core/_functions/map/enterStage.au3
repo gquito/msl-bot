@@ -22,11 +22,11 @@
 
 Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = True)
 	If waitLocation("map") = 1 Then
-		Dim $imgPoint = findImageWait($strImage, 2, 50)
-
 		Local $errorCounter = 0
 		Local $strMap = StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "")
 		If setLogReplace("Entering " & $strMap & "..Searching", 1) Then Return 0
+
+		Dim $imgPoint = findImageWait($strImage, 1, 50)
 		While Not isArray($imgPoint)
 			If checkLocations("astroleague", "map-stage", "association") = 1 Then ControlSend($hWindow, "", "", "{ESC}")
 

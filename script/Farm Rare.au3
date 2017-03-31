@@ -30,12 +30,6 @@ Func farmRare()
 		Local $grade = StringReplace($capture, " ", "-")
 		If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
 			_ArrayAdd($captures, "catch-" & $grade)
-
-			Local $tempInt = 2
-			While FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & $tempInt & ".bmp")
-				_ArrayAdd($captures, "catch-" & $grade & $tempInt)
-				$tempInt += 1
-			WEnd
 		EndIf
 	Next
 
@@ -63,7 +57,7 @@ Func farmRare()
 				Case "map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan", "esc", "inbox"
 					If setLog("Going into battle...", 1) Then ExitLoop (2)
 					If navigate("map") = 1 Then
-						If enterStage($map, $difficulty, True, True) = 0 Then
+						If enterStage($map, $difficulty, False, True) = 0 Then
 							If setLog("Error: Could not enter map stage.", 1) Then ExitLoop (2)
 						Else
 							$dataRuns += 1
@@ -83,41 +77,40 @@ Func farmRare()
 					EndIf
 				Case "battle-end"
 					$intCheckStartTime = 0
-					clickPoint($game_coorTap, 5)
 
-					If waitLocation("unknown,battle", 10) = 0 Then
-						While True
-							If checkLocations("refill") Then
-								$dataRuns -= 1
-								ExitLoop
+					If Mod($dataRuns, 20) = 0 Then
+						clickImageUntil("battle-quick-restart", "unknown")
+						$dataRuns += 1
+					Else
+						If checkPixel($battle_pixelQuest) = True Then
+							If setLogReplace("Collecting quests...", 1) Then ExitLoop (2)
+							If navigate("village", "quests") = 1 Then
+								For $questTab In $village_coorArrayQuestsTab ;quest tabs
+									clickPoint(StringSplit($questTab, ",", 2))
+									While IsArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
+										If _Sleep(10) Then ExitLoop (5)
+										clickImage("misc-quests-get-reward", 100)
+									WEnd
+								Next
 							EndIf
-							If setLog("Autobattle finished.", 1) Then ExitLoop (3)
+							If setLogReplace("Collecting quests... Done!", 1) Then ExitLoop (2)
+						EndIf
 
-							If checkPixel($battle_pixelQuest) = True Then
-								If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop (2)
-								If navigate("village", "quests") = 1 Then
-									If setLog("Collecting quests.", 1) Then ExitLoop (3)
-									For $questTab In $village_coorArrayQuestsTab ;quest tabs
-										clickPoint(StringSplit($questTab, ",", 2))
-										While IsArray(findImageWait("misc-quests-get-reward", 3, 100)) = True
-											If _Sleep(10) Then ExitLoop (5)
-											clickImage("misc-quests-get-reward", 100)
-										WEnd
-									Next
-								EndIf
+						If $getHourly = True Then
+							If getHourly() = 1 Then
+								$getHourly = False
 							EndIf
+						EndIf
 
-							If $getHourly = True Then
-								If getHourly() = 1 Then
-									$getHourly = False
-								EndIf
-							EndIf
-
-							navigate("map")
+						If $guardian = 1 Then
 							ExitLoop (2)
-						WEnd
+						EndIf
+
+						If getLocation() = "battle-end" Then
+							clickImageUntil("battle-quick-restart", "unknown")
+							$dataRuns += 1
+						EndIf
 					EndIf
-					$dataRuns += 1
 				Case "refill"
 					If $intGemUsed + 30 <= $intGem Then
 						clickPointUntil($game_coorRefill, "refill-confirm")
@@ -145,13 +138,11 @@ Func farmRare()
 						$intCheckStartTime = TimerInit() ;reset timer
 					EndIf
 
-					If IsArray(findImagesFilesWait($imagesRareAstromon, 5, 100)) Then
-						$dataEncounter += 1
-						If setLog("An astromon has been found!", 1) Then ExitLoop (2)
-						waitLocation("battle")
-
-						_CaptureRegion()
+					If IsArray(findImagesFiles($imagesRareAstromon, 100)) Then
 						If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
+							$dataEncounter += 1
+							If setLog("An astromon has been found!", 1) Then ExitLoop (2)
+
 							If navigate("battle", "catch-mode") = 1 Then
 								Local $tempStr = catch($captures, True, False, False, True)
 								If $tempStr = -2 Then ;double check
@@ -166,13 +157,13 @@ Func farmRare()
 									$counterWordWrap += 1
 									$dataStrCaught &= ", " & $tempStr
 
-									If Mod($counterWordWrap, 11) = 0 Then $dataStrCaught &= "|........"
+									If Mod($counterWordWrap, 11) = 0 Then $dataStrCaught &= "|.........."
 								EndIf
-								If setLog("Finish catching, attacking..", 1) Then ExitLoop (2)
+								If setLog("Finish catching... Attacking", 1) Then ExitLoop (2)
 								clickPoint($battle_coorAuto)
 							EndIf
 						Else ;if no more astrochips
-							If setLog("Unable to catch astromons, out of astrochips.", 1) Then ExitLoop (2)
+							If setLog("No astrochips left... Attacking", 1) Then ExitLoop (2)
 							clickPoint($battle_coorAuto)
 						EndIf
 						$intCheckStartTime = TimerInit()

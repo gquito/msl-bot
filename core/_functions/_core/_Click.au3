@@ -70,13 +70,13 @@ EndFunc
 
 #ce ----------------------------------------------------------------------------
 
-Func clickPointUntil($coorPoint, $strLocation, $intNum = 5, $intDuration = 2000)
+Func clickPointUntil($coorPoint, $strLocation, $intNum = 5, $intDuration = 500)
 	For $numClick = 0 To $intNum-1
 		clickPoint($coorPoint, 1, 0)
 		Local $startTime = TimerInit()
 		While TimerDiff($startTime) < $intDuration
-			If _Sleep(50) Then Return 0
-			If checkLocations($strLocation) = 1 Then Return 1
+			If _Sleep(100) Then Return 0
+			If getLocation() = $strLocation Then Return 1
 		WEnd
 	Next
 	Return 0
