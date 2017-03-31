@@ -125,6 +125,9 @@ Func farmRare()
 
 						setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem)
 						$intGemUsed += 30
+
+						navigate("map") ;sometimes it gets stuck and adds 20 runs
+						$dataRuns -= 1
 					Else
 						setLog("Gem used exceed max gems!")
 						ExitLoop (2)
