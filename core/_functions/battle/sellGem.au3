@@ -31,7 +31,7 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 	Local $sold = ""
 	$strRecord = StringReplace($strRecord, "!", "")
 
-	If waitLocation("battle-sell", 2) Then
+	If waitLocation("battle-sell", 2000) Then
 		Local $arrayData = ["-", "-", "-", "", "-", "-", ""]
 
 		;egg check
