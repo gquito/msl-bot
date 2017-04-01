@@ -61,6 +61,7 @@ Func farmRare()
 							If setLog("Error: Could not enter map stage.", 1) Then ExitLoop (2)
 						Else
 							$dataRuns += 1
+							$intCheckStartTime = TimerInit()
 							If setLog("Waiting for astromon.", 1) Then ExitLoop (2)
 						EndIf
 					EndIf
@@ -102,6 +103,7 @@ Func farmRare()
 						If Not Mod($dataRuns, 20) = 0 Then
 							clickImageUntil("battle-quick-restart", "unknown")
 							$dataRuns += 1
+							$intCheckStartTime = TimerInit()
 						Else
 							If $guardian = 1 Then
 								ExitLoop
@@ -110,6 +112,7 @@ Func farmRare()
 							If getLocation() = "battle-end" Then
 								clickImageUntil("battle-quick-restart", "unknown")
 								$dataRuns += 1
+								$intCheckStartTime = TimerInit()
 							EndIf
 						EndIf
 					EndIf
@@ -136,8 +139,8 @@ Func farmRare()
 					EndIf
 					clickPointUntil($map_coorBattle, "battle")
 				Case "battle"
-					$intCheckTime = Int(TimerDiff($intCheckStartTime) / 1000)
-					If (Not $intCheckStartTime = 0) And ($intCheckTime > 180) Then
+					Local $intCheckTime = Int(TimerDiff($intCheckStartTime) / 1000)
+					If Not($intCheckStartTime = 0) And ($intCheckTime > 180) Then
 						If setLog("Battle has not finished in 3 minutes! Attacking..", 1) Then ExitLoop (2)
 						clickPoint($battle_coorAuto)
 						$intCheckStartTime = TimerInit() ;reset timer
@@ -190,7 +193,8 @@ Func farmRare()
 			Local $currLocation = getLocation()
 
 			While $currLocation = "guardian-dungeons"
-				If clickImageUntil("misc-dungeon-energy", "map-battle", 50) = 1 Then
+				Local $energyPoint = findImageFiles("misc-dungeon-energy", 50)
+				If isArray($energyPoint) And (clickPointUntil($energyPoint, "map-battle", 50) = 1) Then
 					clickPointWait($map_coorBattle, "map-battle", 5)
 
 					If _Sleep(500) Then ExitLoop (2)
@@ -233,13 +237,24 @@ Func farmRare()
 					$foundDungeon += 1
 					If setLogReplace("Found dungeon, attacking x" & $foundDungeon & ".", 1) Then ExitLoop (2)
 
-					If waitLocation("battle-end-exp", 240000) = 0 Then ;5 minutes in milliseconds
-						If setLog("Unable to finish golem in 5 minutes!", 1) Then ExitLoop (2)
-						ExitLoop
-					EndIf
+					Local $initTime = TimerInit()
+					While True
+						_Sleep(1000)
+						If getLocation() = "battle-end-exp" Then ExitLoop
+
+						If Int(TimerDiff($initTime)/1000) > 240 Then
+							If setLog("Error: Could not finish Guardian dungeon within 5 minutes, exiting.") Then ExitLoop(2)
+							navigate("map")
+
+							ExitLoop
+						EndIf
+					WEnd
 
 					clickPointUntil($game_coorTap, "battle-end", 20, 1000)
-					clickImageUntil("battle-exit", "guardian-dungeons", 50)
+					clickImageUntil("battle-exit", "guardian-dungeons", 20)
+
+					waitLocation("guardian-dungeons", 10000)
+					$currLocation = getLocation()
 				Else
 					If setLog("Guardian dungeon not found, going back to map.", 1) Then ExitLoop (2)
 					navigate("map")

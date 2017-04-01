@@ -85,7 +85,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 			Return 0
 		EndIf
 
-		Return waitLocation("battle", 10)
+		Return waitLocation("battle", 10000)
 	Else
 		Return 0
 	EndIf

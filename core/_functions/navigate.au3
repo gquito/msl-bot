@@ -16,13 +16,15 @@
 
 	On fail - Returns 0
 
+	If in battle and ForceGiveUp = false then - Returns -1
+
  See Also:
 
 	<getLocation>
 
 #ce ----------------------------------------------------------------------------
 
-Func navigate($strMainLocation, $strLocation = "")
+Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 	Local $strCurrentLocation = getLocation()
 
 	If $strLocation = $strCurrentLocation Then Return 1
@@ -61,6 +63,7 @@ Func navigate($strMainLocation, $strLocation = "")
 				Case $strMainLocation, $strLocation
 					ExitLoop
 				Case "battle"
+					If $forceGiveUp = False Then Return -1
 					While waitLocation("pause", 1000) = 0
 						ControlSend($hWindow, "", "", "{ESC}")
 					WEnd

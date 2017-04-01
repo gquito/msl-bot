@@ -21,7 +21,7 @@
 	<getLocation>
 #ce ----------------------------------------------------------------------------
 
-Func waitLocation($strLocation, $intWaitDuration = 2000)
+Func waitLocation($strLocation, $intWaitDuration = 3000)
 	$startTime = TimerInit()
 	While TimerDiff($startTime) < $intWaitDuration
 		If _Sleep(100) Then Return
