@@ -107,8 +107,9 @@ Global $dim_village = "775,86,14,14"
 
 		Global $map_coorBattle = [705, 487]
 		Global $map_coorConfirmAutoBattle = [329, 316]
+		Global $map_coorCancelAutoBattle = [494, 316]
 
-		Global $map_coorB10 = [663, 431]
+		Global $map_coorB10 = [627, 413]
 		Global $map_coorB9 = [659, 360]
 		Global $map_coorB8 = [667, 286]
 		Global $map_coorB7 = [666, 215]
@@ -123,7 +124,7 @@ Global $dim_village = "775,86,14,14"
 		Global $battle_coorGiveUpConfirm = [395, 309]
 		Global $battle_coorContinue = [323, 323]
 		Global $battle_coorSell = [726, 326]
-		Global $battle_coorSellConfirm = [395, 329]
+		Global $battle_coorSellConfirm = [479, 330]
 
 		Global $battle_coorCatch = [741, 278]
 		Global $battle_coorCatchCancel = [741, 118]

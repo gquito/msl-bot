@@ -54,7 +54,7 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 				If (($arrayData[0] <= $intMinStar) And ($arrayData[0] < $intKeepAll)) Then
 					If Not (($arrayData[0] >= $intMinStarForSub) And ($arrayData[5] >= $intMinSub)) Then
 						clickPoint($battle_coorSell, 1, 1000)
-						clickPointUntil($battle_coorSellConfirm, "battle-end")
+						clickPointUntil($battle_coorSellConfirm, "battle-end", 5, 2000)
 						$sold = "!"
 					EndIf
 				EndIf

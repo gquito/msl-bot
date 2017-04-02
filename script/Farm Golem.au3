@@ -89,13 +89,13 @@ Func farmGolem()
 						If $getGuardian = True Then
 							ExitLoop
 						Else
-							If checkLocations("battle-end") = 1 Then
+							If getLocation() = "battle-end" Then
 								Local $quickRestart = findImageFiles("battle-quick-restart", 30)
 								clickPointUntil($quickRestart, "unknown")
 								$intRunCount += 1
 								$intCheckStartTime = TimerInit()
 
-								If checkLocations("battle-end") Then navigate("map")
+								If getLocation() = "battle-end" Then navigate("map")
 							EndIf
 						EndIf
 					EndIf
@@ -127,7 +127,15 @@ Func farmGolem()
 
 					Local $result = navigate("map", "golem-dungeons")
 					If $result = 1 Then
-						clickPointUntil(Eval("map_coorB" & $strGolem), "map-battle", 5, 2000)
+						Local $tempCurrLocation = getLocation()
+						While $tempCurrLocation
+							If $tempCurrLocation() = "autobattle-prompt" Then
+								clickPoint($map_coorCancelAutoBattle, 1, 1500)
+							EndIf
+
+							clickPoint(Eval("map_coorB" & $strGolem), 1, 1500, False)
+						WEnd
+
 						clickPointUntil($map_coorBattle, "battle")
 
 						$intRunCount += 1
