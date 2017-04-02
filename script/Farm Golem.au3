@@ -128,12 +128,13 @@ Func farmGolem()
 					Local $result = navigate("map", "golem-dungeons")
 					If $result = 1 Then
 						Local $tempCurrLocation = getLocation()
-						While $tempCurrLocation
-							If $tempCurrLocation() = "autobattle-prompt" Then
+						While Not($tempCurrLocation = "map-battle")
+							If $tempCurrLocation = "autobattle-prompt" Then
 								clickPoint($map_coorCancelAutoBattle, 1, 1500)
 							EndIf
 
 							clickPoint(Eval("map_coorB" & $strGolem), 1, 1500, False)
+							$tempCurrLocation = getLocation()
 						WEnd
 
 						clickPointUntil($map_coorBattle, "battle")
