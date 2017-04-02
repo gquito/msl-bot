@@ -118,13 +118,16 @@ Func farmRare()
 					EndIf
 				Case "refill"
 					If $intGemUsed + 30 <= $intGem Then
-						clickPointUntil($game_coorRefill, "refill-confirm")
-						clickPointUntil($game_coorRefillConfirm, "refill")
+						While getLocation() = "refill"
+							clickPoint($game_coorRefill, 1, 1000)
+						WEnd
 
 						If checkLocations("buy-gem") Then
-							setLog("Out of gems!", 1)
+							setLog("Out of gems!", 2)
 							ExitLoop (2)
 						EndIf
+
+						clickPointUntil($game_coorRefillConfirm, "refill")
 
 						ControlSend($hWindow, "", "", "{ESC}")
 
@@ -250,8 +253,15 @@ Func farmRare()
 						EndIf
 					WEnd
 
-					clickPointUntil($game_coorTap, "battle-end", 20, 1000)
-					clickImageUntil("battle-exit", "guardian-dungeons", 20)
+					clickPointUntil($game_coorTap, "battle-end", 100, 100)
+
+					Local $pointExit = findImageFiles("battle-exit", 50)
+					If isArray($pointExit) Then
+						clickPointUntil($pointExit, "guardian-dungeons")
+					Else
+						If setLog("Could not find battle-exit.bmp! Going back to farming.") Then ExitLoop(2)
+						ExitLoop
+					EndIf
 
 					waitLocation("guardian-dungeons", 10000)
 					$currLocation = getLocation()

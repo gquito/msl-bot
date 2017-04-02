@@ -27,6 +27,8 @@ Func farmAstromon()
 		Next
 	EndIf
 
+	Local $finishRound = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "finish-round", 0)
+
 	Local $imgName = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "image", Null)
 	If ($imgName = Null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
 		setLog("*Error: Image file does not exist!", 2)
@@ -69,21 +71,29 @@ Func farmAstromon()
 					setLog("Attaking astromons..", 1)
 					clickPoint($battle_coorAuto, 2, 10)
 				Else
-					setLog("Out of astrochips, restarting..", 1)
-					While True
-						ControlSend($hWindow, "", "", "{ESC}")
-						If checkLocations("battle-end-exp", "battle-sell", "pause") = 1 Then
-							ExitLoop
-						EndIf
+					If $finishRound = 0 Then
+						setLog("Out of astrochips, restarting..", 1)
+						While True
+							ControlSend($hWindow, "", "", "{ESC}")
+							If checkLocations("battle-end-exp", "battle-sell", "pause") = 1 Then
+								ExitLoop
+							EndIf
 
-						If _Sleep(50) Then ExitLoop (2)
-					WEnd
+							If _Sleep(50) Then ExitLoop (2)
+						WEnd
 
-					clickPoint($battle_coorGiveUp)
-					clickPoint($battle_coorGiveUpConfirm)
+						clickPoint($battle_coorGiveUp)
+						clickPoint($battle_coorGiveUpConfirm)
+					Else
+						If setLog("Out of astrochips, attacking..", 1) Then ExitLoop(2)
+						While Not(StringInStr("|battle-end|battle-sell|battle-end-exp|defeat", "|" & getLocation() & "|"))
+							clickPoint($battle_coorAuto, 2, 10)
+							If _Sleep(2000) Then ExitLoop(3)
+						WEnd
+					EndIf
 				EndIf
 			Case "battle-end-exp", "battle-sell"
-				clickPointUntil($game_coorTap, "battle-end")
+				clickPointUntil($game_coorTap, "battle-end", 100, 100)
 
 			Case "battle-end"
 				Local $quickRestartPoint = findImageFiles("battle-quick-restart", 30)

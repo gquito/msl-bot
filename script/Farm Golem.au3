@@ -45,7 +45,7 @@ Func farmGolem()
 			$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
 			If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
-			If Mod(Int(StringSplit(_NowTime(4), ":", 2)[1]), 20) = 0 Then $getGuardian = True
+			If Mod($intRunCount, 10) = 0 Then $getGuardian = True
 
 			Local $strData = "Runs: " & $intRunCount & " (Guardian:" & $intGuardian & ")|Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Energy Used: " & ($intRunCount * $intGolem) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min." & "|Avg. Time: " & StringFormat("%.2f", $intTimeElapse / $intRunCount / 60) & " Min."
 
@@ -103,13 +103,16 @@ Func farmGolem()
 					$intCheckStartTime = 0
 
 					If $intGemUsed + 30 <= $intGem Then
-						clickPointUntil($game_coorRefill, "refill-confirm")
-						clickPointUntil($game_coorRefillConfirm, "refill")
+						While getLocation() = "refill"
+							clickPoint($game_coorRefill, 1, 1000)
+						WEnd
 
 						If checkLocations("buy-gem") Then
 							setLog("Out of gems!", 2)
 							ExitLoop (2)
 						EndIf
+
+						clickPointUntil($game_coorRefillConfirm, "refill")
 
 						ControlSend($hWindow, "", "", "{ESC}")
 
@@ -124,7 +127,7 @@ Func farmGolem()
 
 					Local $result = navigate("map", "golem-dungeons")
 					If $result = 1 Then
-						clickPointUntil(Eval("map_coorB" & $strGolem), "map-battle")
+						clickPointUntil(Eval("map_coorB" & $strGolem), "map-battle", 5, 2000)
 						clickPointUntil($map_coorBattle, "battle")
 
 						$intRunCount += 1
@@ -220,8 +223,15 @@ Func farmGolem()
 						EndIf
 					WEnd
 
-					clickPointUntil($game_coorTap, "battle-end", 20, 1000)
-					clickImageUntil("battle-exit", "guardian-dungeons", 20)
+					clickPointUntil($game_coorTap, "battle-end", 100, 100)
+
+					Local $pointExit = findImageFiles("battle-exit", 50)
+					If isArray($pointExit) Then
+						clickPointUntil($pointExit, "guardian-dungeons")
+					Else
+						If setLog("Could not find battle-exit.bmp! Going back to farming.") Then ExitLoop(2)
+						ExitLoop
+					EndIf
 
 					waitLocation("guardian-dungeons", 10000)
 					$currLocation = getLocation()
