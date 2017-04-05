@@ -62,11 +62,9 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 			Switch $currLocation
 				Case $strMainLocation, $strLocation
 					ExitLoop
-				Case "battle"
+				Case "battle", "battle-auto"
 					If $forceGiveUp = False Then Return -1
-					While waitLocation("pause", 1000) = 0
-						ControlSend($hWindow, "", "", "{ESC}")
-					WEnd
+					clickUntil($battle_coorPause, "pause")
 
 					clickPoint($battle_coorGiveUp)
 					clickPoint($battle_coorGiveUpConfirm)
@@ -74,11 +72,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 					clickPoint($game_coorDialogueSkip)
 				Case "unknown"
 					clickPoint($game_coorTap)
-
-					Local $closePoint = findImage("misc-close", 30)
-					If isArray($closePoint) Then
-						clickPoint($closePoint) ;to close any windows open
-					EndIf
+					clickPoint(findImage("misc-close", 30)) ;to close any windows open
 				Case "battle-end-exp"
 					clickUntil($game_coorTap, "battle-end", 100, 100)
 			EndSwitch
@@ -88,11 +82,13 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 					Switch $currLocation
 						Case "battle-end"
 							clickPoint($battle_coorAirship)
-						Case "map", "map-stage", "astroleague", "association", "clan"
+						Case "unknown", "inbox", "monsters", "manage", "shop", "map", "astroleague", "map-stage", "clan", "association", "starstone-dungeons", "map-battle"
 							clickPoint($game_pixelBack)
+							clickPoint(findImage("misc-close", 30), 5) ;to close any windows open
 						Case Else
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
+					waitLocation("village", 3000)
 				Case "map"
 					Switch $currLocation
 						Case "battle-end"
@@ -102,12 +98,8 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 						Case "astroleague", "map-stage", "map-battle", "association", "clan"
 							clickPoint($game_pixelBack)
 						Case "unknown"
-							clickPoint($game_coorTap)
-
-							Local $closePoint = findImage("misc-close", 30)
-							If isArray($closePoint) Then
-								clickPoint($closePoint) ;to close any windows open
-							EndIf
+							clickPoint($game_pixelBack)
+							clickPoint(findImage("misc-close", 30)) ;to close any windows open
 						Case Else
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch

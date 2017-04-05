@@ -66,17 +66,13 @@ Func farmRare()
 							$dataRuns += 1
 						EndIf
 					EndIf
-				Case "battle-auto"
-					$tempCounter += 1
-					If setLogReplace("Auto Mode: Waiting" & $strEllipses[Mod($tempCounter, 4)], 1) Then ExitLoop (2)
-					If _Sleep(1000) Then ExitLoop(2)
 				Case "battle-end-exp", "battle-sell"
 					clickUntil($game_coorTap, "battle-end")
 				Case "pause"
 					clickPoint($battle_coorContinue, 1, 2000)
 				Case "unknown"
 					clickPoint($game_coorTap)
-					clickPoint(findImage("misc-close", 30)) ;to close any windows open
+					clickPoint(findImage("misc-close", 30), 5) ;to close any windows open
 				Case "battle-end"
 					If $quest = 1 And checkPixel($battle_pixelQuest) = True Then
 						If setLogReplace("Collecting quests...", 1) Then ExitLoop (2)
@@ -99,7 +95,7 @@ Func farmRare()
 					EndIf
 
 					If getLocation() = "battle-end" Then
-						If Not Mod($dataRuns, 20) = 0 Then
+						If Not Mod($dataRuns+1, 20) = 0 Then
 							clickUntil(findImage("battle-quick-restart", 30), "unknown")
 							$dataRuns += 1
 						Else
@@ -142,7 +138,7 @@ Func farmRare()
 					If IsArray(findImages($imagesRareAstromon, 100)) Then
 						If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
 							$dataEncounter += 1
-							If setLog("An astromon has been found!", 1) Then ExitLoop (2)
+							If setLogReplace("An astromon has been found!", 1) Then ExitLoop (2)
 
 							If navigate("battle", "catch-mode") = 1 Then
 								Local $tempStr = catch($captures, True, False, False, True)
@@ -170,6 +166,12 @@ Func farmRare()
 					Else
 						clickPoint($battle_coorAuto)
 					EndIf
+				Case "catch-mode"
+					clickUntil($battle_coorCatchCancel, "battle")
+				Case "battle-auto"
+					$tempCounter += 1
+					If setLogReplace("Auto Mode: Waiting" & $strEllipses[Mod($tempCounter, 4)], 1) Then ExitLoop (2)
+					If _Sleep(1000) Then ExitLoop(2)
 				Case "map-gem-full", "battle-gem-full"
 					If setLogReplace("Gem is full, going to sell gems...", 1) Then ExitLoop (2)
 					If navigate("village", "manage") = 1 Then

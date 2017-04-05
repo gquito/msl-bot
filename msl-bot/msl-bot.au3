@@ -3,13 +3,13 @@
 #AutoIt3Wrapper_Outfile=msl-bot v1.10.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.10.0.0
+#AutoIt3Wrapper_Res_Fileversion=1.10.0.1
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
 Global $botVersion = "v1.10.0"
-Global $botVersionComplex = "v1.10.0.0"
+Global $botVersionComplex = "v1.10.0.1"
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", ""), ",", 2)
 
@@ -411,7 +411,7 @@ Func btnSetClick()
 		$strLocation = InputBox($botName & " " & $botVersion, "Enter CURRENT location:" & @CRLF & @CRLF & "You are limited to: " & $limit, default, default, 500, 200)
 		If $strLocation = "" Then Return
 
-		For $element In StringSplit($strKnownLocation, ",", 2)
+		For $element In StringSplit($limit, ",", 2)
 			If $element = $strLocation Then ExitLoop(2)
 		Next
 		$strLocation = "unknown"

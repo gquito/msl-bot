@@ -48,7 +48,7 @@ Func farmGolem()
 			$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
 			If $hourly = 1 And StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
-			If $guardian = 1 And Mod($intRunCount, 10) = 0 Then $getGuardian = True
+			If $guardian = 1 And Mod($intRunCount+1, 10) = 0 Then $getGuardian = True
 
 			Local $strData = "Runs: " & $intRunCount & " (Guardian:" & $intGuardian & ")|Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Energy Used: " & ($intRunCount * $intGolem) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min." & "|Avg. Time: " & StringFormat("%.2f", $intTimeElapse / $intRunCount / 60) & " Min."
 
@@ -59,7 +59,6 @@ Func farmGolem()
 				Case "battle"
 					clickPoint($battle_coorAuto)
 				Case "battle-end"
-					_CaptureRegion()
 					If $quest = 1 And checkPixel($battle_pixelQuest) = True Then
 						If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop (2)
 						If navigate("village", "quests") = 1 Then
@@ -149,9 +148,10 @@ Func farmGolem()
 					clickPoint($game_coorConnectionRetry)
 				Case "unknown"
 					clickPoint($game_coorTap)
-					clickPoint(findImage("misc-close", 30)) ;to close any windows open
+					clickPoint(findImage("misc-close", 30), 5) ;to close any windows open
 				Case "pause"
-					clickPoint($battle_coorContinue, 1, 2000)
+					clickPoint($battle_coorContinue)
+					If _Sleep(2000) Then ExitLoop (2)
 			EndSwitch
 		WEnd
 

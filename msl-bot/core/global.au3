@@ -22,43 +22,6 @@
 	Global $imagesGemType = ["gem-conviction", "gem-ferocity", "gem-fortitude", "gem-healing", "gem-intuition", "gem-life", "gem-protection", "gem-ruin", "gem-tenacity", "gem-valor", "gem-vitality"]
 	Global $imagesGemStat = ["gem-atk", "gem-def", "gem-rec", "gem-hp", "gem-crit-dmg"]
 
-;location coordinates and size
-Global $strKnownLocation = "association,astroleague,autobattle_prompt,battle,battle_astromon_full,battle_gem_full,battle_end,battle_end_exp,battle_sell,buy_gem,dialogue,catch_mode,clan,defeat,inbox,gold_dungeons,golem_dungeons,guardian_dungeons,lost_connection,manage,map,map_battle,map_stage,map_astromon_full,map_gem_full,monsters,pause,quests,refill,refill_confirm,starstone_dungeons,village"
-
-Global $dim_association = "106,273,98,27"
-Global $dim_astroleague = "96,464,86,10"
-Global $dim_autobattle_prompt = "400,195,118,11"
-Global $dim_battle = "33,338,25,10"
-Global $dim_battle_astromon_full = "398,239,293,7"
-Global $dim_battle_gem_full = "313,227,33,9"
-Global $dim_battle_end = "399,396,9,18"
-Global $dim_battle_end_exp = "246,330,38,14"
-Global $dim_battle_sell = "405,467,53,45"
-Global $dim_buy_gem = "241,310,22,16"
-Global $dim_dialogue = "755,24,61,9"
-Global $dim_esc = "505,254,29,13"
-Global $dim_catch_mode = "463,72,22,65"
-Global $dim_clan = "749,187,44,12"
-Global $dim_defeat = "328,331,75,7"
-Global $dim_inbox = "410,127,43,7"
-Global $dim_gold_dungeons = "341,135,82,7"
-Global $dim_golem_dungeons = "347,137,88,8"
-Global $dim_guardian_dungeons = "358,135,119,7"
-Global $dim_lost_connection = "428,317,35,24"
-Global $dim_manage = "748,456,22,130"
-Global $dim_map = "450,18,16,20"
-Global $dim_map_battle = "149,384,262,7"
-Global $dim_map_stage = "738,199,61,9"
-Global $dim_map_astromon_full = "340,230,179,8"
-Global $dim_map_gem_full = "311,230,106,6"
-Global $dim_monsters = "747,507,62,15"
-Global $dim_pause = "40,508,1,15"
-Global $dim_quests = "70,220,30,144"
-Global $dim_refill = "398,91,53,6"
-Global $dim_refill_confirm = "398,185,122,7"
-Global $dim_starstone_dungeons = "356,137,110,9"
-Global $dim_village = "775,86,14,14"
-
 ;coordinations
 	Global $game_coorTap = [793, 545]
 	Global $game_coorConnectionRetry = [332, 322]

@@ -33,12 +33,19 @@ Func getHourly()
 		For $i = 0 To 2 ;collecting the rewards
 			If _Sleep(100) Then Return
 			Local $getReward = findImage("misc-hourly", 30)
-			While Not isArray($getReward)
-				clickWhile(StringSplit($arrayCoor[$i], ",", 2), "village", 20)
-				clickPoint(findImage("misc-close", 30))
+			Local $tempCount = 0
+			clickWhile(StringSplit($arrayCoor[$i], ",", 2), "village", 20)
 
-				$getReward = findImage("misc-hourly", 30)
-			WEnd
+			Local $checkFriend = findImage("misc-close", 30)
+			If isArray($checkFriend) = True Then
+				clickUntil($checkFriend, "village")
+				$i -= 1
+
+				ContinueLoop
+			EndIf
+
+			$getReward = findImage("misc-hourly", 30)
+			clickUntil($getReward, "village")
 		Next
 
 		If setLogReplace("Collect hourly..Inbox", 1) Then Return
