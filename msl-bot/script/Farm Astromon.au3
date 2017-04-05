@@ -17,12 +17,6 @@ Func farmAstromon()
 			Local $grade = StringReplace($capture, " ", "-")
 			If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
 				_ArrayAdd($captures, "catch-" & $grade)
-
-				Local $tempInt = 2
-				While FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & $tempInt & ".bmp")
-					_ArrayAdd($captures, "catch-" & $grade & $tempInt)
-					$tempInt += 1
-				WEnd
 			EndIf
 		Next
 	EndIf
@@ -113,6 +107,9 @@ Func farmAstromon()
 
 			Case "dialogue"
 				clickPoint($game_coorDialogueSkip)
+
+			Case "catch-mode"
+				clickPoint($battle_coorCatchCancel)
 
 			Case "battle-astromon-full", "map-astromon-full"
 				setLog("Inventory is full.", 1)

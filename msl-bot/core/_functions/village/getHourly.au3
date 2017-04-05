@@ -10,6 +10,7 @@ Func getHourly()
 		If setLogReplace("Collect hourly..", 1) Then Return
 		Local $posVillage = null; The village position
 
+		If _Sleep(5000) Then Return 0 ;checks for pop-ups when in village
 		While navigate("village") = 0
 			If _Sleep(2000) Then Return 0
 		WEnd

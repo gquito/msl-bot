@@ -56,7 +56,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 		Return waitLocation($strLocation)
 	Else
 		While True
-			If _Sleep(50) Then Return
+			If _Sleep(2000) Then Return
 			Local $currLocation = getLocation()
 
 			Switch $currLocation
@@ -81,7 +81,8 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				Case "village"
 					Switch $currLocation
 						Case "battle-end"
-							clickPoint($battle_coorAirship)
+							clickUntil($battle_coorAirship, "unknown")
+							waitLocation("map", 10000)
 						Case "unknown", "inbox", "monsters", "manage", "shop", "map", "astroleague", "map-stage", "clan", "association", "starstone-dungeons", "map-battle"
 							clickPoint($game_pixelBack)
 							clickPoint(findImage("misc-close", 30), 5) ;to close any windows open
@@ -92,11 +93,14 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				Case "map"
 					Switch $currLocation
 						Case "battle-end"
-							clickPoint($battle_coorMap)
+							clickUntil($battle_coorMap, "unknown")
+							waitLocation("map", 10000)
 						Case "village"
-							clickPoint($village_coorPlay)
+							clickUntil($village_coorPlay, "unknown")
+							waitLocation("map", 10000)
 						Case "astroleague", "map-stage", "map-battle", "association", "clan"
 							clickPoint($game_pixelBack)
+							waitLocation("map", 2000)
 						Case "unknown"
 							clickPoint($game_pixelBack)
 							clickPoint(findImage("misc-close", 30)) ;to close any windows open
