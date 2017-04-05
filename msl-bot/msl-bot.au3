@@ -91,7 +91,14 @@ EndFunc
 ;main loop
 While True
 	If $boolRunning = True Then
-		getEmulatorHandle()
+		If $hControl = 0 Then
+			$boolRunning = False
+			GUICtrlSetData($btnRun, "Start")
+			setLog("Error: Could not find instance.", 2)
+
+			ContinueLoop
+		EndIf
+
 		If Not $strScript = "" Then ;check if script is set
 			Call(IniRead(@ScriptDir & "/" & $botConfig, $strScript, "function", ""))
 			If @error = 0xDEAD And @extended = 0xBEEF Then MsgBox($MB_OK, $botName & " " & $botVersion, "Script function does not exist.")
@@ -260,6 +267,8 @@ Func btnConfigEdit()
 
 	GUICtrlSetData($listConfig, "")
 	GUICtrlSetData($listConfig, $generalConfig)
+
+	btnSetConfig()
 EndFunc
 
 ;function: cmbLoadClick
@@ -347,6 +356,13 @@ EndFunc
 ;author: GkevinOD (2017)
 Func chkDebugFindImageClick()
 	getEmulatorHandle()
+
+	If $hControl = 0 Then
+		setLog("Error: Could not find instance.", 2)
+		GUICtrlSetState($chkDebugFindImage, 0)
+		Return
+	EndIf
+
 	$boolRunning = True
 	While(GUICtrlRead($chkDebugFindImage) = 1) ;if it is checked
 		Dim $strImage = GUICtrlRead($textDebugImage)
@@ -435,6 +451,13 @@ EndFunc
 ;author: GkevinOD (2017)
 Func chkDebugLocationClick()
 	getEmulatorHandle()
+
+	If $hControl = 0 Then
+		setLog("Error: Could not find instance.", 2)
+		GUICtrlSetState($chkDebugLocation, 0)
+		Return
+	EndIf
+
 	While(GUICtrlRead($chkDebugLocation) = 1) ;if it is checked
 		GUICtrlSetState($btnSet, $GUI_DISABLE)
 		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())

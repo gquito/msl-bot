@@ -25,6 +25,7 @@ Func clickPoint($coorPoint, $intNum = 1, $intDuration = 500, $boolRandom = True)
 			WinActivate($hWindow)
 
 			Dim $desktopCoor = WinGetPos($hControl)
+
 			If $boolRandom = True Then
 				MouseClick("left", $desktopCoor[0]+$coorPoint[0]+Random(0, 5, 1), $desktopCoor[1]+$coorPoint[1]+Random(0, 5, 1), 1, 0)
 			Else
