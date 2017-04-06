@@ -1,26 +1,18 @@
 #cs ----------------------------------------------------------------------------
-
  Function: enterStage
-
  Algorithm for entering a stage in the maps.
 
  Parameters:
-
 	strImage - Image name of the map.
-
 	strMode - Modes include: normal, hard, extreme
-
 	boolAuto - Boolean for autobattle mode.
 
  Returns:
-
 	On success - Returns 1
-
 	On fail - Returns 0
-
 #ce ----------------------------------------------------------------------------
 
-Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = True)
+Func enterStage($strImage, $strMode = "normal", $boolAuto = False)
 	If waitLocation("map") = 1 Then
 		Local $strMap = StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "")
 		If setLogReplace("Entering " & $strMap & "..Searching", 1) Then Return 0
@@ -61,7 +53,7 @@ Func enterStage($strImage, $strMode = "normal", $boolAuto = False, $boolLog = Tr
 				clickPoint($map_coorMode, 1, 500, False)
 				clickPoint($map_coorExtreme, 1, 500, False)
 			Case Else
-				If $boolLog Then setLog("Input error: " & $strMode & " not within 1-3 modes.", 1)
+				If setLog("Input error: " & $strMode & " not within 1-3 modes.", 1) Then Return 0
 				Return 0
 		EndSwitch
 

@@ -3,13 +3,13 @@
 #AutoIt3Wrapper_Outfile=msl-bot v1.10.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.10.0.2
+#AutoIt3Wrapper_Res_Fileversion=1.10.0.3
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
 Global $botVersion = "v1.10.0"
-Global $botVersionComplex = "v1.10.0.2"
+Global $botVersionComplex = "v1.10.0.3"
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", ""), ",", 2)
 
@@ -387,7 +387,7 @@ Func chkDebugFindImageClick()
 
 		Sleep(500);
 	WEnd
-	$boolRunning = True
+	$boolRunning = False
 EndFunc
 
 ;function: btnSetClick()
@@ -399,6 +399,11 @@ EndFunc
 ;	-create an image to be the new location or alternative location
 ;author: GkevinOD (2017)
 Func btnSetClick()
+	If Not getLocation() = "unknown" Then
+		setLog("Warning: This location is already set to: " & getLocation() & "!", 2)
+		setLog("Your new location will be prioritized.", 2)
+	EndIf
+
 	Local $limit = "";
 
 	For $location In $listLocation
@@ -408,7 +413,7 @@ Func btnSetClick()
 
 	Local $strLocation = "unknown"
 	While $strLocation = "unknown"
-		$strLocation = InputBox($botName & " " & $botVersion, "Enter CURRENT location:" & @CRLF & @CRLF & "You are limited to: " & $limit, default, default, 500, 200)
+		$strLocation = InputBox($botName & " " & $botVersion, "Enter CURRENT location:" & @CRLF & @CRLF & "You are limited to: " & $limit, default, default, 500, 230)
 		If $strLocation = "" Then Return
 
 		For $element In StringSplit($limit, ", ", 2)
@@ -437,8 +442,9 @@ Func btnSetClick()
 	FileWrite(@ScriptDir & "/core/locations-extra.txt", @CRLF & $newLoc)
 	loadLocation()
 
-	setLog("New location has been added!", 2)
+	setLog("New location has been added to locations-extra.txt!", 2)
 	setLog("Test using the debug 'Location'.", 2)
+	setLog("If you made a mistake, delete that locations in /core/locations-extra.txt")
 EndFunc
 
 ;function: chkDebugLocationClick()
@@ -459,16 +465,9 @@ Func chkDebugLocationClick()
 	EndIf
 
 	While(GUICtrlRead($chkDebugLocation) = 1) ;if it is checked
-		GUICtrlSetState($btnSet, $GUI_DISABLE)
 		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())
 		Sleep(500);
 	WEnd
-
-	If getLocation() = "unknown" Then
-		GUICtrlSetState($btnSet, $GUI_ENABLE)
-	Else
-		GUICtrlSetState($btnSet, $GUI_DISABLE)
-	EndIf
 EndFunc
 
 ;function: btnSaveImage()
