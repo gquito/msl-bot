@@ -60,7 +60,7 @@ Func farmRare()
 				Case "map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan", "esc", "inbox"
 					If setLog("Going into battle...", 1) Then ExitLoop (2)
 					If navigate("map") = 1 Then
-						If enterStage($map, $difficulty, False, True) = 0 Then
+						If enterStage($map, $difficulty, False) = 0 Then
 							If setLog("Error: Could not enter map stage.", 1) Then ExitLoop (2)
 						Else
 							$dataRuns += 1
@@ -72,7 +72,7 @@ Func farmRare()
 					clickPoint($battle_coorContinue, 1, 2000)
 				Case "unknown"
 					clickPoint($game_coorTap)
-					clickPoint(findImage("misc-close", 30), 5) ;to close any windows open
+					clickPoint(findImage("misc-close", 30)) ;to close any windows open
 				Case "battle-end"
 					If $quest = 1 And checkPixel($battle_pixelQuest) = True Then
 						If setLogReplace("Collecting quests...", 1) Then ExitLoop (2)
@@ -135,7 +135,7 @@ Func farmRare()
 					EndIf
 					clickUntil($map_coorBattle, "unknown")
 				Case "battle"
-					If IsArray(findImages($imagesRareAstromon, 100)) Then
+					If IsArray(findImages($imagesRareAstromon, 100, 5000)) Then
 						If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
 							$dataEncounter += 1
 							If setLogReplace("An astromon has been found!", 1) Then ExitLoop (2)

@@ -1,24 +1,17 @@
 #cs ----------------------------------------------------------------------------
-
  Function: catch
-
  Algorithm for catching a certain astromons
 
  Parameters:
-
 	varImages - Set of images to search for specific astromons.
 	boolLog - To log or not to log catches.
 	boolCreateIMG - If not recognized, create image or not.
 	boolOneAstromon - Stop after one astromon or not.
 
  Returns:
-
 	String of type of astromon caught
-
 	On astromon bag full - Returns -1
-
 	On not tried - Returns -2
-
 
 #ce ----------------------------------------------------------------------------
 
@@ -29,7 +22,10 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 
 	While True
 		While True
-			If Not checkLocations("catch-mode") = 1 Then Return ""
+			If Not getLocation() = "catch-mode" Then Return ""
+			If _Sleep(2000) Then Return 0
+
+
 			If Not $boolTried Then setLogReplace("Locating astromon...", 1)
 
 			If isArray($varImages) Then ;finding astromon within list
@@ -44,7 +40,7 @@ Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon 
 				$strAstromonGrade = _StringProper(StringRegExpReplace($pointArray[3], ".*catch-(.*)([0-9]\.|\.)bmp", "$1"))
 
 				$boolTried = True ;indicate that catching was attempted
-				clickUntil($pointArray, "battle", 200, 100)
+				clickUntil($pointArray, "battle", 200, 500)
 
 				If checkLocations("battle-astromon-full") = 1 Then Return -1
 				If checkLocations("battle-end-exp", "battle-sell", "battle-end") = 1 Then Return $strCaught

@@ -97,9 +97,13 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 							waitLocation("map", 10000)
 						Case "village"
 							clickUntil($village_coorPlay, "unknown")
+							clickPoint(findImage("misc-close", 30)) ;to close any windows open
 							waitLocation("map", 10000)
-						Case "astroleague", "map-stage", "map-battle", "association", "clan"
+						Case "astroleague", "map-battle", "association", "clan"
 							clickPoint($game_pixelBack)
+							waitLocation("map", 2000)
+						Case "map-stage"
+							clickPoint(findImage("misc-close", 30)) ;to close any windows open
 							waitLocation("map", 2000)
 						Case "unknown"
 							clickPoint($game_pixelBack)
