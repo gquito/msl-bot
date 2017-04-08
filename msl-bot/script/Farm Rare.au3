@@ -1,18 +1,11 @@
-;function: farmRare
-;-Automatically farms rares in story mode
-;pre:
-;   -config must be set for script
-;   -required config keys: map, capture, guardian-dungeon
-;author: GkevinOD
+#cs
+	Function: farmRare
+	Farm Rare script aims to catch rares automatically
+
+	Author: GkevinOD (2017)
+#ce
 Func farmRare()
-	;beginning script
-	setLog("*Report any issues/bugs in GitHub", 2)
-	setLog("*Loading config for Farm Rare.", 2)
-
-	;getting configs
-	Local $intStartTime = TimerInit()
-	Local $intTimeElapse = 0;
-
+	;initializing configs
 	Local $map = "map-" & StringReplace(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "map", "phantom forest"), " ", "-")
 	Local $guardian = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "guardian-dungeon", "0")
 	Local $difficulty = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "difficulty", "normal")
@@ -35,7 +28,10 @@ Func farmRare()
 
 	setLog("~~~Starting 'Farm Rare' script~~~", 2)
 
-	;setting up data capture
+	;setting up data
+	Local $intStartTime = TimerInit()
+	Local $intTimeElapse = 0;
+
 	Local $strEllipses = ["", ".", "..", "..."]
 	Local $tempCounter = 0
 
@@ -55,7 +51,7 @@ Func farmRare()
 
 			If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
 
-			If _Sleep(100) Then ExitLoop (2) ;to stop farming
+			If _Sleep(100) Then ExitLoop (2)
 			Switch getLocation()
 				Case "map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan", "esc", "inbox"
 					If setLog("Going into battle...", 1) Then ExitLoop (2)
@@ -74,24 +70,9 @@ Func farmRare()
 					clickPoint($game_coorTap)
 					clickPoint(findImage("misc-close", 30)) ;to close any windows open
 				Case "battle-end"
-					If $quest = 1 And checkPixel($battle_pixelQuest) = True Then
-						If setLogReplace("Collecting quests...", 1) Then ExitLoop (2)
-						If navigate("village", "quests") = 1 Then
-							For $questTab In $village_coorArrayQuestsTab ;quest tabs
-								clickPoint(StringSplit($questTab, ",", 2))
-								While IsArray(findImage("misc-quests-get-reward", 100, 3)) = True
-									If _Sleep(10) Then ExitLoop (5)
-									clickPoint(findImage("misc-quests-get-reward", 100))
-								WEnd
-							Next
-						EndIf
-						If setLogReplace("Collecting quests... Done!", 1) Then ExitLoop (2)
-					EndIf
-
+					If $quest = 1 And checkPixel($battle_pixelQuest) = True Then getQuest()
 					If $hourly = 1 And $getHourly = True Then
-						If getHourly() = 1 Then
-							$getHourly = False
-						EndIf
+						If getHourly() = 1 Then $getHourly = False
 					EndIf
 
 					If getLocation() = "battle-end" Then

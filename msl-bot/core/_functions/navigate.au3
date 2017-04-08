@@ -31,6 +31,14 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 	If $strCurrentLocation = $strMainLocation Then
 		Switch $strLocation
 			;village
+			Case "shop"
+				If isArray(findImage("misc-village-pos1", 50)) Then
+					clickUntil(StringSplit($village_coorHourly[0], "|", 2)[3], "shop")
+				ElseIf isArray(findImage("misc-village-pos2", 50)) Then
+					clickUntil(StringSplit($village_coorHourly[1], "|", 2)[3], "shop")
+				ElseIf isArray(findImage("misc-village-pos3", 50)) Then
+					clickUntil(StringSplit($village_coorHourly[2], "|", 2)[3], "shop")
+				EndIf
 			Case "manage"
 				clickUntil($village_coorMonsters, "monsters")
 				clickUntil($village_coorManage, "manage")
