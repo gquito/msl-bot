@@ -21,6 +21,7 @@ Mainly programmed to gain experience with GitHub and because of the enjoyment of
 - Inside MSL turn off all settings.
   - Especially the Low-Res Mode and Low Power Mode have it set to 'OFF'
   
+  ![settings](https://i.imgur.com/0KmRoIA.png)
 
 ### Changing bot setting for an Emulator
 - When using a different emulator than default, check in the "Config" tab.
