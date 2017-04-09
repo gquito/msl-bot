@@ -47,11 +47,10 @@ Func farmAstromon()
 		If _Sleep(100) Then ExitLoop
 		Switch getLocation()
 			Case "battle-auto"
-				If checkPixel($battle_pixelUnavailable) = False Then clickPoint($battle_coorAuto, 1, 1000)
+				clickPoint($battle_coorAuto, 1, 1000)
 			Case "battle"
 				If checkPixel($battle_pixelUnavailable) = False Then
-					While True ;while there are Astromons
-						navigate("battle", "catch-mode")
+					While navigate("battle", "catch-mode") = True
 						$tempStr = catch($captures, True, False, True, False, False)
 						If ($tempStr = -1) Or ($tempStr = "") Then ExitLoop
 
@@ -74,9 +73,9 @@ Func farmAstromon()
 						clickPoint($battle_coorGiveUpConfirm)
 					Else
 						If setLog("Out of astrochips, attacking..", 1) Then ExitLoop(2)
-						While Not(StringInStr("|battle-end|battle-sell|battle-end-exp|defeat", "|" & getLocation() & "|"))
+						While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
 							clickPoint($battle_coorAuto, 2, 10)
-							If _Sleep(2000) Then ExitLoop(3)
+							If _Sleep(2000) Then ExitLoop(2)
 						WEnd
 					EndIf
 				EndIf
@@ -90,7 +89,6 @@ Func farmAstromon()
 				Else
 					clickPoint(findImage("battle-play-again", 30))
 				EndIf
-
 
 			Case "map-battle"
 				clickUntil($map_coorBattle, "battle")

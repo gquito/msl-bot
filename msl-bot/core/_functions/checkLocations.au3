@@ -1,26 +1,25 @@
 #cs ----------------------------------------------------------------------------
-
  Function: checkLocations
-
  Checks if location is one of the elements in the set of location
 
  Parameters:
-
-	strLoc[1-10] - Set of string of locations.
+	strLoc: An array of location or String of location with format: "loc1, loc2, loc3..."
 
  Returns:
-
-	If found - Returns 1
-
-	If not found - Returns 0
-
+	If found returns location
+	If not found returns empty string
 #ce ----------------------------------------------------------------------------
 
-Func checkLocations($strLoc1, $strLoc2 = "", $strLoc3 = "", $strLoc4 = "", $strLoc5 = "", $strLoc6 = "", $strLoc7 = "", $strLoc8 = "", $strLoc9 = "", $strLoc10 = "", $strLoc11 = "", $strLoc12 = "", $strLoc13 = "", $strLoc14 = "", $strLoc15 = "")
-	;traverse through parameters
-	For $intLoc = 1 To 15
-		If getLocation() = Eval("strLoc" & $intLoc) Then Return 1
-		If Eval("strLoc" & $intLoc) = "" Then Return 0
+Func checkLocations($strLoc)
+	$strLoc = StringStripWS($strLoc, 8)
+	If Not isArray($strLoc) Then
+		$strLoc = StringSplit($strLoc, ",", 2)
+	EndIf
+
+	$currLocation = getLocation()
+	For $find In $strLoc
+		If $find = $currLocation Then Return $find
 	Next
-	Return 0
+
+	Return ""
 EndFunc

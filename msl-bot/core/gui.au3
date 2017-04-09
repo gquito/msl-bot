@@ -5,7 +5,7 @@ GUISetOnEvent($GUI_EVENT_CLOSE, "frmMainClose")
 
 Global $textOutput = GUICtrlCreateEdit("", 0, 185, 284, 113, BitOR($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL))
 _GUICtrlEdit_SetLimitText($textOutput, 100000000)
-GUICtrlSetData(-1, "• Thanks for using MSL-Bot!" & @CRLF & "• This is an open-source project so you are allowed to modify and create codes that fit your needs." & @CRLF & "• If you find any bugs/issues or want to say Hi join our Discord, link in the 'About' page." & @CRLF & "• If you find this bot useful, considering supporting me by donating! Link in the 'About' tab." & @CRLF)
+GUICtrlSetData(-1, "• Thanks for using MSL-Bot!" & @CRLF & "• This is an open-source project so you are allowed to modify and create codes that fit your needs." & @CRLF & "• If you find any bugs/issues or want to say Hi join our Discord, link in the 'About' page." & @CRLF & "• If you find this bot useful, consider supporting me by donating! Link in the 'About' tab." & @CRLF)
 
 Global $Tab1 = GUICtrlCreateTab(0, 0, 284, 161)
 GUICtrlSetState(-1, $GUI_FOCUS)

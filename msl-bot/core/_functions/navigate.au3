@@ -1,36 +1,29 @@
 #cs ----------------------------------------------------------------------------
-
  Function: navigate
-
  Navigate through GUI in the game.
 
  Parameter:
-
 	strMainLocation - Main location to navigate to sub location.
-
 	strLocation - Sub location to navigate to
 
- Returns:
-
-	On success - Returns 1
-
-	On fail - Returns 0
-
-	If in battle and ForceGiveUp = false then - Returns -1
-
- See Also:
-
-	<getLocation>
-
+ Returns: (boolean) If success return True, if fail return False
 #ce ----------------------------------------------------------------------------
 
 Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 	Local $strCurrentLocation = getLocation()
 
-	If $strLocation = $strCurrentLocation Then Return 1
+	If $strLocation = $strCurrentLocation Then Return True
 	If $strCurrentLocation = $strMainLocation Then
 		Switch $strLocation
 			;village
+			Case "shop"
+				If isArray(findImage("misc-village-pos1", 50)) Then
+					clickUntil(StringSplit($village_coorHourly[0], "|", 2)[3], "shop")
+				ElseIf isArray(findImage("misc-village-pos2", 50)) Then
+					clickUntil(StringSplit($village_coorHourly[1], "|", 2)[3], "shop")
+				ElseIf isArray(findImage("misc-village-pos3", 50)) Then
+					clickUntil(StringSplit($village_coorHourly[2], "|", 2)[3], "shop")
+				EndIf
 			Case "manage"
 				clickUntil($village_coorMonsters, "monsters")
 				clickUntil($village_coorManage, "manage")
@@ -45,10 +38,15 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				clickUntil($map_coorGolemDungeons, "golem-dungeons")
 			;battle
 			Case "catch-mode"
-				If checkPixel($battle_pixelUnavailable) = True Then Return 0
-				clickUntil($battle_pixelUnavailable, "catch-mode", 100, 100)
+				If checkPixel($battle_pixelUnavailable) = True Then Return False
+				clickWhile($battle_pixelUnavailable, "battle")
+
+				If waitLocation("battle,catch-mode", 5000) = "battle" Then
+					If checkPixel($battle_pixelUnavailable) = True Then Return False
+					clickWhile($battle_pixelUnavailable, "battle")
+				EndIf
 			Case ""
-				Return 1
+				Return True
 			Case Else
 				MsgBox(0, $botName & " " & $botVersion, "Unknown location.")
 		EndSwitch
@@ -56,14 +54,14 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 		Return waitLocation($strLocation)
 	Else
 		While True
-			If _Sleep(2000) Then Return
+			If _Sleep(2000) Then Return -1
 			Local $currLocation = getLocation()
 
 			Switch $currLocation
 				Case $strMainLocation, $strLocation
 					ExitLoop
 				Case "battle", "battle-auto"
-					If $forceGiveUp = False Then Return -1
+					If $forceGiveUp = False Then Return False
 					clickUntil($battle_coorPause, "pause")
 
 					clickPoint($battle_coorGiveUp)
@@ -112,7 +110,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
 				Case "battle"
-					Return waitLocation("battle", 8000)
+					Return Not(waitLocation("battle", 8000) = "")
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
 			EndSwitch
@@ -120,6 +118,6 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 		navigate($strMainLocation, $strLocation)
 	EndIf
 
-	If $strLocation = "" And $strMainLocation = getLocation() Then Return 1
-	If $strLocation = getLocation() Then Return 1
+	If $strLocation = "" And $strMainLocation = getLocation() Then Return True
+	If $strLocation = getLocation() Then Return True
 EndFunc
