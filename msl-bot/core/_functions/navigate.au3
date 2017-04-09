@@ -40,6 +40,11 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 			Case "catch-mode"
 				If checkPixel($battle_pixelUnavailable) = True Then Return False
 				clickWhile($battle_pixelUnavailable, "battle")
+
+				If waitLocation("battle,catch-mode", 5000) = "battle" Then
+					If checkPixel($battle_pixelUnavailable) = True Then Return False
+					clickWhile($battle_pixelUnavailable, "battle")
+				EndIf
 			Case ""
 				Return True
 			Case Else

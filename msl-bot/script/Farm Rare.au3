@@ -98,21 +98,20 @@ Func farmRare()
 						clickPoint($game_coorRefill, 1, 1000)
 					WEnd
 
-					If getLocation() = "buy-gem" Then setLog("Out of gems!", 2)
+					If getLocation() = "buy-gem" Then
+						setLog("Out of gems!", 2)
+						ExitLoop
+					EndIf
 
 					clickUntil($game_coorRefillConfirm, "refill")
-					clickPoint(findImage("misc-close", 30))
+					clickWhile("705, 99", "refill")
 
-					setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem)
+					setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem, 0)
 					$intGemUsed += 30
-
-					navigate("map") ;sometimes it gets stuck and adds 20 runs
-					$dataRuns -= 1
 				Else
-					setLog("Gem used exceed max gems!")
+					setLog("Gem used exceed max gems!", 0)
 					ExitLoop
 				EndIf
-				clickUntil($map_coorBattle, "unknown")
 			Case "battle"
 				If IsArray(findImages($rareIcons, 100, 5000)) Then
 					If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips

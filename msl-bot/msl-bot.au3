@@ -3,13 +3,12 @@
 #AutoIt3Wrapper_Outfile=msl-bot v1.10.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.10.1.1
+#AutoIt3Wrapper_Res_Fileversion=1.10.1.2
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
-Global $botVersion = "v1.10.1"
-Global $botVersionComplex = "v1.10.1.1"
+Global $botVersion = "v1.10.1.2"
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", ""), ",", 2)
 
@@ -33,7 +32,7 @@ Global $iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-al
 #include "core/gui.au3"
 
 _GDIPlus_Startup()
-GUICtrlSetData($lblVersion, "Current version: " & $botVersionComplex)
+GUICtrlSetData($lblVersion, "Current version: " & $botVersion)
 GUICtrlSetData($cmbLoad, StringReplace(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", "There are no scripts available."), ",", "|"))
 
 Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "keys", ""), ",", 2)
