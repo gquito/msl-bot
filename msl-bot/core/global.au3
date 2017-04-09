@@ -86,7 +86,7 @@
 		Global $battle_coorSell = [726, 326]
 		Global $battle_coorSellConfirm = [479, 330]
 
-		Global $battle_coorCatch = [789, 285]
+		Global $battle_coorCatch = [793, 227]
 		Global $battle_coorCatchCancel = [741, 118]
 
 		Global $battle_coorAirship = [330, 395]

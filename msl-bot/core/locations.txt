@@ -2,6 +2,7 @@
 ;This is mainly for locations that everyone will get and be updated.
 ;Some orders of these locations matter! Do not mix it up unless you know what you are doing.
 
+battle-boss:322,204,0xB52B24|365,205,0xB92C27|405,204,0xC53231|461,201,0xC43132|385,229,0xB42A23|384,181,0xDA383D
 battle-gem-full:337,317,0x015E64|443,306,0x087979|304,230,0xF80201|324,226,0x951712
 map-gem-full:347,308,0x067577|447,311,0x026C73|305,229,0xFC0101|323,224,0xDD0706
 hourly-reward:460,330,0x016C72|325,172,0x2F221C|471,173,0x2F221C|330,329,0x036E74

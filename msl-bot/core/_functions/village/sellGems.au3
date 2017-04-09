@@ -15,7 +15,7 @@
 #ce ----------------------------------------------------------------------------
 
 Func sellGems($arraySet)
-	If checkLocations("manage") = 1 Then
+	If getLocation() = "manage" Then
 		For $grade in $arraySet
 			Local $coorPoint = StringSplit(Eval("village_coor" & $grade & "Star"), ",", 2)
 			clickPoint($coorPoint)

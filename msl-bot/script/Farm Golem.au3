@@ -28,6 +28,7 @@ Func farmGolem()
 	Local $intKeepGradeMinSub = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "keep-grade-min-sub", 5))
 	Local $intMinSub = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "min-sub", 4))
 	Local $intGem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "max-spend-gem", 0))
+	Local $selectBoss = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "select-boss", 1))
 	Local $intGemUsed = 0
 
 	Local $quest = IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "collect-quest", "1")
@@ -44,7 +45,7 @@ Func farmGolem()
 	setLog("~~~Starting 'Farm Golem' script~~~", 2)
 	While True
 		While True
-			If _Sleep(100) Then ExitLoop (2)
+			If _Sleep(50) Then ExitLoop (2)
 			$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
 			If $hourly = 1 And StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
@@ -61,7 +62,7 @@ Func farmGolem()
 				Case "battle-end"
 					If $quest = 1 And checkPixel($battle_pixelQuest) = True Then
 						If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop (2)
-						If navigate("village", "quests") = 1 Then
+						If navigate("village", "quests") = True Then
 							If setLog("Collecting quests.", 1) Then ExitLoop (3)
 							For $questTab In $village_coorArrayQuestsTab ;quest tabs
 								clickPoint(StringSplit($questTab, ",", 2))
@@ -77,7 +78,11 @@ Func farmGolem()
 					If $hourly = 1 And $getHourly = True Then
 						If getHourly() = 1 Then $getHourly = False
 					EndIf
-					If $getGuardian = True Then ExitLoop
+
+					If $getGuardian = True Then
+						If $guardian = 1 Then $intGuardian += farmGuardian($sellGems, $intGem, $intGemUsed)
+						$getGuardian = False
+					EndIf
 
 					If getLocation() = "battle-end" Then
 						Local $quickRestart = findImage("battle-quick-restart", 30)
@@ -92,7 +97,7 @@ Func farmGolem()
 							clickPoint($game_coorRefill, 1, 1000)
 						WEnd
 
-						If checkLocations("buy-gem") Then
+						If getLocation() = "buy-gem" Then
 							setLog("Out of gems!", 2)
 							ExitLoop (2)
 						EndIf
@@ -108,8 +113,7 @@ Func farmGolem()
 						ExitLoop (2)
 					EndIf
 				Case "map", "village", "astroleague", "map-stage", "map-battle", "toc", "association", "clan", "starstone-dungeons", "golem-dungeons", "elemental-dungeons", "gold-dungeons"
-					Local $result = navigate("map", "golem-dungeons")
-					If $result = 1 Then
+					If navigate("map", "golem-dungeons") = True Then
 						Local $tempCurrLocation = getLocation()
 						While Not($tempCurrLocation = "map-battle")
 							If $tempCurrLocation = "autobattle-prompt" Then
@@ -123,7 +127,7 @@ Func farmGolem()
 						clickUntil($map_coorBattle, "battle")
 
 						$intRunCount += 1
-					ElseIf $result = 0 Then
+					Else
 						setLog("Unable to navigate to dungeon, trying again.", 1)
 					EndIf
 				Case "battle-end-exp"
@@ -147,89 +151,20 @@ Func farmGolem()
 				Case "lost-connection"
 					clickPoint($game_coorConnectionRetry)
 				Case "unknown"
+					If Not waitLocation("battle-boss", 3000) = "" Then
+						If $selectBoss = 1 Then
+							waitLocation("battle-auto", 5000)
+							clickPoint("406, 209")
+						EndIf
+					EndIf
+
 					clickPoint($game_coorTap)
-					clickPoint(findImage("misc-close", 30), 5) ;to close any windows open
+					clickPoint(findImage("misc-close", 30)) ;to close any windows open
 				Case "pause"
 					clickPoint($battle_coorContinue)
 					If _Sleep(2000) Then ExitLoop (2)
 			EndSwitch
 		WEnd
-
-		Dim $foundDungeon = 0
-		If $guardian = 1 And navigate("map", "guardian-dungeons") = 1 Then
-			If setLog("Checking for guardian dungeons...", 1) Then ExitLoop (2)
-			Local $currLocation = getLocation()
-
-			While $currLocation = "guardian-dungeons"
-				Local $energyPoint = findImage("misc-dungeon-energy", 50)
-				If isArray($energyPoint) And (clickUntil($energyPoint, "map-battle") = 1) Then
-					clickWhile($map_coorBattle, "map-battle")
-
-					If _Sleep(500) Then ExitLoop (2)
-
-					If checkLocations("map-gem-full", "battle-gem-full") = 1 Then
-						setLog("Gem box is full!", 0)
-						ExitLoop (2)
-					EndIf
-
-					If checkLocations("refill") = 1 Then
-						If $intGemUsed + 30 <= $intGem Then
-							clickUntil($game_coorRefill, "refill-confirm")
-							clickUntil($game_coorRefillConfirm, "refill")
-
-							If checkLocations("buy-gem") Then
-								setLog("Out of gems!", 1)
-								ExitLoop
-							EndIf
-
-							clickPoint(findImage("misc-close", 30))
-
-							setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem)
-							$intGemUsed += 30
-						Else
-							setLog("Gem used exceed max gems!")
-							ExitLoop
-						EndIf
-						clickWhile($map_coorBattle, "map-battle")
-					EndIf
-
-					$foundDungeon += 1
-					If setLogReplace("Found dungeon, attacking x" & $foundDungeon & ".", 1) Then ExitLoop (2)
-
-					Local $initTime = TimerInit()
-					While True
-						_Sleep(1000)
-						If getLocation() = "battle-end-exp" Then ExitLoop
-
-						If Int(TimerDiff($initTime)/1000) > 240 Then
-							If setLog("Error: Could not finish Guardian dungeon within 5 minutes, exiting.") Then ExitLoop(2)
-							navigate("map")
-
-							ExitLoop
-						EndIf
-					WEnd
-
-					clickUntil($game_coorTap, "battle-end", 100, 100)
-
-					Local $pointExit = findImage("battle-exit", 50)
-					If isArray($pointExit) Then
-						clickUntil($pointExit, "guardian-dungeons")
-					Else
-						If setLog("Could not find battle-exit.bmp! Going back to farming.") Then ExitLoop(2)
-						ExitLoop
-					EndIf
-
-					waitLocation("guardian-dungeons", 10000)
-					$currLocation = getLocation()
-				Else
-					If setLog("Guardian dungeon not found, going back to map.", 1) Then ExitLoop (2)
-					navigate("map")
-					ExitLoop
-				EndIf
-			WEnd
-		EndIf
-		$intGuardian += $foundDungeon
-		$getGuardian = False
 	WEnd
 
 	setLog("~~~Finished 'Farm Golem' script~~~", 2)
