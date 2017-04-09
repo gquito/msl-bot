@@ -16,7 +16,7 @@ Mainly programmed to gain experience with GitHub and because of the enjoyment of
    
    - Setting up key map:
    
-   ![key map](https://i.imgur.com/bHBHFWF.png)
+   ![key map](https://i.imgur.com/vLLAR8b.png)
 
 - For BlueStacks:
    - Install BlueStacks Files:
