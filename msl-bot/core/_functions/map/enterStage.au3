@@ -61,22 +61,24 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 		Local $startTimer = TimerInit()
 		Switch $strBonus
 			Case "gold"
-				Local $arrayStage = findImage("misc-gold-bonus", 30)
+				Local $arrayStage = findImage("misc-gold-bonus", 50)
 				While isArray($arrayStage) = False
 					ControlSend($hWindow, "", "", "{LEFT}")
-					If _Sleep(500) Then Return -1
+					If _Sleep(2000) Then Return -1
 
-					$arrayStage = findImage("misc-gold-bonus", 30)
+					$arrayStage = findImage("misc-gold-bonus", 50)
+					If isArray($arrayStage) Then $arrayStage[1] += 20
 					If TimerDiff($startTimer) > 20000 Then ExitLoop
 				WEnd
 				If setLogReplace("Entering " & $strMap & "..Entering gold stage", 1) Then Return -1
 			Case "exp"
-				Local $arrayStage = findImage("misc-exp-bonus", 30)
+				Local $arrayStage = findImage("misc-exp-bonus", 50)
 				While isArray($arrayStage) = False
 					ControlSend($hWindow, "", "", "{LEFT}")
-					If _Sleep(500) Then Return -1
+					If _Sleep(2000) Then Return -1
 
-					$arrayStage = findImage("misc-exp-bonus", 30)
+					$arrayStage = findImage("misc-exp-bonus", 50)
+					If isArray($arrayStage) Then $arrayStage[1] += 20
 					If TimerDiff($startTimer) > 20000 Then ExitLoop
 				WEnd
 				If setLogReplace("Entering " & $strMap & "..Entering exp stage", 1) Then Return -1
