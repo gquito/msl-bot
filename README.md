@@ -17,7 +17,7 @@ Mainly programmed to gain experience with GitHub and because of the enjoyment of
    
    ![moresettings](https://i.imgur.com/MDZYlKH.png)
    
-   - Setting up key map:
+- Setting up key map:
    
    ![key map](https://i.imgur.com/vLLAR8b.png)
 
