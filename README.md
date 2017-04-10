@@ -24,17 +24,21 @@ Mainly programmed to gain experience with GitHub and because of the enjoyment of
   ![settings](https://i.imgur.com/0KmRoIA.png)
 
 ### Changing bot setting for an Emulator
+- Do this when you get the error "Cannot find instance".
 - When using a different emulator than default, check in the "Config" tab.
+   - You may also need to change the title based on your Nox version.
 
  ![check](https://i.imgur.com/Y9efB3b.png)
  
 - To change look for your emulator:
-   - **Title:** Nox App Player **Instance:** [CLASS:AnglePlayer_0; INSTANCE:1]
+   - **Title:** NoxPlayer **Instance:** [CLASS:AnglePlayer_0; INSTANCE:1]
    - **Title:** BlueStacks App Player **Instance:** [CLASS:BlueStacksApp; INSTANCE:1]
    
 - To manually find it, use AutoIT Window Info
 
 ![manual](https://i.imgur.com/MZu5eWE.png)
+
+*Note: You can rename the title with the multi-drive for Nox. Name it unique like NoxPlayer1. 'Nox' has many instances on it already so it may not find it.
 
 ### Optimizing the image recognition for the bot
 - Some folders in the /core/images/.. may need to be changed for your computer.
