@@ -4,95 +4,84 @@
 
  Parameters:
 	varImages - Set of images to search for specific astromons.
-	boolLog - To log or not to log catches.
-	boolCreateIMG - If not recognized, create image or not.
-	boolOneAstromon - Stop after one astromon or not.
+	boolOneAstromon - Stop after one astromon.
 
  Returns:
-	String of type of astromon caught
-	On astromon bag full - Returns -1
-	On not tried - Returns -2
+	Array with format: ["!Miseed", "Caught", "Caught"]
 
 #ce ----------------------------------------------------------------------------
 
-Func catch($varImages, $boolLog = True, $boolCreateIMG = True, $boolOneAstromon = False, $boolCheckTried = True, $boolCheckCaught = True)
-	Local $strCaught = ""
-	Local $strAstromonGrade = ""
-	Local $boolTried = False
+Func catch($varImages, $boolOneAstromon = False)
+	Local $astromons[0]
+	If getLocation() = "catch-mode" Then
+		If setLogReplace("Catching astromons... Locating", 1) Then Return -1
+		If isArray($varImages) Then ;finding astromon within list
+			Local $pointArray = findImages($varImages, 100, 3000, 0, 263, 800, 473)
+		Else
+			Local $pointArray = findImage($varImages, 100, 3000, 0, 263, 800, 473)
+		EndIf
 
-	While True
-		While True
-			If Not getLocation() = "catch-mode" Then Return ""
-			If Not $boolTried Then setLogReplace("Locating astromon...", 1)
+		If isArray($pointArray) = True Then ;found
+			Local $strGrade = _StringProper(StringRegExpReplace($pointArray[3], ".*catch-(.+)(\D)(\d+?|\d?)\.bmp", "$1$2"))
+			If setLogReplace("Catching astromons... Found " & $strGrade & "!", 1) Then Return -1
+			$pointArray[1] -= 50
 
-			If isArray($varImages) Then ;finding astromon within list
-				Local $pointArray = findImages($varImages, 100, 3000, 0, 263, 800, 473)
-			Else
-				Local $pointArray = findImage($varImages, 100, 3000, 0, 263, 800, 473)
+			;catching astromons
+			clickUntil($pointArray, "catch-success,battle,battle-astromon-full", 500, 100)
+
+			If getLocation() = "battle-astromon-full" Then
+				If setLogReplace("Catching astromons... Astromon bag full!", 1) Then Return -1
+				logUpdate()
+				Return $astromons
 			EndIf
-			If getLocation() = "battle-astromon-full" Then Return -1
 
-			If isArray($pointArray) = True Then ;if found
-				setLogReplace("Locating astromon... Found!", 1)
-				$strAstromonGrade = _StringProper(StringRegExpReplace($pointArray[3], ".*catch-(.*)([0-9]\.|\.)bmp", "$1"))
-
-				$boolTried = True ;indicate that catching was attempted
-				clickUntil($pointArray, "battle", 200, 500)
-
-				If getLocation() = "battle-astromon-full" Then Return -1
-				If Not checkLocations("battle-end-exp, battle-sell, battle-end") = "" Then Return $strCaught
-
-				If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
-					$strCaught &= StringMid($strAstromonGrade, 1, 2)
-					If $boolLog = True Then setLog("Astromon Caught: " & $strAstromonGrade & "!")
-					If $boolOneAstromon Then Return $strCaught ;stops after one catch or no catch
-
-					If $boolLog = True Then setLog("Checking for more astromons..", 1)
-					navigate("battle", "catch-mode")
-					ExitLoop ;going back to inner loop to check for more astromon
-				Else
-					If $boolCheckCaught = True Then
-						If $boolLog = True Then setLog("Checking if caught...", 1)
-						Local $startTimer = TimerInit()
-
-						If IsArray(findImages($imagesRareAstromon, 100, 3000)) Then
-							If $boolLog = True Then setLog("Out of astromon chips!", 1)
-							If $boolLog = True Then setLog("Missed a " & $strAstromonGrade & ".", 1) ;if missed astromon
-						Else
-							$strCaught &= StringMid($strAstromonGrade, 1, 2)
-							If $boolLog = True Then setLog("Astromon Caught: " & $strAstromonGrade & "!")
-							If $boolOneAstromon Then Return $strCaught ;stops after one catch or no catch
-						EndIf
+			;waiting for success location or battle location
+			Local $boolCaught = False
+			Switch waitLocation("catch-success,battle", 5000)
+				Case "catch-success"
+					$boolCaught = True
+					waitLocation("battle")
+				Case "battle" ; This is for when the script cannot detect the success banner when caught
+					If checkPixel($battle_pixelUnavailable) = False Then
+						$boolCaught = True
 					Else
-						$strCaught &= StringMid($strAstromonGrade, 1, 2)
-						If $boolLog = True Then setLog("Assumed to be Caught: " & $strAstromonGrade & "!")
-						If $boolOneAstromon Then Return $strCaught ;stops after one catch or no catch
+						If setLogReplace("Catching astromons... Could not detect success, checking if caught", 1) Then Return -1
+						If isArray(findImages("battle-" & StringLower($strGrade), 100, 3000)) Then $boolCaught = True
 					EndIf
+			EndSwitch
 
-					Return $strCaught
+			If $boolCaught = True Then
+				If setLogReplace("Catching astromons... Caught " & $strGrade & "!", 1) Then Return -1
+				_ArrayAdd($astromons, $strGrade)
+				logUpdate()
+
+				If $boolOneAstromon = False And checkPixel($battle_pixelUnavailable) = False Then ;recursion to catch more astromons
+					While checkPixel($battle_pixelUnavailable) = False
+						If setLogReplace("Catching astromons... Checking for more astromons", 1) Then Return -1
+
+						If navigate("battle", "catch-mode") = True Then
+							Local $catch = catch($varImages, True)
+							If UBound($catch) = 0 Then ExitLoop
+
+							_ArrayAdd($astromons, $catch)
+						Else
+							If waitLocation("battle", 5000) = "" Then
+								If setLogReplace("Catching astromons... Could not check for more astromons.", 1) Then Return -1
+								ExitLoop
+							EndIf
+						EndIf
+					WEnd
 				EndIf
-			Else
-				If ($boolCheckTried = True) And ($boolTried = False) Then ;if astromon was not recognized
-					If $boolLog = True Then setLog("Could not recognize astromon.", 1)
-					If $boolCreateIMG = True Then
-						Local $tempInt = 0
-						While(FileExists(@ScriptDir & "/NotRecognized" & $tempInt & ".bmp"))
-							$tempInt += 1
-						WEnd
-
-						If $boolLog = True Then setLog("Saving to NotRecognized" & $tempInt & ".bmp", 1)
-						_CaptureRegion("NotRecognized" & $tempInt & ".bmp", 0, 263, 800, 473)
-
-						clickUntil($battle_coorCatchCancel, "battle")
-					EndIf
-					Return -2
-				EndIf
-
-				setLogReplace("Locating astromon... Not found.", 1)
-				clickUntil($battle_coorCatchCancel, "battle")
+			Else ;not caught
+				If setLogReplace("Catching astromons... Failed to catch" & $strGrade & ".", 1) Then Return -1
+				_ArrayAdd($astromons, "!" & $strGrade)
 			EndIf
+		Else ;not found
+			If setLogReplace("Catching astromons... Not found.", 1) Then Return -1
+			clickUntil($battle_coorCatchCancel, "battle")
+		EndIf
 
-			Return $strCaught
-		WEnd
-	WEnd
+		logUpdate()
+		Return $astromons
+	EndIf
 EndFunc

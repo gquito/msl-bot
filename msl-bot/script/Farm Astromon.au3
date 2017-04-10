@@ -51,20 +51,23 @@ Func farmAstromon()
 			Case "battle"
 				If checkPixel($battle_pixelUnavailable) = False Then
 					While navigate("battle", "catch-mode") = True
-						$tempStr = catch($captures, True, False, True, False, False)
-						If ($tempStr = -1) Or ($tempStr = "") Then ExitLoop
-
-						$intCounter += 1
-
-						GUICtrlSetData($listScript, "")
-						GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
-						If $intCounter = $limit Then ExitLoop (2)
+						Local $catch = catch($captures, True)
+						If UBound($catch) = 0 Then ExitLoop
+						For $astromon In $catch
+							If Not(StringLeft($astromon, 1) = "!") Then $intCounter += 1
+							GUICtrlSetData($listScript, "")
+							GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
+							If $intCounter = $limit Then ExitLoop
+						Next
 					WEnd
 
-					If _Sleep(10) Then ExitLoop
-
-					setLog("Attaking astromons..", 1)
-					clickPoint($battle_coorAuto, 2, 10)
+					While getLocation() = "battle"
+						If checkPixel($battle_pixelUnavailable) = True Then ExitLoop
+						If setLogReplace("Attaking astromons..", 1) Then ExitLoop
+						clickPoint($battle_coorAuto, 2, 10)
+						If _Sleep(1000) Then ExitLoop
+					WEnd
+					logUpdate()
 				Else
 					If $finishRound = 0 Then
 						setLog("Out of astrochips, restarting..", 1)
@@ -75,7 +78,7 @@ Func farmAstromon()
 						If setLog("Out of astrochips, attacking..", 1) Then ExitLoop(2)
 						While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
 							clickPoint($battle_coorAuto, 2, 10)
-							If _Sleep(2000) Then ExitLoop(2)
+							If _Sleep(1000) Then ExitLoop(2)
 						WEnd
 					EndIf
 				EndIf
@@ -97,9 +100,8 @@ Func farmAstromon()
 				MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "Enter battle and turn auto off, then click ok.")
 
 			Case "map-gem-full", "battle-gem-full"
-				setLog("Gem inventory is full", 1)
+				setLog("Gem inventory is full!", 1)
 				ExitLoop
-
 			Case "lost-connection"
 				clickPoint($game_coorConnectionRetry)
 
@@ -110,7 +112,14 @@ Func farmAstromon()
 				clickPoint($battle_coorCatchCancel)
 
 			Case "battle-astromon-full", "map-astromon-full"
-				setLog("Inventory is full.", 1)
+				setLog("Inventory is full! Finishing round.", 1)
+				clickUntil("400, 300", "battle")
+
+				While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
+					clickPoint($battle_coorAuto, 2, 10)
+					If _Sleep(1000) Then ExitLoop(2)
+				WEnd
+
 				ExitLoop
 		EndSwitch
 	WEnd

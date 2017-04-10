@@ -3,7 +3,6 @@ Global $setLogOld = ""
 #cs ----------------------------------------------------------------------------
 
  Function: setLog
-
  Sets the text for the title of the GUI and Sets Log
 
 #ce ----------------------------------------------------------------------------
@@ -23,7 +22,6 @@ EndFunc
 #cs ----------------------------------------------------------------------------
 
  Function: setLogReplace
-
  Replaces most recent line to a new setlog
 
 #ce ----------------------------------------------------------------------------
@@ -39,3 +37,15 @@ Func setLogReplace($strStatus, $option = 0) ;0 is normal, 1 is unimportant, 2 is
 
 	Return False
 EndFunc
+
+#cs ----------------------------------------------------------------------------
+
+ Function: logUpdate
+ Updates old log to new log
+
+#ce ----------------------------------------------------------------------------
+
+Func logUpdate()
+	$setLogOld = GUICtrlRead($textOutput)
+EndFunc
+

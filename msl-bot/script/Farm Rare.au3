@@ -42,16 +42,15 @@ Func farmRare()
 
 	Local $dataRuns = 0
 	Local $dataGuardians = 0
-	Local $dataEncounter = 0
 	Local $dataStrCaught = ""
-	Local $counterWordWrap = 0
+	Local $dataStrMissed = ""
 	Local $getHourly = False
 
 	While True
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
 		GUICtrlSetData($listScript, "")
-		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Rares: " & $dataEncounter & "|Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
+		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Caught: " & StringMid($dataStrCaught, 3) & "|Missed: " & StringMid($dataStrMissed, 3) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
 
 		If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
 
@@ -115,25 +114,21 @@ Func farmRare()
 			Case "battle"
 				If IsArray(findImages($rareIcons, 100, 5000)) Then
 					If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
-						$dataEncounter += 1
 						If setLogReplace("An astromon has been found!", 1) Then ExitLoop
 
 						If navigate("battle", "catch-mode") = True Then
-							Local $tempStr = catch($captures, True, False, False, True)
-							If $tempStr = -2 Then ;double check
-								If setLog("Did not recognize astromon, trying again..", 1) Then ExitLoop
+							Local $catch = catch($captures)
 
-								navigate("battle", "catch-mode")
-								$tempStr = catch($captures, True, True, False, True)
-							EndIf
-							If $tempStr = "-2" Then $tempStr = ""
+							For $astromon In $catch
+								If StringTrimLeft($astromon, 1) = "!" Then ;if missed
+									$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
+									If Mod(UBound(StringSplit($dataStrMissed, ", "))+1, 12) = 0 Then $dataStrMissed &= "|=====>"
+								Else ;if caught
+									$dataStrCaught &= ", " & StringMid($astromon, 1, 2)
+									If Mod(UBound(StringSplit($dataStrCaught, ", "))+1, 12) = 0 Then $dataStrCaught &= "|=====>"
+								EndIf
+							Next
 
-							If Not $tempStr = "" Then
-								$counterWordWrap += 1
-								$dataStrCaught &= ", " & $tempStr
-
-								If Mod($counterWordWrap, 11) = 0 Then $dataStrCaught &= "|.........."
-							EndIf
 							If setLog("Finish catching... Attacking", 1) Then ExitLoop
 							clickPoint($battle_coorAuto)
 						EndIf
