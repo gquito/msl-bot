@@ -11,7 +11,9 @@ Mainly programmed to gain experience with GitHub and because of the enjoyment of
    - Install from website (google that)
    
    - Optimal Settings: ![settings](https://i.imgur.com/ck4kF1s.png)
-   
+      - Make sure the resolution is 800x552, you can check with Paint program to see the actual size.
+         - If it is different, compensate by adding or subtracting to size. EX: 800x522 -> 800x582 (Added +30 to make it 552)
+      
    ![optimal settings](https://i.imgur.com/Nggy0H9.png)
    
    - Setting up key map:
