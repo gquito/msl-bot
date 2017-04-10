@@ -5,6 +5,9 @@ This is an open-sources bot designed to grind Monster Super League automatically
 Mainly programmed to gain experience with GitHub and because of the enjoyment of coding.
 
 ### How to start bot
+
+*Note: Make sure the display setting icon size for your windows is set to 100%
+
 #### Choose Emulator, recommended: Nox
 
 - For Nox:
