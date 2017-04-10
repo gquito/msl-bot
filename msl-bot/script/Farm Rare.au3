@@ -1,23 +1,46 @@
 #cs
 	Function: farmRare
-	Farm Rare script aims to catch rares automatically
+	Calls farmRareMain function with config settings
 
 	Author: GkevinOD (2017)
 #ce
 Func farmRare()
-	;initializing configs
+	Local $intGem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "max-spend-gem", 0))
 	Local $map = "map-" & StringReplace(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "map", "phantom forest"), " ", "-")
 	Local $guardian = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "guardian-dungeon", "0")
 	Local $difficulty = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "difficulty", "normal")
 	Local $stage = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "stage", "gold")
+	Local $sellGems = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "sell-gems-grade", "one star,two star, three star"), ",", 2)
+	Local $rawCapture = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "capture", "legendary,super rare,rare,exotic,variant"), ",", 2)
+	Local $quest = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-quest", "1")
+	Local $hourly = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-hourly", "1")
+
+	farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly)
+EndFunc
+
+#cs
+	Function: farmRareMain
+	Farm Rare script aims to catch rares automatically
+
+	Parameters:
+		map: (String) Map to farm rare in. EX: phantom forest, lunar valley, aria lake...
+		difficulty: (String) normal, hard, extreme
+		stage: (String) gold, exp, any
+		rawCapture: (String) "legendary,variant,rare..." This type of string format.
+		sellGems: (String) "1,2,3,4" This type of string format.
+		intGem: (Int) Maximum number of gems to allow bot to spend on refill
+		guardian: (Int) 1=True; 0=False
+		quest: (Int) 1=True; 0=False
+		hourly: (Int) 1=True; 0=False
+
+	Author: GkevinOD (2017)
+#ce
+Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly)
+	;initializing configs
 	Local $captures[0]
 	Local $rareIcons[0]
-	Local $sellGems = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "sell-gems-grade", "one star,two star, three star"), ",", 2)
-
-	Local $intGem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "max-spend-gem", 0))
 	Local $intGemUsed = 0
 
-	Local $rawCapture = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "capture", "legendary,super rare,rare,exotic,variant"), ",", 2)
 	For $capture In $rawCapture
 		Local $grade = StringReplace($capture, " ", "-")
 		If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
@@ -28,9 +51,6 @@ Func farmRare()
 			_ArrayAdd($rareIcons, "battle-" & $grade)
 		EndIf
 	Next
-
-	Local $quest = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-quest", "1")
-	Local $hourly = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-hourly", "1")
 
 	setLog("~~~Starting 'Farm Rare' script~~~", 2)
 
@@ -44,7 +64,9 @@ Func farmRare()
 	Local $dataGuardians = 0
 	Local $dataStrCaught = ""
 	Local $dataStrMissed = ""
+
 	Local $getHourly = False
+	Local $checkHourly = True ;bool to prevent checking twice
 
 	While True
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
@@ -52,7 +74,12 @@ Func farmRare()
 		GUICtrlSetData($listScript, "")
 		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Caught: " & StringMid($dataStrCaught, 3) & "|Missed: " & StringMid($dataStrMissed, 3) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
 
-		If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
+		Switch StringSplit(_NowTime(4), ":", 2)[1]
+			Case "00"
+				If $checkHourly = True Then $getHourly = True
+			Case "01" ;to prevent checking twice
+				$checkHourly = True
+		EndSwitch
 
 		If _Sleep(100) Then ExitLoop
 		Switch getLocation()
@@ -75,7 +102,10 @@ Func farmRare()
 			Case "battle-end"
 				If $quest = 1 And checkPixel($battle_pixelQuest) = True Then getQuest()
 				If $hourly = 1 And $getHourly = True Then
-					If getHourly() = 1 Then $getHourly = False
+					If getHourly() = 1 Then
+						$getHourly = False
+						$checkHourly = False
+					EndIf
 				EndIf
 
 				If getLocation() = "battle-end" Then

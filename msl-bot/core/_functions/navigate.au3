@@ -54,7 +54,6 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 		Return waitLocation($strLocation)
 	Else
 		While True
-			If _Sleep(2000) Then Return -1
 			Local $currLocation = getLocation()
 
 			Switch $currLocation
@@ -114,6 +113,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
 			EndSwitch
+			If _Sleep(2000) Then Return -1
 		WEnd
 		navigate($strMainLocation, $strLocation)
 	EndIf

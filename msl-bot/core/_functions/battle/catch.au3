@@ -82,6 +82,7 @@ Func catch($varImages, $boolOneAstromon = False)
 		EndIf
 
 		logUpdate()
-		Return $astromons
 	EndIf
+
+	Return $astromons
 EndFunc

@@ -1,17 +1,33 @@
-;function: farmAstromon
-;-Automatically farms an astromon
-;pre:
-;   -config must be set for script
-;   -required config keys: map, capture, guardian-dungeon
-;author: GkevinOD
+#cs
+	Function: farmAstromon
+	Calls farmAstromonMain with config settings
+
+	Author: GkevinOD (2017)
+#ce
 Func farmAstromon()
-	;beginning script
-	setLog("*Loading config for Farm Astromon.", 2)
+	Local $imgName = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "image", Null)
+	Local $limit = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "limit", 16))
+	Local $catchRares = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "catch-rares", 0)
+	Local $finishRound = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "finish-round", 0)
 
-	;getting configs
-	Dim $captures[0] ;
+	farmAstromonMain($imgName, $limit, $catchRares, $finishRound)
+EndFunc
 
-	If IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "catch-rares", 0) = 1 Then
+#cs
+	Function: farmAstromonMain
+	Farm a type of astromon in story mode.
+
+	Parameters:
+		imgName: (String) Image name of astromon to look for. EX: catch-one-star
+		limit: (Int) Maximum number of astromons to farm. 0=Farm until max
+		catchRares: (Int) 1=True; 0=False
+		finishRound: (Int) 1=True; 0=False
+
+	Author: GkevinOD (2017)
+#ce
+Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound)
+	Local $captures[0]
+	If $catchRares = 1 Then
 		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
 		For $capture In $rawCapture
 			Local $grade = StringReplace($capture, " ", "-")
@@ -21,17 +37,12 @@ Func farmAstromon()
 		Next
 	EndIf
 
-	Local $finishRound = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "finish-round", 0)
-
-	Local $imgName = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "image", Null)
 	If ($imgName = Null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
 		setLog("*Error: Image file does not exist!", 2)
 		Return 0
 	EndIf
-
 	_ArrayAdd($captures, $imgName)
 
-	Dim $limit = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "limit", 16))
 	If $limit = 0 Then
 		setLog("*Limit is 0, will farm until inventory is full.", 2)
 		$limit = 9999 ;really high number so counter never hits
@@ -52,12 +63,13 @@ Func farmAstromon()
 				If checkPixel($battle_pixelUnavailable) = False Then
 					While navigate("battle", "catch-mode") = True
 						Local $catch = catch($captures, True)
-						If UBound($catch) = 0 Then ExitLoop
+
+						If UBound($catch) = 0 Or $intCounter >= $limit Then ExitLoop
 						For $astromon In $catch
 							If Not(StringLeft($astromon, 1) = "!") Then $intCounter += 1
 							GUICtrlSetData($listScript, "")
 							GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
-							If $intCounter = $limit Then ExitLoop
+							If $intCounter >= $limit Then ExitLoop
 						Next
 					WEnd
 
@@ -110,6 +122,9 @@ Func farmAstromon()
 
 			Case "catch-mode"
 				clickPoint($battle_coorCatchCancel)
+
+			Case "pause"
+				clickPoint($battle_coorContinue)
 
 			Case "battle-astromon-full", "map-astromon-full"
 				setLog("Inventory is full! Finishing round.", 1)
