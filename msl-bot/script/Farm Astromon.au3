@@ -53,7 +53,8 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 
 	Local $gemsUsed = 0 ;for refill
 
-	Dim $intCounter = 0
+	Local $intCounter = 0
+	Local $roundCatch = 0 ;This to count if caught three so it skips faster
 	While $intCounter < $limit
 		GUICtrlSetData($listScript, "")
 		GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
@@ -80,12 +81,16 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 						EndIf
 
 						For $astromon In $catch
-							If Not (StringLeft($astromon, 1) = "!") Then $intCounter += 1
+							If Not (StringLeft($astromon, 1) = "!") Then
+								$intCounter += 1
+								$roundCatch += 1
+							EndIf
 							GUICtrlSetData($listScript, "")
 							GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
 						Next
 
 						If $intCounter >= $limit Then ExitLoop(2)
+						If $roundCatch = 3 Then ExitLoop
 					WEnd
 
 					If $nextRound = True Then
@@ -95,19 +100,18 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 						WEnd
 					EndIf
 				Else
-					If waitLocation("unknown", 5000) = "" Then
-						If $finishRound = 0 Then
-							setLog("Out of astrochips, restarting..", 1)
-							clickUntil($battle_coorPause, "pause")
-							clickPoint($battle_coorGiveUp)
-							clickPoint($battle_coorGiveUpConfirm)
-						Else
-							If setLog("Out of astrochips, attacking..", 1) Then ExitLoop (2)
-							While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
-								clickPoint($battle_coorAuto, 2, 10)
-								If _Sleep(1000) Then ExitLoop (2)
-							WEnd
-						EndIf
+					$roundCatch = 0
+					If $finishRound = 0 Then
+						setLog("Out of astrochips, restarting..", 1)
+						clickUntil($battle_coorPause, "pause")
+						clickPoint($battle_coorGiveUp)
+						clickPoint($battle_coorGiveUpConfirm)
+					Else
+						If setLog("Out of astrochips, attacking..", 1) Then ExitLoop (2)
+						While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
+							clickPoint($battle_coorAuto, 2, 10)
+							If _Sleep(1000) Then ExitLoop (2)
+						WEnd
 					EndIf
 				EndIf
 			Case "battle-end-exp", "battle-sell"

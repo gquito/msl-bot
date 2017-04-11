@@ -40,7 +40,8 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				clickUntil($map_coorGolemDungeons, "golem-dungeons")
 			;battle
 			Case "catch-mode"
-				clickUntil($battle_pixelUnavailable, "catch-mode", 10, 500)
+				If checkPixel($battle_pixelUnavailable) Then Return False
+				clickUntil($battle_pixelUnavailable, "catch-mode,unknown", 10, 1000)
 			Case ""
 				Return True
 			Case Else

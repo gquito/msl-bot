@@ -16,9 +16,9 @@ Func catch($varImages, $boolOneAstromon = False)
 	If getLocation() = "catch-mode" Then
 		If setLogReplace("Catching astromons... Locating", 1) Then Return -1
 		If isArray($varImages) Then ;finding astromon within list
-			Local $pointArray = findImages($varImages, 100, 3000, 0, 263, 800, 473)
+			Local $pointArray = findImages($varImages, 100, 1000, 0, 263, 800, 473)
 		Else
-			Local $pointArray = findImage($varImages, 100, 3000, 0, 263, 800, 473)
+			Local $pointArray = findImage($varImages, 100, 1000, 0, 263, 800, 473)
 		EndIf
 
 		If isArray($pointArray) = True Then ;found

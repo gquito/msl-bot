@@ -68,6 +68,8 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 	Local $getHourly = False
 	Local $checkHourly = True ;bool to prevent checking twice
 
+	Local $missedCounter = 0
+	Local $caughtcounter = 0
 	While True
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
@@ -150,12 +152,14 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 							Local $catch = catch($captures)
 
 							For $astromon In $catch
-								If StringTrimLeft($astromon, 1) = "!" Then ;if missed
+								If StringMid($astromon, 1, 1) = "!" Then ;if missed
 									$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
-									If Mod(UBound(StringSplit($dataStrMissed, ", ")) + 1, 12) = 0 Then $dataStrMissed &= "|=====>"
+									$missedCounter += 1
+									If Mod($missedCounter, 12) = 0 Then $dataStrMissed &= "|=====>"
 								Else ;if caught
 									$dataStrCaught &= ", " & StringMid($astromon, 1, 2)
-									If Mod(UBound(StringSplit($dataStrCaught, ", ")) + 1, 12) = 0 Then $dataStrCaught &= "|=====>"
+									$caughtCounter += 1
+									If Mod($caughtCounter, 12) = 0 Then $dataStrCaught &= "|=====>"
 								EndIf
 							Next
 

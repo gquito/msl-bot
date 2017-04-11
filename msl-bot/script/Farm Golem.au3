@@ -68,6 +68,9 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGra
 	Local $getHourly = False
 	Local $checkHourly = True ;bool to prevent checking twice
 
+	Local $numEggs = 0 ;keeps count of number of eggs found
+	Local $numGemsKept = 0; keeps count of number of eggs kept
+
 	While True
 		If _Sleep(50) Then ExitLoop
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
@@ -81,7 +84,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGra
 
 		If $guardian = 1 And Mod($intRunCount + 1, 10) = 0 Then $getGuardian = True
 
-		Local $strData = "Runs: " & $intRunCount & " (Guardian:" & $intGuardian & ")|Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Energy Used: " & ($intRunCount * $intGolem) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min." & "|Avg. Time: " & StringFormat("%.2f", $intTimeElapse / $intRunCount / 60) & " Min."
+		Local $strData = "Runs: " & $intRunCount & " (Guardian:" & $intGuardian & ")|Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min." & "|Avg. Time: " & StringFormat("%.2f", $intTimeElapse / $intRunCount / 60) & " Min.|Eggs: " & $numEggs & "|Gems Kept: " & $numGemsKept
 
 		GUICtrlSetData($listScript, "")
 		GUICtrlSetData($listScript, $strData)
@@ -168,7 +171,15 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGra
 
 				If $sellGems = 1 Then
 					Local $gemInfo = sellGem("B" & $strGolem, $intSellGradeMin, True, $keepAllGrade, $intKeepGradeMinSub, $intMinSub)
-					If IsArray($gemInfo) And StringInStr($gemInfo[6], "!") Then $intGoldPrediction += $intGoldEnergy
+					If IsArray($gemInfo) Then
+						If StringInStr($gemInfo[6], "!") Then
+							$intGoldPrediction += $intGoldEnergy
+						Else
+							$numGemsKept += 1
+						EndIf
+
+						If $gemInfo[0] = "EGG" Then $numEggs += 1
+					EndIf
 				Else
 					sellGem("B" & $strGolem, 0, False, 6, 0, 0) ;Does not sell, only records data
 				EndIf

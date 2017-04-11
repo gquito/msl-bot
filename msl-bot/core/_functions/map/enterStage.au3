@@ -88,7 +88,7 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 		EndSwitch
 
 		If Not isArray($arrayStage) Then Return -1
-		clickWhile($arrayStage, "map-stage")
+		clickWhile($arrayStage, "map-stage", 5, 2000)
 
 		;applying autobattle mode
 		If $boolAuto = True Then
