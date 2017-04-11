@@ -64,25 +64,36 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 				clickPoint($battle_coorAuto, 1, 1000)
 			Case "battle"
 				If checkPixel($battle_pixelUnavailable) = False Then
-					While navigate("battle", "catch-mode") = True
-						If $intCounter >= $limit Then ExitLoop
-						Local $catch = catch($captures, True)
+					Local $nextRound = False
 
-						If UBound($catch) = 0 Then ExitLoop
+					While True
+						Local $timerStart = TimerInit()
+						While Not(getLocation() = "catch-mode")
+							navigate("battle", "catch-mode")
+							If TimerDiff($timerStart) > 5000 Then ExitLoop(2)
+						WEnd
+
+						Local $catch = catch($captures, True)
+						If UBound($catch) = 0 Then
+							$nextRound = True ;not found
+							ExitLoop
+						EndIf
+
 						For $astromon In $catch
 							If Not (StringLeft($astromon, 1) = "!") Then $intCounter += 1
 							GUICtrlSetData($listScript, "")
 							GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
-							If $intCounter >= $limit Then ExitLoop
 						Next
+
+						If $intCounter >= $limit Then ExitLoop(2)
 					WEnd
 
-					Do
-						If _Sleep(1000) Then ExitLoop (2)
-						If setLogReplace("Attaking astromons..", 1) Then ExitLoop
-						clickPoint($battle_coorAuto, 2, 10)
-					Until Not(waitLocation("unknown,catch-mode,battle-end-exp,battle-sell,battle-end") = "")
-					logUpdate()
+					If $nextRound = True Then
+						While Not(getLocation() = "unknown")
+							clickPoint($battle_coorAuto, 2, 10)
+							If _Sleep(1000) Then ExitLoop
+						WEnd
+					EndIf
 				Else
 					If waitLocation("unknown", 5000) = "" Then
 						If $finishRound = 0 Then

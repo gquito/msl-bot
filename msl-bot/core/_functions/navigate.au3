@@ -40,13 +40,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				clickUntil($map_coorGolemDungeons, "golem-dungeons")
 			;battle
 			Case "catch-mode"
-				If checkPixel($battle_pixelUnavailable) = True Then Return False
-				clickWhile($battle_pixelUnavailable, "battle")
-
-				If waitLocation("battle,catch-mode", 5000) = "battle" Then
-					If checkPixel($battle_pixelUnavailable) = True Then Return False
-					clickWhile($battle_pixelUnavailable, "battle")
-				EndIf
+				clickUntil($battle_pixelUnavailable, "catch-mode", 10, 500)
 			Case ""
 				Return True
 			Case Else
@@ -113,6 +107,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
 				Case "battle"
+					If $currLocation = "battle-auto" Then clickPoint($battle_coorAuto)
 					Return Not(waitLocation("battle", 8000) = "")
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")

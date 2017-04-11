@@ -27,13 +27,13 @@ Func evolve($monster)
 		If setLogReplace("Evolving astromon...Finding astromon", 2) Then Return -1
 
 		Local $timerStart = TimerInit()
-		Local $monEvo = findImage($monster, 100, 1000, 9, 101, 292, 449)
+		Local $monEvo = findImage($monster, 130, 1000, 9, 101, 292, 449)
 		While isArray($monEvo) = False
 			ControlSend($hWindow, "", "", "{RIGHT}")
 			If _Sleep(1000) Then Return -1
 
 			If TimerDiff($timerStart) > 300000 Then Return False;5 minutes
-			$monEvo = findImage($monster, 100, 1000, 9, 101, 292, 449)
+			$monEvo = findImage($monster, 130, 1000, 9, 101, 292, 449)
 		WEnd
 		If setLogReplace("Evolving astromon...Found!", 2) Then Return -1
 		clickPoint($monEvo, 3) ;click monster
@@ -41,10 +41,18 @@ Func evolve($monster)
 		clickUntil("600, 391", "monsters-evolution")
 
 		If setLogReplace("Evolving astromon...Ascending", 2) Then Return -1
-		For $selectAwaken = 0 To 6 ;select awaken
-			clickPoint(String(353+($selectAwaken*65)) & ", 343", 1, 100) ;click to awaken
+
+		Local $empty3rdSlot = [583, 182, 0x7D624D]
+		Local $evoSlime = findImage($monster, 130, 1000, 314, 298, 772, 363)
+		While isArray($evoSlime)
+			clickPoint($evoSlime) ;click to awaken
 			clickPoint("574, 223", 3, 50) ;click ex just in case it is already awakened
-		Next
+
+			_CaptureRegion()
+			If checkPixel($empty3rdSlot) = False Then ExitLoop
+			$evoSlime = findImage($monster, 130, 1000, 314, 298, 772, 363)
+		WEnd
+
 		;awakening and evolving
 		clickUntil("424, 394", "monsters-awaken")
 
@@ -74,10 +82,17 @@ Func evolve($monster)
 	If setLog("Evolving astromon...Evolving to Evolution 3", 2) Then Return -1
 	clickPoint("53, 152", 3) ;click monster
 	clickUntil("600, 391", "monsters-evolution")
-	For $selectAwaken = 0 To 6 ;select awaken
-		clickPoint(String(353+($selectAwaken*65)) & ", 343", 1, 100) ;click to awaken
+
+	Local $empty3rdSlot = [583, 182, 0x7D624D]
+	Local $evoSlime = findImage($monster & "x", 130, 1000, 314, 298, 772, 363)
+	While isArray($evoSlime)
+		clickPoint($evoSlime) ;click to awaken
 		clickPoint("574, 223", 3, 50) ;click ex just in case it is already awakened
-	Next
+
+		_CaptureRegion()
+		If checkPixel($empty3rdSlot) = False Then ExitLoop
+		$evoSlime = findImage($monster & "x", 130, 1000, 314, 298, 772, 363)
+	WEnd
 
 	;awakening and evolving
 	clickUntil("424, 394", "monsters-awaken")
