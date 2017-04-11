@@ -15,23 +15,25 @@ Func farmRare()
 	Local $quest = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-quest", "1")
 	Local $hourly = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-hourly", "1")
 
+	setLog("~~~Starting 'Farm Rare' script~~~", 2)
 	farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly)
-EndFunc
+	setLog("~~~Finished 'Farm Rare' script~~~", 2)
+EndFunc   ;==>farmRare
 
 #cs
 	Function: farmRareMain
 	Farm Rare script aims to catch rares automatically
 
 	Parameters:
-		map: (String) Map to farm rare in. EX: phantom forest, lunar valley, aria lake...
-		difficulty: (String) normal, hard, extreme
-		stage: (String) gold, exp, any
-		rawCapture: (String) "legendary,variant,rare..." This type of string format.
-		sellGems: (String) "1,2,3,4" This type of string format.
-		intGem: (Int) Maximum number of gems to allow bot to spend on refill
-		guardian: (Int) 1=True; 0=False
-		quest: (Int) 1=True; 0=False
-		hourly: (Int) 1=True; 0=False
+	map: (String) Map to farm rare in. EX: phantom forest, lunar valley, aria lake...
+	difficulty: (String) normal, hard, extreme
+	stage: (String) gold, exp, any
+	rawCapture: (String) "legendary,variant,rare..." This type of string format.
+	sellGems: (String) "1,2,3,4" This type of string format.
+	intGem: (Int) Maximum number of gems to allow bot to spend on refill
+	guardian: (Int) 1=True; 0=False
+	quest: (Int) 1=True; 0=False
+	hourly: (Int) 1=True; 0=False
 
 	Author: GkevinOD (2017)
 #ce
@@ -52,10 +54,8 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 		EndIf
 	Next
 
-	setLog("~~~Starting 'Farm Rare' script~~~", 2)
-
 	Local $intStartTime = TimerInit()
-	Local $intTimeElapse = 0;
+	Local $intTimeElapse = 0 ;
 
 	Local $strEllipses = ["", ".", "..", "..."]
 	Local $tempCounter = 0
@@ -109,7 +109,7 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 				EndIf
 
 				If getLocation() = "battle-end" Then
-					If Not Mod($dataRuns+1, 20) = 0 Then
+					If Not Mod($dataRuns + 1, 20) = 0 Then
 						clickUntil(findImage("battle-quick-restart", 30), "unknown")
 						$dataRuns += 1
 					Else
@@ -152,10 +152,10 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 							For $astromon In $catch
 								If StringTrimLeft($astromon, 1) = "!" Then ;if missed
 									$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
-									If Mod(UBound(StringSplit($dataStrMissed, ", "))+1, 12) = 0 Then $dataStrMissed &= "|=====>"
+									If Mod(UBound(StringSplit($dataStrMissed, ", ")) + 1, 12) = 0 Then $dataStrMissed &= "|=====>"
 								Else ;if caught
 									$dataStrCaught &= ", " & StringMid($astromon, 1, 2)
-									If Mod(UBound(StringSplit($dataStrCaught, ", "))+1, 12) = 0 Then $dataStrCaught &= "|=====>"
+									If Mod(UBound(StringSplit($dataStrCaught, ", ")) + 1, 12) = 0 Then $dataStrCaught &= "|=====>"
 								EndIf
 							Next
 
@@ -185,6 +185,4 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 				clickPoint($game_coorConnectionRetry)
 		EndSwitch
 	WEnd
-
-	setLog("~~~Finished 'Farm Rare' script~~~", 2)
-EndFunc   ;==>farmRare
+EndFunc   ;==>farmRareMain

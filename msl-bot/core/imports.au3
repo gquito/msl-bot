@@ -52,3 +52,4 @@
 		#include "_functions/village/sellGems.au3"
 		#include "_functions/village/getHourly.au3"
 		#include "_functions/village/getQuest.au3"
+		#include "_functions/village/evolve.au3"

@@ -19,8 +19,10 @@ Func getQuest()
 		Next
 	Else
 		If setLogReplace("Collecting quests..Fail to go to quests.", 1) Then Return False
+		logUpdate()
 		Return False
 	EndIf
 	If setLogReplace("Collecting quests..Done!", 1) Then Return False
+	logUpdate()
 	Return True
 EndFunc

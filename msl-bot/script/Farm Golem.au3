@@ -14,32 +14,35 @@ Func farmGolem()
 	Local $intMinSub = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "min-sub", 4))
 	Local $intGem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "max-spend-gem", 0))
 	Local $selectBoss = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "select-boss", 1))
+	Local $keepAllGrade = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "keep-all-grade", 6))
 
 	Local $quest = IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "collect-quest", "1")
 	Local $hourly = IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "collect-hourly", "1")
 
-	farmGolemMain($strGolem, $selectBoss, $sellGems, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly)
-EndFunc
+	setLog("~~~Starting 'Farm Golem' script~~~", 2)
+	farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly)
+	setLog("~~~Finished 'Farm Golem' script~~~", 2)
+EndFunc   ;==>farmGolem
 
 #cs
 	Function: farmGolemMain
 	Farms golems while collecting hourly and quests, and selling and collecting gems.
 
 	Parameters:
-		strGolem: (Int) The golem stage.
-		selectBoss: (Int) 1=True; 0=False
-		sellGems: (Int) 1=True; 0=False
-		intSellGradeMin: (Int) Bot will sell any gems with <= this number.
-		intKeepGradeMinSub: (Int) Grade of gem that will be kept if intMinSub is met.
-		intMinSub: (Int) Keep gems that fit intKeepGradeMinSub and has >= this number.
-		intGem: (Int) Maximum number of gems the bot can spend for refill.
-		guardian: (Int) 1=True; 0=False
-		quest: (Int) 1=True; 0=False
-		hourly: (Int) 1=True; 0=False
+	strGolem: (Int) The golem stage.
+	selectBoss: (Int) 1=True; 0=False
+	sellGems: (Int) 1=True; 0=False
+	intSellGradeMin: (Int) Bot will sell any gems with <= this number.
+	intKeepGradeMinSub: (Int) Grade of gem that will be kept if intMinSub is met.
+	intMinSub: (Int) Keep gems that fit intKeepGradeMinSub and has >= this number.
+	intGem: (Int) Maximum number of gems the bot can spend for refill.
+	guardian: (Int) 1=True; 0=False
+	quest: (Int) 1=True; 0=False
+	hourly: (Int) 1=True; 0=False
 
 	Author: GkevinOD (2017)
 #ce
-Func farmGolemMain($strGolem, $selectBoss, $sellGems, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly)
+Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly)
 	Local $intGoldEnergy = 12231
 	Local $intGolem = 7
 	Switch ($strGolem)
@@ -65,7 +68,6 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $intSellGradeMin, $intKeep
 	Local $getHourly = False
 	Local $checkHourly = True ;bool to prevent checking twice
 
-	setLog("~~~Starting 'Farm Golem' script~~~", 2)
 	While True
 		If _Sleep(50) Then ExitLoop
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
@@ -77,7 +79,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $intSellGradeMin, $intKeep
 				$checkHourly = True
 		EndSwitch
 
-		If $guardian = 1 And Mod($intRunCount+1, 10) = 0 Then $getGuardian = True
+		If $guardian = 1 And Mod($intRunCount + 1, 10) = 0 Then $getGuardian = True
 
 		Local $strData = "Runs: " & $intRunCount & " (Guardian:" & $intGuardian & ")|Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Energy Used: " & ($intRunCount * $intGolem) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min." & "|Avg. Time: " & StringFormat("%.2f", $intTimeElapse / $intRunCount / 60) & " Min."
 
@@ -145,7 +147,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $intSellGradeMin, $intKeep
 			Case "map", "village", "astroleague", "map-stage", "map-battle", "toc", "association", "clan", "starstone-dungeons", "golem-dungeons", "elemental-dungeons", "gold-dungeons"
 				If navigate("map", "golem-dungeons") = True Then
 					Local $tempCurrLocation = getLocation()
-					While Not($tempCurrLocation = "map-battle")
+					While Not ($tempCurrLocation = "map-battle")
 						If $tempCurrLocation = "autobattle-prompt" Then
 							clickPoint($map_coorCancelAutoBattle, 1, 500)
 						EndIf
@@ -165,7 +167,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $intSellGradeMin, $intKeep
 				If _Sleep(10) Then ExitLoop
 
 				If $sellGems = 1 Then
-					Local $gemInfo = sellGem("B" & $strGolem, $intSellGradeMin, True, 6, $intKeepGradeMinSub, $intMinSub)
+					Local $gemInfo = sellGem("B" & $strGolem, $intSellGradeMin, True, $keepAllGrade, $intKeepGradeMinSub, $intMinSub)
 					If IsArray($gemInfo) And StringInStr($gemInfo[6], "!") Then $intGoldPrediction += $intGoldEnergy
 				Else
 					sellGem("B" & $strGolem, 0, False, 6, 0, 0) ;Does not sell, only records data
@@ -194,6 +196,4 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $intSellGradeMin, $intKeep
 				clickPoint($battle_coorContinue)
 		EndSwitch
 	WEnd
-
-	setLog("~~~Finished 'Farm Golem' script~~~", 2)
-EndFunc   ;==>farmGolem
+EndFunc   ;==>farmGolemMain

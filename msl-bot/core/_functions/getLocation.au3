@@ -24,9 +24,11 @@ Func getLocation()
 		EndIf
 	Next
 
+	#cs
 	If FileExists(@ScriptDir & "/core/location-examples/" & $result & ".bmp") = False Then
 		_CaptureRegion("/core/location-examples/" & $result & ".bmp")
 	EndIf
+	#ce
 
 	Return $result
 EndFunc
@@ -57,7 +59,6 @@ Func loadLocation($dir = @ScriptDir & "\core\locations.txt", $locationExtra = Fa
 	Local $tempListLocation = FileRead($fileLocation)
 	$tempListLocation = StringSplit($tempListLocation, @LF, 2)
 
-	#cs
 	For $index = 0 To UBound($tempListLocation)-1
 		If StringMid($tempListLocation[$index], 1, 1) = ";" Or StringStripWS($tempListLocation[$index], 8) = "" Then ;check for comment and empty elements
 			ContinueLoop
@@ -65,7 +66,6 @@ Func loadLocation($dir = @ScriptDir & "\core\locations.txt", $locationExtra = Fa
 
 		_ArrayAdd($listLocation, StringSplit($tempListLocation[$index], ":", 2), default, default, default, 1) ;add item into list
 	Next
-	#ce
 
 	FileClose($fileLocation)
 

@@ -73,6 +73,7 @@ EndFunc
 Func findImages($strImages, $intTolerance = 10, $duration = 100, $left = 0, $top = 0, $right = 800, $bottom = 600)
 	Local $arrayImages[0] ;images list to find
 
+	If isArray($strImages) = False Then Return 0
 	For $strImage In $strImages
 		If StringInStr($strImage, "-") Then ;image with specified folder
 			$strImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage

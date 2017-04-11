@@ -27,6 +27,8 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 			Case "manage"
 				clickUntil($village_coorMonsters, "monsters")
 				clickUntil($village_coorManage, "manage")
+			Case "monsters"
+				clickUntil($village_coorMonsters, "monsters")
 			Case "quests"
 				clickUntil($village_coorQuests, "quests")
 			;map
@@ -93,9 +95,11 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 							clickUntil($battle_coorMap, "unknown")
 							waitLocation("map", 10000)
 						Case "village"
-							clickUntil($village_coorPlay, "unknown")
-							clickPoint(findImage("misc-close", 30)) ;to close any windows open
-							waitLocation("map", 10000)
+							clickWhile($village_coorPlay, "village")
+							If waitLocation("map", 5000) = "" Then
+								navigate("village")
+								clickWhile($village_coorPlay, "village")
+							EndIf
 						Case "astroleague", "map-battle", "association", "clan"
 							clickPoint($game_pixelBack)
 							waitLocation("map", 2000)
