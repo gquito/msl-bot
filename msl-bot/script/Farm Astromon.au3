@@ -1,17 +1,36 @@
-;function: farmAstromon
-;-Automatically farms an astromon
-;pre:
-;   -config must be set for script
-;   -required config keys: map, capture, guardian-dungeon
-;author: GkevinOD
+#cs
+	Function: farmAstromon
+	Calls farmAstromonMain with config settings
+
+	Author: GkevinOD (2017)
+#ce
 Func farmAstromon()
-	;beginning script
-	setLog("*Loading config for Farm Astromon.", 2)
+	Local $imgName = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "image", Null)
+	Local $limit = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "limit", 16))
+	Local $catchRares = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "catch-rares", 0)
+	Local $finishRound = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "finish-round", 0)
 
-	;getting configs
-	Dim $captures[0] ;
+	setLog("~~~Starting 'Farm Astromon' script~~~", 2)
+	farmAstromonMain($imgName, $limit, $catchRares, $finishRound)
+	setLog("~~~Finished 'Farm Astromon' script~~~", 2)
+EndFunc   ;==>farmAstromon
 
-	If IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "catch-rares", 0) = 1 Then
+#cs
+	Function: farmAstromonMain
+	Farm a type of astromon in story mode.
+
+	Parameters:
+	imgName: (String) Image name of astromon to look for. EX: catch-one-star
+	limit: (Int) Maximum number of astromons to farm. 0=Farm until max
+	catchRares: (Int) 1=True; 0=False
+	finishRound: (Int) 1=True; 0=False
+	maxRefill: (Int) Max gems to use for refill
+
+	Author: GkevinOD (2017)
+#ce
+Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 0)
+	Local $captures[0]
+	If $catchRares = 1 Then
 		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
 		For $capture In $rawCapture
 			Local $grade = StringReplace($capture, " ", "-")
@@ -21,23 +40,18 @@ Func farmAstromon()
 		Next
 	EndIf
 
-	Local $finishRound = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "finish-round", 0)
-
-	Local $imgName = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "image", Null)
 	If ($imgName = Null) Or (Not FileExists($strImageDir & StringSplit($imgName, "-", 2)[0] & "\" & $imgName & ".bmp")) Then
 		setLog("*Error: Image file does not exist!", 2)
 		Return 0
 	EndIf
-
 	_ArrayAdd($captures, $imgName)
 
-	Dim $limit = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "limit", 16))
 	If $limit = 0 Then
 		setLog("*Limit is 0, will farm until inventory is full.", 2)
 		$limit = 9999 ;really high number so counter never hits
 	EndIf
 
-	setLog("~~~Starting 'Farm Astromon' script~~~", 2)
+	Local $gemsUsed = 0 ;for refill
 
 	Dim $intCounter = 0
 	While $intCounter < $limit
@@ -50,33 +64,50 @@ Func farmAstromon()
 				clickPoint($battle_coorAuto, 1, 1000)
 			Case "battle"
 				If checkPixel($battle_pixelUnavailable) = False Then
-					While navigate("battle", "catch-mode") = True
-						$tempStr = catch($captures, True, False, True, False, False)
-						If ($tempStr = -1) Or ($tempStr = "") Then ExitLoop
+					Local $nextRound = False
 
-						$intCounter += 1
+					While True
+						Local $timerStart = TimerInit()
+						While Not(getLocation() = "catch-mode")
+							navigate("battle", "catch-mode")
+							If TimerDiff($timerStart) > 5000 Then ExitLoop(2)
+						WEnd
 
-						GUICtrlSetData($listScript, "")
-						GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
-						If $intCounter = $limit Then ExitLoop (2)
+						Local $catch = catch($captures, True)
+						If UBound($catch) = 0 Then
+							$nextRound = True ;not found
+							ExitLoop
+						EndIf
+
+						For $astromon In $catch
+							If Not (StringLeft($astromon, 1) = "!") Then $intCounter += 1
+							GUICtrlSetData($listScript, "")
+							GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
+						Next
+
+						If $intCounter >= $limit Then ExitLoop(2)
 					WEnd
 
-					If _Sleep(10) Then ExitLoop
-
-					setLog("Attaking astromons..", 1)
-					clickPoint($battle_coorAuto, 2, 10)
-				Else
-					If $finishRound = 0 Then
-						setLog("Out of astrochips, restarting..", 1)
-						clickUntil($battle_coorPause, "pause")
-						clickPoint($battle_coorGiveUp)
-						clickPoint($battle_coorGiveUpConfirm)
-					Else
-						If setLog("Out of astrochips, attacking..", 1) Then ExitLoop(2)
-						While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
+					If $nextRound = True Then
+						While Not(getLocation() = "unknown")
 							clickPoint($battle_coorAuto, 2, 10)
-							If _Sleep(2000) Then ExitLoop(2)
+							If _Sleep(1000) Then ExitLoop
 						WEnd
+					EndIf
+				Else
+					If waitLocation("unknown", 5000) = "" Then
+						If $finishRound = 0 Then
+							setLog("Out of astrochips, restarting..", 1)
+							clickUntil($battle_coorPause, "pause")
+							clickPoint($battle_coorGiveUp)
+							clickPoint($battle_coorGiveUpConfirm)
+						Else
+							If setLog("Out of astrochips, attacking..", 1) Then ExitLoop (2)
+							While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
+								clickPoint($battle_coorAuto, 2, 10)
+								If _Sleep(1000) Then ExitLoop (2)
+							WEnd
+						EndIf
 					EndIf
 				EndIf
 			Case "battle-end-exp", "battle-sell"
@@ -84,22 +115,21 @@ Func farmAstromon()
 
 			Case "battle-end"
 				Local $quickRestartPoint = findImage("battle-quick-restart", 30)
-				If isArray($quickRestartPoint) Then
+				If IsArray($quickRestartPoint) Then
 					clickPoint($quickRestartPoint)
 				Else
 					clickPoint(findImage("battle-play-again", 30))
 				EndIf
 
 			Case "map-battle"
-				clickUntil($map_coorBattle, "battle")
+				clickWhile($map_coorBattle, "map-battle")
 
 			Case "map", "map-stage", "astroleague", "village", "manage", "monsters", "quests"
 				MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "Enter battle and turn auto off, then click ok.")
 
 			Case "map-gem-full", "battle-gem-full"
-				setLog("Gem inventory is full", 1)
+				setLog("Gem inventory is full!", 1)
 				ExitLoop
-
 			Case "lost-connection"
 				clickPoint($game_coorConnectionRetry)
 
@@ -109,8 +139,39 @@ Func farmAstromon()
 			Case "catch-mode"
 				clickPoint($battle_coorCatchCancel)
 
+			Case "pause"
+				clickPoint($battle_coorContinue)
+
+			Case "refill"
+				If $gemsUsed + 30 <= $maxRefill Then
+					While getLocation() = "refill"
+						clickPoint($game_coorRefill, 1, 1000)
+					WEnd
+
+					If getLocation() = "buy-gem" Or getLocation() = "unknown" Then
+						setLog("Out of gems!", 2)
+						ExitLoop
+					EndIf
+
+					clickUntil($game_coorRefillConfirm, "refill")
+					clickWhile("705, 99", "refill")
+
+					If setLog("Refill gems: " & $gemsUsed + 30 & "/" & $maxRefill, 0) Then ExitLoop
+					$gemsUsed += 30
+				Else
+					setLog("Gem used exceed max gems!", 0)
+					ExitLoop
+				EndIf
+
 			Case "battle-astromon-full", "map-astromon-full"
-				setLog("Inventory is full.", 1)
+				setLog("Inventory is full! Finishing round.", 1)
+				clickUntil("400, 300", "battle")
+
+				While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
+					clickPoint($battle_coorAuto, 2, 10)
+					If _Sleep(1000) Then ExitLoop (2)
+				WEnd
+
 				ExitLoop
 		EndSwitch
 	WEnd
@@ -118,6 +179,4 @@ Func farmAstromon()
 	If getLocation() = "battle" Then
 		clickPoint($battle_coorAuto)
 	EndIf
-
-	setLog("~~~Finished 'Farm Astromon' script~~~", 2)
-EndFunc   ;==>farmAstromon
+EndFunc   ;==>farmAstromonMain

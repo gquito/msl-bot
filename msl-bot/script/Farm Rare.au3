@@ -1,23 +1,48 @@
 #cs
 	Function: farmRare
-	Farm Rare script aims to catch rares automatically
+	Calls farmRareMain function with config settings
 
 	Author: GkevinOD (2017)
 #ce
 Func farmRare()
-	;initializing configs
+	Local $intGem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "max-spend-gem", 0))
 	Local $map = "map-" & StringReplace(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "map", "phantom forest"), " ", "-")
 	Local $guardian = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "guardian-dungeon", "0")
 	Local $difficulty = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "difficulty", "normal")
 	Local $stage = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "stage", "gold")
+	Local $sellGems = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "sell-gems-grade", "one star,two star, three star"), ",", 2)
+	Local $rawCapture = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "capture", "legendary,super rare,rare,exotic,variant"), ",", 2)
+	Local $quest = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-quest", "1")
+	Local $hourly = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-hourly", "1")
+
+	setLog("~~~Starting 'Farm Rare' script~~~", 2)
+	farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly)
+	setLog("~~~Finished 'Farm Rare' script~~~", 2)
+EndFunc   ;==>farmRare
+
+#cs
+	Function: farmRareMain
+	Farm Rare script aims to catch rares automatically
+
+	Parameters:
+	map: (String) Map to farm rare in. EX: phantom forest, lunar valley, aria lake...
+	difficulty: (String) normal, hard, extreme
+	stage: (String) gold, exp, any
+	rawCapture: (String) "legendary,variant,rare..." This type of string format.
+	sellGems: (String) "1,2,3,4" This type of string format.
+	intGem: (Int) Maximum number of gems to allow bot to spend on refill
+	guardian: (Int) 1=True; 0=False
+	quest: (Int) 1=True; 0=False
+	hourly: (Int) 1=True; 0=False
+
+	Author: GkevinOD (2017)
+#ce
+Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly)
+	;initializing configs
 	Local $captures[0]
 	Local $rareIcons[0]
-	Local $sellGems = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "sell-gems-grade", "one star,two star, three star"), ",", 2)
-
-	Local $intGem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "max-spend-gem", 0))
 	Local $intGemUsed = 0
 
-	Local $rawCapture = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "capture", "legendary,super rare,rare,exotic,variant"), ",", 2)
 	For $capture In $rawCapture
 		Local $grade = StringReplace($capture, " ", "-")
 		If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
@@ -29,31 +54,32 @@ Func farmRare()
 		EndIf
 	Next
 
-	Local $quest = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-quest", "1")
-	Local $hourly = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-hourly", "1")
-
-	setLog("~~~Starting 'Farm Rare' script~~~", 2)
-
 	Local $intStartTime = TimerInit()
-	Local $intTimeElapse = 0;
+	Local $intTimeElapse = 0 ;
 
 	Local $strEllipses = ["", ".", "..", "..."]
 	Local $tempCounter = 0
 
 	Local $dataRuns = 0
 	Local $dataGuardians = 0
-	Local $dataEncounter = 0
 	Local $dataStrCaught = ""
-	Local $counterWordWrap = 0
+	Local $dataStrMissed = ""
+
 	Local $getHourly = False
+	Local $checkHourly = True ;bool to prevent checking twice
 
 	While True
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
 		GUICtrlSetData($listScript, "")
-		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Rares: " & $dataEncounter & "|Caught: " & StringMid($dataStrCaught, 2) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
+		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Caught: " & StringMid($dataStrCaught, 3) & "|Missed: " & StringMid($dataStrMissed, 3) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
 
-		If StringSplit(_NowTime(4), ":", 2)[1] = "00" Then $getHourly = True
+		Switch StringSplit(_NowTime(4), ":", 2)[1]
+			Case "00"
+				If $checkHourly = True Then $getHourly = True
+			Case "01" ;to prevent checking twice
+				$checkHourly = True
+		EndSwitch
 
 		If _Sleep(100) Then ExitLoop
 		Switch getLocation()
@@ -76,11 +102,14 @@ Func farmRare()
 			Case "battle-end"
 				If $quest = 1 And checkPixel($battle_pixelQuest) = True Then getQuest()
 				If $hourly = 1 And $getHourly = True Then
-					If getHourly() = 1 Then $getHourly = False
+					If getHourly() = 1 Then
+						$getHourly = False
+						$checkHourly = False
+					EndIf
 				EndIf
 
 				If getLocation() = "battle-end" Then
-					If Not Mod($dataRuns+1, 20) = 0 Then
+					If Not Mod($dataRuns + 1, 20) = 0 Then
 						clickUntil(findImage("battle-quick-restart", 30), "unknown")
 						$dataRuns += 1
 					Else
@@ -115,25 +144,21 @@ Func farmRare()
 			Case "battle"
 				If IsArray(findImages($rareIcons, 100, 5000)) Then
 					If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
-						$dataEncounter += 1
 						If setLogReplace("An astromon has been found!", 1) Then ExitLoop
 
 						If navigate("battle", "catch-mode") = True Then
-							Local $tempStr = catch($captures, True, False, False, True)
-							If $tempStr = -2 Then ;double check
-								If setLog("Did not recognize astromon, trying again..", 1) Then ExitLoop
+							Local $catch = catch($captures)
 
-								navigate("battle", "catch-mode")
-								$tempStr = catch($captures, True, True, False, True)
-							EndIf
-							If $tempStr = "-2" Then $tempStr = ""
+							For $astromon In $catch
+								If StringTrimLeft($astromon, 1) = "!" Then ;if missed
+									$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
+									If Mod(UBound(StringSplit($dataStrMissed, ", ")) + 1, 12) = 0 Then $dataStrMissed &= "|=====>"
+								Else ;if caught
+									$dataStrCaught &= ", " & StringMid($astromon, 1, 2)
+									If Mod(UBound(StringSplit($dataStrCaught, ", ")) + 1, 12) = 0 Then $dataStrCaught &= "|=====>"
+								EndIf
+							Next
 
-							If Not $tempStr = "" Then
-								$counterWordWrap += 1
-								$dataStrCaught &= ", " & $tempStr
-
-								If Mod($counterWordWrap, 11) = 0 Then $dataStrCaught &= "|.........."
-							EndIf
 							If setLog("Finish catching... Attacking", 1) Then ExitLoop
 							clickPoint($battle_coorAuto)
 						EndIf
@@ -160,6 +185,4 @@ Func farmRare()
 				clickPoint($game_coorConnectionRetry)
 		EndSwitch
 	WEnd
-
-	setLog("~~~Finished 'Farm Rare' script~~~", 2)
-EndFunc   ;==>farmRare
+EndFunc   ;==>farmRareMain

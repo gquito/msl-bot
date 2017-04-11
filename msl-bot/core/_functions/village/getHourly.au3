@@ -56,12 +56,12 @@ Func getHourly()
 
 		If setLogReplace("Collect hourly..Inbox", 1) Then Return -1
 		;collect inbox
-		clickPoint($village_coorTab)
+		clickPoint($village_coorTab, 3)
 		clickUntil(findImage("misc-village-inbox", 30), "inbox")
-		clickPoint($village_coorInbox)
+		clickPoint($village_coorInbox, 3)
 		clickPoint($village_coorAccept, 3, 1000)
 
-		ControlSend($hWindow, "", "", "{ESC}")
+		clickUntil("709,99", "village")
 	EndIf
 
 	If setLogReplace("Collect hourly..Done!", 1) Then Return -1

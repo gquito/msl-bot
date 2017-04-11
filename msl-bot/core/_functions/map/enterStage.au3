@@ -88,13 +88,17 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 		EndSwitch
 
 		If Not isArray($arrayStage) Then Return -1
-		clickPoint($arrayStage)
+		clickWhile($arrayStage, "map-stage")
 
 		;applying autobattle mode
 		If $boolAuto = True Then
 			If setLogReplace("Entering " & $strMap & "..Autobattle Mode", 1) Then Return -1
 			clickUntil($map_pixelAutoBattle20xUnchecked, "autobattle-prompt")
 			clickWhile($map_coorConfirmAutoBattle, "autobattle-prompt")
+		EndIf
+
+		If waitLocation("map-battle,autobattle-prompt") = "autobattle-prompt" Then
+			clickUntil("496, 327", "map-battle")
 		EndIf
 
 		;launching stage

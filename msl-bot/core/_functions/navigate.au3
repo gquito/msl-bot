@@ -27,6 +27,8 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 			Case "manage"
 				clickUntil($village_coorMonsters, "monsters")
 				clickUntil($village_coorManage, "manage")
+			Case "monsters"
+				clickUntil($village_coorMonsters, "monsters")
 			Case "quests"
 				clickUntil($village_coorQuests, "quests")
 			;map
@@ -38,13 +40,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				clickUntil($map_coorGolemDungeons, "golem-dungeons")
 			;battle
 			Case "catch-mode"
-				If checkPixel($battle_pixelUnavailable) = True Then Return False
-				clickWhile($battle_pixelUnavailable, "battle")
-
-				If waitLocation("battle,catch-mode", 5000) = "battle" Then
-					If checkPixel($battle_pixelUnavailable) = True Then Return False
-					clickWhile($battle_pixelUnavailable, "battle")
-				EndIf
+				clickUntil($battle_pixelUnavailable, "catch-mode", 10, 500)
 			Case ""
 				Return True
 			Case Else
@@ -54,7 +50,6 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 		Return waitLocation($strLocation)
 	Else
 		While True
-			If _Sleep(2000) Then Return -1
 			Local $currLocation = getLocation()
 
 			Switch $currLocation
@@ -94,9 +89,11 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 							clickUntil($battle_coorMap, "unknown")
 							waitLocation("map", 10000)
 						Case "village"
-							clickUntil($village_coorPlay, "unknown")
-							clickPoint(findImage("misc-close", 30)) ;to close any windows open
-							waitLocation("map", 10000)
+							clickWhile($village_coorPlay, "village")
+							If waitLocation("map", 5000) = "" Then
+								navigate("village")
+								clickWhile($village_coorPlay, "village")
+							EndIf
 						Case "astroleague", "map-battle", "association", "clan"
 							clickPoint($game_pixelBack)
 							waitLocation("map", 2000)
@@ -110,10 +107,12 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
 				Case "battle"
+					If $currLocation = "battle-auto" Then clickPoint($battle_coorAuto)
 					Return Not(waitLocation("battle", 8000) = "")
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
 			EndSwitch
+			If _Sleep(2000) Then Return -1
 		WEnd
 		navigate($strMainLocation, $strLocation)
 	EndIf

@@ -3,12 +3,12 @@
 #AutoIt3Wrapper_Outfile=msl-bot v1.10.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.10.1.2
+#AutoIt3Wrapper_Res_Fileversion=1.10.2.1
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
-Global $botVersion = "v1.10.1.2"
+Global $botVersion = "v1.10.2.1"
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", ""), ",", 2)
 
@@ -19,14 +19,14 @@ Global $botInstance = IniRead(@ScriptDir & "/" & $botConfig, "general", "emulato
 Global $hWindow = WinGetHandle($botTitle)
 Global $hControl = ControlGetHandle($botTitle, "", $botInstance)
 
-Global $diff = ControlGetPos($botTitle, "", $hControl);
+Global $diff = ControlGetPos($botTitle, "", $hControl) ;
 
 Global $strScript = "" ;script section
 Global $strConfig = "" ;all keys
 
 Global $iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
-Global $iniRealMouse =  IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1);^
-Global $iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1);^
+Global $iniRealMouse = IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1) ;^
+Global $iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1) ;^
 
 #include "core/imports.au3"
 #include "core/gui.au3"
@@ -67,7 +67,7 @@ Func debugPoint1()
 	EndIf
 
 	GUICtrlSetData($lblDebugCoordinations, "F6: (" & $pointDebug1[0] & ", " & $pointDebug1[1] & ") | F7: (" & $pointDebug2[0] & ", " & $pointDebug2[1] & ")")
-EndFunc
+EndFunc   ;==>debugPoint1
 
 Func debugPoint2()
 	getEmulatorHandle()
@@ -80,12 +80,12 @@ Func debugPoint2()
 	EndIf
 
 	GUICtrlSetData($lblDebugCoordinations, "F6: (" & $pointDebug1[0] & ", " & $pointDebug1[1] & ") | F7: (" & $pointDebug2[0] & ", " & $pointDebug2[1] & ")")
-EndFunc
+EndFunc   ;==>debugPoint2
 
 Func hotkeyStopBot()
 	$boolRunning = False
 	GUICtrlSetData($btnRun, "Start")
-EndFunc
+EndFunc   ;==>hotkeyStopBot
 
 ;main loop
 While True
@@ -126,7 +126,7 @@ Func btnRunClick()
 
 		GUICtrlSetData($btnRun, "Start")
 	EndIf
-EndFunc
+EndFunc   ;==>btnRunClick
 
 ;function: frmMainClose
 ;-Exits application and saves the log
@@ -136,7 +136,7 @@ Func frmMainClose()
 	If Not $strOutput = "" Then FileWrite(@ScriptDir & "/core/data/logs/" & StringReplace(_NowDate(), "/", "."), $strOutput)
 	_GDIPlus_Shutdown()
 	Exit 0
-EndFunc
+EndFunc   ;==>frmMainClose
 
 ;function: btnSetConfig
 ;-Sets which config is used.
@@ -152,8 +152,8 @@ Func btnSetConfig()
 		Next
 
 		$iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
-		$iniRealMouse =  IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1);^
-		$iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1);^
+		$iniRealMouse = IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1) ;^
+		$iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1) ;^
 
 		GUICtrlSetData($listConfig, "")
 		GUICtrlSetData($listConfig, $generalConfig)
@@ -166,30 +166,30 @@ Func btnSetConfig()
 		Global $hWindow = WinGetHandle($botTitle)
 		Global $hControl = ControlGetHandle($botTitle, "", $botInstance)
 
-		Global $diff = ControlGetPos($botTitle, "", $hControl);
+		Global $diff = ControlGetPos($botTitle, "", $hControl) ;
 
 		Global $strScript = "" ;script section
 		Global $strConfig = "" ;all keys
 
 		Global $iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
-		Global $iniRealMouse =  IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1);^
-		Global $iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1);^
+		Global $iniRealMouse = IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1) ;^
+		Global $iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1) ;^
 	EndIf
-EndFunc
+EndFunc   ;==>btnSetConfig
 
 ;function: lblDiscordClick
 ;-Label hyperlink
 ;author: GkevinOD (2017)
 Func lblDiscordClick()
 	ShellExecute("https://discord.gg/UQGRnwf")
-EndFunc
+EndFunc   ;==>lblDiscordClick
 
 ;function: lblDonateClick
 ;-Label hyperlink
 ;author: GkevinOD (2017)
 Func lblDonateClick()
 	ShellExecute("https://www.paypal.me/gkevinod")
-EndFunc
+EndFunc   ;==>lblDonateClick
 
 ;function: btnClearClick()
 ;-Clears the output and saves it to a file.
@@ -198,7 +198,7 @@ Func btnClearClick()
 	Dim $strOutput = GUICtrlRead($textOutput)
 	If Not $strOutput = "" Then FileWrite(@ScriptDir & "/core/data/logs/" & StringReplace(_NowDate(), "/", "."), $strOutput)
 	GUICtrlSetData($textOutput, "")
-EndFunc
+EndFunc   ;==>btnClearClick
 
 ;function: btnDebugTestCodeClick
 ;-Runs a line of code and performs it.
@@ -211,7 +211,7 @@ Func btnDebugTestCodeClick()
 	$boolRunning = True
 	Execute(GUICtrlRead($textDebugTestCode))
 	$boolRunning = False
-EndFunc
+EndFunc   ;==>btnDebugTestCodeClick
 
 ;functon: btnConfigEdit
 ;-Modify a config of the general config
@@ -242,7 +242,7 @@ Func btnConfigEdit()
 			If $value = "" Then $value = $arrayRaw[1]
 
 			For $element In $restrictions
-				If $element = $value Then ExitLoop(2)
+				If $element = $value Then ExitLoop (2)
 			Next
 			$value = "!"
 		WEnd
@@ -252,7 +252,7 @@ Func btnConfigEdit()
 	EndIf
 
 	;overwrite file
-	IniWrite(@ScriptDir & "/" & $botConfig, "general", $key, $value)	;write to config file
+	IniWrite(@ScriptDir & "/" & $botConfig, "general", $key, $value) ;write to config file
 
 	Dim $arrayKeys = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "keys", ""), ",", 2)
 	Dim $generalConfig = ""
@@ -261,14 +261,14 @@ Func btnConfigEdit()
 	Next
 
 	$iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
-	$iniRealMouse =  IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1);^
-	$iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1);^
+	$iniRealMouse = IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1) ;^
+	$iniOutput = IniRead(@ScriptDir & "/" & $botConfig, "general", "output-all-process", 1) ;^
 
 	GUICtrlSetData($listConfig, "")
 	GUICtrlSetData($listConfig, $generalConfig)
 
 	btnSetConfig()
-EndFunc
+EndFunc   ;==>btnConfigEdit
 
 ;function: cmbLoadClick
 ;-Load a script from the list of scripts written in the config
@@ -298,7 +298,7 @@ Func cmbLoadClick()
 
 	;final
 	GUICtrlSetData($listScript, $strConfig)
-EndFunc
+EndFunc   ;==>cmbLoadClick
 
 ;functon: btnEditClick
 ;-Modify a config of the selected config from the $listScript
@@ -330,7 +330,7 @@ Func btnEditClick()
 			If $value = "" Then $value = $arrayRaw[1]
 
 			For $element In $restrictions
-				If $element = $value Then ExitLoop(2)
+				If $element = $value Then ExitLoop (2)
 			Next
 			$value = "!"
 		WEnd
@@ -340,10 +340,10 @@ Func btnEditClick()
 	EndIf
 
 	;overwrite file
-	IniWrite(@ScriptDir & "/" & $botConfig, $strScript, $key, $value)	;write to config file
+	IniWrite(@ScriptDir & "/" & $botConfig, $strScript, $key, $value) ;write to config file
 
 	cmbLoadClick()
-EndFunc
+EndFunc   ;==>btnEditClick
 
 ;function: chkDebugFindImageClick()
 ;-Intervals of 1/2 seconds, tries to find image within bluestacks window
@@ -363,7 +363,7 @@ Func chkDebugFindImageClick()
 	EndIf
 
 	$boolRunning = True
-	While(GUICtrlRead($chkDebugFindImage) = 1) ;if it is checked
+	While (GUICtrlRead($chkDebugFindImage) = 1) ;if it is checked
 		Dim $strImage = GUICtrlRead($textDebugImage)
 		Dim $dirImage = ""
 		;first check if file exist
@@ -376,7 +376,7 @@ Func chkDebugFindImageClick()
 			GUICtrlSetData($lblDebugImage, "Found: Non-Existent" & @CRLF & "Size: 0")
 		Else
 			Local $arrayPoints = findImage($strImage, 30)
-			If Not isArray($arrayPoints) Then ;if not found
+			If Not IsArray($arrayPoints) Then ;if not found
 				GUICtrlSetData($lblDebugImage, "Found: 0" & @CRLF & "Size: 0")
 			Else
 				Local $hImage = _GDIPlus_ImageLoadFromFile($strImageDir & $dirImage & ".bmp")
@@ -384,10 +384,10 @@ Func chkDebugFindImageClick()
 			EndIf
 		EndIf
 
-		Sleep(500);
+		Sleep(500) ;
 	WEnd
 	$boolRunning = False
-EndFunc
+EndFunc   ;==>chkDebugFindImageClick
 
 ;function: btnSetClick()
 ;-If in debug, location is 'unknown' this button can set the location of the unknown.
@@ -403,7 +403,7 @@ Func btnSetClick()
 		setLog("Your new location will be prioritized.", 2)
 	EndIf
 
-	Local $limit = "";
+	Local $limit = "" ;
 
 	For $location In $listLocation
 		$limit &= $location[0] & ", "
@@ -412,16 +412,16 @@ Func btnSetClick()
 
 	Local $strLocation = "unknown"
 	While $strLocation = "unknown"
-		$strLocation = InputBox($botName & " " & $botVersion, "Enter CURRENT location:" & @CRLF & @CRLF & "You are limited to: " & $limit, default, default, 500, 230)
+		$strLocation = InputBox($botName & " " & $botVersion, "Enter CURRENT location:" & @CRLF & @CRLF & "You are limited to: " & $limit, Default, Default, 500, 230)
 		If $strLocation = "" Then Return
 
 		For $element In StringSplit($limit, ", ", 2)
-			If $element = $strLocation Then ExitLoop(2)
+			If $element = $strLocation Then ExitLoop (2)
 		Next
 		$strLocation = "unknown"
 	WEnd
 
-	If isArray($listLocation) = False Then loadLocation()
+	If IsArray($listLocation) = False Then loadLocation()
 	For $location In $listLocation
 		If $strLocation = $location[0] Then
 			Local $newLoc = $strLocation & ":"
@@ -444,7 +444,7 @@ Func btnSetClick()
 	setLog("New location has been added to locations-extra.txt!", 2)
 	setLog("Test using the debug 'Location'.", 2)
 	setLog("If you made a mistake, delete that locations in /core/locations-extra.txt")
-EndFunc
+EndFunc   ;==>btnSetClick
 
 ;function: chkDebugLocationClick()
 ;-Intervals of 1/2 seconds, tries to find the location of the game
@@ -463,11 +463,11 @@ Func chkDebugLocationClick()
 		Return
 	EndIf
 
-	While(GUICtrlRead($chkDebugLocation) = 1) ;if it is checked
+	While (GUICtrlRead($chkDebugLocation) = 1) ;if it is checked
 		GUICtrlSetData($chkDebugLocation, "Location: " & getLocation())
-		Sleep(500);
+		Sleep(500) ;
 	WEnd
-EndFunc
+EndFunc   ;==>chkDebugLocationClick
 
 ;function: btnSaveImage()
 ;-Save Image using the points given
@@ -477,12 +477,12 @@ EndFunc
 Func btnSaveImage()
 	Local $strImage = "unknown"
 	While $strImage = "unknown"
-		Local $strAvailableFolders = "battle,catch,gem,location,manage,map,misc"
+		Local $strAvailableFolders = "battle,catch,gem,location,monster,map,misc"
 		$strImage = InputBox($botName & " " & $botVersion, "Enter image name:" & @CRLF & @CRLF & "The folder is limited to (FOLDER-IMAGENAME): " & StringReplace($strAvailableFolders, ",", ", "))
 		If $strImage = "" Then Return
 
 		For $element In StringSplit($strAvailableFolders, ",", 2)
-			If StringSplit($strImage, "-", 2)[0] = $element Then ExitLoop(2)
+			If StringSplit($strImage, "-", 2)[0] = $element Then ExitLoop (2)
 		Next
 		$strImage = "unknown"
 	WEnd
@@ -501,15 +501,15 @@ Func btnSaveImage()
 				WEnd
 				$fileDir = $fileDir & $fileCounter
 			Case $iMsgBoxAnswer = 7 ;No
-				Return null
+				Return Null
 			Case $iMsgBoxAnswer = 2 ;Cancel
-				Return null
+				Return Null
 		EndSelect
-		#EndRegion --- CodeWizard generated code End ---
+		#EndRegion --- CodeWizard generated code Start ---
 	EndIf
 	_CaptureRegion($fileDir & ".bmp", $pointDebug1[0], $pointDebug1[1], $pointDebug2[0], $pointDebug2[1])
 	MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "The image has been saved to: " & @CRLF & $fileDir & ".bmp")
-EndFunc
+EndFunc   ;==>btnSaveImage
 
 ;function: getEmulatorHandle()
 ;-stores window handle and control handle to global variable
@@ -521,4 +521,4 @@ Func getEmulatorHandle()
 	$hControl = ControlGetHandle($botTitle, "", $botInstance)
 
 	$diff = ControlGetPos($botTitle, "", $hControl)
-EndFunc
+EndFunc   ;==>getEmulatorHandle
