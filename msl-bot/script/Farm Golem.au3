@@ -7,6 +7,9 @@
 Func farmGolem()
 	Local $strGolem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "dungeon", 7))
 
+	Local $buyEggs = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "buy-eggs", 0))
+	Local $buySoulstones = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "buy-soulstones", 1))
+	Local $maxGoldSpend = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "max-gold-spend", 100000))
 	Local $sellGems = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "sell-gems", 1))
 	Local $guardian = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "farm-guardian", 0))
 	Local $intSellGradeMin = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "sell-grade-min", 4))
@@ -20,7 +23,7 @@ Func farmGolem()
 	Local $hourly = IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "collect-hourly", "1")
 
 	setLog("~~~Starting 'Farm Golem' script~~~", 2)
-	farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly)
+	farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 	setLog("~~~Finished 'Farm Golem' script~~~", 2)
 EndFunc   ;==>farmGolem
 
@@ -42,7 +45,7 @@ EndFunc   ;==>farmGolem
 
 	Author: GkevinOD (2017)
 #ce
-Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly)
+Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 	Local $intGoldEnergy = 12231
 	Local $intGolem = 7
 	Switch ($strGolem)
@@ -70,6 +73,8 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGra
 
 	Local $numEggs = 0 ;keeps count of number of eggs found
 	Local $numGemsKept = 0; keeps count of number of eggs kept
+
+	Local $goldSpent = 0
 
 	While True
 		If _Sleep(50) Then ExitLoop
@@ -112,6 +117,24 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGra
 					If getHourly() = 1 Then
 						$getHourly = False
 						$checkHourly = False
+					EndIf
+
+					If $buySoulstones = 1 Then
+						Local $itemsBought = buyItem("soulstone", $maxGoldSpend-$goldSpent)
+						If isArray($itemsBought) Then
+							For $item In $itemsBought
+								$goldSpent += Int(StringSplit($item, ",", 2)[1])
+							Next
+						EndIf
+					EndIf
+
+					If $buyEggs = 1 Then
+						Local $itemsBought = buyItem("egg", $maxGoldSpend-$goldSpent)
+						If isArray($itemsBought) Then
+							For $item In $itemsBought
+								$goldSpent += Int(StringSplit($item, ",", 2)[1])
+							Next
+						EndIf
 					EndIf
 				EndIf
 
@@ -172,7 +195,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGra
 				If $sellGems = 1 Then
 					Local $gemInfo = sellGem("B" & $strGolem, $intSellGradeMin, True, $keepAllGrade, $intKeepGradeMinSub, $intMinSub)
 					If IsArray($gemInfo) Then
-						If StringInStr($gemInfo[6], "!") Then
+						If StringInStr($gemInfo[6], "!") And Not($gemInfo[0] = "EGG") Then
 							$intGoldPrediction += $intGoldEnergy
 						Else
 							$numGemsKept += 1

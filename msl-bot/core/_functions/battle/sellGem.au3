@@ -43,7 +43,17 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 			If $boolLog = True Then setLog("Grade: Egg |Shape: - |Type: - |Stat: - |Substat: -")
 			Return $arrayData
 		Else ;not egg
-			gatherData($arrayData)
+			Local $dataStatus = gatherData($arrayData)
+			#cs
+			If $dataStatus = 0 Then
+				Local $tempCount = 1
+				While FileExists(@ScriptDir & "/gemUnknown" & $tempCount & ".bmp")
+					$tempCount+=1
+				WEnd
+				_CaptureRegion("gemUnknown" & $tempCount & ".bmp")
+			EndIf
+			#ce
+
 			If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
 			If ($arrayData[3] = "F.") And ($boolSellFlat = True) Then
@@ -71,6 +81,7 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 			If $arrayData[3] = "F." Then $strData &= "Flat "
 			If $arrayData[3] = "P." Then $strData &= "Percent "
 			$strData &= _StringProper($arrayData[4]) & " |Substat: " & $arrayData[5]
+
 
 			setLog($strData, 1)
 			$arrayData[6] = $strData
@@ -102,9 +113,22 @@ EndFunc
 
 Func gatherData(ByRef $arrayData)
 	If getLocation() = "battle-sell" Then
-		Local $gemGrade = findImages($imagesGemGrades, 75)
+		Local $gemGrade = findImages($imagesGemGrades, 30)
 		If isArray($gemGrade) Then
-			$arrayData[0] = 6-$gemGrade[2]
+			Switch StringRegExpReplace($gemGrade[3], ".*gem-(.+)(\D)(\d+?|\d?)\.bmp", "$1$2")
+				Case "six-star"
+					$arrayData[0] = 6
+				Case "five-star"
+					$arrayData[0] = 5
+				Case "four-star"
+					$arrayData[0] = 4
+				Case "three-star"
+					$arrayData[0] = 3
+				Case "two-star"
+					$arrayData[0] = 2
+				Case "one-star"
+					$arrayData[0] = 1
+			EndSwitch
 		Else
 			Return 0
 		EndIf
