@@ -23,6 +23,7 @@ Func buyItem($item, $maxGold)
 			Return $itemsBought
 	EndSwitch
 
+	If setLogReplace("Buying items... Navigating to shop.") Then Return -1
 	If navigate("village", "shop") = True Then
 		;going through rest of items
 		Local $soulNoBuy = 0;
@@ -112,6 +113,8 @@ Func buyItem($item, $maxGold)
 		If setLogReplace("Buying items... Done!") Then Return -1
 		navigate("village")
 		logUpdate()
+	Else
+		If setLogReplace("Buying items... Could not navigate to shop!") Then Return -1
 	EndIf
 
 	Return $itemsBought
