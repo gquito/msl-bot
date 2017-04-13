@@ -5,6 +5,9 @@
 	Author: GkevinOD (2017)
 #ce
 Func farmRare()
+	Local $buyEggs = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "buy-eggs", 0))
+	Local $buySoulstones = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "buy-soulstones", 1))
+	Local $maxGoldSpend = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Golem", "max-gold-spend", 100000))
 	Local $intGem = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "max-spend-gem", 0))
 	Local $map = "map-" & StringReplace(IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "map", "phantom forest"), " ", "-")
 	Local $guardian = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "guardian-dungeon", "0")
@@ -16,7 +19,7 @@ Func farmRare()
 	Local $hourly = IniRead(@ScriptDir & "/" & $botConfig, "Farm Rare", "collect-hourly", "1")
 
 	setLog("~~~Starting 'Farm Rare' script~~~", 2)
-	farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly)
+	farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 	setLog("~~~Finished 'Farm Rare' script~~~", 2)
 EndFunc   ;==>farmRare
 
@@ -37,7 +40,7 @@ EndFunc   ;==>farmRare
 
 	Author: GkevinOD (2017)
 #ce
-Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly)
+Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 	;initializing configs
 	Local $captures[0]
 	Local $rareIcons[0]
@@ -70,6 +73,9 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 
 	Local $missedCounter = 0
 	Local $caughtcounter = 0
+
+	Local $goldSpent = 0
+
 	While True
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
@@ -107,6 +113,24 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 					If getHourly() = 1 Then
 						$getHourly = False
 						$checkHourly = False
+					EndIf
+
+					If $buySoulstones = 1 Then
+						Local $itemsBought = buyItem("soulstone", $maxGoldSpend-$goldSpent)
+						If isArray($itemsBought) Then
+							For $item In $itemsBought
+								$goldSpent += Int(StringSplit($item, ",", 2)[1])
+							Next
+						EndIf
+					EndIf
+
+					If $buyEggs = 1 Then
+						Local $itemsBought = buyItem("egg", $maxGoldSpend-$goldSpent)
+						If isArray($itemsBought) Then
+							For $item In $itemsBought
+								$goldSpent += Int(StringSplit($item, ",", 2)[1])
+							Next
+						EndIf
 					EndIf
 				EndIf
 

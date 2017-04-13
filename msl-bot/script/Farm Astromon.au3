@@ -55,7 +55,7 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 
 	Local $intCounter = 0
 	Local $roundCatch = 0 ;This to count if caught three so it skips faster
-	While $intCounter < $limit
+	While $intCounter <= $limit
 		GUICtrlSetData($listScript, "")
 		GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
 

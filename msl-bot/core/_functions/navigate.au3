@@ -24,6 +24,11 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				ElseIf isArray(findImage("misc-village-pos3", 50)) Then
 					clickUntil(StringSplit($village_coorHourly[2], "|", 2)[3], "shop")
 				EndIf
+
+				If Not(getLocation() = "shop") Then
+					Local $shadyShop = findImage("misc-shop", 50, 100)
+					If isArray($shadyShop) = True Then clickUntil($shadyShop, "shop")
+				EndIf
 			Case "manage"
 				clickUntil($village_coorMonsters, "monsters")
 				clickUntil($village_coorManage, "manage")
@@ -84,6 +89,17 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
 					waitLocation("village", 3000)
+
+					Local $nezzLocation = ""
+					$nezzLocation = findImage("misc-nezz", 30, 1000)
+					If isArray($nezzLocation) Then
+						setLogReplace("Found Nezz! Trying to click..")
+
+						$nezzLocation[1] += 30
+						clickPoint($nezzLocation, 3, 1000)
+
+						setLogReplace("Found Nezz! Clicked.")
+					EndIf
 				Case "map"
 					Switch $currLocation
 						Case "battle-end"

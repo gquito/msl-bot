@@ -3,12 +3,12 @@
 #AutoIt3Wrapper_Outfile=msl-bot v1.10.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=1.10.2.2
+#AutoIt3Wrapper_Res_Fileversion=1.10.3.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
-Global $botVersion = "v1.10.2.2"
+Global $botVersion = "v1.10.3.0"
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead(@ScriptDir & "/" & $botConfig, "general", "scripts", ""), ",", 2)
 
@@ -23,6 +23,7 @@ Global $diff = ControlGetPos($botTitle, "", $hControl) ;
 
 Global $strScript = "" ;script section
 Global $strConfig = "" ;all keys
+Global $overallTimer = TimerInit()
 
 Global $iniBackground = IniRead(@ScriptDir & "/" & $botConfig, "general", "background-mode", 1) ;checkbox, declare first to remove warning
 Global $iniRealMouse = IniRead(@ScriptDir & "/" & $botConfig, "general", "real-mouse-mode", 1) ;^
@@ -121,6 +122,7 @@ Func btnRunClick()
 		$boolRunning = True
 
 		GUICtrlSetData($btnRun, "Stop")
+		btnClearClick()
 	Else ;ending bot
 		$boolRunning = False
 
@@ -132,6 +134,12 @@ EndFunc   ;==>btnRunClick
 ;-Exits application and saves the log
 ;author: GkevinOD (2017)
 Func frmMainClose()
+	If TimerDiff($overallTimer) > 10800000 Then ;3 hours
+		If MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "Support MSL-Bot!", "Find MSL-Bot useful? Show some support by donating: https://paypal.me/gkevinod") = $IDYES Then
+			ShellExecute("https://www.paypal.me/gkevinod")
+		EndIf
+	EndIf
+
 	Dim $strOutput = GUICtrlRead($textOutput)
 	If Not $strOutput = "" Then FileWrite(@ScriptDir & "/core/data/logs/" & StringReplace(_NowDate(), "/", "."), $strOutput)
 	_GDIPlus_Shutdown()
@@ -279,6 +287,7 @@ EndFunc   ;==>btnConfigEdit
 Func cmbLoadClick()
 	;pre
 	If GUICtrlRead($cmbLoad) = "Select a script.." Then
+		GUICtrlSetData($textOutput, "Select a script to see the description and help for each property in the script.")
 		GUICtrlSetData($listScript, "") ;reset list
 		Return
 	EndIf
@@ -298,6 +307,9 @@ Func cmbLoadClick()
 
 	;final
 	GUICtrlSetData($listScript, $strConfig)
+
+	;changing output text for description of scripts
+	GUICtrlSetData($textOutput, StringReplace(IniRead(@ScriptDir & "/" & $botConfig, $strScript, "description", ""), "|", @CRLF))
 EndFunc   ;==>cmbLoadClick
 
 ;functon: btnEditClick
@@ -477,7 +489,7 @@ EndFunc   ;==>chkDebugLocationClick
 Func btnSaveImage()
 	Local $strImage = "unknown"
 	While $strImage = "unknown"
-		Local $strAvailableFolders = "battle,catch,gem,location,monster,map,misc"
+		Local $strAvailableFolders = "battle,catch,gem,location,monster,map,misc,shop"
 		$strImage = InputBox($botName & " " & $botVersion, "Enter image name:" & @CRLF & @CRLF & "The folder is limited to (FOLDER-IMAGENAME): " & StringReplace($strAvailableFolders, ",", ", "))
 		If $strImage = "" Then Return
 
