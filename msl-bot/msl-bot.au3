@@ -52,16 +52,17 @@ loadLocation() ;loads up location from /core/location.txt
 #include "core/_script/imports.au3"
 
 ;checking for update`````````````````````
-If FileExists(@ScriptDir & "/newVersion.zip") Or FileExists(@ScriptDir & "/updater" & $botSimpleVersion & ".exe") Then
-	FileDelete(@ScriptDir & "/newVersion.zip")
-	FileDelete(@ScriptDir & "/updater" & $botSimpleVersion & ".exe")
-EndIf
-
 #include <Inet.au3>
 Local $versionFile = StringSplit(_INetGetSource("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/versions.txt", True), @CRLF, 2)
 Local $checkVersion = StringSplit(StringSplit($versionFile[0], "=", 2)[1], ",", 2)
 Local $updateDescription = StringReplace(StringSplit($versionFile[1], "=", 2)[1], "|", @CRLF)
 Local $directory = StringSplit($versionFile[2], "=", 2)[1]
+
+If FileExists(@ScriptDir & "/newVersion.zip") Or FileExists(@ScriptDir & "/updater" & $botSimpleVersion & ".exe") Then
+	FileDelete(@ScriptDir & "/newVersion.zip")
+	FileDelete(@ScriptDir & "/updater" & $botSimpleVersion & ".exe")
+	MsgBox($MB_ICONINFORMATION, "Updated to " & $botVersion & "!", $updateDescription)
+EndIf
 
 If Int($checkVersion[1]) > $botVersionValue Then
 	Local $msgBoxAnswer = MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "MSL-Bot Update", "Would you like to update to the latest version?" & @CRLF & @CRLF & $updateDescription)
