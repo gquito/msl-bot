@@ -1,10 +1,10 @@
 ;define
 	Global $textOutput; output for gui
-	Global $listLocation[0]; list of locations.
+	Global $listLocation = ""; list of locations.
 
 ;directory
 	Global Const $strImageSearchDir = @ScriptDir & "\core\_functions\_core\imagesearch\ImageSearchDLL.dll"
-	Global Const $strImageDir = @ScriptDir & "\core\images\"
+	Global Const $strImageDir = @ScriptDir & "\core\_images\"
 
 ;bot data
 	Global $boolRunning = False ;State of the bot.

@@ -5,10 +5,10 @@
 	Author: GkevinOD (2017)
 #ce
 Func farmAstromon()
-	Local $imgName = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "image", Null)
-	Local $limit = Int(IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "limit", 16))
-	Local $catchRares = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "catch-rares", 0)
-	Local $finishRound = IniRead(@ScriptDir & "/" & $botConfig, "Farm Astromon", "finish-round", 0)
+	Local $imgName = IniRead($botConfigDir, "Farm Astromon", "image", Null)
+	Local $limit = Int(IniRead($botConfigDir, "Farm Astromon", "limit", 16))
+	Local $catchRares = IniRead($botConfigDir, "Farm Astromon", "catch-rares", 0)
+	Local $finishRound = IniRead($botConfigDir, "Farm Astromon", "finish-round", 0)
 
 	setLog("~~~Starting 'Farm Astromon' script~~~", 2)
 	farmAstromonMain($imgName, $limit, $catchRares, $finishRound)

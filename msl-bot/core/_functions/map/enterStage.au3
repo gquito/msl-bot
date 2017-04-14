@@ -26,7 +26,7 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 			$errorCounter+=1
 			If $errorCounter > 30 Then Return False
 
-			If _Sleep(2000) Then Return -1
+			If _Sleep(500) Then Return -1
 
 			If Not checkLocations("astroleague, map-stage, association") = "" Then ControlSend($hWindow, "", "", "{ESC}")
 
