@@ -11,6 +11,7 @@ Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
 Global $botSimpleVersion = "2.0"
 Global $botVersion = "v2.0.0.0"
+Global $botVersionValue = 2000000
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead($botConfigDir, "general", "scripts", ""), ",", 2)
 
@@ -62,30 +63,35 @@ Local $checkVersion = StringSplit(StringSplit($versionFile[0], "=", 2)[1], ",", 
 Local $updateDescription = StringReplace(StringSplit($versionFile[1], "=", 2)[1], "|", @CRLF)
 Local $directory = StringSplit($versionFile[2], "=", 2)[1]
 
-Local $msgBoxAnswer = MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "MSL-Bot Update", "Would you like to update to the latest version?" & @CRLF & @CRLF & $updateDescription)
-If $msgBoxAnswer = $IDYES Then
-	setLogReplace("Downloading files...", 2)
-	Local $newFiles = InetGet($directory, @ScriptDir & "/newVersion.zip", 0, 1)
-	Local $updater = InetGet("https://github.com/GkevinOD/msl-bot/raw/version-check/msl-bot/updater.exe", @ScriptDir & "\updater" & $checkVersion[2] & ".exe", 0, 1)
+If Int($checkVersion[0]) > $botVersionValue Then
+	Local $msgBoxAnswer = MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "MSL-Bot Update", "Would you like to update to the latest version?" & @CRLF & @CRLF & $updateDescription)
+	If $msgBoxAnswer = $IDYES Then
+		setLogReplace("Downloading files...", 2)
+		Local $newFiles = InetGet($directory, @ScriptDir & "/newVersion.zip", 0, 1)
+		Local $updater = InetGet("https://github.com/GkevinOD/msl-bot/raw/version-check/msl-bot/updater.exe", @ScriptDir & "\updater" & $checkVersion[2] & ".exe", 0, 1)
 
-	GUICtrlSetState($Tab1, $GUI_DISABLE)
-	GUICtrlSetState($btnRun, $GUI_DISABLE)
-	GUICtrlSetState($btnClear, $GUI_DISABLE)
-	GUICtrlSetState($cmbLoad, $GUI_DISABLE)
-	GUICtrlSetState($btnEdit, $GUI_DISABLE)
-	While True
-		GUICtrlSetData($textOutput, "")
-		setLog("Downloading files...", 2)
-		setLog("ZIP File: " & Int(InetGetInfo($newFiles, 0)/1000) & "KB/" & Int(InetGetInfo($newFiles, 1)/1000) & "KB", 2)
-		setLog("Updater File: " & Int(InetGetInfo($updater, 0)/1000) & "KB/" & Int(InetGetInfo($updater, 1)/1000) & "KB", 2)
-		If InetGetInfo($newFiles, 2) = True And InetGetInfo($updater, 2) = True Then ExitLoop
-		Sleep(1000)
-	WEnd
+		GUICtrlSetState($Tab1, $GUI_DISABLE)
+		GUICtrlSetState($btnRun, $GUI_DISABLE)
+		GUICtrlSetState($btnClear, $GUI_DISABLE)
+		GUICtrlSetState($cmbLoad, $GUI_DISABLE)
+		GUICtrlSetState($btnEdit, $GUI_DISABLE)
+		While True
+			GUICtrlSetData($textOutput, "")
+			setLog("Downloading files...", 2)
+			setLog("ZIP File: " & Int(InetGetInfo($newFiles, 0)/1000) & "KB/" & Int(InetGetInfo($newFiles, 1)/1000) & "KB", 2)
+			setLog("Updater File: " & Int(InetGetInfo($updater, 0)/1000) & "KB/" & Int(InetGetInfo($updater, 1)/1000) & "KB", 2)
+			If InetGetInfo($newFiles, 2) = True And InetGetInfo($updater, 2) = True Then
+				setLog("Restarting MSL-Bot, please give it a minute...", 2)
+				Sleep(2000)
+				ExitLoop
+			EndIf
+			Sleep(1000)
+		WEnd
 
-	ShellExecute(@ScriptDir & "\updater" & $checkVersion[2] & ".exe")
-	Exit 0
+		ShellExecute(@ScriptDir & "\updater" & $checkVersion[2] & ".exe")
+		Exit 0
+	EndIf
 EndIf
-
 ;``````````````````````````````````````````
 
 ;Hotkeys =====================================
