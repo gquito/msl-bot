@@ -63,7 +63,7 @@ Local $checkVersion = StringSplit(StringSplit($versionFile[0], "=", 2)[1], ",", 
 Local $updateDescription = StringReplace(StringSplit($versionFile[1], "=", 2)[1], "|", @CRLF)
 Local $directory = StringSplit($versionFile[2], "=", 2)[1]
 
-If Int($checkVersion[0]) > $botVersionValue Then
+If Int($checkVersion[1]) > $botVersionValue Then
 	Local $msgBoxAnswer = MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "MSL-Bot Update", "Would you like to update to the latest version?" & @CRLF & @CRLF & $updateDescription)
 	If $msgBoxAnswer = $IDYES Then
 		setLogReplace("Downloading files...", 2)
