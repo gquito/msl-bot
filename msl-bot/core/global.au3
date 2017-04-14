@@ -52,6 +52,7 @@
 		Global $village_coor5Star = "475,389"
 		Global $village_coorSell = [665, 394]
 		Global $village_coorSellConfirm = [398, 331]
+		Global $village_nezz= ["", "360,159|26,78", ""] ;pos1, pos2, pos3
 
 	;map
 		Global $map_coorStarstoneDungeons = [169, 168]

@@ -113,7 +113,7 @@ EndFunc
 
 Func gatherData(ByRef $arrayData)
 	If getLocation() = "battle-sell" Then
-		Local $gemGrade = findImages($imagesGemGrades, 30)
+		Local $gemGrade = findImages($imagesGemGrades, 100)
 		If isArray($gemGrade) Then
 			Switch StringRegExpReplace($gemGrade[3], ".*gem-(.+)(\D)(\d+?|\d?)\.bmp", "$1$2")
 				Case "six-star"
@@ -130,7 +130,8 @@ Func gatherData(ByRef $arrayData)
 					$arrayData[0] = 1
 			EndSwitch
 		Else
-			Return 0
+			If setLog("Error: Could not detect gem grade! Using 4* as default.", 1) Then Return -1
+			$arrayData[0] = 4
 		EndIf
 
 		Local $tempPixel = [562, 239, 0x281A17]
