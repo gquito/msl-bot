@@ -9,6 +9,7 @@
 ;Initialize Bot
 Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
+Global $botSimpleVersion = "2.0"
 Global $botVersion = "v2.0.0.0"
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead($botConfigDir, "general", "scripts", ""), ",", 2)
@@ -50,9 +51,9 @@ loadLocation() ;loads up location from /core/location.txt
 #include "core/_script/imports.au3"
 
 ;checking for update`````````````````````
-If FileExists(@ScriptDir & "/newVersion.zip") Then
+If FileExists(@ScriptDir & "/newVersion.zip") Or FileExists(@ScriptDir & "/updater" & $botSimpleVersion & ".exe") Then
 	FileDelete(@ScriptDir & "/newVersion.zip")
-	FileDelete(@ScriptDir & "/updater" & StringRegExpReplace(@ScriptName, ".*(\d+\.\d+).*", "$1") & ".exe")
+	FileDelete(@ScriptDir & "/updater" & $botSimpleVersion & ".exe")
 EndIf
 
 #include <Inet.au3>
@@ -64,10 +65,24 @@ Local $directory = StringSplit($versionFile[2], "=", 2)[1]
 Local $msgBoxAnswer = MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "MSL-Bot Update", "Would you like to update to the latest version?" & @CRLF & @CRLF & $updateDescription)
 If $msgBoxAnswer = $IDYES Then
 	setLogReplace("Downloading files...", 2)
-	InetGet($directory, @ScriptDir & "/newVersion.zip")
-	InetGet("https://github.com/GkevinOD/msl-bot/raw/version-check/msl-bot/updater.exe", @ScriptDir & "/updater" & $checkVersion[2] & ".exe")
+	Local $newFiles = InetGet($directory, @ScriptDir & "/newVersion.zip", 0, 1)
+	Local $updater = InetGet("https://github.com/GkevinOD/msl-bot/raw/version-check/msl-bot/updater.exe", @ScriptDir & "\updater" & $checkVersion[2] & ".exe", 0, 1)
 
-	ShellExecute(@ScriptDir & @ScriptDir & "/updater" & $checkVersion[2] & ".exe")
+	GUICtrlSetState($Tab1, $GUI_DISABLE)
+	GUICtrlSetState($btnRun, $GUI_DISABLE)
+	GUICtrlSetState($btnClear, $GUI_DISABLE)
+	GUICtrlSetState($cmbLoad, $GUI_DISABLE)
+	GUICtrlSetState($btnEdit, $GUI_DISABLE)
+	While True
+		GUICtrlSetData($textOutput, "")
+		setLog("Downloading files...", 2)
+		setLog("ZIP File: " & Int(InetGetInfo($newFiles, 0)/1000) & "KB/" & Int(InetGetInfo($newFiles, 1)/1000) & "KB", 2)
+		setLog("Updater File: " & Int(InetGetInfo($updater, 0)/1000) & "KB/" & Int(InetGetInfo($updater, 1)/1000) & "KB", 2)
+		If InetGetInfo($newFiles, 2) = True And InetGetInfo($updater, 2) = True Then ExitLoop
+		Sleep(1000)
+	WEnd
+
+	ShellExecute(@ScriptDir & "\updater" & $checkVersion[2] & ".exe")
 	Exit 0
 EndIf
 
@@ -159,6 +174,12 @@ EndFunc   ;==>btnRunClick
 ;-Exits application and saves the log
 ;author: GkevinOD (2017)
 Func frmMainClose()
+	If FileExists(@ScriptDir & "/newVersion.zip") Or FileExists(@ScriptDir & "/updater" & $botSimpleVersion & ".exe") Then
+		If MsgBox(BitOr($MB_ICONWARNING, $MB_YESNO), "Are you sure?", "You are in the middle of updating, are you sure you want to quit?") = $IDNO Then Return
+		FileDelete(@ScriptDir & "/newVersion.zip")
+		FileDelete(@ScriptDir & "/updater" & $botSimpleVersion & ".exe")
+	EndIf
+
 	If TimerDiff($overallTimer) > 10800000 Then ;3 hours
 		If MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "Support MSL-Bot!", "Find MSL-Bot useful? Show some support by donating: https://paypal.me/gkevinod") = $IDYES Then
 			ShellExecute("https://www.paypal.me/gkevinod")
