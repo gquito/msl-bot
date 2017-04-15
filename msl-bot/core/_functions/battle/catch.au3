@@ -62,7 +62,6 @@ Func catch($varImages, $boolOneAstromon = False)
 				_ArrayAdd($astromons, $strGrade)
 				logUpdate()
 
-				If $boolOneAstromon = True Then Return $astromons
 				If $boolOneAstromon = False And checkPixel($battle_pixelUnavailable) = False Then ;recursion to catch more astromons
 					While checkPixel($battle_pixelUnavailable) = False
 						If setLogReplace("Catching astromons... Checking for more astromons", 1) Then Return -1
@@ -92,5 +91,6 @@ Func catch($varImages, $boolOneAstromon = False)
 		logUpdate()
 	EndIf
 
+	waitLocation("battle", 10000)
 	Return $astromons
 EndFunc

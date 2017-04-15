@@ -70,8 +70,8 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 					While True
 						Local $timerStart = TimerInit()
 						While Not(getLocation() = "catch-mode")
-							navigate("battle", "catch-mode")
-							If TimerDiff($timerStart) > 5000 Then ExitLoop(2)
+							If navigate("battle", "catch-mode") = True Then ExitLoop
+							If TimerDiff($timerStart) > 10000 Then ExitLoop(2)
 						WEnd
 
 						Local $catch = catch($captures, True)
@@ -83,14 +83,23 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 						For $astromon In $catch
 							If Not (StringLeft($astromon, 1) = "!") Then
 								$intCounter += 1
-								$roundCatch += 1
 							EndIf
+							$roundCatch += 1
+
 							GUICtrlSetData($listScript, "")
 							GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
 						Next
 
 						If $intCounter >= $limit Then ExitLoop(2)
-						If $roundCatch = 3 Then ExitLoop
+						If $roundCatch = 3 Then
+							setLog("Out of astrochips, restarting..", 1)
+							clickUntil($battle_coorPause, "pause")
+							clickPoint($battle_coorGiveUp)
+							clickPoint($battle_coorGiveUpConfirm)
+
+							$roundCatch = 0
+							ContinueCase
+						EndIf
 					WEnd
 
 					If $nextRound = True Then
