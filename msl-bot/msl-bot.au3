@@ -495,13 +495,13 @@ Func btnSetClick()
 					$newLoc &= "0x" & Hex(_GDIPlus_BitmapGetPixel($hBitmap, $pixelPart[0], $pixelPart[1]), 6)
 					$newLoc &= "|"
 				Next
-				$newLoc &= "/"
+				$newLoc = StringTrimRight($newLoc, 1)
+				ExitLoop
 			Next
-			$newLoc = StringTrimRight($newLoc, 2)
-			ExitLoop
 		EndIf
 	Next
 	FileWrite(@ScriptDir & "/core/locations-extra.txt", @CRLF & $newLoc)
+	Global $listLocation = ""
 	loadLocation()
 
 	setLog("New location has been added to locations-extra.txt!", 2)
