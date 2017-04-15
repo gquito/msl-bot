@@ -113,7 +113,7 @@ EndFunc
 
 Func gatherData(ByRef $arrayData)
 	If getLocation() = "battle-sell" Then
-		Local $gemGrade = findImages($imagesGemGrades, 30)
+		Local $gemGrade = findImages($imagesGemGrades, 100, 2000)
 		If isArray($gemGrade) Then
 			Switch StringRegExpReplace($gemGrade[3], ".*gem-(.+)(\D)(\d+?|\d?)\.bmp", "$1$2")
 				Case "six-star"
@@ -130,7 +130,15 @@ Func gatherData(ByRef $arrayData)
 					$arrayData[0] = 1
 			EndSwitch
 		Else
-			Return 0
+			If setLog("Error: Could not detect gem grade! Using 4* as default. Created a file as /core/images/gem/gem-unknown.bmp. Categorize is as 'gem-five-star', 'gem-four-star', etc..", 1) Then Return -1
+
+			Local $fileCounter = 1
+			While FileExists(@ScriptDir & "/core/images/gem/gem-unknown" & $fileCounter & ".bmp")
+				$fileCounter += 1
+			WEnd
+
+			_CaptureRegion("/core/_images/gem/gem-unknown" & $fileCounter & ".bmp", 537, 216, 631, 226)
+			$arrayData[0] = 4
 		EndIf
 
 		Local $tempPixel = [562, 239, 0x281A17]

@@ -27,6 +27,14 @@ Func catch($varImages, $boolOneAstromon = False)
 			$pointArray[1] -= 50
 
 			;catching astromons
+			clickUntil($pointArray, "unknown", 500, 100)
+
+			_Sleep(500)
+			ControlSend($hWindow, "", "", "{ESC}")
+			_Sleep(100)
+			ControlSend($hWindow, "", "", "{ESC}")
+			clickPoint($battle_coorContinue, 3, 100)
+
 			clickUntil($pointArray, "catch-success,battle,battle-astromon-full", 500, 100)
 
 			If getLocation() = "battle-astromon-full" Then
@@ -40,7 +48,6 @@ Func catch($varImages, $boolOneAstromon = False)
 			Switch waitLocation("catch-success,battle", 5000)
 				Case "catch-success"
 					$boolCaught = True
-					waitLocation("battle")
 				Case "battle" ; This is for when the script cannot detect the success banner when caught
 					If checkPixel($battle_pixelUnavailable) = False Then
 						$boolCaught = True
@@ -55,6 +62,7 @@ Func catch($varImages, $boolOneAstromon = False)
 				_ArrayAdd($astromons, $strGrade)
 				logUpdate()
 
+				If $boolOneAstromon = True Then Return $astromons
 				If $boolOneAstromon = False And checkPixel($battle_pixelUnavailable) = False Then ;recursion to catch more astromons
 					While checkPixel($battle_pixelUnavailable) = False
 						If setLogReplace("Catching astromons... Checking for more astromons", 1) Then Return -1

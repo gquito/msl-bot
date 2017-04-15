@@ -1,5 +1,0 @@
-;This is for your own location if the main ones do not work for you.
-;Follow this format example: (LOCATION:X,Y,COLORHEX|...|...|.../ADDITIONAL PIXELS...)
-;mylocation:123,123,0x000000|123,123,0x000000|123,123,0x000000/123,123,0x000000|123,123,0x000000|123,123,0x000000
-
-;Order of the locations may matter. Look at locations.txt for reference.

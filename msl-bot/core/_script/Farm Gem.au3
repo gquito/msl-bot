@@ -5,10 +5,10 @@
 	Author: GkevinOD (2017)
 #ce
 Func farmGem()
-	Local $justEvolve = IniRead(@ScriptDir & "/" & $botConfig, "Farm Gem", "just-evolve", 1)
-	Local $monster = IniRead(@ScriptDir & "/" & $botConfig, "Farm Gem", "monster", "slime")
-	Local $gemsToFarm = IniRead(@ScriptDir & "/" & $botConfig, "Farm Gem", "gems-to-farm", 100)
-	Local $maxRefill = IniRead(@ScriptDir & "/" & $botConfig, "Farm Gem", "refill-max-gem", 30)
+	Local $justEvolve = IniRead($botConfigDir, "Farm Gem", "just-evolve", 1)
+	Local $monster = IniRead($botConfigDir, "Farm Gem", "monster", "slime")
+	Local $gemsToFarm = IniRead($botConfigDir, "Farm Gem", "gems-to-farm", 100)
+	Local $maxRefill = IniRead($botConfigDir, "Farm Gem", "refill-max-gem", 30)
 
 	If $justEvolve = 1 Then
 		If MsgBox(8193, "Farm Gem WARNING", "WARNING: You must have at least " & 330*($gemsToFarm/100) & "k gold for this script to function correctly!" & @CRLF & "**LOCK YOUR GLEEMS.") = 2 Then Return -1
