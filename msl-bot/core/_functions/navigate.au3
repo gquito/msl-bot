@@ -12,6 +12,8 @@
 Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 	Local $strCurrentLocation = getLocation()
 
+	If $strCurrentLocation = "battle-auto" Then $strCurrentLocation = "battle"
+
 	If $strLocation = $strCurrentLocation Then Return True
 	If $strCurrentLocation = $strMainLocation Then
 		Switch $strLocation
@@ -82,7 +84,10 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 						Case "battle-end"
 							clickUntil($battle_coorAirship, "unknown")
 							If waitLocation("village", 10000) Then ExitLoop
-						Case "unknown", "inbox", "monsters", "manage", "shop", "map", "astroleague", "map-stage", "clan", "association", "starstone-dungeons", "map-battle"
+						Case "monsters", "manage", "map"
+							clickUntil($game_pixelBack, "village")
+							If waitLocation("village", 10000) Then ExitLoop
+						Case "unknown", "inbox", "monsters", "shop", "astroleague", "map-stage", "clan", "association", "starstone-dungeons", "map-battle"
 							If checkPixel($game_pixelBack) = True Then clickPoint($game_pixelBack)
 							clickPoint(findImage("misc-close", 30), 3, 100) ;to close any windows open
 						Case Else
@@ -91,18 +96,18 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 					waitLocation("village", 10000)
 
 					#cs
-					Local $villagePos = 0
-					If isArray(findImage("misc-village-pos1", 50)) Then
-						$villagePos = 0
-					ElseIf isArray(findImage("misc-village-pos2", 50)) Then
-						$villagePos = 1
-					ElseIf isArray(findImage("misc-village-pos3", 50)) Then
-						$villagePos = 2
-					EndIf
+						Local $villagePos = 0
+						If isArray(findImage("misc-village-pos1", 50)) Then
+							$villagePos = 0
+						ElseIf isArray(findImage("misc-village-pos2", 50)) Then
+							$villagePos = 1
+						ElseIf isArray(findImage("misc-village-pos3", 50)) Then
+							$villagePos = 2
+						EndIf
 
-					For $coord In StringSplit($village_coorNezz[$villagePos], "|", 2)
-						clickPoint($coord, 2, 50)
-					Next
+						For $coord In StringSplit($village_coorNezz[$villagePos], "|", 2)
+							clickPoint($coord, 2, 50)
+						Next
 					#ce
 				Case "map"
 					Switch $currLocation
@@ -137,9 +142,8 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 						Case Else
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
-				Case "battle"
-					If $currLocation = "battle-auto" Then clickPoint($battle_coorAuto)
-					If waitLocation("battle", 8000) = "battle" Then ExitLoop
+				Case "battle", "battle-auto"
+					If Not(waitLocation("battle,battle-auto", 8000)) = "" Then ExitLoop
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
 			EndSwitch
