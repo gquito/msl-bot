@@ -84,16 +84,15 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 						Case "battle-end"
 							clickUntil($battle_coorAirship, "unknown")
 							If waitLocation("village", 10000) Then ExitLoop
-						Case "monsters", "manage", "map"
+						Case "monsters", "manage", "map", "quests"
 							clickUntil($game_pixelBack, "village")
-							If waitLocation("village", 10000) Then ExitLoop
-						Case "unknown", "inbox", "monsters", "shop", "astroleague", "map-stage", "clan", "association", "starstone-dungeons", "map-battle"
-							If checkPixel($game_pixelBack) = True Then clickPoint($game_pixelBack)
+							If waitLocation("village", 5000) Then ExitLoop
+						Case "unknown", "inbox", "shop", "astroleague", "map-stage", "clan", "association", "starstone-dungeons", "map-battle"
+							If checkPixel($game_pixelBack) = True Then clickPoint($game_pixelBack, 3)
 							clickPoint(findImage("misc-close", 30), 3, 100) ;to close any windows open
 						Case Else
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
-					waitLocation("village", 10000)
 
 					#cs
 						Local $villagePos = 0
