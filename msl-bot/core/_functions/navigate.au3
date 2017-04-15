@@ -90,6 +90,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 					EndSwitch
 					waitLocation("village", 10000)
 
+					#cs
 					Local $villagePos = 0
 					If isArray(findImage("misc-village-pos1", 50)) Then
 						$villagePos = 0
@@ -102,6 +103,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 					For $coord In StringSplit($village_coorNezz[$villagePos], "|", 2)
 						clickPoint($coord, 2, 50)
 					Next
+					#ce
 				Case "map"
 					Switch $currLocation
 						Case "battle-end"
