@@ -79,8 +79,8 @@ If Int($checkVersion[1]) > $botVersionValue Then
 		While True
 			GUICtrlSetData($textOutput, "")
 			setLog("Downloading files...", 2)
-			setLog("ZIP File: " & Int(InetGetInfo($newFiles, 0)/1000) & "KB/" & Int(InetGetInfo($newFiles, 1)/1000) & "KB", 2)
-			setLog("Updater File: " & Int(InetGetInfo($updater, 0)/1000) & "KB/" & Int(InetGetInfo($updater, 1)/1000) & "KB", 2)
+			setLog("ZIP File: " & Int(InetGetInfo($newFiles, 0) / 1000) & "KB/" & Int(InetGetInfo($newFiles, 1) / 1000) & "KB", 2)
+			setLog("Updater File: " & Int(InetGetInfo($updater, 0) / 1000) & "KB/" & Int(InetGetInfo($updater, 1) / 1000) & "KB", 2)
 			If InetGetInfo($newFiles, 2) = True And InetGetInfo($updater, 2) = True Then
 				setLog("Restarting MSL-Bot, please give it a minute...", 2)
 				Sleep(2000)
@@ -182,7 +182,7 @@ EndFunc   ;==>btnRunClick
 ;author: GkevinOD (2017)
 Func frmMainClose()
 	If FileExists(@ScriptDir & "/newVersion.zip") Or FileExists(@ScriptDir & "/updater" & $botSimpleVersion & ".exe") Then
-		If MsgBox(BitOr($MB_ICONWARNING, $MB_YESNO), "Are you sure?", "You are in the middle of updating, are you sure you want to quit?") = $IDNO Then Return
+		If MsgBox(BitOR($MB_ICONWARNING, $MB_YESNO), "Are you sure?", "You are in the middle of updating, are you sure you want to quit?") = $IDNO Then Return
 		FileDelete(@ScriptDir & "/newVersion.zip")
 		FileDelete(@ScriptDir & "/updater" & $botSimpleVersion & ".exe")
 	EndIf
@@ -468,8 +468,8 @@ Func btnSetClick()
 
 	Local $limit = "" ;
 
-	For $location In $listLocation
-		$limit &= $location[0] & ", "
+	For $index = 0 To UBound($listLocation)-1
+		$limit &= $listLocation[$index][0] & ", "
 	Next
 	$limit = StringTrimRight($limit, 2)
 
@@ -485,10 +485,10 @@ Func btnSetClick()
 	WEnd
 
 	If IsArray($listLocation) = False Then loadLocation()
-	For $location In $listLocation
-		If $strLocation = $location[0] Then
+	For $index = 0 To UBound($listLocation)-1
+		If $strLocation = $listLocation[$index][0] Then
 			Local $newLoc = $strLocation & ":"
-			For $pixelSet In StringSplit($location[1], "/", 2)
+			For $pixelSet In StringSplit($listLocation[$index][1], "/", 2)
 				For $pixel In StringSplit($pixelSet, "|", 2)
 					Local $pixelPart = StringSplit($pixel, ",", 2)
 					$newLoc &= $pixelPart[0] & "," & $pixelPart[1] & ","
