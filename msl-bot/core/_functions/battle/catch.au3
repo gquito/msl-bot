@@ -81,7 +81,7 @@ Func catch($varImages, $boolOneAstromon = False)
 					WEnd
 				EndIf
 			Else ;not caught
-				If setLogReplace("Catching astromons... Failed to catch" & $strGrade & ".", 1) Then Return -1
+				If setLogReplace("Catching astromons... Failed to catch " & $strGrade & ".", 1) Then Return -1
 				_ArrayAdd($astromons, "!" & $strGrade)
 			EndIf
 		Else ;not found
