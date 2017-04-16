@@ -1,7 +1,3 @@
 latest-version=v2.0.0.2,2000002,2.0
-description=v2.0.0.2 Update log:|- Adjustments to Farm Astromon and catch() function for stability.|- Removed all catch-success locations besides the one for catching
-normal astromons.|- Lowered the tolerance for gem grades.|- Changed getLocation delay from 100 millisecond to 200 millisecond for
-double check.|- Farm Astromon does not count rares as one being caught.|- Farm Gem now catches rares.|- Farm Rare checks in catch-mode when in 'battle' location to see if it
-missed an astromon.|- Increased tolerance to find village position for getHourly. Also added
-logUpdate() to show if it has succeeded or failed.|- Farm Golem has 10 minute window to collect hourly.|- enterStage added logUpdate() to keep the log in output.|- Farm Gem farms for 17 astromons just in case it missed one.|- Made the gem-unknown smaller and more precise.
+description=v2.0.0.2 Update log:|- Adjustments to Farm Astromon and catch() function for stability.|- Removed all catch-success locations besides the one for catching normal astromons.|- Lowered the tolerance for gem grades.|- Changed getLocation delay from 100 millisecond to 200 millisecond for double check.|- Farm Astromon does not count rares as one being caught.|- Farm Gem now catches rares.|- Farm Rare checks in catch-mode when in 'battle' location to see if it missed an astromon.|- Increased tolerance to find village position for getHourly. Also added logUpdate() to show if it has succeeded or failed.|- Farm Golem has 10 minute window to collect hourly.|- enterStage added logUpdate() to keep the log in output.|- Farm Gem farms for 17 astromons just in case it missed one.|- Made the gem-unknown smaller and more precise.
 directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
