@@ -27,7 +27,7 @@ Func catch($varImages, $boolOneAstromon = False)
 			$pointArray[1] -= 50
 
 			;catching astromons
-			clickUntil($pointArray, "unknown", 500, 100)
+			clickPoint($pointArray, 5, 100)
 
 			_Sleep(500)
 			ControlSend($hWindow, "", "", "{ESC}")
@@ -46,14 +46,17 @@ Func catch($varImages, $boolOneAstromon = False)
 			;waiting for success location or battle location
 			Local $boolCaught = False
 			Switch waitLocation("catch-success,battle", 5000)
-				Case "catch-success"
+				Case "catch-success" ;only shows up for normal astromons, not rares
 					$boolCaught = True
-				Case "battle" ; This is for when the script cannot detect the success banner when caught
+				Case "battle"
+					If _Sleep(3000) Then Return -1
+					_CaptureRegion()
+
 					If checkPixel($battle_pixelUnavailable) = False Then
 						$boolCaught = True
 					Else
 						If setLogReplace("Catching astromons... Could not detect success, checking if caught", 1) Then Return -1
-						If isArray(findImages("battle-" & StringLower($strGrade), 100, 3000)) Then $boolCaught = True
+						If isArray(findImages("battle-" & StringLower($strGrade), 100, 5000)) = False Then $boolCaught = True
 					EndIf
 			EndSwitch
 
@@ -62,7 +65,7 @@ Func catch($varImages, $boolOneAstromon = False)
 				_ArrayAdd($astromons, $strGrade)
 				logUpdate()
 
-				If $boolOneAstromon = True Then Return $astromons
+				waitLocation("battle,battle-auto", 10000)
 				If $boolOneAstromon = False And checkPixel($battle_pixelUnavailable) = False Then ;recursion to catch more astromons
 					While checkPixel($battle_pixelUnavailable) = False
 						If setLogReplace("Catching astromons... Checking for more astromons", 1) Then Return -1
@@ -78,10 +81,12 @@ Func catch($varImages, $boolOneAstromon = False)
 								ExitLoop
 							EndIf
 						EndIf
+
+						waitLocation("battle,battle-auto", 10000)
 					WEnd
 				EndIf
 			Else ;not caught
-				If setLogReplace("Catching astromons... Failed to catch" & $strGrade & ".", 1) Then Return -1
+				If setLogReplace("Catching astromons... Failed to catch " & $strGrade & ".", 1) Then Return -1
 				_ArrayAdd($astromons, "!" & $strGrade)
 			EndIf
 		Else ;not found

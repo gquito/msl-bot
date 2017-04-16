@@ -21,16 +21,17 @@ Func getHourly()
 		WEnd
 
 		_CaptureRegion()
-		If isArray(findImage("misc-village-pos1", 50)) Then
+		If isArray(findImage("misc-village-pos1", 100)) Then
 			$posVillage = 0
-		ElseIf isArray(findImage("misc-village-pos2", 50)) Then
+		ElseIf isArray(findImage("misc-village-pos2", 100)) Then
 			$posVillage = 1
-		ElseIf isArray(findImage("misc-village-pos3", 50)) Then
+		ElseIf isArray(findImage("misc-village-pos3", 100)) Then
 			$posVillage = 2
 		EndIf
 
 		If $posVillage = null Then
 			If setLogReplace("Collect hourly..Failed.", 1) Then Return -1
+			logUpdate()
 			Return 0
 		EndIf
 
@@ -65,5 +66,6 @@ Func getHourly()
 	EndIf
 
 	If setLogReplace("Collect hourly..Done!", 1) Then Return -1
+	logUpdate()
 	Return 1
 EndFunc

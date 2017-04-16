@@ -83,9 +83,9 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Caught: " & StringMid($dataStrCaught, 3) & "|Missed: " & StringMid($dataStrMissed, 3) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
 
 		Switch StringSplit(_NowTime(4), ":", 2)[1]
-			Case "00"
+			Case "00", "01", "02", "03", "04", "05", "06", "07", "08", "09"
 				If $checkHourly = True Then $getHourly = True
-			Case "01" ;to prevent checking twice
+			Case "10" ;to prevent checking twice
 				$checkHourly = True
 		EndSwitch
 
@@ -176,7 +176,7 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 							Local $catch = catch($captures)
 
 							For $astromon In $catch
-								If StringMid($astromon, 1, 1) = "!" Then ;if missed
+								If StringLeft($astromon, 1) = "!" Then ;if missed
 									$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
 									$missedCounter += 1
 									If Mod($missedCounter, 12) = 0 Then $dataStrMissed &= "|=====>"
@@ -195,6 +195,36 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 						clickPoint($battle_coorAuto)
 					EndIf
 				Else
+					If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
+						If setLog("Could not detect rare, checking in catch-mode.") Then Return -1
+						If navigate("battle", "catch-mode") = True Then
+							If isArray(findImages($captures, 100, 1000)) Then
+								If setLogReplace("An astromon has been found!", 1) Then Return -1
+
+								Local $catch = catch($captures)
+								For $astromon In $catch
+									If StringLeft($astromon, 1) = "!" Then ;if missed
+										$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
+										$missedCounter += 1
+										If Mod($missedCounter, 12) = 0 Then $dataStrMissed &= "|=====>"
+									Else ;if caught
+										$dataStrCaught &= ", " & StringMid($astromon, 1, 2)
+										$caughtCounter += 1
+										If Mod($caughtCounter, 12) = 0 Then $dataStrCaught &= "|=====>"
+									EndIf
+								Next
+
+								If setLog("Finish catching... Attacking", 1) Then ExitLoop
+								clickPoint($battle_coorAuto)
+
+								ContinueCase
+							Else
+								If setLog("Cannot find the rare astromon, continuing battle.") Then Return -1
+								clickUntil($battle_coorCatchCancel, "battle")
+							EndIf
+						EndIf
+					EndIf
+
 					clickPoint($battle_coorAuto)
 				EndIf
 			Case "catch-mode"
