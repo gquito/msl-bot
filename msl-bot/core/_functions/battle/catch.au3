@@ -5,13 +5,14 @@
  Parameters:
 	varImages - Set of images to search for specific astromons.
 	boolOneAstromon - Stop after one astromon.
+	boolRareAstromon - If astromon has the rare icon on it. For checking if caught or not
 
  Returns:
 	Array with format: ["!Miseed", "Caught", "Caught"]
 
 #ce ----------------------------------------------------------------------------
 
-Func catch($varImages, $boolOneAstromon = False)
+Func catch($varImages, $boolOneAstromon = False, $boolRareAstromon = True)
 	Local $astromons[0]
 	If getLocation() = "catch-mode" Then
 		If setLogReplace("Catching astromons... Locating", 1) Then Return -1
@@ -56,7 +57,7 @@ Func catch($varImages, $boolOneAstromon = False)
 						$boolCaught = True
 					Else
 						If setLogReplace("Catching astromons... Could not detect success, checking if caught", 1) Then Return -1
-						If isArray(findImages("battle-" & StringLower($strGrade), 100, 5000)) = False Then $boolCaught = True
+						If ($boolRareAstromon = True) And (isArray(findImage("battle-" & StringLower($strGrade), 100, 5000)) = False) Then $boolCaught = True
 					EndIf
 			EndSwitch
 

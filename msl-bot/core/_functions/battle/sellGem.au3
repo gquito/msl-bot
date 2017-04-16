@@ -44,15 +44,6 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 			Return $arrayData
 		Else ;not egg
 			Local $dataStatus = gatherData($arrayData)
-			#cs
-			If $dataStatus = 0 Then
-				Local $tempCount = 1
-				While FileExists(@ScriptDir & "/gemUnknown" & $tempCount & ".bmp")
-					$tempCount+=1
-				WEnd
-				_CaptureRegion("gemUnknown" & $tempCount & ".bmp")
-			EndIf
-			#ce
 
 			If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
@@ -137,7 +128,16 @@ Func gatherData(ByRef $arrayData)
 				$fileCounter += 1
 			WEnd
 
-			_CaptureRegion("/core/_images/gem/gem-unknown" & $fileCounter & ".bmp", 543, 214, 631, 222)
+			_CaptureRegion("/core/_images/gem/gem-unknown" & $fileCounter & ".bmp", 543, 214, 615, 222)
+
+			#cs ------------------
+				Local $tempCount = 1
+				While FileExists(@ScriptDir & "/gemUnknown" & $tempCount & ".bmp")
+					$tempCount+=1
+				WEnd
+				_CaptureRegion("gemUnknown" & $tempCount & ".bmp")
+			#ce ------------------
+
 			$arrayData[0] = 4
 		EndIf
 
