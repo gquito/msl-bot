@@ -81,9 +81,9 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGra
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
 		Switch StringSplit(_NowTime(4), ":", 2)[1]
-			Case "00"
+			Case "00", "01", "02", "03", "04", "05", "06", "07", "08", "09"
 				If $checkHourly = True Then $getHourly = True
-			Case "01" ;to prevent checking twice
+			Case "10" ;to prevent checking twice
 				$checkHourly = True
 		EndSwitch
 

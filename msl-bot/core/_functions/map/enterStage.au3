@@ -111,8 +111,10 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 			Return False
 		EndIf
 
+		logUpdate()
 		Return Not(waitLocation("battle,unknown,battle-auto", 10000) = "")
 	EndIf
 
+	logUpdate()
 	Return False
 EndFunc
