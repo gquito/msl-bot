@@ -63,7 +63,7 @@ Func farmGemMain($monster, $justEvolve, $gemsToFarm, $maxRefill)
 			EndIf
 
 			;calling farmAstromon script to farm 16 monsters
-			farmAstromonMain("catch-one-star", 16, 0, 0, 30)
+			farmAstromonMain("catch-one-star", 16, 1, 0, 30)
 			$maxRefill -= 30
 		EndIf
 

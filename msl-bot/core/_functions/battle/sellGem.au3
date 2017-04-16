@@ -113,7 +113,7 @@ EndFunc
 
 Func gatherData(ByRef $arrayData)
 	If getLocation() = "battle-sell" Then
-		Local $gemGrade = findImages($imagesGemGrades, 100, 2000)
+		Local $gemGrade = findImages($imagesGemGrades, 50, 2000)
 		If isArray($gemGrade) Then
 			Switch StringRegExpReplace($gemGrade[3], ".*gem-(.+)(\D)(\d+?|\d?)\.bmp", "$1$2")
 				Case "six-star"

@@ -176,7 +176,7 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 							Local $catch = catch($captures)
 
 							For $astromon In $catch
-								If StringMid($astromon, 1, 1) = "!" Then ;if missed
+								If StringLeft($astromon, 1) = "!" Then ;if missed
 									$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
 									$missedCounter += 1
 									If Mod($missedCounter, 12) = 0 Then $dataStrMissed &= "|=====>"
@@ -195,6 +195,36 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 						clickPoint($battle_coorAuto)
 					EndIf
 				Else
+					If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
+						If setLog("Could not detect rare, checking in catch-mode.") Then Return -1
+						If navigate("battle", "catch-mode") = True Then
+							If isArray(findImages($captures, 100, 1000)) Then
+								If setLogReplace("An astromon has been found!", 1) Then Return -1
+
+								Local $catch = catch($captures)
+								For $astromon In $catch
+									If StringLeft($astromon, 1) = "!" Then ;if missed
+										$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
+										$missedCounter += 1
+										If Mod($missedCounter, 12) = 0 Then $dataStrMissed &= "|=====>"
+									Else ;if caught
+										$dataStrCaught &= ", " & StringMid($astromon, 1, 2)
+										$caughtCounter += 1
+										If Mod($caughtCounter, 12) = 0 Then $dataStrCaught &= "|=====>"
+									EndIf
+								Next
+
+								If setLog("Finish catching... Attacking", 1) Then ExitLoop
+								clickPoint($battle_coorAuto)
+
+								ContinueCase
+							Else
+								If setLog("Cannot find the rare astromon, continuing battle.") Then Return -1
+								clickUntil($battle_coorCatchCancel, "battle")
+							EndIf
+						EndIf
+					EndIf
+
 					clickPoint($battle_coorAuto)
 				EndIf
 			Case "catch-mode"

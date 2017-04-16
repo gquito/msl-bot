@@ -13,9 +13,9 @@ Func getLocation()
 	Local $result = "unknown"
 	For $locIndex = 0 To UBound($listLocation)-1
 		If checkPixels(StringStripWS($listLocation[$locIndex][1], 8), 20) = True Then
-			_Sleep(100)
+			Sleep(200)
 
-			;double check after 100 millisecond delay or 1/10 of a second.
+			;double check after 200 millisecond delay or 1/5 of a second.
 			_CaptureRegion()
 			If checkPixels(StringStripWS($listLocation[$locIndex][1], 8), 20) = True Then
 				$result = $listLocation[$locIndex][0]

@@ -45,15 +45,15 @@ Func catch($varImages, $boolOneAstromon = False)
 
 			;waiting for success location or battle location
 			Local $boolCaught = False
-			Switch waitLocation("catch-success,battle,battle-auto", 5000)
-				Case "catch-success"
+			Switch waitLocation("catch-success,battle", 5000)
+				Case "catch-success" ;only shows up for normal astromons, not rares
 					$boolCaught = True
-				Case "battle", "battle-auto" ; This is for when the script cannot detect the success banner when caught
+				Case "battle"
 					If checkPixel($battle_pixelUnavailable) = False Then
 						$boolCaught = True
 					Else
 						If setLogReplace("Catching astromons... Could not detect success, checking if caught", 1) Then Return -1
-						If isArray(findImages("battle-" & StringLower($strGrade), 100, 3000)) = False Then $boolCaught = True
+						If isArray(findImages("battle-" & StringLower($strGrade), 100, 2000)) = False Then $boolCaught = True
 					EndIf
 			EndSwitch
 

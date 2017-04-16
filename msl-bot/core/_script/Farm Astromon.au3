@@ -71,7 +71,7 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 						Local $timerStart = TimerInit()
 						While Not(getLocation() = "catch-mode")
 							If navigate("battle", "catch-mode") = True Then ExitLoop
-							If TimerDiff($timerStart) > 10000 Then ExitLoop(2)
+							If TimerDiff($timerStart) > 7000 Then ExitLoop(2)
 						WEnd
 
 						Local $catch = catch($captures, True)
@@ -81,7 +81,7 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 						EndIf
 
 						For $astromon In $catch
-							If Not (StringLeft($astromon, 1) = "!") Then
+							If Not (StringMid($astromon, 1, 1) = "!") And (StringInStr($imgName, $astromon, 0) = True) Then
 								$intCounter += 1
 							EndIf
 							$roundCatch += 1
