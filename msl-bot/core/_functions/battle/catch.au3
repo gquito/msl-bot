@@ -49,11 +49,14 @@ Func catch($varImages, $boolOneAstromon = False)
 				Case "catch-success" ;only shows up for normal astromons, not rares
 					$boolCaught = True
 				Case "battle"
+					If _Sleep(3000) Then Return -1
+					_CaptureRegion()
+
 					If checkPixel($battle_pixelUnavailable) = False Then
 						$boolCaught = True
 					Else
 						If setLogReplace("Catching astromons... Could not detect success, checking if caught", 1) Then Return -1
-						If isArray(findImages("battle-" & StringLower($strGrade), 100, 2000)) = False Then $boolCaught = True
+						If isArray(findImages("battle-" & StringLower($strGrade), 100, 5000)) = False Then $boolCaught = True
 					EndIf
 			EndSwitch
 
