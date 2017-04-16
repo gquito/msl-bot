@@ -7,7 +7,7 @@
 Func farmAstromon()
 	Local $imgName = IniRead($botConfigDir, "Farm Astromon", "image", Null)
 	Local $limit = Int(IniRead($botConfigDir, "Farm Astromon", "limit", 16))
-	Local $catchRares = IniRead($botConfigDir, "Farm Astromon", "catch-rares", 0)
+	Local $catchRares = IniRead($botConfigDir, "Farm Astromon", "catch-rares", 1)
 	Local $finishRound = IniRead($botConfigDir, "Farm Astromon", "finish-round", 0)
 
 	setLog("~~~Starting 'Farm Astromon' script~~~", 2)
@@ -34,7 +34,7 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
 		For $capture In $rawCapture
 			Local $grade = StringReplace($capture, " ", "-")
-			If FileExists(@ScriptDir & "/core/images/catch/catch-" & $grade & ".bmp") Then
+			If FileExists(@ScriptDir & "/core/_images/catch/catch-" & $grade & ".bmp") Then
 				_ArrayAdd($captures, "catch-" & $grade)
 			EndIf
 		Next
@@ -74,7 +74,7 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 							If TimerDiff($timerStart) > 7000 Then ExitLoop(2)
 						WEnd
 
-						Local $catch = catch($captures, True)
+						Local $catch = catch($captures, True, False)
 						If UBound($catch) = 0 Then
 							$nextRound = True ;not found
 							ExitLoop
