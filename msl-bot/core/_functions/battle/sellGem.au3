@@ -137,7 +137,7 @@ Func gatherData(ByRef $arrayData)
 				$fileCounter += 1
 			WEnd
 
-			_CaptureRegion("/core/_images/gem/gem-unknown" & $fileCounter & ".bmp", 537, 216, 631, 226)
+			_CaptureRegion("/core/_images/gem/gem-unknown" & $fileCounter & ".bmp", 543, 214, 631, 222)
 			$arrayData[0] = 4
 		EndIf
 
