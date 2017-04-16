@@ -130,7 +130,7 @@ Func gatherData(ByRef $arrayData)
 					$arrayData[0] = 1
 			EndSwitch
 		Else
-			If setLog("Error: Could not detect gem grade! Using 4* as default. Created a file as /core/images/gem/gem-unknown.bmp. Categorize is as 'gem-five-star', 'gem-four-star', etc..", 1) Then Return -1
+			If setLog("Error: Could not detect gem grade! Using 4* as default. Created a file as /core/images/gem/gem-unknown.bmp. Rename it as 'gem-five-star', 'gem-four-star', etc..", 1) Then Return -1
 
 			Local $fileCounter = 1
 			While FileExists(@ScriptDir & "/core/images/gem/gem-unknown" & $fileCounter & ".bmp")
