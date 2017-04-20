@@ -20,20 +20,7 @@ Func getHourly()
 			If _Sleep(2000) Then Return -1
 		WEnd
 
-		_CaptureRegion()
-		If isArray(findImage("misc-village-pos1", 100)) Then
-			$posVillage = 0
-		ElseIf isArray(findImage("misc-village-pos2", 100)) Then
-			$posVillage = 1
-		ElseIf isArray(findImage("misc-village-pos3", 100)) Then
-			$posVillage = 2
-		EndIf
-
-		If $posVillage = null Then
-			If setLogReplace("Collect hourly..Failed.", 1) Then Return -1
-			logUpdate()
-			Return 0
-		EndIf
+		$posVillage = getVillagePos()
 
 		If setLogReplace("Collect hourly...Position: " & $posVillage, 1) Then Return -1
 		Local $arrayCoor = StringSplit($village_coorHourly[$posVillage], "|", 2) ;format: {"#,#", "#,#"..}
@@ -68,4 +55,23 @@ Func getHourly()
 	If setLogReplace("Collect hourly..Done!", 1) Then Return -1
 	logUpdate()
 	Return 1
+EndFunc
+
+#cs
+	Function: getVillagePos
+	Checks village position and returns a value.
+
+	Returns: 0, 1, 2 position of village
+	Author: GkevinOD (2017)
+#ce
+Func getVillagePos()
+	_CaptureRegion()
+	Select
+		Case checkPixels("54,469,0x482E1F|306,449,0x54451E|616,422,0x3F3720")
+			Return 0
+		Case checkPixels("64,488,0x393623|264,51,0x4D656F|18,414,0xB4AA74")
+			Return 1
+		Case Else
+			Return 2
+	EndSelect
 EndFunc

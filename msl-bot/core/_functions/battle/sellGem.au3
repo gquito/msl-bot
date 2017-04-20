@@ -1,41 +1,33 @@
 #cs ----------------------------------------------------------------------------
 
  Function: sellGem
-
  Sells gem during battle end screen
 
  Parameters:
-
 	strRecord - Record data to file named in strRecord if not equal to ""
-
-	intMinStar - Number of stars will sell and below.
-
-	intSellFlat - If true then sell, else do not sell. Overrides intKeepAll.
-
-	intKeepAll - Keeps all gems with grade [int] or higher.
-
-	intMinStarForSub - Minimum grade for intMinSub to apply.
-
-	intMinSub - Keeps all gems with substat [int] or higher. Does not override intMinStar.
+	sellGrades: (String) Sell gems with grades specified
+	filterGrades: (String) Grades you want to go through the filter system
+	sellTypes: (String) Sell gems with types specified
+	sellFlat: (Int) 1=True; 0=False
+	sellStats: (String) Sell gems with stats specified
+	sellSubstats = (String) Sell gems with substats specified
 
  Returns:
-
 	On success - Returns gem data
-
 	On fail - Return empty string
 
 #ce ----------------------------------------------------------------------------
 
-Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAll = 6, $intMinStarForSub = 5, $intMinSub = 4)
+Func sellGem($strRecord = "!", $sellGrades = "1,2,3,4,5", $filterGrades = "5", $sellTypes = "healing,ferocity,tenacity,fortitude", $sellFlat = "1", $sellStats = "rec", $sellSubstats = "1,2,3")
 	Local $boolLog = Not(StringInStr($strRecord, "!"))
 	Local $sold = ""
 	$strRecord = StringReplace($strRecord, "!", "")
 
 	If waitLocation("battle-sell", 2000) Then
-		Local $arrayData = ["-", "-", "-", "", "-", "-", ""]
+		Local $arrayData = ["-", "-", "-", "-", "-", ""]
 
 		;egg check
-		If isArray(findImage("gem-egg", 75)) Then
+		If checkPixels("505,304,0xEFB45C|600,303,0xEFB45C|652,304,0x39AEA2") Then
 			$arrayData[0] = "EGG"
 			If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
@@ -43,22 +35,28 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 			If $boolLog = True Then setLog("Grade: Egg |Shape: - |Type: - |Stat: - |Substat: -")
 			Return $arrayData
 		Else ;not egg
-			Local $dataStatus = gatherData($arrayData)
-
+			Local $arrayData = gatherData()
 			If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
-			If ($arrayData[3] = "F.") And ($boolSellFlat = True) Then
-				clickPoint($battle_coorSell, 1, 1000)
+			Local $boolSell = StringInStr($sellGrades, $arrayData[0])
+			If (StringInStr($filterGrades, $arrayData[0])) And ($boolSell = True) Then
+				Local $boolSell = False
+				Select
+					Case StringInStr($sellTypes, $arrayData[2])
+						$boolSell = True
+					Case ($sellFlat = 1) And (StringLeft($arrayData[3], 2) = "F.")
+						$boolSell = True
+					Case StringInStr($sellStats, $arrayData[3])
+						$boolSell = True
+					Case StringInStr($sellSubstats, $arrayData[4])
+						$boolSell = True
+				EndSelect
+			EndIf
+
+			If $boolSell = True Then
+				clickWhile($battle_coorSell, "battle-sell")
 				clickUntil($battle_coorSellConfirm, "battle-end")
 				$sold = "!"
-			Else
-				If (($arrayData[0] <= $intMinStar) And ($arrayData[0] < $intKeepAll)) Then
-					If Not (($arrayData[0] >= $intMinStarForSub) And ($arrayData[5] >= $intMinSub)) Then
-						clickPoint($battle_coorSell, 1, 1000)
-						clickUntil($battle_coorSellConfirm, "battle-end", 5, 2000)
-						$sold = "!"
-					EndIf
-				EndIf
 			EndIf
 			clickUntil($game_coorTap, "battle-end")
 		EndIf
@@ -69,13 +67,19 @@ Func sellGem($strRecord = "!", $intMinStar = 5, $boolSellFlat = True, $intKeepAl
 			If $arrayData[1] = "S" Then $strData &= "Square |Type: "
 			If $arrayData[1] = "T" Then $strData &= "Triangle |Type: "
 			$strData &= _StringProper($arrayData[2]) & " |Stat: "
-			If $arrayData[3] = "F." Then $strData &= "Flat "
-			If $arrayData[3] = "P." Then $strData &= "Percent "
-			$strData &= _StringProper($arrayData[4]) & " |Substat: " & $arrayData[5]
-
+			Switch StringLeft($arrayData[3], 2)
+				Case "F."
+					$strData &= "Flat " & _StringProper(StringMid($arrayData[3], 3))
+				Case "P."
+					$strData &= "Percent " & _StringProper(StringMid($arrayData[3], 3))
+				Case Else
+					$strData &= _StringProper($arrayData[3])
+			EndSwitch
+			$strData &= " |Substat: " & $arrayData[4]
+			$strData &= " |Price: " & getGemPrice($arrayData)
 
 			setLog($strData, 1)
-			$arrayData[6] = $strData
+			_ArrayAdd($arrayData, $strData)
 		EndIf
 
 		Return $arrayData
@@ -87,113 +91,99 @@ EndFunc
 #cs ----------------------------------------------------------------------------
 
  Function: gatherData
-
  Record gem data from the screen
 
- Parameters:
-
-	arrayData - Reference, array to put data in.
-
- Returns:
-
-	On success - Return 1
-
-	On fail - Returns 0
+ Returns: [grade, shape, type, stat, sub]
+ Author: GkevinOD (2017)
 
 #ce ----------------------------------------------------------------------------
 
-Func gatherData(ByRef $arrayData)
+Func gatherData()
+	Local $gemData[5];
 	If getLocation() = "battle-sell" Then
-		Local $gemGrade = findImages($imagesGemGrades, 50, 2000)
-		If isArray($gemGrade) Then
-			Switch StringRegExpReplace($gemGrade[3], ".*gem-(.+)(\D)(\d+?|\d?)\.bmp", "$1$2")
-				Case "six-star"
-					$arrayData[0] = 6
-				Case "five-star"
-					$arrayData[0] = 5
-				Case "four-star"
-					$arrayData[0] = 4
-				Case "three-star"
-					$arrayData[0] = 3
-				Case "two-star"
-					$arrayData[0] = 2
-				Case "one-star"
-					$arrayData[0] = 1
-			EndSwitch
-		Else
-			If setLog("Error: Could not detect gem grade! Using 4* as default. Created a file as /core/images/gem/gem-unknown.bmp. Rename it as 'gem-five-star', 'gem-four-star', etc..", 1) Then Return -1
+		_CaptureRegion()
 
-			Local $fileCounter = 1
-			While FileExists(@ScriptDir & "/core/images/gem/gem-unknown" & $fileCounter & ".bmp")
-				$fileCounter += 1
-			WEnd
+		Select ;grade
+			Case checkPixel("553,219,0x261814")
+				$gemData[0] = 4
+			Case checkPixel("547,219,0x261714")
+				$gemData[0] = 5
+			Case Else
+				$gemData[0] = 6
+		EndSelect
 
-			_CaptureRegion("/core/_images/gem/gem-unknown" & $fileCounter & ".bmp", 543, 214, 615, 222)
+		Select ;shape
+			Case Not(checkPixel("562,239,0x281A17"))
+				$gemData[1] = "S"
+			Case Not(checkPixel("579,270,0x281A17"))
+				$gemData[1] = "D"
+			Case Else
+				$gemData[1] = "T"
+		EndSelect
 
-			#cs ------------------
-				Local $tempCount = 1
-				While FileExists(@ScriptDir & "/gemUnknown" & $tempCount & ".bmp")
-					$tempCount+=1
-				WEnd
-				_CaptureRegion("gemUnknown" & $tempCount & ".bmp")
-			#ce ------------------
-
-			$arrayData[0] = 4
-		EndIf
-
-		Local $tempPixel = [562, 239, 0x281A17]
-		Local $tempPixel2 = [579, 270, 0x281A17]
-
-		If Not(checkPixel($tempPixel)) Then
-			$arrayData[1] = "S"
-		ElseIf Not(checkPixel($tempPixel2)) Then
-			$arrayData[1] = "D"
-		Else
-			$arrayData[1] = "T"
-		EndIf
-
-		For $strType In $imagesGemType
-			If isArray(findImage($strType, 75)) Then
-				$arrayData[2] = StringUpper(StringReplace($strType, "gem-", ""))
+		For $strType In $gem_pixelTypes
+			If checkPixels(StringSplit($strType, ":", 2)[1]) Then
+				$gemData[2] = StringSplit($strType, ":", 2)[0]
 				ExitLoop
 			EndIf
 		Next
 
-		If isArray(findImage("gem-crit-rate", 75)) Then
-			$arrayData[3] = ""
-			$arrayData[4] = "CRIT RATE"
-		ElseIf isArray(findImage("gem-crit-dmg", 75)) Then
-			$arrayData[3] = ""
-			$arrayData[4] = "CRIT DMG"
-		ElseIf isArray(findImage("gem-resist", 75)) Then
-			$arrayData[3] = ""
-			$arrayData[4] = "RESIST"
-		Else
-			If isArray(findImage("gem-percent", 75)) Then
-				$arrayData[3] = "P."
-			Else
-				$arrayData[3] = "F."
+		For $strStat In $gem_pixelStats
+			If checkPixels(StringSplit($strStat, ":", 2)[1]) Then
+				$gemData[3] = StringSplit($strStat, ":", 2)[0]
+				ExitLoop
 			EndIf
-
-			For $strStat In $imagesGemStat
-				If isArray(findImage($strStat, 75)) Then
-					$arrayData[4] = StringUpper(StringReplace($strStat, "gem-", ""))
-					ExitLoop
-				EndIf
-			Next
-		EndIf
+		Next
 
 		If isArray(findColor(530, 570, 451, 451, 0xE9E3DE, 20)) Then
-			$arrayData[5] = "4"
+			$gemData[4] = "4"
 		ElseIf isArray(findColor(530, 570, 432, 432, 0xE9E3DE, 20)) Then
-			$arrayData[5] = "3"
+			$gemData[4] = "3"
 		Else
-			$arrayData[5] = "2"
+			$gemData[4] = "2"
 		EndIf
 
-		Return 1
-	Else
-		setLog("Could not gather gem data.")
-		Return 0
+		If $gemData[0] = "" Or $gemData[1] = "" Or $gemData[2] = "" Or $gemData[3] = "" Or $gemData[4] = "" Then
+			Local $fileCounter = 1
+			While FileExists(@ScriptDir & "/unknown-gem" & $fileCounter & ".bmp")
+				$fileCounter += 1
+			WEnd
+			_CaptureRegion("unknown-gem" & $fileCounter)
+		EndIf
+
 	EndIf
+	Return $gemData
+EndFunc
+
+#cs
+	Function: getGemPrice
+	Returns gem price using the data passed in
+
+	Parameters:
+		gemData: [Array] [grade, shape, type, stat, sub]
+
+	Returns: (Int) Gem price
+	Author: GkevinOD(2017)
+#ce
+
+Func getGemPrice($gemData)
+	Local $gemRank = 0
+	For $i = 0 To UBound($gemRanks)-1
+		If StringInStr($gemRanks[$i], $gemData[2]) Then
+			$gemRank = $i
+			ExitLoop
+		EndIf
+	Next
+
+	Local $gemSub = 0
+	Switch $gemData[4]
+		Case 4
+			$gemSub = 0
+		Case 3
+			$gemSub = 1
+		Case 2
+			$gemSub = 2
+	EndSwitch
+
+	Return Int(Execute("$gemGrade" & $gemData[0] & "Price[" & $gemSub & "][" & $gemRank & "]"))
 EndFunc
