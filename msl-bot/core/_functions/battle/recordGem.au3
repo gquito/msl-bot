@@ -17,6 +17,6 @@
 #ce ----------------------------------------------------------------------------
 
 Func recordGem($strName, $arrayData)
-	Local $strData = $arrayData[0] & "," & $arrayData[1] & "," & $arrayData[2] & "," & $arrayData[3] & $arrayData[4] & "," & $arrayData[5]
+	Local $strData = $arrayData[0] & "," & $arrayData[1] & "," & $arrayData[2] & "," & $arrayData[3] & "," & $arrayData[4]
 	Return FileWriteLine(@ScriptDir & "\core\data\" & $strName & ".txt", $strData)
 EndFunc

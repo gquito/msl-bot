@@ -5,25 +5,28 @@
 	Author: GkevinOD (2017)
 #ce
 Func farmGolem()
-	Local $strGolem = Int(IniRead($botConfigDir, "Farm Golem", "dungeon", 7))
+	Local $strGolem = IniRead($botConfigDir, "Farm Golem", "dungeon", 7)
 
-	Local $buyEggs = Int(IniRead($botConfigDir, "Farm Golem", "buy-eggs", 0))
-	Local $buySoulstones = Int(IniRead($botConfigDir, "Farm Golem", "buy-soulstones", 1))
-	Local $maxGoldSpend = Int(IniRead($botConfigDir, "Farm Golem", "max-gold-spend", 100000))
-	Local $sellGems = Int(IniRead($botConfigDir, "Farm Golem", "sell-gems", 1))
-	Local $guardian = Int(IniRead($botConfigDir, "Farm Golem", "farm-guardian", 0))
-	Local $intSellGradeMin = Int(IniRead($botConfigDir, "Farm Golem", "sell-grade-min", 4))
-	Local $intKeepGradeMinSub = Int(IniRead($botConfigDir, "Farm Golem", "keep-grade-min-sub", 5))
-	Local $intMinSub = Int(IniRead($botConfigDir, "Farm Golem", "min-sub", 2))
-	Local $intGem = Int(IniRead($botConfigDir, "Farm Golem", "max-spend-gem", 0))
-	Local $selectBoss = Int(IniRead($botConfigDir, "Farm Golem", "select-boss", 1))
-	Local $keepAllGrade = Int(IniRead($botConfigDir, "Farm Golem", "keep-all-grade", 6))
+	Local $buyEggs = IniRead($botConfigDir, "Farm Golem", "buy-eggs", 0)
+	Local $buySoulstones = IniRead($botConfigDir, "Farm Golem", "buy-soulstones", 1)
+	Local $maxGoldSpend = IniRead($botConfigDir, "Farm Golem", "max-gold-spend", 100000)
+	Local $sellGems = IniRead($botConfigDir, "Farm Golem", "sell-gems", 1)
+	Local $sellGrades = IniRead($botConfigDir, "Farm Golem", "sell-grades", "1,2,3,4,5")
+	Local $filterGrades = IniRead($botConfigDir, "Farm Golem", "filter-grades", "5")
+	Local $sellTypes = IniRead($botConfigDir, "Farm Golem", "sell-types", "healing,ferocity,tenacity,fortitude")
+	Local $sellFlat = IniRead($botConfigDir, "Farm Golem", "sell-flat", 1)
+	Local $sellStats = IniRead($botConfigDir, "Farm Golem", "sell-stats", "rec")
+	Local $sellSubstats = IniRead($botConfigDir, "Farm Golem", "sell-substats", "1,2,3")
+	Local $guardian = IniRead($botConfigDir, "Farm Golem", "farm-guardian", 0)
+	Local $intGem = IniRead($botConfigDir, "Farm Golem", "max-spend-gem", 0)
+	Local $selectBoss = IniRead($botConfigDir, "Farm Golem", "select-boss", 1)
+	Local $keepAllGrade = IniRead($botConfigDir, "Farm Golem", "keep-all-grade", 6)
 
 	Local $quest = IniRead($botConfigDir, "Farm Golem", "collect-quest", "1")
 	Local $hourly = IniRead($botConfigDir, "Farm Golem", "collect-hourly", "1")
 
 	setLog("~~~Starting 'Farm Golem' script~~~", 2)
-	farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
+	farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades, $sellTypes, $sellFlat, $sellStats, $sellSubstats, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 	setLog("~~~Finished 'Farm Golem' script~~~", 2)
 EndFunc   ;==>farmGolem
 
@@ -35,9 +38,12 @@ EndFunc   ;==>farmGolem
 	strGolem: (Int) The golem stage.
 	selectBoss: (Int) 1=True; 0=False
 	sellGems: (Int) 1=True; 0=False
-	intSellGradeMin: (Int) Bot will sell any gems with <= this number.
-	intKeepGradeMinSub: (Int) Grade of gem that will be kept if intMinSub is met.
-	intMinSub: (Int) Keep gems that fit intKeepGradeMinSub and has >= this number.
+	sellGrades: (String) Sell gems with grades specified
+	filterGrades: (String) Grades you want to go through the filter system
+	sellTypes: (String) Sell gems with types specified
+	sellFlat: (Int) 1=True; 0=False
+	sellStats: (String) Sell gems with stats specified
+	sellSubstats = (String) Sell gems with substats specified
 	intGem: (Int) Maximum number of gems the bot can spend for refill.
 	guardian: (Int) 1=True; 0=False
 	quest: (Int) 1=True; 0=False
@@ -45,8 +51,20 @@ EndFunc   ;==>farmGolem
 
 	Author: GkevinOD (2017)
 #ce
-Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGradeMin, $intKeepGradeMinSub, $intMinSub, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
-	Local $intGoldEnergy = 12231
+Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades, $sellTypes, $sellFlat, $sellStats, $sellSubstats, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
+
+	Local $avgGoldPerRound = 0
+	Switch ($strGolem)
+		Case 7
+			$avgGoldPerRound = 1500
+		Case 8
+			$avgGoldPerRound = 1500
+		Case 9
+			$avgGoldPerRound = 1100
+		Case 10
+			$avgGoldPerRound = 1200
+	EndSwitch
+
 	Local $intGolem = 7
 	Switch ($strGolem)
 		Case 1 To 3
@@ -193,18 +211,20 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $keepAllGrade, $intSellGra
 				If _Sleep(10) Then ExitLoop
 
 				If $sellGems = 1 Then
-					Local $gemInfo = sellGem("B" & $strGolem, $intSellGradeMin, True, $keepAllGrade, $intKeepGradeMinSub, $intMinSub)
+					Local $gemInfo = sellGem("B" & $strGolem, $sellGrades, $filterGrades, $sellTypes, $sellFlat, $sellStats, $sellSubstats)
 					If IsArray($gemInfo) Then
-						If StringInStr($gemInfo[6], "!") And Not($gemInfo[0] = "EGG") Then
-							$intGoldPrediction += $intGoldEnergy
+						If StringInStr($gemInfo[5], "!") And Not($gemInfo[0] = "EGG") Then
+							$intGoldPrediction += getGemPrice($gemInfo) + $avgGoldPerRound
 						Else
-							$numGemsKept += 1
+							If $gemInfo[0] = "EGG" Then
+								$numEggs += 1
+							Else
+								$numGemsKept += 1
+							EndIf
 						EndIf
-
-						If $gemInfo[0] = "EGG" Then $numEggs += 1
 					EndIf
 				Else
-					sellGem("B" & $strGolem, 0, False, 6, 0, 0) ;Does not sell, only records data
+					sellGem("B" & $strGolem, "", "") ;Does not sell, only records data
 				EndIf
 
 				clickPoint($game_coorTap)
