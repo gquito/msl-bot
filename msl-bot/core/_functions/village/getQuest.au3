@@ -13,6 +13,8 @@ Func getQuest()
 		_CaptureRegion()
 		Local $getQuest = findColor(747,167,116,116,0xDA101B,20,-1,1)
 		While isArray($getQuest)
+			clickPoint($getQuest, 3, 100)
+
 			If $getQuest[0] < 400 Then
 				clickPoint("729,190")
 			Else
