@@ -31,7 +31,7 @@ Func buyItem($item, $maxGold)
 			If setLogReplace("Buying items... Searching for item.") Then Return -1
 
 			clickPoint("223,433", 3, 100)
-			_CaptureRegion
+			_CaptureRegion()
 			Local $firstPixel = _GDIPlus_BitmapGetPixel($hBitmap, 653, 202)
 
 			For $area = 0 To 3
