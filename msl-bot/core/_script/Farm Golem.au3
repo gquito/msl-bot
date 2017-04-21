@@ -116,21 +116,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 			Case "battle"
 				clickPoint($battle_coorAuto)
 			Case "battle-end"
-				If $quest = 1 And checkPixel($battle_pixelQuest) = True Then
-					If setLog("Detected quest complete, navigating to village.", 1) Then ExitLoop
-					If navigate("village", "quests") = True Then
-						If setLog("Collecting quests.", 1) Then ExitLoop
-						For $questTab In $village_coorArrayQuestsTab ;quest tabs
-							clickPoint(StringSplit($questTab, ",", 2))
-							While IsArray(findImage("misc-quests-get-reward", 100, 3)) = True
-								If _Sleep(10) Then ExitLoop (3)
-								clickPoint(findImage("misc-quests-get-reward", 100))
-							WEnd
-						Next
-					EndIf
-					navigate("map") ;go back to map to repeat golem process
-				EndIf
-
+				If $quest = 1 And checkPixel($battle_pixelQuest) = True Then getQuest()
 				If $hourly = 1 And $getHourly = True Then
 					If getHourly() = 1 Then
 						$getHourly = False

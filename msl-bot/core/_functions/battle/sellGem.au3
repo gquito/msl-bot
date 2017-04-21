@@ -42,7 +42,7 @@ Func sellGem($strRecord = "!", $sellGrades = "1,2,3,4,5", $filterGrades = "5", $
 			If (StringInStr($filterGrades, $arrayData[0])) And ($boolSell = True) Then
 				Local $boolSell = False
 				Select
-					Case StringInStr($sellTypes, $arrayData[2])
+					Case StringInStr($sellTypes, StringMid($arrayData[2], 3))
 						$boolSell = True
 					Case ($sellFlat = 1) And (StringLeft($arrayData[3], 2) = "F.")
 						$boolSell = True

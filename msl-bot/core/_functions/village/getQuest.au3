@@ -23,7 +23,10 @@ Func getQuest()
 
 			If _Sleep(500) Then Return -1
 
-			If getLocation() = "unknown" Then clickWhile("573,197", "unknown")
+			If Not(getLocation() = "quests") Then
+				navigate("village")
+				navigate("village", "quests")
+			EndIf
 
 			_CaptureRegion()
 			$getQuest = findColor(747,167,116,116,0xDA101B,20,-1,1)
