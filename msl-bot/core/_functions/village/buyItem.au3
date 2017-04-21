@@ -63,9 +63,9 @@ Func buyItem($item, $maxGold)
 						Case isArray(findImage("shop-50k", 50, 100, 537, 414, 773, 477)) = True
 							$price = 50000
 						Case isArray(findImage("shop-120k", 50, 100, 537, 414, 773, 477)) = True
-							$price = 100000
-						Case isArray(findImage("shop-150k", 50, 100, 537, 414, 773, 477)) = True
 							$price = 120000
+						Case isArray(findImage("shop-150k", 50, 100, 537, 414, 773, 477)) = True
+							$price = 150000
 						Case Else
 							If setLogReplace("Buying items... Could not check price!") Then Return -1
 							navigate("village")
@@ -86,6 +86,8 @@ Func buyItem($item, $maxGold)
 						clickWhile("412, 310", "unknown", 3, 1000) ;until prompt disappears
 
 						_ArrayAdd($itemsBought, $item & "," & $price)
+					Else
+						If setLogReplace("Buying items... " & $item & " price exceeds limit!", 1) Then Return -1
 					EndIf
 				EndIf
 			Next
