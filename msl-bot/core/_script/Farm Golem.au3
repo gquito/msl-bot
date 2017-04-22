@@ -174,7 +174,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 					setLog("Gem used exceed max gems!", 0)
 					ExitLoop
 				EndIf
-			Case "map", "village", "astroleague", "map-stage", "map-battle", "toc", "association", "clan", "starstone-dungeons", "golem-dungeons", "elemental-dungeons", "gold-dungeons"
+			Case "map", "village", "astroleague", "map-stage", "map-battle", "toc", "association", "clan", "starstone-dungeons", "golem-dungeons", "elemental-dungeons", "gold-dungeons", "quests"
 				If navigate("map", "golem-dungeons") = True Then
 					Local $tempCurrLocation = getLocation()
 					While Not ($tempCurrLocation = "map-battle")

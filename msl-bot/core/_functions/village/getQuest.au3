@@ -36,6 +36,7 @@ Func getQuest()
 		logUpdate()
 		Return False
 	EndIf
+	navigate("village")
 	If setLogReplace("Collecting quests..Done!", 1) Then Return False
 	logUpdate()
 	Return True
