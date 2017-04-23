@@ -1,3 +1,3 @@
-latest-version=v2.0.0.6,2000006,2.0
-description=v2.0.0.6 Update log:|- buyItem() recoded to use a more effective way of searching for an item.|- Bug fix in sellGem() not selling specified main stats.|- Added higher tolerance for getVillagePos() and more pixels.|- Farm Golem replaced old way of collecting quest with using getQuest() function instead.|- Added shop-x5 image to prevent buying 3* astromon soulstones.|- Added wood egg and 150k price image, need only water egg now.
+latest-version=v2.0.0.7,2000007,2.0
+description=v2.0.0.7 Update log:|- Added more pixel for Defense stat.|- Slighly increased quick restart speed.
 directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
