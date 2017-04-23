@@ -55,10 +55,9 @@ Func sellGem($strRecord = "!", $sellGrades = "1,2,3,4,5", $filterGrades = "5", $
 
 			If $boolSell = True Then
 				clickWhile($battle_coorSell, "battle-sell")
-				clickUntil($battle_coorSellConfirm, "battle-end")
+				clickPoint($battle_coorSellConfirm, 3, 100)
 				$sold = "!"
 			EndIf
-			clickUntil($game_coorTap, "battle-end")
 		EndIf
 
 		If $boolLog = True Then
