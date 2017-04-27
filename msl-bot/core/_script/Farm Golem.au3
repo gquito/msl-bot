@@ -16,7 +16,7 @@ Func farmGolem()
 	Local $sellTypes = IniRead($botConfigDir, "Farm Golem", "sell-types", "healing,ferocity,tenacity,fortitude")
 	Local $sellFlat = IniRead($botConfigDir, "Farm Golem", "sell-flat", 1)
 	Local $sellStats = IniRead($botConfigDir, "Farm Golem", "sell-stats", "rec")
-	Local $sellSubstats = IniRead($botConfigDir, "Farm Golem", "sell-substats", "1,2,3")
+	Local $sellSubstats = IniRead($botConfigDir, "Farm Golem", "sell-substats", "1,2")
 	Local $guardian = IniRead($botConfigDir, "Farm Golem", "farm-guardian", 0)
 	Local $intGem = IniRead($botConfigDir, "Farm Golem", "max-spend-gem", 0)
 	Local $selectBoss = IniRead($botConfigDir, "Farm Golem", "select-boss", 1)
@@ -94,6 +94,8 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 
 	Local $goldSpent = 0
 
+	Local $stuckLocation = ""
+	Local $stuckTimer = 0
 	While True
 		If _Sleep(50) Then ExitLoop
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
@@ -112,7 +114,21 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 		GUICtrlSetData($listScript, "")
 		GUICtrlSetData($listScript, $strData)
 
-		Switch getLocation()
+		Local $currLocation = getLocation()
+
+		If $currLocation = $stuckLocation Then
+			If TimerDiff($stuckTimer) > 600000 Then
+				If setLog("Been stuck for 10 minutes! Restarting, golems.", 1) Then
+					navigate("map", "", True)
+					ContinueLoop
+				EndIf
+			EndIf
+		Else
+			$stuckLocation = $currLocation
+			$stuckTimer = TimerInit()
+		EndIf
+
+		Switch $currLocation
 			Case "battle"
 				clickPoint($battle_coorAuto)
 			Case "battle-end"
@@ -148,9 +164,10 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 				EndIf
 
 				If getLocation() = "battle-end" Then
-					Local $quickRestart = findImage("battle-quick-restart", 30)
-					clickWhile($quickRestart, "battle-end")
-					$intRunCount += 1
+					If clickUntil($battle_coorRestart, "battle-auto,battle,refill", 30, 1000) = True Then
+						If getLocation() = "refill" Then ContinueLoop
+						$intRunCount += 1
+					EndIf
 				EndIf
 
 				If getLocation() = "battle-end" Then navigate("map")
@@ -192,8 +209,8 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 				Else
 					setLog("Unable to navigate to dungeon, trying again.", 1)
 				EndIf
-			Case "battle-end-exp", "battle-sell"
-				clickUntil($game_coorTap, "battle-sell")
+			Case "battle-end-exp", "battle-sell", "battle-sell-item"
+				clickUntil("193,255", "battle-sell-item", 500, 100)
 				If _Sleep(10) Then ExitLoop
 
 				If $sellGems = 1 Then
@@ -212,8 +229,6 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 				Else
 					sellGem("B" & $strGolem, "", "") ;Does not sell, only records data
 				EndIf
-
-				clickPoint($game_coorTap)
 			Case "battle-gem-full"
 				setLog("Gem inventory is full!", 2)
 				ExitLoop
@@ -222,16 +237,11 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 				clickUntil($game_coorTap, "battle-end", 20, 1000)
 			Case "lost-connection"
 				clickPoint($game_coorConnectionRetry)
-			Case "unknown"
-				If Not waitLocation("battle-boss", 3000) = "" Then
-					If $selectBoss = 1 Then
-						waitLocation("battle-auto", 5000)
-						clickPoint("406, 209")
-					EndIf
+			Case "battle-boss"
+				If $selectBoss = 1 Then
+					waitLocation("battle-auto", 5000)
+					clickPoint("406, 209")
 				EndIf
-
-				clickPoint($game_coorTap)
-				clickPoint(findImage("misc-close", 30)) ;to close any windows open
 			Case "pause"
 				clickPoint($battle_coorContinue)
 		EndSwitch
