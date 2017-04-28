@@ -164,7 +164,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 				EndIf
 
 				If getLocation() = "battle-end" Then
-					If clickUntil($battle_coorRestart, "battle-auto,battle,refill", 30, 1000) = True Then
+					If clickUntil($battle_coorRestart, "unknown,refill", 30, 1000) = True Then
 						If getLocation() = "refill" Then ContinueLoop
 						$intRunCount += 1
 					EndIf
