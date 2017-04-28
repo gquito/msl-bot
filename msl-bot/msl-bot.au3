@@ -10,8 +10,8 @@
 Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
 Global $botSimpleVersion = "2.0"
-Global $botVersion = "v2.0.1.1"
-Global $botVersionValue = 2000101
+Global $botVersion = "v2.0.1.2"
+Global $botVersionValue = 2000102
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead($botConfigDir, "general", "scripts", ""), ",", 2)
 
