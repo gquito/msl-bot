@@ -136,7 +136,7 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 
 				If getLocation() = "battle-end" Then
 					If Not Mod($dataRuns + 1, 20) = 0 Then
-						If clickUntil($battle_coorRestart, "battle-auto,battle,refill", 30, 1000) = True Then
+						If clickUntil($battle_coorRestart, "unknown,refill", 30, 1000) = True Then
 							If getLocation() = "refill" Then ContinueLoop
 							$dataRuns += 1
 						EndIf
@@ -144,8 +144,10 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 						If $guardian = 1 Then $dataGuardians += farmGuardian($sellGems, $intGem, $intGemUsed)
 
 						If getLocation() = "battle-end" Then
-							clickUntil(findImage("battle-quick-restart", 30), "unknown")
-							$dataRuns += 1
+							If clickUntil($battle_coorRestart, "unknown,refill", 30, 1000) = True Then
+								If getLocation() = "refill" Then ContinueLoop
+								$dataRuns += 1
+							EndIf
 						EndIf
 					EndIf
 				EndIf

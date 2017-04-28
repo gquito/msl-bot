@@ -38,7 +38,7 @@ Func sellGem($strRecord = "!", $sellGrades = "1,2,3,4,5", $filterGrades = "5", $
 		$arrayData[0] = "EGG"
 		If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
-		clickUntil($game_coorTap, "battle-end")
+		clickUntil($battle_coorSellCancel, "battle-end")
 		If $boolLog = True Then setLog("Grade: Egg |Shape: - |Type: - |Stat: - |Substat: -")
 		Return $arrayData
 	Else ;not egg
