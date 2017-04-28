@@ -119,6 +119,8 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 		If $currLocation = $stuckLocation Then
 			If TimerDiff($stuckTimer) > 600000 Then
 				If setLog("Been stuck for 10 minutes! Restarting, golems.", 1) Then
+					$stuckLocation = ""
+					$stuckTimer = TimerInit()
 					navigate("map", "", True)
 					ContinueLoop
 				EndIf
@@ -206,8 +208,6 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 					clickUntil($map_coorBattle, "battle")
 
 					$intRunCount += 1
-				Else
-					setLog("Unable to navigate to dungeon, trying again.", 1)
 				EndIf
 			Case "battle-end-exp", "battle-sell", "battle-sell-item"
 				clickUntil("193,255", "battle-sell-item", 500, 100)
