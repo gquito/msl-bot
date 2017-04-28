@@ -81,11 +81,11 @@
 		Global $battle_coorGiveUp = [470, 317]
 		Global $battle_coorGiveUpConfirm = [395, 309]
 		Global $battle_coorContinue = [323, 323]
-		Global $battle_coorSell = [363, 384]
-		Global $battle_coorSellCancel = [433,384]
+		Global $battle_coorSell = [433, 384]
+		Global $battle_coorSellCancel = [363, 384]
 
 		Global $battle_coorCatch = [741, 275]
-		Global $battle_coorCatchCancel = [364,399]
+		Global $battle_coorCatchCancel = [739,119]
 
 		Global $battle_coorAirship = [330, 395]
 		Global $battle_coorMap = [399, 396]
@@ -132,7 +132,7 @@
 								  "F.ATK:358,255,0xE3AA58|395,255,0xF7BA5F|411,254,0xF3B75E", _
 								  "F.DEF:352,255,0xD59F53|401,256,0xF4B75E|416,254,0xF3B75E", _
 								  "P.ATK:361,255,0xEEB35C|371,255,0xF2B65D|414,254,0xEEB25C/383,255,0xE3AA58|393,255,0xF7BA5F|209,254,0xF3B75E/366,255,0xE5AC59|385,256,0xF2B65D|393,255,0xF7BA5F", _
-								  "F.REC:352,255,0xD59F53|378,255,0xEFB45C|403,255,0xF3B75E", _
+								  "F.REC:352,255,0xD59F53|378,255,0xEFB45C|403,255,0xF3B75E/348,255,0xEEB35C|379,255,0xEEB35C|410,255,0xF5B85E", _
 								  "P.DEF:350,254,0xD59F53|370,255,0xE9AF5A|399,256,0xF4B75E/355,254,0xEEB35C|404,256,0xEEB35C|418,254,0xF1B55D/350,255,0xD59F53|388,256,0xEDB25C|394,254,0xF3B75E", _
 								  "P.HP:373,255,0xECB15B|383,254,0xF4B85E|400,254,0xF0B45C/368,254,0xDEA656|378,254,0xF6B95F|384,254,0xEBB05B", _
 								  "P.REC:350,255,0xD59F53|412,255,0xF6B95F|423,255,0xF0B45D/346,255,0xF5B85E|407,255,0xF7BA5F|418,254,0xF5B95E", _
