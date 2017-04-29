@@ -118,12 +118,11 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 
 		If $currLocation = $stuckLocation Then
 			If TimerDiff($stuckTimer) > 600000 Then
-				If setLog("Been stuck for 10 minutes! Restarting, golems.", 1) Then
-					$stuckLocation = ""
-					$stuckTimer = TimerInit()
-					navigate("map", "", True)
-					ContinueLoop
-				EndIf
+				If setLog("Been stuck for 10 minutes! Restarting, golems.", 1) Then Return -1
+				$stuckLocation = ""
+				$stuckTimer = TimerInit()
+				navigate("map", "", True)
+				ContinueLoop
 			EndIf
 		Else
 			$stuckLocation = $currLocation

@@ -24,9 +24,19 @@ Func sellGem($strRecord = "!", $sellGrades = "1,2,3,4,5", $filterGrades = "5", $
 	$strRecord = StringReplace($strRecord, "!", "")
 	Switch waitLocation("battle-sell,battle-sell-item", 2000)
 		Case "battle-sell"
-			Local $findGem = findColor(615, 65, 142, 142, 0xFFFA6B, 10, -1)
+			_CaptureRegion()
+			Local $findGem = findColor(615, 65, 229, 229, 0xFFFA6B, 10, -1)
+			If (isArray($findGem) = False) And (isArray(findColor(615, 65, 252, 252, 0xF769B9, 10, -1)) = True) Then
+				$findGem = Null
+			EndIf
 		Case "battle-sell-item"
-			Local $findGem = findColor(361, 436, 142, 142, 0xFFFA6B, 10)
+			_CaptureRegion()
+			If checkPixels("398,155,0xFDEC43|393,168,0xE7A831|396,182,0xD98F1F") = True Then
+				clickUntil("399,401", "battle-sell", 2, 2000)
+				Return sellGem($strRecord, $sellGrades, $filterGrades, $sellTypes, $sellFlat, $sellStats, $sellSubstats)
+			Else
+				Local $findGem = findColor(361, 436, 142, 142, 0xFFFA6B, 10)
+			EndIf
 		Case Else
 			Return ""
 	EndSwitch
