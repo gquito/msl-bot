@@ -56,6 +56,10 @@ Func sellGem($strRecord = "!", $sellGrade = "5", $filter = "0", $sellTypes = "he
 		Local $arrayData = gatherData()
 		If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
+		If $arrayData[0] = "EGG" Then
+			Return $arrayData
+		EndIf
+
 		Local $boolSell = False
 		If $sellGrade = $arrayData[0] Then
 			If $filter = "1" Then
@@ -148,6 +152,8 @@ Func sellGemGolemFilter($intGolem)
 		clickUntil($findGem, "battle-sell-item")
 		Local $arrayData = gatherData()
 
+		Local $sellGrade, $filter, $sellTypes, $sellStats, $sellSubstats
+
 		Switch $arrayData[0]
 			Case "6"
 				Local $sellGrade = "6"
@@ -167,6 +173,15 @@ Func sellGemGolemFilter($intGolem)
 				Local $sellTypes = IniRead($botConfigDir, "Filter Four", "sell-types", "")
 				Local $sellStats = IniRead($botConfigDir, "Filter Four", "sell-stats", "")
 				Local $sellSubstats = IniRead($botConfigDir, "Filter Four", "sell-substats", "")
+			Case "EGG"
+				recordGem("B" & $intGolem, $arrayData)
+
+				clickUntil($battle_coorSellCancel, "battle-end")
+				setLog("Grade: Egg |Shape: - |Type: - |Stat: - |Substat: -")
+				Return $arrayData
+			Case Else
+				setLog("Could not filter gem. Keeping this gem.")
+				Return sellGem("!", 0, 0)
 		EndSwitch
 
 		Return sellGem("B" & $intGolem, $sellGrade, $filter, $sellTypes, $sellStats, $sellSubstats)
@@ -189,6 +204,13 @@ Func gatherData()
 		_CaptureRegion()
 
 		Select ;grade
+			Case checkPixels("399,175,0xF39C72|399,164,0xF769BA|406,144,0x261612")
+				$gemData[0] = "EGG"
+				$gemData[1] = "-"
+				$gemData[2] = "-"
+				$gemData[3] = "-"
+				$gemData[4] = "-"
+				Return $gemData
 			Case checkPixel("406,144,0x261612")
 				$gemData[0] = 1
 			Case checkPixel("413,144,0x261612")
