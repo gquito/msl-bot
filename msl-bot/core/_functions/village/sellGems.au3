@@ -1,20 +1,19 @@
 #cs ----------------------------------------------------------------------------
-
  Function: sellGems
-
  Select all unwanted gems and sell them.
 
  Parameters:
-
 	arraySet - Set of String corresponding to gem grade.
 
  Returns:
-
 	on sell - Returns 1
-
 #ce ----------------------------------------------------------------------------
 
 Func sellGems($arraySet)
+	If isArray($arraySet) = False Then
+		$arraySet = StringSplit(StringReplace($arraySet, ", ", ","), ",", 2)
+	EndIf
+
 	If getLocation() = "manage" Then
 		For $grade in $arraySet
 			Local $coorPoint = StringSplit(Eval("village_coor" & $grade & "Star"), ",", 2)

@@ -11,13 +11,13 @@ Func farmGem()
 	Local $maxRefill = IniRead($botConfigDir, "Farm Gem", "refill-max-gem", 30)
 
 	If $justEvolve = 1 Then
-		If MsgBox(8193, "Farm Gem WARNING", "WARNING: You must have at least " & 330*($gemsToFarm/100) & "k gold for this script to function correctly!" & @CRLF & "**LOCK YOUR GLEEMS.") = 2 Then Return -1
+		If MsgBox(8193, "Farm Gem WARNING", "WARNING: You must have at least " & 330*Int($gemsToFarm/100) & "k gold for this script to function correctly!" & @CRLF & "**LOCK YOUR GLEEMS.") = 2 Then Return -1
 	Else
-		If MsgBox(8193, "Farm Gem WARNING", "WARNING: You must have at least " & 330*($gemsToFarm/100) & "k gold and " & 15+($gemsToFarm/100) & " spaces in your astromon storage for this script to function correctly!" & @CRLF & "Also average energy per 16 astromons is 40, make sure you refill to make things more smooth." & @CRLF & "**LAST THING LOCK YOUR GLEEMS.") = 2 Then Return -1
+		If MsgBox(8193, "Farm Gem WARNING", "WARNING: You must have at least " & 330*Int($gemsToFarm/100) & "k gold and " & 15+Int($gemsToFarm/100) & " spaces in your astromon storage for this script to function correctly!" & @CRLF & "Also average energy per 16 astromons is 40, make sure you refill to make things more smooth." & @CRLF & "**LAST THING LOCK YOUR GLEEMS.") = 2 Then Return -1
 		Do
-			Local $freeSpace = InputBox("Free Gem Input", "Enter number of free space in your Astromon Inventory: " & @CRLF & "(Must be greater than or equal to " & 15+($gemsToFarm/100) & ")", 15+($gemsToFarm/100))
+			Local $freeSpace = InputBox("Free Gem Input", "Enter number of free space in your Astromon Inventory: " & @CRLF & "(Must be greater than or equal to " & 15+Int($gemsToFarm/100) & ")", 15+Int($gemsToFarm/100))
 			If @Error = 1 Then Return -1
-		Until StringIsDigit($freeSpace) = True And $freeSpace >= 15+($gemsToFarm/100)
+		Until StringIsDigit($freeSpace) = True And $freeSpace >= 15+Int($gemsToFarm/100)
 	EndIf
 
 	setLog("~~~Starting 'Farm Gem' script~~~", 2)
@@ -45,7 +45,7 @@ Func farmGemMain($monster, $justEvolve, $gemsToFarm, $maxRefill)
 			Local $map = "map-phantom-forest"
 	EndSwitch
 
-	Local $numIteration = $gemsToFarm/100
+	Local $numIteration = Int($gemsToFarm/100)
 	If setLog("Total number of iteration: " & $numIteration & ", " & 100*$numIteration & " gems.", 2) Then Return
 	While $numIteration > 0
 		If $justEvolve = 0 Then

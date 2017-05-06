@@ -3,15 +3,15 @@
 #AutoIt3Wrapper_Outfile=msl-bot v2.0.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=2.0.1.6
+#AutoIt3Wrapper_Res_Fileversion=2.1.0.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
 Global $botSimpleVersion = "2.0"
-Global $botVersion = "v2.0.1.6"
-Global $botVersionValue = 2000106
+Global $botVersion = "v2.1.0.0"
+Global $botVersionValue = 2010000
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead($botConfigDir, "general", "scripts", ""), ",", 2)
 
@@ -290,28 +290,24 @@ Func btnConfigEdit()
 	;getting keys and values to modify
 	Dim $key = $arrayRaw[0]
 	Dim $value = "!" ;temp value
-	Dim $boolPass = False ;if meets restriction
 
-	Dim $rawRestrictions = IniRead($botConfigDir, "general", $key & "-restrictions", "")
-	If Not $rawRestrictions = "" Then
-		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
-
-		While $value = "!"
-			$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'" & @CRLF & "You are limited to: " & StringReplace($rawRestrictions, ",", ", "))
-			If $value = "" Then $value = $arrayRaw[1]
-
-			For $element In $restrictions
-				If $element = $value Then ExitLoop (2)
-			Next
-			$value = "!"
-		WEnd
-	Else
-		$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'")
-		If $value = "" Then $value = $arrayRaw[1]
-	EndIf
+	Dim $arrayType = StringSplit(IniRead($botConfigDir, "general", $key & "-type", ""), "|", 2)
+	Switch $arrayType[0]
+		Case "combo"
+			$value = getCombo($arrayType[1], IniRead($botConfigDir, "general", $key, ""))
+		Case "list"
+			$value = getList($arrayType[1], IniRead($botConfigDir, "general", $key, ""))
+		Case "boolean"
+			$value = getBoolean()
+		Case "config"
+			$value = -1
+			editConfig($arrayType[1])
+		Case Else
+			$value = getText(IniRead($botConfigDir, "general", $key, ""))
+	EndSwitch
 
 	;overwrite file
-	IniWrite($botConfigDir, "general", $key, $value) ;write to config file
+	If Not($value = -1) Then IniWrite($botConfigDir, "general", $key, $value) ;write to config file
 
 	Dim $arrayKeys = StringSplit(IniRead($botConfigDir, "general", "keys", ""), ",", 2)
 	Dim $generalConfig = ""
@@ -382,28 +378,24 @@ Func btnEditClick()
 	;getting keys and values to modify
 	Dim $key = $arrayRaw[0]
 	Dim $value = "!" ;temp value
-	Dim $boolPass = False ;if meets restriction
 
-	Dim $rawRestrictions = IniRead($botConfigDir, $strScript, $key & "-restrictions", "")
-	If Not $rawRestrictions = "" Then
-		Dim $restrictions = StringSplit($rawRestrictions, ",", 2)
-
-		While $value = "!"
-			$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'" & @CRLF & "You are limited to: " & StringReplace($rawRestrictions, ",", ", "))
-			If $value = "" Then $value = $arrayRaw[1]
-
-			For $element In $restrictions
-				If $element = $value Then ExitLoop (2)
-			Next
-			$value = "!"
-		WEnd
-	Else
-		$value = InputBox($botName & " " & $botVersion, "Enter new value for '" & $key & "'")
-		If $value = "" Then $value = $arrayRaw[1]
-	EndIf
+	Dim $arrayType = StringSplit(IniRead($botConfigDir, $strScript, $key & "-type", ""), "|", 2)
+	Switch $arrayType[0]
+		Case "combo"
+			$value = getCombo($arrayType[1], IniRead($botConfigDir, $strScript, $key, ""))
+		Case "list"
+			$value = getList($arrayType[1], IniRead($botConfigDir, $strScript, $key, ""))
+		Case "boolean"
+			$value = getBoolean()
+		Case "config"
+			$value = -1
+			editConfig($arrayType[1])
+		Case Else
+			$value = getText(IniRead($botConfigDir, $strScript, $key, ""))
+	EndSwitch
 
 	;overwrite file
-	IniWrite($botConfigDir, $strScript, $key, $value) ;write to config file
+	If Not($value = -1) Then IniWrite($botConfigDir, $strScript, $key, $value) ;write to config file
 
 	cmbLoadClick()
 EndFunc   ;==>btnEditClick
