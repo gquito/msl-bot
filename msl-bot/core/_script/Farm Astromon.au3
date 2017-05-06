@@ -68,6 +68,8 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 					Local $nextRound = False
 
 					While True
+						If getLocation() = "pause" Then clickPoint($battle_coorContinue)
+
 						Local $timerStart = TimerInit()
 						While Not(getLocation() = "catch-mode")
 							If navigate("battle", "catch-mode") = True Then ExitLoop
@@ -100,7 +102,12 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 								clickWhile($battle_coorGiveUpConfirm, "unknown")
 							Else
 								If setLog("Out of astrochips, attacking..", 1) Then ExitLoop (2)
+								Local $timerStart2 = TimerInit()
 								While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
+									If TimerDiff($timerStart2) > 1500000 Then
+										ExitLoop(2)
+									EndIf
+
 									clickPoint($battle_coorAuto, 2, 10)
 									If _Sleep(1000) Then ExitLoop (2)
 								WEnd
