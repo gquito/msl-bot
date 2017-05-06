@@ -96,8 +96,8 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 							If $finishRound = 0 Then
 								setLog("Out of astrochips, restarting..", 1)
 								clickUntil($battle_coorPause, "pause")
-								clickPoint($battle_coorGiveUp)
-								clickPoint($battle_coorGiveUpConfirm)
+								clickUntil($battle_coorGiveUp, "unknown")
+								clickWhile($battle_coorGiveUpConfirm, "unknown")
 							Else
 								If setLog("Out of astrochips, attacking..", 1) Then ExitLoop (2)
 								While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
@@ -121,8 +121,8 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 					If $finishRound = 0 Then
 						setLog("Out of astrochips, restarting..", 1)
 						clickUntil($battle_coorPause, "pause")
-						clickPoint($battle_coorGiveUp)
-						clickPoint($battle_coorGiveUpConfirm)
+						clickUntil($battle_coorGiveUp, "unknown")
+						clickWhile($battle_coorGiveUpConfirm, "unknown")
 					Else
 						If setLog("Out of astrochips, attacking..", 1) Then ExitLoop (2)
 						While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""

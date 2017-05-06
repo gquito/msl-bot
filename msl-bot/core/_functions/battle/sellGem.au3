@@ -5,8 +5,8 @@
 
  Parameters:
 	strRecord - Record data to file named in strRecord if not equal to ""
-	sellGrades: (String) Sell gems with grades specified
-	filterGrades: (String) Grades you want to go through the filter system
+	sellGrade: (String) Sell gems with grade specified
+	filter: (Int) 1=True; 0=False
 	sellTypes: (String) Sell gems with types specified
 	sellFlat: (Int) 1=True; 0=False
 	sellStats: (String) Sell gems with stats specified
@@ -18,15 +18,25 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func sellGem($strRecord = "!", $sellGrades = "1,2,3,4,5", $filterGrades = "5", $sellTypes = "healing,ferocity,tenacity,fortitude", $sellFlat = "1", $sellStats = "rec", $sellSubstats = "1,2")
+Func sellGem($strRecord = "!", $sellGrade = "5", $filter = "0", $sellTypes = "healing,ferocity,tenacity,fortitude", $sellStats = "f.rec,f.atk,f.def,f.hp", $sellSubstats = "1,2")
 	Local $boolLog = Not(StringInStr($strRecord, "!"))
 	Local $sold = ""
 	$strRecord = StringReplace($strRecord, "!", "")
 	Switch waitLocation("battle-sell,battle-sell-item", 2000)
 		Case "battle-sell"
-			Local $findGem = findColor(615, 65, 142, 142, 0xFFFA6B, 10, -1)
+			_CaptureRegion()
+			Local $findGem = findColor(615, 65, 229, 229, 0xFFFA6B, 10, -1)
+			If (isArray($findGem) = False) And (isArray(findColor(615, 65, 252, 252, 0xF769B9, 10, -1)) = True) Then
+				$findGem = Null
+			EndIf
 		Case "battle-sell-item"
-			Local $findGem = findColor(361, 436, 142, 142, 0xFFFA6B, 10)
+			_CaptureRegion()
+			If checkPixels("398,155,0xFDEC43|393,168,0xE7A831|396,182,0xD98F1F") = True Then
+				clickUntil("399,401", "battle-sell", 2, 2000)
+				Return sellGem($strRecord, $sellGrade, $filter, $sellTypes, $sellStats, $sellSubstats)
+			Else
+				Local $findGem = findColor(361, 436, 142, 142, 0xFFFA6B, 10)
+			EndIf
 		Case Else
 			Return ""
 	EndSwitch
@@ -46,19 +56,29 @@ Func sellGem($strRecord = "!", $sellGrades = "1,2,3,4,5", $filterGrades = "5", $
 		Local $arrayData = gatherData()
 		If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
-		Local $boolSell = StringInStr($sellGrades, $arrayData[0])
-		If (StringInStr($filterGrades, $arrayData[0])) And ($boolSell = True) Then
-			$boolSell = False
-			Select
-				Case StringInStr($sellTypes, StringMid($arrayData[2], 3))
-					$boolSell = True
-				Case ($sellFlat = 1) And (StringLeft($arrayData[3], 2) = "F.")
-					$boolSell = True
-				Case StringInStr($sellStats, $arrayData[3])
-					$boolSell = True
-				Case StringInStr($sellSubstats, $arrayData[4])
-					$boolSell = True
-			EndSelect
+		Local $boolSell = False
+		If $sellGrade = $arrayData[0] Then
+			If $filter = "1" Then
+				For $element In StringSplit($sellTypes, ",", 2)
+					If StringLower($element) = StringLower($arrayData[2]) Then
+						$boolSell = True
+					EndIf
+				Next
+
+				For $element In StringSplit($sellStats, ",", 2)
+					If StringLower($element) = StringLower($arrayData[3]) Then
+						$boolSell = True
+					EndIf
+				Next
+
+				For $element In StringSplit($sellSubstats, ",", 2)
+					If StringLower($element) = StringLower($arrayData[4]) Then
+						$boolSell = True
+					EndIf
+				Next
+			Else
+				$boolSell = True
+			EndIf
 		EndIf
 
 		If $boolSell = True Then
@@ -91,6 +111,66 @@ Func sellGem($strRecord = "!", $sellGrades = "1,2,3,4,5", $filterGrades = "5", $
 	EndIf
 
 	Return $arrayData
+EndFunc
+
+
+Func sellGemGolemFilter($intGolem)
+	Switch waitLocation("battle-sell,battle-sell-item", 2000)
+		Case "battle-sell"
+			_CaptureRegion()
+			Local $findGem = findColor(615, 65, 229, 229, 0xFFFA6B, 10, -1)
+			If (isArray($findGem) = False) And (isArray(findColor(615, 65, 252, 252, 0xF769B9, 10, -1)) = True) Then
+				$findGem = Null
+			EndIf
+		Case "battle-sell-item"
+			_CaptureRegion()
+			If checkPixels("398,155,0xFDEC43|393,168,0xE7A831|396,182,0xD98F1F") = True Then
+				clickUntil("399,401", "battle-sell", 2, 2000)
+				Return sellGemGolemFilter($intGolem)
+			Else
+				Local $findGem = findColor(361, 436, 142, 142, 0xFFFA6B, 10)
+			EndIf
+		Case Else
+			Return ""
+	EndSwitch
+
+	Local $arrayData = ["-", "-", "-", "-", "-", ""]
+	;go into battle-sell-item
+
+	If isArray($findGem) = False Then
+		$arrayData[0] = "EGG"
+		recordGem("B" & $intGolem, $arrayData)
+
+		clickUntil($battle_coorSellCancel, "battle-end")
+		setLog("Grade: Egg |Shape: - |Type: - |Stat: - |Substat: -")
+		Return $arrayData
+	Else ;not egg
+		clickUntil($findGem, "battle-sell-item")
+		Local $arrayData = gatherData()
+
+		Switch $arrayData[0]
+			Case "6"
+				Local $sellGrade = "6"
+				Local $filter = IniRead($botConfigDir, "Filter Six", "filter-gem", "")
+				Local $sellTypes = IniRead($botConfigDir, "Filter Six", "sell-types", "")
+				Local $sellStats = IniRead($botConfigDir, "Filter Six", "sell-stats", "")
+				Local $sellSubstats = IniRead($botConfigDir, "Filter Six", "sell-substats", "")
+			Case "5"
+				Local $sellGrade = "5"
+				Local $filter = IniRead($botConfigDir, "Filter Five", "filter-gem", "")
+				Local $sellTypes = IniRead($botConfigDir, "Filter Five", "sell-types", "")
+				Local $sellStats = IniRead($botConfigDir, "Filter Five", "sell-stats", "")
+				Local $sellSubstats = IniRead($botConfigDir, "Filter Five", "sell-substats", "")
+			Case "4"
+				Local $sellGrade = "4"
+				Local $filter = IniRead($botConfigDir, "Filter Four", "filter-gem", "")
+				Local $sellTypes = IniRead($botConfigDir, "Filter Four", "sell-types", "")
+				Local $sellStats = IniRead($botConfigDir, "Filter Four", "sell-stats", "")
+				Local $sellSubstats = IniRead($botConfigDir, "Filter Four", "sell-substats", "")
+		EndSwitch
+
+		Return sellGem("B" & $intGolem, $sellGrade, $filter, $sellTypes, $sellStats, $sellSubstats)
+	EndIf
 EndFunc
 
 #cs ----------------------------------------------------------------------------
@@ -163,7 +243,7 @@ Func gatherData()
 			While FileExists(@ScriptDir & "/unknown-gem" & $fileCounter & ".bmp")
 				$fileCounter += 1
 			WEnd
-			_CaptureRegion("unknown-gem" & $fileCounter)
+			_CaptureRegion("unknown-gem" & $fileCounter & ".bmp")
 		EndIf
 
 	EndIf

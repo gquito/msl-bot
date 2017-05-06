@@ -13,7 +13,7 @@ Func farmRare()
 	Local $guardian = IniRead($botConfigDir, "Farm Rare", "guardian-dungeon", "0")
 	Local $difficulty = IniRead($botConfigDir, "Farm Rare", "difficulty", "normal")
 	Local $stage = IniRead($botConfigDir, "Farm Rare", "stage", "gold")
-	Local $sellGems = StringSplit(IniRead($botConfigDir, "Farm Rare", "sell-gems-grade", "one star,two star, three star"), ",", 2)
+	Local $sellGems = StringSplit(IniRead($botConfigDir, "Farm Rare", "sell-gems-grade", "1,2,3"), ",", 2)
 	Local $rawCapture = StringSplit(IniRead($botConfigDir, "Farm Rare", "capture", "legendary,super rare,rare,exotic,variant"), ",", 2)
 	Local $quest = IniRead($botConfigDir, "Farm Rare", "collect-quest", "1")
 	Local $hourly = IniRead($botConfigDir, "Farm Rare", "collect-hourly", "1")
@@ -43,17 +43,12 @@ EndFunc   ;==>farmRare
 Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 	;initializing configs
 	Local $captures[0]
-	Local $rareIcons[0]
 	Local $intGemUsed = 0
 
 	For $capture In $rawCapture
 		Local $grade = StringReplace($capture, " ", "-")
 		If FileExists(@ScriptDir & "/core/_images/catch/catch-" & $grade & ".bmp") Then
 			_ArrayAdd($captures, "catch-" & $grade)
-		EndIf
-
-		If FileExists(@ScriptDir & "/core/_images/battle/battle-" & $grade & ".bmp") Then
-			_ArrayAdd($rareIcons, "battle-" & $grade)
 		EndIf
 	Next
 
@@ -67,12 +62,13 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 	Local $dataGuardians = 0
 	Local $dataStrCaught = ""
 	Local $dataStrMissed = ""
+	Local $displayCaught = ""
+	Local $displayMissed = ""
 
 	Local $getHourly = False
+	Local $getGuardian = False
 	Local $checkHourly = True ;bool to prevent checking twice
-
-	Local $missedCounter = 0
-	Local $caughtcounter = 0
+	Local $checkGuardian = True ;bool to prevent checking twice
 
 	Local $goldSpent = 0
 
@@ -80,13 +76,18 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
 
 		GUICtrlSetData($listScript, "")
-		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Caught: " & StringMid($dataStrCaught, 3) & "|Missed: " & StringMid($dataStrMissed, 3) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
+		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Caught: " & StringMid($displayCaught, 3) & "|Missed: " & StringMid($displayMissed, 3) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
 
 		Switch StringSplit(_NowTime(4), ":", 2)[1]
 			Case "00", "01", "02", "03", "04", "05", "06", "07", "08", "09"
 				If $checkHourly = True Then $getHourly = True
+				If $checkGuardian = True Then $getGuardian = True
 			Case "10" ;to prevent checking twice
 				$checkHourly = True
+			Case "35";to prevent checking twice
+				$checkGuardian = True
+			Case "30", "31", "32", "33", "34"
+				If $checkGuardian = True Then $getGuardian = True
 		EndSwitch
 
 		If _Sleep(100) Then ExitLoop
@@ -141,7 +142,11 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 							$dataRuns += 1
 						EndIf
 					Else
-						If $guardian = 1 Then $dataGuardians += farmGuardian($sellGems, $intGem, $intGemUsed)
+						If $getGuardian = True Then
+							If $guardian = 1 Then $dataGuardians += farmGuardian($sellGems, $intGem, $intGemUsed)
+							$checkGuardian = False
+							$getGuardian = False
+						EndIf
 
 						If getLocation() = "battle-end" Then
 							If clickUntil($battle_coorRestart, "unknown,refill", 30, 1000) = True Then
@@ -172,65 +177,79 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 					ExitLoop
 				EndIf
 			Case "battle"
-				If IsArray(findImages($rareIcons, 100, 5000)) Then
-					If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
-						If setLogReplace("An astromon has been found!", 1) Then ExitLoop
+				If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
+					If setLog("Checking for rare") Then Return -1
+					If navigate("battle", "catch-mode") = True Then
+						If isArray(findImages($captures, 100, 1000)) Then
+							If setLogReplace("An astromon has been found!", 1) Then Return -1
 
-						If navigate("battle", "catch-mode") = True Then
 							Local $catch = catch($captures)
-
 							For $astromon In $catch
 								If StringLeft($astromon, 1) = "!" Then ;if missed
-									$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
-									$missedCounter += 1
-									If Mod($missedCounter, 12) = 0 Then $dataStrMissed &= "|=====>"
+									$dataStrMissed &= "," & StringMid($astromon, 2, 2)
 								Else ;if caught
-									$dataStrCaught &= ", " & StringMid($astromon, 1, 2)
-									$caughtCounter += 1
-									If Mod($caughtCounter, 12) = 0 Then $dataStrCaught &= "|=====>"
+									$dataStrCaught &= "," & StringMid($astromon, 1, 2)
 								EndIf
+							Next
+
+							;caught
+							Local $arrayCounter[0]
+							For $caught In StringSplit(StringMid($dataStrCaught, 2), ",", 2)
+								Local $inTracker = False
+								For $i = 0 To UBound($arrayCounter)-1
+									If StringLeft($arrayCounter[$i], 2) = $caught Then
+										Local $splitCounter = StringSplit($arrayCounter[$i], ":", 2)
+										$arrayCounter[$i] = $splitCounter[0] &  ":" & Int($splitCounter[1])+1
+										$inTracker = True
+
+										ExitLoop
+									EndIf
+								Next
+
+								If $inTracker = False And Not($caught = "") Then
+									_ArrayAdd($arrayCounter, $caught & ":1")
+								EndIf
+							Next
+							$displayCaught = ""
+							For $element In $arrayCounter
+								$displayCaught &= ", " & $element
+							Next
+
+							;miss
+							Local $arrayCounter[0]
+							For $missed In StringSplit(StringMid($dataStrMissed, 2), ",", 2)
+								Local $inTracker = False
+								For $i = 0 To UBound($arrayCounter)-1
+									If StringLeft($arrayCounter[$i], 2) = $missed Then
+										Local $splitCounter = StringSplit($arrayCounter[$i], ":", 2)
+										$arrayCounter[$i] = $splitCounter[0] &  ":" & Int($splitCounter[1])+1
+										$inTracker = True
+
+										ExitLoop
+									EndIf
+								Next
+
+								If $inTracker = False And Not($missed = "") Then
+									_ArrayAdd($arrayCounter, $missed & ":1")
+								EndIf
+							Next
+							$displayMissed = ""
+							For $element In $arrayCounter
+								$displayMissed &= ", " & $element
 							Next
 
 							If setLog("Finish catching... Attacking", 1) Then ExitLoop
 							clickPoint($battle_coorAuto)
-						EndIf
-					Else ;if no more astrochips
-						If setLog("No astrochips left... Attacking", 1) Then ExitLoop
-						clickPoint($battle_coorAuto)
-					EndIf
-				Else
-					If checkPixel($battle_pixelUnavailable) = False Then ;if there is more astrochips
-						If setLog("Could not detect rare, checking in catch-mode.") Then Return -1
-						If navigate("battle", "catch-mode") = True Then
-							If isArray(findImages($captures, 100, 1000)) Then
-								If setLogReplace("An astromon has been found!", 1) Then Return -1
 
-								Local $catch = catch($captures)
-								For $astromon In $catch
-									If StringLeft($astromon, 1) = "!" Then ;if missed
-										$dataStrMissed &= ", " & StringMid($astromon, 2, 2)
-										$missedCounter += 1
-										If Mod($missedCounter, 12) = 0 Then $dataStrMissed &= "|=====>"
-									Else ;if caught
-										$dataStrCaught &= ", " & StringMid($astromon, 1, 2)
-										$caughtCounter += 1
-										If Mod($caughtCounter, 12) = 0 Then $dataStrCaught &= "|=====>"
-									EndIf
-								Next
-
-								If setLog("Finish catching... Attacking", 1) Then ExitLoop
-								clickPoint($battle_coorAuto)
-
-								ContinueCase
-							Else
-								If setLog("Cannot find the rare astromon, continuing battle.") Then Return -1
-								clickUntil($battle_coorCatchCancel, "battle")
-							EndIf
+							ContinueCase
+						Else
+							If setLog("Cannot find the rare astromon, continuing battle.") Then Return -1
+							clickUntil($battle_coorCatchCancel, "battle")
 						EndIf
 					EndIf
-
-					clickPoint($battle_coorAuto)
 				EndIf
+
+				clickPoint($battle_coorAuto)
 			Case "catch-mode"
 				clickUntil($battle_coorCatchCancel, "battle")
 			Case "battle-auto"

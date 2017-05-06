@@ -41,25 +41,25 @@ Func farmGuardian($sellGems, $refillEnergy, ByRef $gemUsed)
 				EndIf
 			EndIf
 
-			If checkLocations("refill") = 1 Then
+			If getLocation() = "refill" Then
 				If $gemUsed + 30 <= $refillEnergy Then
-					clickUntil($game_coorRefill, "refill-confirm")
-					clickUntil($game_coorRefillConfirm, "refill")
+					While getLocation() = "refill"
+						clickPoint($game_coorRefill, 1, 1000)
+					WEnd
 
-					If checkLocations("buy-gem") Then
-						setLog("Out of gems!", 1)
-						ExitLoop
+					If getLocation() = "buy-gem" Or getLocation() = "unknown" Then
+						setLog("Out of gems!", 2)
+						Return $countRun
 					EndIf
 
-					clickPoint(findImage("misc-close", 30))
+					clickUntil($game_coorRefillConfirm, "refill")
+					clickWhile("705, 99", "refill")
 
-					setLog("")
+					If setLog("Refill gems: " & $gemUsed + 30 & "/" & $refillEnergy, 0) Then ExitLoop
 					$gemUsed += 30
 				Else
-					setLog("Gem used exceed max gems!")
-					navigate("map")
-
-					ExitLoop
+					setLog("Gem used exceed max gems!", 0)
+					Return $countRun
 				EndIf
 				clickWhile($map_coorBattle, "map-battle")
 			EndIf
@@ -74,21 +74,14 @@ Func farmGuardian($sellGems, $refillEnergy, ByRef $gemUsed)
 
 				If Int(TimerDiff($initTime)/1000) > 240 Then
 					If setLog("Error: Could not finish Guardian dungeon within 5 minutes, exiting.") Then Return -1
-					navigate("map")
 
-					ExitLoop
+					navigate("map")
+					Return $countRun
 				EndIf
 			WEnd
 
 			clickUntil($game_coorTap, "battle-end", 100, 100)
-
-			Local $pointExit = findImage("battle-exit", 50)
-			If isArray($pointExit) Then
-				clickUntil($pointExit, "guardian-dungeons")
-			Else
-				If setLog("Error: Could not find battle-exit.bmp") Then Return -1
-				Return 0
-			EndIf
+			clickWhile("400,250", "battle-end")
 
 			waitLocation("guardian-dungeons", 10000)
 			$currLocation = getLocation()
@@ -98,9 +91,10 @@ Func farmGuardian($sellGems, $refillEnergy, ByRef $gemUsed)
 			EndIf
 
 			navigate("map")
-			ExitLoop
+			Return $countRun
 		EndIf
 	WEnd
 
+	navigate("map")
 	Return $countRun
 EndFunc

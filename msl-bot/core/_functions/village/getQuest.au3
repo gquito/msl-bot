@@ -15,10 +15,11 @@ Func getQuest()
 		While isArray($getQuest)
 			clickPoint($getQuest, 3, 100)
 
-			If $getQuest[0] < 400 Then
+			If $getQuest[0] < 400 Then ;capture, challenges
 				clickPoint("729,190")
-			Else
+			Else ;monthly, weekly, daily
 				clickPoint("717,247")
+				clickPoint("731,194") ;the top get reward
 			EndIf
 
 			If _Sleep(500) Then Return -1

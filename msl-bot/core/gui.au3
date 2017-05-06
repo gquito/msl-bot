@@ -89,3 +89,247 @@ Global $btnClear = GUICtrlCreateButton("Clear", 200, 160, 75, 25)
 GUICtrlSetOnEvent(-1, "btnClearClick")
 GUISetState(@SW_SHOW)
 #EndRegion ### END Koda GUI section ###
+
+;gui for boolean input
+Func getBoolean()
+	Opt("GUIOnEventMode", 0)
+	Local $frmBoolean = GUICreate("Select a new value:", 190, 45, -1, -1, BitOR($WS_POPUPWINDOW, $WS_SYSMENU, $WS_CAPTION))
+	Local $btnTrue = GUICtrlCreateButton("True", 10, 10, 50, 25)
+	Local $btnFalse = GUICtrlCreateButton("False", 70, 10, 50, 25)
+	Local $btnCancel = GUICtrlCreateButton("Cancel", 130, 10, 50, 25)
+
+	GUISetState(@SW_SHOW, $frmBoolean)
+	Local $result = null
+	While $result = null
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE, $btnCancel
+				$result = -1
+			Case $btnTrue
+				$result = 1
+			Case $btnFalse
+				$result = 0
+		EndSwitch
+
+		Sleep(10)
+	WEnd
+
+	GUIDelete($frmBoolean)
+	Opt("GUIOnEventMode", 1)
+	Return $result
+EndFunc
+
+;gui for text input
+Func getText($default = "")
+	Opt("GUIOnEventMode", 0)
+	Local $frmBoolean = GUICreate("Select a new value:", 190, 70, -1, -1, BitOR($WS_POPUPWINDOW, $WS_SYSMENU, $WS_CAPTION))
+	Local $textInput = GUICtrlCreateInput($default, 10, 10, 170, 20, $ES_CENTER)
+
+	Local $btnOkay = GUICtrlCreateButton("Okay", 10, 35, 50, 25)
+	Local $btnCancel = GUICtrlCreateButton("Cancel", 130, 35, 50, 25)
+
+	GUISetState(@SW_SHOW, $frmBoolean)
+	Local $result = null
+	While $result = null
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE, $btnCancel
+				$result = -1
+			Case $btnOkay
+				$result = GUICtrlRead($textInput)
+		EndSwitch
+
+		Sleep(10)
+	WEnd
+
+	GUIDelete($frmBoolean)
+	Opt("GUIOnEventMode", 1)
+	Return $result
+EndFunc
+
+;gui for combo input
+Func getCombo($strItems, $default = "")
+	Opt("GUIOnEventMode", 0)
+	$strItems = StringReplace($strItems, ", ", ",")
+
+	Local $frmBoolean = GUICreate("Select a new value:", 190, 70, -1, -1, BitOR($WS_POPUPWINDOW, $WS_SYSMENU, $WS_CAPTION))
+	Local $cmbItems = GUICtrlCreateCombo($default, 10, 10, 170, 20, BitOR($CBS_DROPDOWNLIST, $CBS_SORT))
+	GUICtrlSetData($cmbItems, StringRegExpReplace(StringReplace($strItems, ",", "|"), "(" & $default & "\|?|\|" & $default & ")", ""))
+
+	Local $btnOkay = GUICtrlCreateButton("Okay", 10, 35, 50, 25)
+	Local $btnCancel = GUICtrlCreateButton("Cancel", 130, 35, 50, 25)
+
+	GUISetState(@SW_SHOW, $frmBoolean)
+	Local $result = null
+	While $result = null
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE, $btnCancel
+				$result = -1
+			Case $btnOkay
+				$result = GUICtrlRead($cmbItems)
+		EndSwitch
+
+		Sleep(10)
+	WEnd
+
+	GUIDelete($frmBoolean)
+	Opt("GUIOnEventMode", 1)
+	Return $result
+EndFunc
+
+;gui for combo input
+Func getList($strList, $strChecked = "")
+	Opt("GUIOnEventMode", 0)
+	$strList = StringReplace($strList, ", ", ",")
+	$strChecked = StringReplace($strChecked, ", ", ",")
+
+	Local $arrayList = StringSplit($strList, ",", 2)
+	For $i = 0 To UBound($arrayList)-1
+		For $checked In StringSplit($strChecked, ",", 2)
+			If $checked = $arrayList[$i] Then
+				$arrayList[$i] = "*" & $checked
+			EndIf
+		Next
+	Next
+
+	_ArraySort($arrayList)
+
+	Local $frmBoolean = GUICreate("Select a new values:", 250, 40+(Int(UBound($arrayList)/ 3)*26)+40, -1, -1, BitOR($WS_POPUPWINDOW, $WS_SYSMENU, $WS_CAPTION))
+
+	For $i = 0 To UBound($arrayList)-1
+		Local $color = 0xB00000
+		If StringLeft($arrayList[$i], 1) = "*" Then
+			$color = 0x008300
+		EndIf
+		$arrayList[$i] = GUICtrlCreateButton($arrayList[$i], 5+(Mod($i, 3)*80), 10+(Int($i/3)*25), 78, 25)
+		GUICtrlSetBkColor($arrayList[$i], $color)
+	Next
+
+	Local $btnSave = GUICtrlCreateButton("Save", 10, 40+(Int(UBound($arrayList)/ 3)*26)+5, 50, 25)
+	Local $btnCancel = GUICtrlCreateButton("Cancel", 190, 40+(Int(UBound($arrayList)/ 3)*26)+5, 50, 25)
+
+	GUISetState(@SW_SHOW, $frmBoolean)
+	Local $result = null
+	While $result = null
+		Local $btnMsg = GUIGetMsg()
+		Switch $btnMsg
+			Case $GUI_EVENT_CLOSE, $btnCancel
+				$result = -1
+			Case $btnSave
+				For $element In $arrayList
+					If StringLeft(GUICtrlRead($element), 1) = "*" Then
+						$result &= "," & StringMid(GUICtrlRead($element), 2)
+					EndIf
+				Next
+				$result = StringMid($result, 2)
+			Case Else
+				For $button In $arrayList
+					If $btnMsg = $button Then
+						If StringLeft(GUICtrlRead($button), 1) = "*" Then
+							GUICtrlSetData($button, StringMid(GUICtrlRead($button), 2))
+							Local $color = 0xB00000
+						Else
+							GUICtrlSetData($button, "*" & GUICtrlRead($button))
+							Local $color = 0x008300
+						EndIf
+
+						GUICtrlSetBkColor($button, $color)
+						ExitLoop
+					EndIf
+				Next
+		EndSwitch
+
+		Sleep(10)
+	WEnd
+
+	GUIDelete($frmBoolean)
+	Opt("GUIOnEventMode", 1)
+	Return $result
+EndFunc
+
+;gui for edit config
+Func editConfig($strConfig)
+	Opt("GUIOnEventMode", 0)
+	Local $frmBoolean = GUICreate("Edit config: " & $strConfig, 250, 125, -1, -1, BitOR($WS_POPUPWINDOW, $WS_SYSMENU, $WS_CAPTION))
+
+	Local $listEditConfig = GUICtrlCreateList("", 5, 5, 240, 90, BitOR($WS_BORDER, $WS_VSCROLL))
+
+	;clearing data
+	GUICtrlSetData($listEditConfig, "")
+
+	;process of getting info
+	Local $strLocalScript = $strConfig
+
+	Local $arrayKeys = StringSplit(IniRead($botConfigDir, $strLocalScript, "keys", ""), ",", 2)
+	$strConfig = ""
+	For $key In $arrayKeys
+		$strConfig &= $key & "=" & IniRead($botConfigDir, $strLocalScript, $key, "???") & "|"
+	Next
+
+	;final
+	GUICtrlSetData($listEditConfig, $strConfig)
+
+	Local $btnOkay = GUICtrlCreateButton("Okay", 10, 95, 50, 25)
+	Local $editConfig = GUICtrlCreateButton("Edit", 102, 95, 50, 25)
+	Local $btnCancel = GUICtrlCreateButton("Cancel", 190, 95, 50, 25)
+
+	GUISetState(@SW_SHOW, $frmBoolean)
+	Local $result = null
+	While $result = null
+		Opt("GUIOnEventMode", 0)
+		Switch GUIGetMsg()
+			Case $GUI_EVENT_CLOSE, $btnCancel
+				$result = -1
+			Case $editConfig
+				;initial variables
+				Local $strRaw = GUICtrlRead($listEditConfig)
+				Local $arrayRaw = StringSplit($strRaw, "=", 2)
+
+				If UBound($arrayRaw) = 1 Then ;check if no config selected
+					MsgBox(0, $botName & " " & $botVersion, "No config selected.")
+					ContinueLoop
+				EndIf
+
+				;getting keys and values to modify
+				Dim $key = $arrayRaw[0]
+				Dim $value = "!" ;temp value
+
+				Dim $arrayType = StringSplit(IniRead($botConfigDir, $strLocalScript, $key & "-type", ""), "|", 2)
+				Switch $arrayType[0]
+					Case "combo"
+						$value = getCombo($arrayType[1], IniRead($botConfigDir, $strLocalScript, $key, ""))
+					Case "list"
+						$value = getList($arrayType[1], IniRead($botConfigDir, $strLocalScript, $key, ""))
+					Case "boolean"
+						$value = getBoolean()
+					Case "config"
+						$value = -1
+						editConfig($arrayType[1])
+					Case Else
+						$value = getText(IniRead($botConfigDir, $strLocalScript, $key, ""))
+				EndSwitch
+
+				;overwrite file
+				If Not($value = -1) Then IniWrite($botConfigDir, $strLocalScript, $key, $value) ;write to config file
+
+				;clearing data
+				GUICtrlSetData($listEditConfig, "")
+
+				;process of getting info
+				Dim $arrayKeys = StringSplit(IniRead($botConfigDir, $strLocalScript, "keys", ""), ",", 2)
+				$strConfig = ""
+				For $key In $arrayKeys
+					$strConfig &= $key & "=" & IniRead($botConfigDir, $strLocalScript, $key, "???") & "|"
+				Next
+
+				;final
+				GUICtrlSetData($listEditConfig, $strConfig)
+			Case $btnOkay
+				$result = 1
+		EndSwitch
+
+		Sleep(10)
+	WEnd
+
+	GUIDelete($frmBoolean)
+	Opt("GUIOnEventMode", 1)
+	Return $result
+EndFunc

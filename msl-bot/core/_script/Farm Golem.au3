@@ -10,13 +10,6 @@ Func farmGolem()
 	Local $buyEggs = IniRead($botConfigDir, "Farm Golem", "buy-eggs", 0)
 	Local $buySoulstones = IniRead($botConfigDir, "Farm Golem", "buy-soulstones", 1)
 	Local $maxGoldSpend = IniRead($botConfigDir, "Farm Golem", "max-gold-spend", 100000)
-	Local $sellGems = IniRead($botConfigDir, "Farm Golem", "sell-gems", 1)
-	Local $sellGrades = IniRead($botConfigDir, "Farm Golem", "sell-grades", "1,2,3,4,5")
-	Local $filterGrades = IniRead($botConfigDir, "Farm Golem", "filter-grades", "5")
-	Local $sellTypes = IniRead($botConfigDir, "Farm Golem", "sell-types", "healing,ferocity,tenacity,fortitude")
-	Local $sellFlat = IniRead($botConfigDir, "Farm Golem", "sell-flat", 1)
-	Local $sellStats = IniRead($botConfigDir, "Farm Golem", "sell-stats", "rec")
-	Local $sellSubstats = IniRead($botConfigDir, "Farm Golem", "sell-substats", "1,2")
 	Local $guardian = IniRead($botConfigDir, "Farm Golem", "farm-guardian", 0)
 	Local $intGem = IniRead($botConfigDir, "Farm Golem", "max-spend-gem", 0)
 	Local $selectBoss = IniRead($botConfigDir, "Farm Golem", "select-boss", 1)
@@ -26,7 +19,7 @@ Func farmGolem()
 	Local $hourly = IniRead($botConfigDir, "Farm Golem", "collect-hourly", "1")
 
 	setLog("~~~Starting 'Farm Golem' script~~~", 2)
-	farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades, $sellTypes, $sellFlat, $sellStats, $sellSubstats, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
+	farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 	setLog("~~~Finished 'Farm Golem' script~~~", 2)
 EndFunc   ;==>farmGolem
 
@@ -51,7 +44,7 @@ EndFunc   ;==>farmGolem
 
 	Author: GkevinOD (2017)
 #ce
-Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades, $sellTypes, $sellFlat, $sellStats, $sellSubstats, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
+Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 
 	Local $avgGoldPerRound = 0
 	Switch ($strGolem)
@@ -88,6 +81,7 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 
 	Local $getHourly = False
 	Local $checkHourly = True ;bool to prevent checking twice
+	Local $checkGuardian = True ;bool to prevent checking guardian twice
 
 	Local $numEggs = 0 ;keeps count of number of eggs found
 	Local $numGemsKept = 0; keeps count of number of eggs kept
@@ -103,11 +97,15 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 		Switch StringSplit(_NowTime(4), ":", 2)[1]
 			Case "00", "01", "02", "03", "04", "05", "06", "07", "08", "09"
 				If $checkHourly = True Then $getHourly = True
+				If $checkGuardian = True Then $getGuardian = True
 			Case "10" ;to prevent checking twice
 				$checkHourly = True
+			Case "35";to prevent checking twice
+				$checkGuardian = True
+			Case "30", "31", "32", "33", "34"
+				If $checkGuardian = True Then $getGuardian = True
 		EndSwitch
 
-		If $guardian = 1 And Mod($intRunCount + 1, 10) = 0 Then $getGuardian = True
 
 		Local $strData = "Runs: " & $intRunCount & " (Guardian:" & $intGuardian & ")|Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min." & "|Avg. Time: " & StringFormat("%.2f", $intTimeElapse / $intRunCount / 60) & " Min.|Eggs: " & $numEggs & "|Gems Kept: " & $numGemsKept
 
@@ -118,12 +116,11 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 
 		If $currLocation = $stuckLocation Then
 			If TimerDiff($stuckTimer) > 600000 Then
-				If setLog("Been stuck for 10 minutes! Restarting, golems.", 1) Then
-					$stuckLocation = ""
-					$stuckTimer = TimerInit()
-					navigate("map", "", True)
-					ContinueLoop
-				EndIf
+				If setLog("Been stuck for 10 minutes! Restarting, golems.", 1) Then Return -1
+				$stuckLocation = ""
+				$stuckTimer = TimerInit()
+				navigate("map", "", True)
+				ContinueLoop
 			EndIf
 		Else
 			$stuckLocation = $currLocation
@@ -161,7 +158,8 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 				EndIf
 
 				If $getGuardian = True Then
-					If $guardian = 1 Then $intGuardian += farmGuardian($sellGems, $intGem, $intGemUsed)
+					If $guardian = 1 Then $intGuardian += farmGuardian(0, $intGem, $intGemUsed)
+					$checkGuardian = False
 					$getGuardian = False
 				EndIf
 
@@ -213,21 +211,17 @@ Func farmGolemMain($strGolem, $selectBoss, $sellGems, $sellGrades, $filterGrades
 				clickUntil("193,255", "battle-sell-item", 500, 100)
 				If _Sleep(10) Then ExitLoop
 
-				If $sellGems = 1 Then
-					Local $gemInfo = sellGem("B" & $strGolem, $sellGrades, $filterGrades, $sellTypes, $sellFlat, $sellStats, $sellSubstats)
-					If IsArray($gemInfo) Then
-						If StringInStr($gemInfo[5], "!") And Not($gemInfo[0] = "EGG") Then
-							$intGoldPrediction += getGemPrice($gemInfo) + $avgGoldPerRound
+				Local $gemInfo = sellGemGolemFilter($strGolem)
+				If IsArray($gemInfo) Then
+					If StringInStr($gemInfo[5], "!") And Not($gemInfo[0] = "EGG") Then
+						$intGoldPrediction += getGemPrice($gemInfo) + $avgGoldPerRound
+					Else
+						If $gemInfo[0] = "EGG" Then
+							$numEggs += 1
 						Else
-							If $gemInfo[0] = "EGG" Then
-								$numEggs += 1
-							Else
-								$numGemsKept += 1
-							EndIf
+							$numGemsKept += 1
 						EndIf
 					EndIf
-				Else
-					sellGem("B" & $strGolem, "", "") ;Does not sell, only records data
 				EndIf
 			Case "battle-gem-full"
 				setLog("Gem inventory is full!", 2)

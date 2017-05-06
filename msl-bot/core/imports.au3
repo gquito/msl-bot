@@ -13,6 +13,8 @@
 #include <GUIConstantsEx.au3>
 #include <TabConstants.au3>
 #include <WindowsConstants.au3>
+#include <ComboConstants.au3>
+#include <GuiListBox.au3>
 #include <WinAPIGdi.au3>
 #include <Color.au3>
 #include <Math.au3>
