@@ -57,8 +57,6 @@ Func sellGem($strRecord = "!", $sellGrade = "5", $filter = "0", $sellTypes = "he
 		If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
 		If $arrayData[0] = "EGG" Then
-			If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
-
 			clickUntil($battle_coorSellCancel, "battle-end")
 			If $boolLog = True Then setLog("Grade: Egg |Shape: - |Type: - |Stat: - |Substat: -")
 			Return $arrayData
@@ -125,11 +123,7 @@ EndFunc
 Func sellGemGolemFilter($intGolem)
 	Switch waitLocation("battle-sell,battle-sell-item", 2000)
 		Case "battle-sell"
-			_CaptureRegion()
-			Local $findGem = findColor(615, 65, 229, 229, 0xFFFA6B, 10, -1)
-			If (isArray($findGem) = False) And (isArray(findColor(615, 65, 252, 252, 0xF769B9, 10, -1)) = True) Then
-				$findGem = Null
-			EndIf
+			Local $findGem = [298, 260]
 		Case "battle-sell-item"
 			_CaptureRegion()
 			If checkPixels("398,155,0xFDEC43|393,168,0xE7A831|396,182,0xD98F1F") = True Then
