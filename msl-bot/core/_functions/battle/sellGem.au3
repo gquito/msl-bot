@@ -57,6 +57,10 @@ Func sellGem($strRecord = "!", $sellGrade = "5", $filter = "0", $sellTypes = "he
 		If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
 		If $arrayData[0] = "EGG" Then
+			If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
+
+			clickUntil($battle_coorSellCancel, "battle-end")
+			If $boolLog = True Then setLog("Grade: Egg |Shape: - |Type: - |Stat: - |Substat: -")
 			Return $arrayData
 		EndIf
 
@@ -111,7 +115,7 @@ Func sellGem($strRecord = "!", $sellGrade = "5", $filter = "0", $sellTypes = "he
 		$strData &= " |Price: " & getGemPrice($arrayData)
 
 		setLog($strData, 1)
-		_ArrayAdd($arrayData, $strData)
+		$arrayData[5] = $strData
 	EndIf
 
 	Return $arrayData
@@ -199,7 +203,7 @@ EndFunc
 #ce ----------------------------------------------------------------------------
 
 Func gatherData()
-	Local $gemData[5];
+	Local $gemData[6];
 	If getLocation() = "battle-sell-item" Then
 		_CaptureRegion()
 
@@ -210,6 +214,7 @@ Func gatherData()
 				$gemData[2] = "-"
 				$gemData[3] = "-"
 				$gemData[4] = "-"
+				$gemData[5] = "-"
 				Return $gemData
 			Case checkPixel("406,144,0x261612")
 				$gemData[0] = 1

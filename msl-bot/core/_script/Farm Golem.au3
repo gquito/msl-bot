@@ -213,7 +213,7 @@ Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, 
 
 				Local $gemInfo = sellGemGolemFilter($strGolem)
 				If IsArray($gemInfo) Then
-					If StringInStr($gemInfo[5], "!") And Not($gemInfo[0] = "EGG") Then
+					If Not($gemInfo[0] = "EGG") And StringInStr($gemInfo[5], "!") Then
 						$intGoldPrediction += getGemPrice($gemInfo) + $avgGoldPerRound
 					Else
 						If $gemInfo[0] = "EGG" Then
