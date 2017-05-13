@@ -21,8 +21,8 @@ Mainly programmed to gain experience with GitHub and because of the enjoyment of
    ![moresettings](https://i.imgur.com/MDZYlKH.png)
    
 - Setting up key map:
-   ![key map icon](https://i.imgur.com/lLGdUil.png)
-   
+
+   ![key map icon](https://i.imgur.com/dpV942P.png)
    ![key map](https://i.imgur.com/vLLAR8b.png)
 
 - Inside MSL turn off all settings.
