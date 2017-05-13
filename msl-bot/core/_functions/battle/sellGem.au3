@@ -57,8 +57,6 @@ Func sellGem($strRecord = "!", $sellGrade = "5", $filter = "0", $sellTypes = "he
 		If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
 
 		If $arrayData[0] = "EGG" Then
-			If Not($strRecord = "") Then recordGem($strRecord, $arrayData)
-
 			clickUntil($battle_coorSellCancel, "battle-end")
 			If $boolLog = True Then setLog("Grade: Egg |Shape: - |Type: - |Stat: - |Substat: -")
 			Return $arrayData
@@ -125,11 +123,7 @@ EndFunc
 Func sellGemGolemFilter($intGolem)
 	Switch waitLocation("battle-sell,battle-sell-item", 2000)
 		Case "battle-sell"
-			_CaptureRegion()
-			Local $findGem = findColor(615, 65, 229, 229, 0xFFFA6B, 10, -1)
-			If (isArray($findGem) = False) And (isArray(findColor(615, 65, 252, 252, 0xF769B9, 10, -1)) = True) Then
-				$findGem = Null
-			EndIf
+			Local $findGem = [298, 260]
 		Case "battle-sell-item"
 			_CaptureRegion()
 			If checkPixels("398,155,0xFDEC43|393,168,0xE7A831|396,182,0xD98F1F") = True Then
@@ -156,22 +150,25 @@ Func sellGemGolemFilter($intGolem)
 		clickUntil($findGem, "battle-sell-item")
 		Local $arrayData = gatherData()
 
-		Local $sellGrade, $filter, $sellTypes, $sellStats, $sellSubstats
+		Local $sellGem, $sellGrade, $filter, $sellTypes, $sellStats, $sellSubstats
 
 		Switch $arrayData[0]
 			Case "6"
+				Local $sellGem = IniRead($botConfigDir, "Filter Four", "sell-gem", "")
 				Local $sellGrade = "6"
 				Local $filter = IniRead($botConfigDir, "Filter Six", "filter-gem", "")
 				Local $sellTypes = IniRead($botConfigDir, "Filter Six", "sell-types", "")
 				Local $sellStats = IniRead($botConfigDir, "Filter Six", "sell-stats", "")
 				Local $sellSubstats = IniRead($botConfigDir, "Filter Six", "sell-substats", "")
 			Case "5"
+				Local $sellGem = IniRead($botConfigDir, "Filter Four", "sell-gem", "")
 				Local $sellGrade = "5"
 				Local $filter = IniRead($botConfigDir, "Filter Five", "filter-gem", "")
 				Local $sellTypes = IniRead($botConfigDir, "Filter Five", "sell-types", "")
 				Local $sellStats = IniRead($botConfigDir, "Filter Five", "sell-stats", "")
 				Local $sellSubstats = IniRead($botConfigDir, "Filter Five", "sell-substats", "")
 			Case "4"
+				Local $sellGem = IniRead($botConfigDir, "Filter Four", "sell-gem", "")
 				Local $sellGrade = "4"
 				Local $filter = IniRead($botConfigDir, "Filter Four", "filter-gem", "")
 				Local $sellTypes = IniRead($botConfigDir, "Filter Four", "sell-types", "")
@@ -188,7 +185,11 @@ Func sellGemGolemFilter($intGolem)
 				Return sellGem("!", 0, 0)
 		EndSwitch
 
-		Return sellGem("B" & $intGolem, $sellGrade, $filter, $sellTypes, $sellStats, $sellSubstats)
+		If $sellGem = 0 Then
+			Return sellGem("B" & $intGolem, $sellGrade, 1, "", "", "") ;keep gem
+		Else
+			Return sellGem("B" & $intGolem, $sellGrade, $filter, $sellTypes, $sellStats, $sellSubstats)
+		EndIf
 	EndIf
 EndFunc
 

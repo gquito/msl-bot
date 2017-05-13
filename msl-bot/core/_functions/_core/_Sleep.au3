@@ -13,6 +13,10 @@
 Func _Sleep($intDuration)
 	Local $iBegin = TimerInit()
 	While TimerDiff($iBegin) < $intDuration
+		While $boolPause
+			Sleep(100)
+		WEnd
+
 		If $boolRunning = False Then Return True
 		Sleep(100)
 	WEnd

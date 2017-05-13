@@ -90,6 +90,8 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 				If $checkGuardian = True Then $getGuardian = True
 		EndSwitch
 
+		antiStuck("map")
+
 		If _Sleep(100) Then ExitLoop
 		Switch getLocation()
 			Case "map", "map-stage", "astroleague", "village", "manage", "monsters", "quests", "map-battle", "clan", "esc", "inbox"

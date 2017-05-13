@@ -1,12 +1,18 @@
 ;define
+	Global $globalStuckLocation = "";
+	Global $globalStuckTimer = 0;
 	Global $textOutput; output for gui
 	Global $listLocation = ""; list of locations.
+	Global $listScript; script data
+	Global $globalData = ""; data output
+	Global $nullVar = null;
 
 ;directory
 	Global Const $strImageSearchDir = @ScriptDir & "\core\_functions\_core\imagesearch\ImageSearchDLL.dll"
 	Global Const $strImageDir = @ScriptDir & "\core\_images\"
 
 ;bot data
+	Global $boolPause = False ;bot state
 	Global $boolRunning = False ;State of the bot.
 	Global $pointDebug1 = ["?", "?"] ;Point in debug1
 	Global $pointDebug2 = ["?", "?"] ;Point in debug2

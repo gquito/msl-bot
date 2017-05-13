@@ -3,15 +3,15 @@
 #AutoIt3Wrapper_Outfile=msl-bot v2.0.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=2.1.0.2
+#AutoIt3Wrapper_Res_Fileversion=2.1.1.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
 Global $botSimpleVersion = "2.0"
-Global $botVersion = "v2.1.0.2"
-Global $botVersionValue = 2010002
+Global $botVersion = "v2.1.1.0"
+Global $botVersionValue = 2010100
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead($botConfigDir, "general", "scripts", ""), ",", 2)
 
@@ -170,12 +170,31 @@ Func btnRunClick()
 
 		GUICtrlSetData($btnRun, "Stop")
 		btnClearClick()
+
+		GUICtrlSetState($btnPause, $GUI_ENABLE)
 	Else ;ending bot
 		$boolRunning = False
 
 		GUICtrlSetData($btnRun, "Start")
+		GUICtrlSetState($btnPause, $GUI_DISABLE)
 	EndIf
 EndFunc   ;==>btnRunClick
+
+;function: btnPauseClick
+Func btnPauseClick()
+	If $boolPause = False Then
+		If setLog("*Paused at location: " & getLocation(), 2) Then Return -1
+		$boolPause = True ;is paused
+
+		GUICtrlSetData($btnPause, "Unpause")
+		GUICtrlSetState($btnRun, $GUI_DISABLE)
+	Else
+		$boolPause = False ;is not paused
+
+		GUICtrlSetData($btnPause, "Pause")
+		GUICtrlSetState($btnRun, $GUI_ENABLE)
+	EndIf
+EndFunc
 
 ;function: frmMainClose
 ;-Exits application and saves the log
@@ -255,6 +274,7 @@ EndFunc   ;==>lblDonateClick
 ;author: GkevinOD (2017)
 Func btnClearClick()
 	Dim $strOutput = GUICtrlRead($textOutput)
+	Global $setLogOld = ""
 	If Not $strOutput = "" Then FileWrite(@ScriptDir & "/core/data/logs/" & StringReplace(_NowDate(), "/", "."), $strOutput)
 	GUICtrlSetData($textOutput, "")
 EndFunc   ;==>btnClearClick
