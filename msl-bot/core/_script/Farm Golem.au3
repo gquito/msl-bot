@@ -87,9 +87,6 @@ Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, 
 	Local $numGemsKept = 0; keeps count of number of eggs kept
 
 	Local $goldSpent = 0
-
-	Local $stuckLocation = ""
-	Local $stuckTimer = 0
 	While True
 		If _Sleep(50) Then ExitLoop
 		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
@@ -114,19 +111,7 @@ Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, 
 
 		Local $currLocation = getLocation()
 
-		If $currLocation = $stuckLocation Then
-			If TimerDiff($stuckTimer) > 600000 Then
-				If setLog("Been stuck for 10 minutes! Restarting, golems.", 1) Then Return -1
-				$stuckLocation = ""
-				$stuckTimer = TimerInit()
-				navigate("map", "", True)
-				ContinueLoop
-			EndIf
-		Else
-			$stuckLocation = $currLocation
-			$stuckTimer = TimerInit()
-		EndIf
-
+		antiStuck("map")
 		Switch $currLocation
 			Case "battle"
 				clickPoint($battle_coorAuto)

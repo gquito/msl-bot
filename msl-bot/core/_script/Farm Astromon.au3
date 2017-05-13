@@ -11,7 +11,7 @@ Func farmAstromon()
 	Local $finishRound = IniRead($botConfigDir, "Farm Astromon", "finish-round", 0)
 
 	setLog("~~~Starting 'Farm Astromon' script~~~", 2)
-	farmAstromonMain($imgName, $limit, $catchRares, $finishRound)
+	farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $nullVar, null)
 	setLog("~~~Finished 'Farm Astromon' script~~~", 2)
 EndFunc   ;==>farmAstromon
 
@@ -24,11 +24,12 @@ EndFunc   ;==>farmAstromon
 	limit: (Int) Maximum number of astromons to farm. 0=Farm until max
 	catchRares: (Int) 1=True; 0=False
 	finishRound: (Int) 1=True; 0=False
+	gemsUsed: (variable) Reference to gems used variable
 	maxRefill: (Int) Max gems to use for refill
 
 	Author: GkevinOD (2017)
 #ce
-Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 0)
+Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, ByRef $gemsUsed, $maxRefill)
 	Local $captures[0]
 	If $catchRares = 1 Then
 		Dim $rawCapture = StringSplit("legendary,super rare,rare,exotic,variant", ",", 2)
@@ -51,14 +52,9 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 		$limit = 9999 ;really high number so counter never hits
 	EndIf
 
-	Local $gemsUsed = 0 ;for refill
-
 	Local $intCounter = 0
 	Local $roundCatch = 0 ;This to count if caught three so it skips faster
 	While $intCounter <= $limit
-		GUICtrlSetData($listScript, "")
-		GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
-
 		If _Sleep(100) Then ExitLoop
 		Switch getLocation()
 			Case "battle-auto"
@@ -68,40 +64,43 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 					Local $nextRound = False
 
 					While True
+						If _Sleep(10) Then Return -1
 						If getLocation() = "pause" Then clickPoint($battle_coorContinue)
 
 						Local $timerStart = TimerInit()
 						While Not(getLocation() = "catch-mode")
+							If _Sleep(10) Then Return -1
 							If navigate("battle", "catch-mode") = True Then ExitLoop
 							If TimerDiff($timerStart) > 7000 Then ExitLoop(2)
 						WEnd
 
 						Local $catch = catch($captures, True, False)
+						If _Sleep(10) Then Return -1
 						If UBound($catch) = 0 Then
 							$nextRound = True ;not found
 							ExitLoop
 						EndIf
 
 						For $astromon In $catch
+							If _Sleep(10) Then Return -1
 							If Not (StringMid($astromon, 1, 1) = "!") And (StringInStr($imgName, $astromon, 0) = True) Then
 								$intCounter += 1
 							EndIf
 							$roundCatch += 1
 
-							GUICtrlSetData($listScript, "")
-							GUICtrlSetData($listScript, "Astromons: " & $intCounter & "/" & $limit)
+							If setList("Astromons: " & $intCounter & "/" & $limit) Then Return -1
 						Next
 
 						If $intCounter >= $limit Then ExitLoop(2)
 						If $roundCatch = 3 Then
 							$roundCatch = 0
 							If $finishRound = 0 Then
-								setLog("Out of astrochips, restarting..", 1)
+								If setLog("Out of astrochips, restarting..", 1) Then Return -1
 								clickUntil($battle_coorPause, "pause")
 								clickUntil($battle_coorGiveUp, "unknown")
 								clickWhile($battle_coorGiveUpConfirm, "unknown")
 							Else
-								If setLog("Out of astrochips, attacking..", 1) Then ExitLoop (2)
+								If setLog("Out of astrochips, attacking..", 1) Then Return -1
 								Local $timerStart2 = TimerInit()
 								While checkLocations("battle-end,battle-end-exp,battle-sell,defeat") = ""
 									If TimerDiff($timerStart2) > 1500000 Then
@@ -109,7 +108,7 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 									EndIf
 
 									clickPoint($battle_coorAuto, 2, 10)
-									If _Sleep(1000) Then ExitLoop (2)
+									If _Sleep(1000) Then Return -1
 								WEnd
 							EndIf
 
@@ -171,7 +170,7 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, $maxRefill = 
 				clickPoint($battle_coorContinue)
 
 			Case "refill"
-				If $gemsUsed + 30 <= $maxRefill Then
+				If Not($gemsUsed = null) And ($gemsUsed + 30 <= $maxRefill) Then
 					While getLocation() = "refill"
 						clickPoint($game_coorRefill, 1, 1000)
 					WEnd

@@ -29,6 +29,7 @@
 	#include "_functions/navigate.au3"
 	#include "_functions/waitLocation.au3"
 	#include "_functions/checkLocations.au3"
+	#include "_functions/antiStuck.au3"
 
 	;_core
 		;imagesearch
@@ -39,7 +40,7 @@
 		#include "_functions/_core/_Image.au3"
 		#include "_functions/_core/_Pixel.au3"
 		#include "_functions/_core/_Sleep.au3"
-		#include "_functions/_core/setLog.au3"
+		#include "_functions/_core/_Log.au3"
 
 	;battle
 		#include "_functions/battle/catch.au3"

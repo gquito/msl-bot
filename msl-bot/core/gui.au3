@@ -3,7 +3,7 @@ Opt("GUIOnEventMode", 1)
 Global $frmMain = GUICreate($botName & " " & $botVersion, 286, 300, 392, 427, -1, $WS_EX_WINDOWEDGE)
 GUISetOnEvent($GUI_EVENT_CLOSE, "frmMainClose")
 
-Global $textOutput = GUICtrlCreateEdit("", 0, 185, 284, 113, BitOR($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL))
+Global $textOutput = GUICtrlCreateEdit("", 2, 185, 282, 113, BitOR($ES_WANTRETURN, $WS_VSCROLL, $ES_AUTOVSCROLL))
 _GUICtrlEdit_SetLimitText($textOutput, 100000000)
 GUICtrlSetData(-1, "• Thanks for using MSL-Bot!" & @CRLF & "• This is an open-source project so you are allowed to modify and create codes that fit your needs." & @CRLF & "• If you find any bugs/issues or want to say Hi join our Discord, link in the 'About' page." & @CRLF & "• If you find this bot useful, consider supporting me by donating! Link in the 'About' tab." & @CRLF)
 
@@ -85,8 +85,11 @@ GuiCtrlSetOnEvent(-1, "lblDonateClick")
 GUICtrlCreateTabItem("")
 Global $btnRun = GUICtrlCreateButton("Start", 8, 160, 75, 25)
 GUICtrlSetOnEvent(-1, "btnRunClick")
-Global $btnClear = GUICtrlCreateButton("Clear", 200, 160, 75, 25)
+Global $btnClear = GUICtrlCreateButton("Clear", 202, 160, 75, 25)
 GUICtrlSetOnEvent(-1, "btnClearClick")
+Global $btnPause = GUICtrlCreateButton("Pause", 105, 160, 75, 25)
+GUICtrlSetState(-1, $GUI_DISABLE)
+GUICtrlSetOnEvent(-1, "btnPauseClick")
 GUISetState(@SW_SHOW)
 #EndRegion ### END Koda GUI section ###
 

@@ -12,7 +12,12 @@
 Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 	Local $strCurrentLocation = getLocation()
 
-	If $strCurrentLocation = "battle-auto" Then $strCurrentLocation = "battle"
+	Switch $strCurrentLocation
+		Case "battle-auto"
+			$strCurrentLocation = "battle"
+		Case "monsters-evolution", ""
+			$strCurrentLocation = "monsters"
+	EndSwitch
 
 	If $strLocation = $strCurrentLocation Then Return True
 	If $strCurrentLocation = $strMainLocation Then
