@@ -61,7 +61,7 @@ Func evolve($monster)
 
 		If getLocation() = "buy-gold" Then
 			setLog("Error: Out of gold!", 2)
-			Return
+			Return False
 		EndIf
 
 		If setLogReplace("Evolving astromon...Evolving", 2) Then Return -1
@@ -72,7 +72,7 @@ Func evolve($monster)
 
 		If getLocation() = "buy-gold" Then
 			setLog("Error: Out of gold!", 1)
-			Return
+			Return False
 		EndIf
 
 		If _Sleep(10) Then Return -1
@@ -113,7 +113,7 @@ Func evolve($monster)
 
 	If getLocation() = "buy-gold" Then
 		setLog("Error: Out of gold!", 1)
-		Return
+		Return False
 	EndIf
 
 	If _Sleep(10) Then Return -1
@@ -122,7 +122,7 @@ Func evolve($monster)
 
 	If getLocation() = "buy-gold" Then
 		setLog("Error: Out of gold!", 1)
-		Return
+		Return False
 	EndIf
 
 	If _Sleep(10) Then Return -1

@@ -158,16 +158,14 @@ Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, 
 				If getLocation() = "battle-end" Then navigate("map")
 			Case "refill"
 				If $intGemUsed + 30 <= $intGem Then
-					While getLocation() = "refill"
-						clickPoint($game_coorRefill, 1, 1000)
-					WEnd
+					clickUntil($game_coorRefill, "refill-confirm")
 
 					If getLocation() = "buy-gem" Or getLocation() = "unknown" Then
 						setLog("Out of gems!", 2)
 						ExitLoop
 					EndIf
 
-					clickUntil($game_coorRefillConfirm, "refill")
+					clickWhile($game_coorRefillConfirm, "refill-confirm")
 					clickWhile("705, 99", "refill")
 
 					If setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem, 0) Then ExitLoop

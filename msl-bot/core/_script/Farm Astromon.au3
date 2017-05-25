@@ -206,4 +206,6 @@ Func farmAstromonMain($imgName, $limit, $catchRares, $finishRound, ByRef $gemsUs
 	If getLocation() = "battle" Then
 		clickPoint($battle_coorAuto)
 	EndIf
+
+	Return $intCounter
 EndFunc   ;==>farmAstromonMain
