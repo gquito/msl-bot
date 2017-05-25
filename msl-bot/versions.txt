@@ -1,3 +1,3 @@
-latest-version=v2.1.1.0,2010100,2.0
-description=v2.1.1.0 Update log:|- Added pause button.|- New locations for antiStuck function.|- antiStuck, when game crashes or in one location for 10 minutes, bot will try to navigate to a specified location.|- Fix sellGem where bot sells gems when option to sell-gem is disabled.|- Made evolve more responsive to stop/pause buttons.|- Farm Gem displays iteration, farmed gems, gem refill used.|- Farm Gem also releases the evo3 slime.
+latest-version=v2.1.1.1,2010101,2.0
+description=v2.1.1.1 Update log:|- Maintenance patch.
 directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
