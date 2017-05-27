@@ -1,3 +1,3 @@
-latest-version=v2.1.1.1,2010101,2.0
-description=v2.1.1.1 Update log:|- Maintenance patch.
+latest-version=v2.1.1.2,2010102,2.0
+description=v2.1.1.2 Update log:|- Fixed character limit when editing text config. This causes configs like 'emulator-instance' to be cut off causing the 'could not find instance' error.|- Added a new game icon image.
 directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
