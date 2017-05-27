@@ -125,7 +125,7 @@ EndFunc
 Func getText($default = "")
 	Opt("GUIOnEventMode", 0)
 	Local $frmBoolean = GUICreate("Select a new value:", 190, 70, -1, -1, BitOR($WS_POPUPWINDOW, $WS_SYSMENU, $WS_CAPTION))
-	Local $textInput = GUICtrlCreateInput($default, 10, 10, 170, 20, $ES_CENTER)
+	Local $textInput = GUICtrlCreateInput($default, 10, 10, 170, 20, BitOr($ES_CENTER, $ES_AUTOHSCROLL))
 
 	Local $btnOkay = GUICtrlCreateButton("Okay", 10, 35, 50, 25)
 	Local $btnCancel = GUICtrlCreateButton("Cancel", 130, 35, 50, 25)
