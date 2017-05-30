@@ -12,6 +12,7 @@
 
 Func getHourly()
 	If navigate("village") = 1 Then
+
 		If setLogReplace("Collect hourly..", 1) Then Return -1
 		Local $posVillage = null; The village position
 
@@ -21,6 +22,13 @@ Func getHourly()
 		WEnd
 
 		$posVillage = getVillagePos()
+
+		If setLogReplace("Trying to click for Nezz..") Then Return -1
+		Local $splitCoords = StringSplit($village_coorNezz[$posVillage], "|", 2)
+		For $point In $splitCoords
+			clickPoint($point, 3, 100)
+		Next
+	    navigate("village", "")
 
 		If setLogReplace("Collect hourly...Position: " & $posVillage, 1) Then Return -1
 		Local $arrayCoor = StringSplit($village_coorHourly[$posVillage], "|", 2) ;format: {"#,#", "#,#"..}
@@ -41,15 +49,6 @@ Func getHourly()
 			$getReward = findImage("misc-hourly", 30)
 			clickUntil($getReward, "village")
 		Next
-
-		If setLogReplace("Collect hourly..Inbox", 1) Then Return -1
-		;collect inbox
-		clickPoint($village_coorTab, 3)
-		clickUntil(findImage("misc-village-inbox", 30), "inbox")
-		clickPoint($village_coorInbox, 3)
-		clickPoint($village_coorAccept, 3, 1000)
-
-		clickUntil("709,99", "village")
 	EndIf
 
 	If setLogReplace("Collect hourly..Done!", 1) Then Return -1

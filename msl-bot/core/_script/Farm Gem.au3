@@ -60,19 +60,29 @@ Func farmGemMain($monster, $justEvolve, $gemsToFarm, $maxRefill)
 			If _Sleep(10) Then Return -1
 			If setLog("Going to collect 16 " & $monster & "s..", 1) Then Return -1
 
-			;Going into battle to farm astromons
-			If navigate("map") = False Then
-				If setLog("Error: Could not go into maps!", 1) Then Return -1
-				Return
-			EndIf
-
-			If enterStage("map-phantom-forest", "normal", "any", False) = False Then
-				If setLog("Error: Could not go into battle!", 1) Then Return -1
-				Return
-			EndIf
-
 			;calling farmAstromon script to farm 16 monsters
-			farmAstromonMain("catch-one-star", 16, 1, 0, $gemUsed, $maxRefill)
+			Local $needCatch = 16
+			While $needCatch > 0
+				;Going into battle to farm astromons
+				Local $locTimer = TimerInit()
+				While navigate("map") = False
+					If TimerDiff($locTimer) > 300000 Then ;5 minutes
+						If setLog("Error: Could not go into maps!", 1) Then Return -1
+						Return False
+					EndIf
+				WEnd
+
+				Local $locTimer = TimerInit()
+				While enterStage("map-phantom-forest", "normal", "any", False) = False
+					If TimerDiff($locTimer) > 300000 Then ;5 minutes
+						If setLog("Error: Could not go into battle!", 1) Then Return -1
+						Return False
+					EndIf
+				WEnd
+
+				If _Sleep(10) Then Return -1
+				$needCatch -= farmAstromonMain("catch-one-star", $needCatch, 1, 0, $gemUsed, $maxRefill)
+			WEnd
 		EndIf
 
 		;going back to village to manage
@@ -80,7 +90,7 @@ Func farmGemMain($monster, $justEvolve, $gemsToFarm, $maxRefill)
 		If setLog("Going to evolve " & $monster & "..", 1) Then Return -1
 		If evolve("monster-" & $monster) = False Then
 			If setLog("Error: Something went wrong in the evolving process!", 1) Then Return -1
-			Return
+			Return False
 		EndIf
 
 		$numIteration -= 1
@@ -89,4 +99,6 @@ Func farmGemMain($monster, $justEvolve, $gemsToFarm, $maxRefill)
 		$globalData = "Iteration: " & $cIteration & "/" & $totalIteration & "|Farmed Gems: " & $cIteration*100 & "|Gem Refill Used: " & $gemUsed & "/" & $maxRefill
 		setList("")
 	WEnd
+
+	Return True ;success
 EndFunc   ;==>farmGemMain
