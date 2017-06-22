@@ -89,14 +89,13 @@ If isArray($versionFile) = True Then
 				Sleep(1000)
 			WEnd
 
-			FileDelete(@ScriptDir & "/msl-bot v" & $oldVersion & ".exe")
-
 			ShellExecute(@ScriptDir & "\updater" & $checkVersion[2] & ".exe")
 			Exit 0
 		EndIf
 	EndIf
 EndIf
 
+FileDelete(@ScriptDir & "/msl-bot v" & $oldVersion & ".exe")
 If FileExists(@ScriptDir & "/newVersion.zip") Or FileExists(@ScriptDir & "/updater" & $botSimpleVersion & ".exe") Then
 	FileDelete(@ScriptDir & "/newVersion.zip")
 	FileDelete(@ScriptDir & "/updater" & $botSimpleVersion & ".exe")
