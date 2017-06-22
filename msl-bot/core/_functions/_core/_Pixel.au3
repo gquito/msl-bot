@@ -6,6 +6,7 @@
 ;author: GkevinOD (2017)
 
 Func checkPixel($pixel, $intVariation = 10)
+	If $pixel = "" Then Return False
 	If Not(isArray($pixel)) Then ;if in text form
 		$pixel = StringSplit($pixel, ",", 2)
 	EndIf

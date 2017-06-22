@@ -58,6 +58,18 @@ EndFunc
 
 Func setList($newData)
 	GUICtrlSetData($listScript, "")
-	GUICtrlSetData($listScript, $globalData & "|" & $newData)
+	If $newData = "" Then
+		GUICtrlSetData($listScript, $globalData & "|Time Elapse: " & getTimeString(TimerDiff($globalScriptTimer)/1000))
+	Else
+		GUICtrlSetData($listScript, $globalData & "|" & $newData & "|Time Elapse: " & getTimeString(TimerDiff($globalScriptTimer)/1000))
+	EndIf
+EndFunc
+
+Func getTimeString($sec)
+	If $sec >= 3600 Then
+		Return Int($sec / 60 / 60) & "H " & Int(Mod($sec / 60, 60)) & "M " & Int(Mod($sec, 60)) & "S"
+	Else
+		Return Int($sec / 60) & "M " & Int(Mod($sec, 60)) & "S"
+	EndIf
 EndFunc
 

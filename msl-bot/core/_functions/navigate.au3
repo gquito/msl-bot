@@ -45,11 +45,36 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				clickUntil($village_coorQuests, "quests")
 			;map
 			Case "guardian-dungeons"
-				clickUntil(findImage("map-dungeons", 50), "starstone-dungeons")
+				clickUntil(findImage("map-dungeons", 50), "starstone-dungeons,golem-dungeons")
 				clickUntil($map_coorGuardianDungeons, "guardian-dungeons")
 			Case "golem-dungeons"
-				clickUntil(findImage("map-dungeons", 50), "starstone-dungeons")
-				clickUntil($map_coorGolemDungeons, "golem-dungeons")
+				If setLogReplace("Navigating to golems..", 1) Then Return -1
+
+				Local $timerStart = TimerInit()
+				Local $imgPoint = findImage("map-golems", 50)
+				While Not isArray($imgPoint)
+					If setLogReplace("Navigating to golems.. Swiping", 1) Then Return -1
+					ControlSend($hWindow, "", "", "{LEFT}")
+
+					If TimerDiff($timerStart) > 120000 Then ;two minutes
+						If setLogReplace("Could not find golems!", 1) Then Return -1
+						If navigate("village") = True Then
+							Return False
+						EndIf
+					EndIf
+
+					If _Sleep(500) Then Return -1
+					If Not checkLocations("astroleague, map-stage, association") = "" Then ControlSend($hWindow, "", "", "{ESC}")
+
+					_CaptureRegion()
+					$imgPoint = findImage("map-golems", 50)
+				WEnd
+
+				;clicking map list and selecting difficulty
+				clickUntil($imgPoint, "golem-dungeons")
+			Case "starstone-dungeons"
+				clickUntil(findImage("map-dungeons", 50), "starstone-dungeons,golem-dungeons")
+				clickUntil($map_coorStarstoneDungeons, "starstone-dungeons")
 			;battle
 			Case "catch-mode"
 				If checkPixel($battle_pixelUnavailable) Then Return False

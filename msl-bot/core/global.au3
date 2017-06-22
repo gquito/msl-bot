@@ -1,6 +1,7 @@
 ;define
 	Global $globalStuckLocation = "";
 	Global $globalStuckTimer = 0;
+	Global $globalScriptTimer;
 	Global $textOutput; output for gui
 	Global $listLocation = ""; list of locations.
 	Global $listScript; script data

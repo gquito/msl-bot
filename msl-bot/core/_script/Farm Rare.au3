@@ -73,11 +73,7 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 	Local $goldSpent = 0
 
 	While True
-		$intTimeElapse = Int(TimerDiff($intStartTime) / 1000)
-
-		GUICtrlSetData($listScript, "")
-		GUICtrlSetData($listScript, "Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Caught: " & StringMid($displayCaught, 3) & "|Missed: " & StringMid($displayMissed, 3) & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min.")
-
+		setList("Runs: " & $dataRuns & " (Guardian: " & $dataGuardians & ")|Caught: " & StringMid($displayCaught, 3) & "|Missed: " & StringMid($displayMissed, 3) & "|Gems Used: " & ($intGemUsed & "/" & $intGem))
 		Switch StringSplit(_NowTime(4), ":", 2)[1]
 			Case "00", "01", "02", "03", "04", "05", "06", "07", "08", "09"
 				If $checkHourly = True Then $getHourly = True
