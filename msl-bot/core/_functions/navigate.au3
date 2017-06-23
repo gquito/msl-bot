@@ -71,7 +71,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				WEnd
 
 				;clicking map list and selecting difficulty
-				clickUntil($imgPoint, "golem-dungeons")
+				clickUntil($imgPoint, "golem-dungeons", 3, 3000)
 			Case "starstone-dungeons"
 				clickUntil(findImage("map-dungeons", 50), "starstone-dungeons,golem-dungeons")
 				clickUntil($map_coorStarstoneDungeons, "starstone-dungeons")

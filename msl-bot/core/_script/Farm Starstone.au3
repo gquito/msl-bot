@@ -39,7 +39,7 @@ Func farmStarstoneMain($level, $refillGems, $high, $mid = 0, $low = 0)
 
 	;grind for starstone
 	While (($high > 0) Or ($mid > 0) Or ($low > 0))
-		setList("High Stones: " & $totHigh-$high  & "/" & $totHigh & "|Mid Stones: " & $totMid-$mid  & "/" & $totMid & "|Low Stones: " & $totLow-$low  & "/" & $totLow)
+		setList("High Stones: " & $totHigh-$high  & "/" & $totHigh & "|Mid Stones: " & $totMid-$mid  & "/" & $totMid & "|Low Stones: " & $totLow-$low  & "/" & $totLow & "|Gems used: " & $maxGems-$refillGems & "/" & $maxGems)
 
 		Local $currLocation = getLocation()
 
