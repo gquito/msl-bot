@@ -45,7 +45,6 @@ EndFunc   ;==>farmGolem
 	Author: GkevinOD (2017)
 #ce
 Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
-
 	Local $avgGoldPerRound = 0
 	Switch ($strGolem)
 		Case 7
@@ -104,10 +103,8 @@ Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, 
 		EndSwitch
 
 
-		Local $strData = "Runs: " & $intRunCount & " (Guardian:" & $intGuardian & ")|Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Time Elapse: " & StringFormat("%.2f", $intTimeElapse / 60) & " Min." & "|Avg. Time: " & StringFormat("%.2f", $intTimeElapse / $intRunCount / 60) & " Min.|Eggs: " & $numEggs & "|Gems Kept: " & $numGemsKept
-
-		GUICtrlSetData($listScript, "")
-		GUICtrlSetData($listScript, $strData)
+		Local $strData = "Runs: " & $intRunCount & " (Guardian:" & $intGuardian & ")|Profit: " & StringRegExpReplace(String($intGoldPrediction), "(\d)(?=(\d{3})+$)", "$1,") & "|Gems Used: " & ($intGemUsed & "/" & $intGem) & "|Avg. Time: " & getTimeString(Int($intTimeElapse / $intRunCount)) & "|Eggs: " & $numEggs & "|Gems Kept: " & $numGemsKept
+		setList($strData)
 
 		Local $currLocation = getLocation()
 

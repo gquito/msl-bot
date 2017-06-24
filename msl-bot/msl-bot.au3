@@ -1,17 +1,18 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=..\..\..\favicon.ico
-#AutoIt3Wrapper_Outfile=msl-bot v2.0.exe
+#AutoIt3Wrapper_Outfile=msl-bot v2.2.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=2.1.1.2
+#AutoIt3Wrapper_Res_Fileversion=2.2.0.2
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
 Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
-Global $botSimpleVersion = "2.0"
-Global $botVersion = "v2.1.1.2"
-Global $botVersionValue = 2010102
+Global $oldVersion = "2.0"
+Global $botSimpleVersion = "2.2"
+Global $botVersion = "v2.2.0.2"
+Global $botVersionValue = 2020002
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead($botConfigDir, "general", "scripts", ""), ",", 2)
 
@@ -54,45 +55,52 @@ loadLocation() ;loads up location from /core/location.txt
 ;checking for update`````````````````````
 #include <Inet.au3>
 Local $versionFile = StringSplit(_INetGetSource("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/versions.txt", True), @CRLF, 2)
-Local $checkVersion = StringSplit(StringSplit($versionFile[0], "=", 2)[1], ",", 2)
-Local $updateDescription = StringReplace(StringSplit($versionFile[1], "=", 2)[1], "|", @CRLF)
-Local $directory = StringSplit($versionFile[2], "=", 2)[1]
+If isArray($versionFile) = True Then
+	Local $checkVersion = StringSplit(StringSplit($versionFile[0], "=", 2)[1], ",", 2)
+	Local $updateDescription = StringReplace(StringSplit($versionFile[1], "=", 2)[1], "|", @CRLF)
+	Local $directory = StringSplit($versionFile[2], "=", 2)[1]
 
+	If FileExists(@ScriptDir & "/newVersion.zip") Or FileExists(@ScriptDir & "/updater" & $botSimpleVersion & ".exe") Then
+		MsgBox($MB_ICONINFORMATION, "Updated to " & $botVersion & "!", $updateDescription)
+	EndIf
+
+	If Int($checkVersion[1]) > $botVersionValue Then
+		Local $msgBoxAnswer = MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "MSL-Bot Update", "Would you like to update to the latest version?" & @CRLF & @CRLF & $updateDescription)
+		If $msgBoxAnswer = $IDYES Then
+			setLogReplace("Downloading files...", 2)
+			Local $newFiles = InetGet($directory, @ScriptDir & "/newVersion.zip", 0, 1)
+			Local $updater = InetGet("https://github.com/GkevinOD/msl-bot/raw/version-check/msl-bot/updater.exe", @ScriptDir & "\updater" & $checkVersion[2] & ".exe", 0, 1)
+
+			GUICtrlSetState($Tab1, $GUI_DISABLE)
+			GUICtrlSetState($btnRun, $GUI_DISABLE)
+			GUICtrlSetState($btnClear, $GUI_DISABLE)
+			GUICtrlSetState($cmbLoad, $GUI_DISABLE)
+			GUICtrlSetState($btnEdit, $GUI_DISABLE)
+			While True
+				GUICtrlSetData($textOutput, "")
+				setLog("Downloading files...", 2)
+				setLog("ZIP File: " & Int(InetGetInfo($newFiles, 0) / 1000) & "KB/" & Int(InetGetInfo($newFiles, 1) / 1000) & "KB", 2)
+				setLog("Updater File: " & Int(InetGetInfo($updater, 0) / 1000) & "KB/" & Int(InetGetInfo($updater, 1) / 1000) & "KB", 2)
+				If InetGetInfo($newFiles, 2) = True And InetGetInfo($updater, 2) = True Then
+					setLog("Restarting MSL-Bot, please give it a minute...", 2)
+					Sleep(2000)
+					ExitLoop
+				EndIf
+				Sleep(1000)
+			WEnd
+
+			ShellExecute(@ScriptDir & "\updater" & $checkVersion[2] & ".exe")
+			Exit 0
+		EndIf
+	EndIf
+EndIf
+
+FileDelete(@ScriptDir & "/msl-bot v" & $oldVersion & ".exe")
 If FileExists(@ScriptDir & "/newVersion.zip") Or FileExists(@ScriptDir & "/updater" & $botSimpleVersion & ".exe") Then
 	FileDelete(@ScriptDir & "/newVersion.zip")
 	FileDelete(@ScriptDir & "/updater" & $botSimpleVersion & ".exe")
-	MsgBox($MB_ICONINFORMATION, "Updated to " & $botVersion & "!", $updateDescription)
 EndIf
 
-If Int($checkVersion[1]) > $botVersionValue Then
-	Local $msgBoxAnswer = MsgBox(BitOR($MB_ICONINFORMATION, $MB_YESNO), "MSL-Bot Update", "Would you like to update to the latest version?" & @CRLF & @CRLF & $updateDescription)
-	If $msgBoxAnswer = $IDYES Then
-		setLogReplace("Downloading files...", 2)
-		Local $newFiles = InetGet($directory, @ScriptDir & "/newVersion.zip", 0, 1)
-		Local $updater = InetGet("https://github.com/GkevinOD/msl-bot/raw/version-check/msl-bot/updater.exe", @ScriptDir & "\updater" & $checkVersion[2] & ".exe", 0, 1)
-
-		GUICtrlSetState($Tab1, $GUI_DISABLE)
-		GUICtrlSetState($btnRun, $GUI_DISABLE)
-		GUICtrlSetState($btnClear, $GUI_DISABLE)
-		GUICtrlSetState($cmbLoad, $GUI_DISABLE)
-		GUICtrlSetState($btnEdit, $GUI_DISABLE)
-		While True
-			GUICtrlSetData($textOutput, "")
-			setLog("Downloading files...", 2)
-			setLog("ZIP File: " & Int(InetGetInfo($newFiles, 0) / 1000) & "KB/" & Int(InetGetInfo($newFiles, 1) / 1000) & "KB", 2)
-			setLog("Updater File: " & Int(InetGetInfo($updater, 0) / 1000) & "KB/" & Int(InetGetInfo($updater, 1) / 1000) & "KB", 2)
-			If InetGetInfo($newFiles, 2) = True And InetGetInfo($updater, 2) = True Then
-				setLog("Restarting MSL-Bot, please give it a minute...", 2)
-				Sleep(2000)
-				ExitLoop
-			EndIf
-			Sleep(1000)
-		WEnd
-
-		ShellExecute(@ScriptDir & "\updater" & $checkVersion[2] & ".exe")
-		Exit 0
-	EndIf
-EndIf
 ;``````````````````````````````````````````
 
 ;Hotkeys =====================================
@@ -106,7 +114,7 @@ Func debugPoint1()
 	$pointDebug1[0] = MouseGetPos(0) - WinGetPos($hControl)[0]
 	$pointDebug1[1] = MouseGetPos(1) - WinGetPos($hControl)[1]
 
-	;_CaptureRegion()
+	_CaptureRegion()
 	;ClipPut($pointDebug1[0] & "," & $pointDebug1[1] & ",0x" & Hex(_GDIPlus_BitmapGetPixel($hBitmap, $pointDebug1[0], $pointDebug1[1]), 6))
 
 	If $pointDebug1[0] > 800 Or $pointDebug1[0] < 0 Or $pointDebug1[1] > 600 Or $pointDebug1[1] < 0 Then
@@ -164,7 +172,10 @@ WEnd
 Func btnRunClick()
 	getEmulatorHandle()
 
+	$globalData = ""
 	If $boolRunning = False Then ;starting bot
+		$globalScriptTimer = TimerInit()
+
 		If $iniRealMouse = 1 Then MsgBox($MB_ICONINFORMATION, $botName & " " & $botVersion, "You have real mouse on! You will not be able to use your mouse. To stop script press End key.")
 		$boolRunning = True
 
