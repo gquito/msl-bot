@@ -23,7 +23,7 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 			If setLogReplace("Entering " & $strMap & "..Swiping", 1) Then Return -1
 			ControlSend($hWindow, "", "", "{LEFT}")
 
-			If TimerDiff($timerStart) > 120000 Then ;two minutes
+			If TimerDiff($timerStart) > 30000 Then ;30 seconds
 				If setLogReplace("Entering " & $strMap & "..Could not find area.", 1) Then Return -1
 				If navigate("village") = True Then
 					Return False
@@ -34,6 +34,7 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 			If Not checkLocations("astroleague, map-stage, association") = "" Then ControlSend($hWindow, "", "", "{ESC}")
 
 			_CaptureRegion()
+			If _Sleep(100) Then Return -1
 			$imgPoint = findImage($strImage, 50)
 		WEnd
 		If setLogReplace("Entering " & $strMap & "..Stage Found.", 1) Then Return -1

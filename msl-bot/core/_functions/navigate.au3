@@ -69,12 +69,16 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 					_CaptureRegion()
 					$imgPoint = findImage("map-golems", 50)
 				WEnd
+				clickUntil($imgPoint, "golem-dungeons")
 
-				;clicking map list and selecting difficulty
-				clickUntil($imgPoint, "golem-dungeons", 3, 3000)
+			Case "gold-dungeons"
+				clickUntil(findImage("map-dungeons", 50), "gold-dungeons,starstone-dungeons,golem-dungeons")
+				clickUntil($map_coorGoldDungeons, "gold-dungeons")
+				
 			Case "starstone-dungeons"
 				clickUntil(findImage("map-dungeons", 50), "starstone-dungeons,golem-dungeons")
 				clickUntil($map_coorStarstoneDungeons, "starstone-dungeons")
+				
 			;battle
 			Case "catch-mode"
 				If checkPixel($battle_pixelUnavailable) Then Return False
@@ -123,21 +127,6 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 						Case Else
 							ControlSend($hWindow, "", "", "{ESC}")
 					EndSwitch
-
-					#cs
-						Local $villagePos = 0
-						If isArray(findImage("misc-village-pos1", 50)) Then
-							$villagePos = 0
-						ElseIf isArray(findImage("misc-village-pos2", 50)) Then
-							$villagePos = 1
-						ElseIf isArray(findImage("misc-village-pos3", 50)) Then
-							$villagePos = 2
-						EndIf
-
-						For $coord In StringSplit($village_coorNezz[$villagePos], "|", 2)
-							clickPoint($coord, 2, 50)
-						Next
-					#ce
 				Case "map"
 					Switch $currLocation
 						Case "battle-end"

@@ -16,7 +16,24 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func findImage($strImage, $intTolerance = 10, $duration = 100, $left = 0, $top = 0, $right = 800, $bottom = 600)
+Func findImage($strImage, $intTolerance = 10, $duration = 100, $left = 0, $top = 0, $right = null, $bottom = null)
+	
+	Local $winSize = WinGetClientSize($hWindow)
+	
+	If $right = null OR $right > ($winSize[0] - $diff[0]) Then
+		$right = $winSize[0] - $diff[0]
+	ElseIf $right < 0 Then
+		$right = 0
+	EndIf
+	
+	If $bottom = null OR $bottom > ($winSize[0] - $diff[1]) Then
+		$bottom = $winSize[1] - $diff[1]
+	ElseIf $bottom < 0 Then
+		$bottom = 0
+	EndIf
+	
+	
+	
 	If StringInStr($strImage, "-") Then ;image with specified folder
 		$strImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage
 	EndIf
@@ -28,18 +45,20 @@ Func findImage($strImage, $intTolerance = 10, $duration = 100, $left = 0, $top =
 
 		Local $dupCounter = 2; Ex: location-village2...
 		While FileExists($strImageDir & $strImage & $dupCounter & ".bmp")
-			_ArrayAdd($arrayImages, $strImageDir & $strImage & $dupCounter & ".bmp")
+			_ArrayAdd($arrayImages, "*Trans0xFF00DC " & $strImageDir & $strImage & $dupCounter & ".bmp")
 			$dupCounter += 1
 		WEnd
+	Else
+		setLog("Image does not exist: " & $strImageDir & $strImage & ".bmp",1)
 	EndIf
 
 	Local $pointArray = [-1, -1]
 	Local $tempSearch;
 
+	_CaptureRegion("", $left, $top, $right, $bottom)
 	Local $startTimer = TimerInit()
 	While TimerDiff($startTimer) < $duration
-		_CaptureRegion("", $left, $top, $right, $bottom)
-		If _Sleep(100) Then Return 0
+		If _Sleep(10) Then Return 0
 
 		$tempSearch = _ImagesSearch($arrayImages, 1, $pointArray[0], $pointArray[1], $intTolerance)
 

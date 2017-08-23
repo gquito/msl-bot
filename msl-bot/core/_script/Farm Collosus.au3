@@ -1,34 +1,34 @@
 #cs
-	Function: farmGolem
-	Calls farmGolemMain with config settings
+	Function: farmCollosus
+	Calls farmCollosusMain with config settings
 
 	Author: GkevinOD (2017)
 #ce
-Func farmGolem()
-	Local $scriptName = "Farm Golem"
+Func farmCollosus()
+	Local $strCollosus = IniRead($botConfigDir, "Farm Collosus", "dungeon", 7)
 
-	Local $strGolem 	 = IniRead($botConfigDir, $scriptName, "dungeon", 7)
-	Local $buyEggs 		 = IniRead($botConfigDir, $scriptName, "buy-eggs", 0)
-	Local $buySoulstones = IniRead($botConfigDir, $scriptName, "buy-soulstones", 1)
-	Local $maxGoldSpend  = IniRead($botConfigDir, $scriptName, "max-gold-spend", 100000)
-	Local $guardian 	 = IniRead($botConfigDir, $scriptName, "farm-guardian", 0)
-	Local $maxGemRefill  = IniRead($botConfigDir, $scriptName, "max-spend-gem", 0)
-	Local $selectBoss 	 = IniRead($botConfigDir, $scriptName, "select-boss", 1)
-	Local $keepAllGrade  = IniRead($botConfigDir, $scriptName, "keep-all-grade", 6)
-	Local $quest 		 = IniRead($botConfigDir, $scriptName, "collect-quest", "1")
-	Local $hourly 		 = IniRead($botConfigDir, $scriptName, "collect-hourly", "1")
+	Local $buyEggs = IniRead($botConfigDir, "Farm Collosus", "buy-eggs", 0)
+	Local $buySoulstones = IniRead($botConfigDir, "Farm Collosus", "buy-soulstones", 1)
+	Local $maxGoldSpend = IniRead($botConfigDir, "Farm Collosus", "max-gold-spend", 100000)
+	Local $guardian = IniRead($botConfigDir, "Farm Collosus", "farm-guardian", 0)
+	Local $intGem = IniRead($botConfigDir, "Farm Collosus", "max-spend-gem", 0)
+	Local $selectBoss = IniRead($botConfigDir, "Farm Collosus", "select-boss", 1)
+	Local $keepAllGrade = IniRead($botConfigDir, "Farm Collosus", "keep-all-grade", 6)
 
-	setLog("~~~Starting 'Farm Golem' script~~~", 2)
-	farmGolemMain($strGolem, $selectBoss, $maxGemRefill, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
-	setLog("~~~Finished 'Farm Golem' script~~~", 2)
-EndFunc   ;==>farmGolem
+	Local $quest = IniRead($botConfigDir, "Farm Collosus", "collect-quest", "1")
+	Local $hourly = IniRead($botConfigDir, "Farm Collosus", "collect-hourly", "1")
+
+	setLog("~~~Starting 'Farm Collosus' script~~~", 2)
+	farmCollosusMain($strCollosus, $selectBoss, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
+	setLog("~~~Finished 'Farm Collosus' script~~~", 2)
+EndFunc   ;==>farmCollosus
 
 #cs
-	Function: farmGolemMain
-	Farms golems while collecting hourly and quests, and selling and collecting gems.
+	Function: farmCollosusMain
+	Farms collosuss while collecting hourly and quests, and selling and collecting gems.
 
 	Parameters:
-	strGolem: (Int) The golem stage.
+	strCollosus: (Int) The collosus stage.
 	selectBoss: (Int) 1=True; 0=False
 	sellGems: (Int) 1=True; 0=False
 	sellGrades: (String) Sell gems with grades specified
@@ -37,16 +37,16 @@ EndFunc   ;==>farmGolem
 	sellFlat: (Int) 1=True; 0=False
 	sellStats: (String) Sell gems with stats specified
 	sellSubstats = (String) Sell gems with substats specified
-	maxGemRefill: (Int) Maximum number of gems the bot can spend for refill.
+	intGem: (Int) Maximum number of gems the bot can spend for refill.
 	guardian: (Int) 1=True; 0=False
 	quest: (Int) 1=True; 0=False
 	hourly: (Int) 1=True; 0=False
 
 	Author: GkevinOD (2017)
 #ce
-Func farmGolemMain($strGolem, $selectBoss, $maxGemRefill, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
+Func farmCollosusMain($strCollosus, $selectBoss, $intGem, $guardian, $quest, $hourly, $buyEggs, $buySoulstones, $maxGoldSpend)
 	Local $avgGoldPerRound = 0
-	Switch ($strGolem)
+	Switch ($strCollosus)
 		Case 7
 			$avgGoldPerRound = 1500
 		Case 8
@@ -57,16 +57,16 @@ Func farmGolemMain($strGolem, $selectBoss, $maxGemRefill, $guardian, $quest, $ho
 			$avgGoldPerRound = 1200
 	EndSwitch
 
-	Local $intGolem = 7
-	Switch ($strGolem)
+	Local $intCollosus = 7
+	Switch ($strCollosus)
 		Case 1 To 3
-			$intGolem = 5
+			$intCollosus = 5
 		Case 4 To 6
-			$intGolem = 6
+			$intCollosus = 6
 		Case 7 To 9
-			$intGolem = 7
+			$intCollosus = 7
 		Case 10
-			$intGolem = 8
+			$intCollosus = 8
 	EndSwitch
 
 	Local $gemsUsed = 0
@@ -79,7 +79,7 @@ Func farmGolemMain($strGolem, $selectBoss, $maxGemRefill, $guardian, $quest, $ho
 	Local $doGuardian = False
 
 	Local $doHourly = False
-	
+
 	Local $numEggs = 0 ;keeps count of number of eggs found
 	Local $numGemsKept = 0; keeps count of number of eggs kept
 	
@@ -126,15 +126,33 @@ Func farmGolemMain($strGolem, $selectBoss, $maxGemRefill, $guardian, $quest, $ho
 					ExitLoop
 				EndIf
 				
-			Case "map", "village", "manage", "astroleague", "map-stage", "map-battle", "toc", "association", "clan", "starstone-dungeons", "golem-dungeons", "elemental-dungeons", "gold-dungeons", "quests"
-				If navigate("map", "golem-dungeons") = True Then
+				If $intGemUsed + 30 <= $intGem Then
+					clickUntil($game_coorRefill, "refill-confirm")
+
+					If getLocation() = "buy-gem" Or getLocation() = "unknown" Then
+						setLog("Out of gems!", 2)
+						ExitLoop
+					EndIf
+
+					clickWhile($game_coorRefillConfirm, "refill-confirm")
+					clickWhile("705, 99", "refill")
+
+					If setLog("Refill gems: " & $intGemUsed + 30 & "/" & $intGem, 0) Then ExitLoop
+					$intGemUsed += 30
+				Else
+					setLog("Gem used exceed max gems!", 0)
+					ExitLoop
+				EndIf
+			
+			Case "map", "village", "astroleague", "map-stage", "map-battle", "toc", "association", "clan", "starstone-dungeons", "collosus-dungeons", "elemental-dungeons", "gold-dungeons", "quests"
+				If navigate("map", "collosus-dungeons") = True Then
 					Local $tempCurrLocation = getLocation()
 					While Not ($tempCurrLocation = "map-battle")
 						If $tempCurrLocation = "autobattle-prompt" Then
 							clickPoint($map_coorCancelAutoBattle, 1, 500)
 						EndIf
 
-						clickPoint(Eval("map_coorB" & $strGolem), 1, 500)
+						clickPoint(Eval("map_coorB" & $strCollosus), 1, 500)
 						$tempCurrLocation = getLocation()
 					WEnd
 
@@ -142,12 +160,12 @@ Func farmGolemMain($strGolem, $selectBoss, $maxGemRefill, $guardian, $quest, $ho
 
 					$intRunCount += 1
 				EndIf
-				
+			
 			Case "battle-end-exp", "battle-sell", "battle-sell-item"
 				clickUntil("193,255", "battle-sell-item", 500, 100)
 				If _Sleep(10) Then ExitLoop
 
-				Local $gemInfo = sellGemGolemFilter($strGolem)
+				Local $gemInfo = sellGemGolemFilter($strCollosus)
 				If IsArray($gemInfo) Then
 					If Not($gemInfo[0] = "EGG") And StringInStr($gemInfo[5], "!") Then
 						$intGoldPrediction += getGemPrice($gemInfo) + $avgGoldPerRound
@@ -172,12 +190,11 @@ Func farmGolemMain($strGolem, $selectBoss, $maxGemRefill, $guardian, $quest, $ho
 				clickPoint(findImage("battle-give-up", 30))
 				clickUntil($game_coorTap, "battle-end", 20, 1000)
 				
-			Case "pause"
-				clickPoint($battle_coorContinue)
-				
 			Case "lost-connection"
 				clickPoint($game_coorConnectionRetry)
 				
+			Case "pause"
+				clickPoint($battle_coorContinue)
 		EndSwitch
 	WEnd
-EndFunc   ;==>farmGolemMain
+EndFunc   ;==>farmCollosusMain

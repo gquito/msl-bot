@@ -7,6 +7,10 @@
 	Global $listScript; script data
 	Global $globalData = ""; data output
 	Global $nullVar = null;
+	Global $LOG_INFO = 0; Information for the user
+	Global $LOG_WARN = 1; A potential problem exists
+	Global $LOG_ERROR = 2; An issue has been encountered
+	Global $LOG_DEBUG = 3; Logs useful only for debugging purposes
 
 ;directory
 	Global Const $strImageSearchDir = @ScriptDir & "\core\_functions\_core\imagesearch\ImageSearchDLL.dll"
@@ -42,6 +46,7 @@
 		Global $village_coorSummon = [393, 501]
 		Global $village_coorAstroguide = [324, 503]
 		Global $village_coorMonsters = [253, 505]
+		Global $village_coorBingo = [80, 90]
 
 		Global $village_coorArrayQuestsTab = ["717,127", "592,125", "463,126", "333,125", "213,127"]
 		Global $village_coorHourly = ["296,115|486,67|683,107|685,289", "182,390|173,94|577,81|627,186", "686,123|503,113|241,160|166,402"] ;pos1, pos2, pos3 -> hourly1|hourly2|hourly3|shop
@@ -56,7 +61,14 @@
 		Global $village_coorSell = [665, 394]
 		Global $village_coorSellConfirm = [398, 331]
 		Global $village_coorNezz = ["446,36|536,408|398,152", "360,159|26,78", "71,338|187,197"] ;pos1, pos2, pos3
-
+	
+	;summon
+		Global $summon_coorFusion = [225,130]
+		Global $summon_coorRebirth = [350,130]
+		Global $summon_coorIncubators = [475,130]
+		Global $summon_coorSoulstones = [600,130]
+		Global $summon_coorAstral = [725,130]
+		
 	;map
 		Global $map_coorStarstoneDungeons = [169, 168]
 		Global $map_coorElementDungeons = [178, 235]
@@ -116,6 +128,15 @@
 		Global $battle_pixelUnavailable = [743, 279, 0x53100C]
 
 		Global $battle_pixelQuest = [344, 365, 0xE80B35]
+		
+		Global $battle_Round1 = [777, 539, 0xC8BC4D]
+		Global $battle_Round2 = [776, 544, 0xEBDC59]
+		Global $battle_Round3 = [778, 540, 0xE1D256]
+		Global $battle_Round4 = [776, 543, 0xE1D256]
+		
+		Global $battle_Chips1 = [745, 283, 0xF7F2ED]
+		Global $battle_Chips2 = [739 ,283, 0xF7F2ED]
+		Global $battle_Chips3 = [747 ,283, 0xF7F2ED]
 
 	;gems
 		Global $gemRanks = ["RUIN", "INTUITION", "CONVICTION,PROTECTION,VALOR,VITALITY,TENACITY,FORTITUDE,HEALING,FEROCITY", "LIFE"]

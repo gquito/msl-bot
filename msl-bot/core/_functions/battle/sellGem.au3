@@ -431,7 +431,6 @@ EndFunc
 	Returns: (Int) Gem price
 	Author: GkevinOD(2017)
 #ce
-
 Func getGemPrice($gemData)
 	Local $gemRank = 0
 	For $i = 0 To UBound($gemRanks)-1

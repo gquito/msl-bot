@@ -4,97 +4,115 @@
 
  Parameters:
 	sellGems: (array) Gems to sell; Not array will not sell
-	refillEnergy: (int) Amount of gems available to use to sell gems. >30 can refill once.
-	gemUsed: (ByRef int) Increments 30 when refill
+	maxGemRefill: (int) Amount of gems available to use to sell gems. >30 can refill once.
+	gemsUsed: (ByRef int) Increments 30 when refill
 
  Return:
 	#number of dungeons run
 	-1 on bot stop
 #ce ----------------------------------------------------------------------------
 
-Func farmGuardian($sellGems, $refillEnergy, ByRef $gemUsed)
+Func farmGuardian($sellGems, $maxGemRefill, ByRef $gemsUsed)
 	If navigate("map", "guardian-dungeons") = False Then Return 0
 	If setLog("Checking for guardian dungeons...", 1) Then Return -1
-	Local $currLocation = getLocation()
 
-	Local $countRun = 0
-	While $currLocation = "guardian-dungeons"
-		Local $energyPoint = findImage("misc-dungeon-energy", 50)
-		If isArray($energyPoint) And (clickUntil($energyPoint, "map-battle", 50) = 1) Then
-			clickWhile($map_coorBattle, "map-battle")
-			If _Sleep(500) Then Return -1
+	Local $battleTimer = TimerInit()
+	
+	Local $roundNumber = [0,0]		; The curround Round Number. [Curruent Round, Total Rounds]
+	Local $autoMode = $AUTO_ROUND	; This is to determine at what points auto-battle will be enabled
+	Local $runCount = 0
+	
+	While True
 
-			Local $currLocation = getLocation()
-
-			If $currLocation = "battle-gem-full" Or $currLocation = "map-gem-full" Then
-				If isArray($sellGems) Then
-					If setLog("Gem box is full, going to sell gems...", 1) Then Return -1
-					If navigate("village", "manage") = 1 Then sellGems($sellGems)
-
-					clickUntil("misc-dungeon-energy", "map-battle")
-					clickWhile($map_coorBattle, "map-battle", 5)
+		antiStuck("map")
+		If _Sleep(100) Then ExitLoop
+		
+		If TimerDiff($battleTimer)/1000 > 120 Then
+			If setLog("Error: Could not finish Guardian dungeon within 2 minutes, exiting.") Then Return -1
+			ExitLoop
+		EndIf
+		
+		Local $location = getLocation()
+		Switch $location
+			Case "guardian-dungeons"
+				Local $energyPoint = findImage("misc-dungeon-energy", 50)
+				If isArray($energyPoint) Then
+					clickUntil($energyPoint, "map-battle", 50)
+					ContinueLoop
 				Else
-					If setLog("Gem box is full!", 1) Then Return -1
-					navigate("map")
-
+					If $runCount = 0 Then
+						If setLog("Guardian dungeon not found, going back to map.", 1) Then Return -1
+					EndIf
 					ExitLoop
 				EndIf
-			EndIf
-
-			If getLocation() = "refill" Then
-				If $gemUsed + 30 <= $refillEnergy Then
-					While getLocation() = "refill"
-						clickPoint($game_coorRefill, 1, 1000)
-					WEnd
-
-					If getLocation() = "buy-gem" Or getLocation() = "unknown" Then
-						setLog("Out of gems!", 2)
-						Return $countRun
-					EndIf
-
-					clickUntil($game_coorRefillConfirm, "refill")
-					clickWhile("705, 99", "refill")
-
-					If setLog("Refill gems: " & $gemUsed + 30 & "/" & $refillEnergy, 0) Then ExitLoop
-					$gemUsed += 30
-				Else
-					setLog("Gem used exceed max gems!", 0)
-					Return $countRun
+			
+			Case "battle-auto"
+				If Not doAutoBattle($roundNumber, $autoMode) Then
+					setLog("Unknown error in Auto-Battle!", 1, $LOG_ERROR)
 				EndIf
+				
+			Case "battle"
+				If Not doBattle($autoMode) Then
+					setLog("Unknown error in Battle!", 1, $LOG_ERROR)
+				EndIf
+				
+			Case "refill"
+				; If the number of used gems will not exceed the limit, purchase additional energy
+				If Not refilGems($gemsUsed, $maxGemRefill) Then 
+					setLog("Unknown error in Gem-Refill!", 1, $LOG_ERROR)
+				EndIf
+				
+			Case "battle-end-exp", "battle-sell"
+				clickUntil($game_coorTap, "battle-end", 100, 100)
+
+			Case "battle-end"				
+				; If Run end of battle checks and then restart
+				If Not restartBattle($runCount) Then
+					setLog("Unknown error in Battle-End!", 1, $LOG_ERROR)
+				EndIf
+				
+				$battleTimer = TimerInit()
+				
+			Case "map-battle"
+				$runCount += 1
+				If setLogReplace("Found dungeon, attacking x" & $runCount & ".", 1) Then Return -1
 				clickWhile($map_coorBattle, "map-battle")
-			EndIf
-
-			$countRun += 1
-			If setLogReplace("Found dungeon, attacking x" & $countRun & ".", 1) Then Return -1
-
-			Local $initTime = TimerInit()
-			While True
-				If _Sleep(1000) Then Return -1
-				If getLocation() = "battle-end-exp" Then ExitLoop
-
-				If Int(TimerDiff($initTime)/1000) > 240 Then
-					If setLog("Error: Could not finish Guardian dungeon within 5 minutes, exiting.") Then Return -1
-
-					navigate("map")
-					Return $countRun
+				$battleTimer = TimerInit()
+				
+			Case "map-gem-full", "battle-gem-full"
+				If setLogReplace("Gem is full, going to sell gems...", 1) Then Return -1
+				If navigate("village", "manage") = 1 Then
+					sellGems($sellGems)
+					If setLogReplace("Gem is full, going to sell gems... Done!", 1) Then ExitLoop
 				EndIf
-			WEnd
+				
+			Case "lost-connection"
+				clickPoint($game_coorConnectionRetry)
 
-			clickUntil($game_coorTap, "battle-end", 100, 100)
-			clickWhile("400,250", "battle-end")
+			Case "dialogue"
+				clickPoint($game_coorDialogueSkip)
 
-			waitLocation("guardian-dungeons", 10000)
-			$currLocation = getLocation()
-		Else
-			If $countRun = 0 Then
-				If setLog("Guardian dungeon not found, going back to map.", 1) Then Return -1
-			EndIf
-
-			navigate("map")
-			Return $countRun
-		EndIf
+			Case "pause"
+				clickPoint($battle_coorContinue, 1, 1000)
+			
+			Case "unknown"
+				clickPoint($game_coorTap)
+				clickPoint(findImage("misc-close", 30)) ;to close any windows open
+					
+			Case "battle-boss"
+				;do Nothing
+				If _Sleep(100) Then Return -1
+					
+			Case "map"
+				ExitLoop
+				
+			;Case Else
+			;	If setLog("Going into battle from " & $location & ".", 1) Then ExitLoop
+			;	If navigate("map", "guardian-dungeons") = False Then Return 0
+			
+		EndSwitch
 	WEnd
-
+	
 	navigate("map")
-	Return $countRun
+	Return $runCount
 EndFunc

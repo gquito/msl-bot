@@ -30,6 +30,8 @@
 	#include "_functions/waitLocation.au3"
 	#include "_functions/checkLocations.au3"
 	#include "_functions/antiStuck.au3"
+	#include "_functions/helperFunctions.au3"
+	#include "_functions/astromonInfo.au3"
 
 	;_core
 		;imagesearch
@@ -47,6 +49,7 @@
 		#include "_functions/battle/sellGem.au3"
 		#include "_functions/battle/recordGem.au3"
 		#include "_functions/battle/farmGuardian.au3"
+		#include "_functions/battle/getRound.au3"
 
 	;map
 		#include "_functions/map/enterStage.au3"

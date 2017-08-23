@@ -4,17 +4,23 @@ Global $setLogOld = ""
 
  Function: setLog
  Sets the text for the title of the GUI and Sets Log
+ 
+ strStatus = Message to be logged
+ option = ?
+ level = level of importance. Info 0, Warning 1, Error 2, Debug 3
 
 #ce ----------------------------------------------------------------------------
 
-Func setLog($strStatus, $option = 0) ;0 is normal, 1 is unimportant, 2 is forced
+Func setLog($strStatus, $option = 0, $level = 0) ;0 is normal, 1 is unimportant, 2 is forced
 	If (Not $option = 2) And ($boolRunning = False) Then Return True
 
 	If $iniOutput = 0 And $option = 1 Then Return
 
-	_GUICtrlEdit_AppendText($textOutput, "[" & _NowTime(5) & "] " & $strStatus & @CRLF)
-	$setLogOld = GUICtrlRead($textOutput)
-	_Sleep(100)
+	If $level <= $iniLogLevel Then
+		_GUICtrlEdit_AppendText($textOutput, "[" & _NowTime(5) & "] " & $strStatus & @CRLF)
+		$setLogOld = GUICtrlRead($textOutput)
+		_Sleep(100)
+	EndIf
 
 	Return False
 EndFunc

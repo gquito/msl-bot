@@ -14,9 +14,9 @@ Func getHourly()
 	If navigate("village") = 1 Then
 
 		If setLogReplace("Collect hourly..", 1) Then Return -1
-		Local $posVillage = null; The village position
+		Local $posVillage = null ; The village position
 
-		If _Sleep(5000) Then Return -1;checks for pop-ups when in village
+		If _Sleep(5000) Then Return -1 ; Checks for pop-ups when in village
 		While navigate("village") = 0
 			If _Sleep(2000) Then Return -1
 		WEnd
@@ -33,7 +33,7 @@ Func getHourly()
 		If setLogReplace("Collect hourly...Position: " & $posVillage, 1) Then Return -1
 		Local $arrayCoor = StringSplit($village_coorHourly[$posVillage], "|", 2) ;format: {"#,#", "#,#"..}
 		For $i = 0 To 2 ;collecting the rewards
-			If _Sleep(100) Then Return
+			If _Sleep(100) Then Return -1
 			Local $getReward = findImage("misc-hourly", 30)
 			Local $tempCount = 0
 			clickWhile(StringSplit($arrayCoor[$i], ",", 2), "village", 20)
@@ -53,7 +53,8 @@ Func getHourly()
 
 	If setLogReplace("Collect hourly..Done!", 1) Then Return -1
 	logUpdate()
-	Return 1
+	
+	Return True
 EndFunc
 
 #cs

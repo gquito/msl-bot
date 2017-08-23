@@ -17,10 +17,25 @@
 
 #ce ----------------------------------------------------------------------------
 
-Func _CaptureRegion($strScreen = "", $iLeft = 0, $iTop = 0, $iRight = 800, $iBottom = 552)
+Func _CaptureRegion($strScreen = "", $iLeft = 0, $iTop = 0, $iRight = null, $iBottom = null)
 	_GDIPlus_BitmapDispose($hBitmap)
 	_WinAPI_DeleteObject($hHBitmap)
-
+	
+	Local $winSize = WinGetClientSize($hWindow)
+	
+	If $iRight = null OR $iRight > ($winSize[0] - $diff[0]) Then
+		$iRight = $winSize[0] - $diff[0]
+	ElseIf $iRight < 0 Then
+		$iRight = 0
+	EndIf
+	
+	If $iBottom = null OR $iBottom > ($winSize[1] - $diff[1]) Then
+		$iBottom = $winSize[1] - $diff[1]
+	ElseIf $iBottom < 0 Then
+		$iBottom = 0
+	EndIf
+	
+	
 	If $iniBackground = 1 Then
 		Local $iW = Abs(Number($iRight) - Number($iLeft)), $iH = Abs(Number($iBottom) - Number($iTop))
 		If $iRight < $iLeft Then $iLeft = $iRight
