@@ -5,7 +5,5 @@
 #include "Farm Starstone.au3"
 #include "Farm Pvp.au3"
 #include "Farm ToC.au3"
-#include "Farm Gold Dungeon.au3"
 #include "Hatch Egg.au3"
-#include "Play Bingo.au3"
 #include "Farm Forever.au3"

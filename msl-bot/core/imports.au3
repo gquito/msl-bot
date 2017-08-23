@@ -46,17 +46,19 @@
 
 	;battle
 		#include "_functions/battle/catch.au3"
-		#include "_functions/battle/sellGem.au3"
-		#include "_functions/battle/recordGem.au3"
+		#include "_functions/battle/farmGoldDungeon.au3"
 		#include "_functions/battle/farmGuardian.au3"
 		#include "_functions/battle/getRound.au3"
+		#include "_functions/battle/recordGem.au3"
+		#include "_functions/battle/sellGem.au3"
 
 	;map
 		#include "_functions/map/enterStage.au3"
 
 	;village
-		#include "_functions/village/sellGems.au3"
+		#include "_functions/village/buyItem.au3"
+		#include "_functions/village/evolve.au3"
 		#include "_functions/village/getHourly.au3"
 		#include "_functions/village/getQuest.au3"
-		#include "_functions/village/evolve.au3"
-		#include "_functions/village/buyItem.au3"
+		#include "_functions/village/playBingo.au3"
+		#include "_functions/village/sellGems.au3"

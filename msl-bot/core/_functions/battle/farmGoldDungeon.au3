@@ -5,13 +5,6 @@
 	Author: Shimizoki (2017)
 #ce
 Func farmGoldDungeon()
-	setLog("~~~Starting 'Farm Gold Dungeon' script~~~", 2)
-	farmGoldDungeonMain()
-	setLog("~~~Finished 'Farm Gold Dungeon' script~~~", 2)
-EndFunc   ;==>farmGolem
-
-Func farmGoldDungeonMain()
-
 	Local $selectBoss = True
 
 	Local $intStartTime = TimerInit()
@@ -33,20 +26,20 @@ Func farmGoldDungeonMain()
 			Case "battle-auto"
 				If Not doAutoBattle($roundNumber, $autoMode, $selectBoss) Then
 					setLog("Unknown error in Auto-Battle!", 1, $LOG_ERROR)
-					ExitLoop
+					;ExitLoop
 				EndIf
 				
 			Case "battle"
 				If Not doBattle($autoMode) Then
 					setLog("Unknown error in Battle!", 1, $LOG_ERROR)
-					ExitLoop
+					;ExitLoop
 				EndIf
 				
 			Case "refill"
 				; If the number of used gems will not exceed the limit, purchase additional energy
 				If Not refilGems($gemsUsed, $maxGemRefill) Then 
 					setLog("Unknown error in Gem-Refill!", 1, $LOG_ERROR)
-					ExitLoop
+					;ExitLoop
 				EndIf
 				
 			Case "battle-end-exp", "battle-sell"
@@ -90,6 +83,9 @@ Func farmGoldDungeonMain()
 			Case "lost-connection"
 				clickPoint($game_coorConnectionRetry)
 				
+			;Case Else
+			;	navigate("map", "gold-dungeons")
+			
 		EndSwitch
 	WEnd
-EndFunc   ;==>farmGolemMain
+EndFunc   ;==>farmGoldDungeon
