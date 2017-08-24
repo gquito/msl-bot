@@ -53,23 +53,15 @@ EndFunc
  Checks if pixel is what is specified in an area
 
  Parameters:
-
 	x1 - Left x-position.
-
 	x2 - Right x-position.
-
 	y1 - Left y-position.
-
 	y2 - Right y-position.
-
 	intVariation - Variation limit.
-
 	skipx - Number of pixels to skip at a time on the x axis.
-
 	skipy - Number of pixels to skip at a time on the y axis.
 
  Returns:
-
 	Color found - Return point array
 
 	Not Found - Return 0

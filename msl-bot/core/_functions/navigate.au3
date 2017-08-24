@@ -24,13 +24,18 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 		Switch $strLocation
 			;village
 			Case "shop"
-				If isArray(findImage("misc-village-pos1", 50)) Then
-					clickUntil(StringSplit($village_coorHourly[0], "|", 2)[3], "shop")
-				ElseIf isArray(findImage("misc-village-pos2", 50)) Then
-					clickUntil(StringSplit($village_coorHourly[1], "|", 2)[3], "shop")
-				ElseIf isArray(findImage("misc-village-pos3", 50)) Then
-					clickUntil(StringSplit($village_coorHourly[2], "|", 2)[3], "shop")
-				EndIf
+				Local $villagePos = getVillagePos()
+				Switch $villagePos
+					Case 0
+						clickUntil(StringSplit($village_coorHourly[0], "|", 2)[3], "shop")
+					Case 1
+						clickUntil(StringSplit($village_coorHourly[1], "|", 2)[3], "shop")
+					Case 2
+						clickUntil(StringSplit($village_coorHourly[2], "|", 2)[3], "shop")
+					Case Else
+						If _setLog("The Ship is in an unknown position") Then Return -1
+						Return False
+				EndSwitch
 
 				If Not(getLocation() = "shop") Then
 					Local $shadyShop = findImage("misc-shop", 50, 100)
