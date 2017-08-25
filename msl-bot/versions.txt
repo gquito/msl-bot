@@ -1,3 +1,3 @@
-latest-version=v2.2.0.2,2020002,2.2
-description=v2.2.0.2 Update log:|- Fix somestimes Farm Golem goes into B10.|- Added pixels for light stones (Only for B10 stones).|- Farm Gem gem used disappears.
+latest-version=v2.2.1.0,2020100,2.2
+description=v2.2.0.2 Update log:|-Patch locations for 8/23 game update.|-Adjusted codes for stability and bug fixes.|-Farm Starstone recoded.||*New airship will not be able to collect hourly or click nezz temporarily.
 directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
