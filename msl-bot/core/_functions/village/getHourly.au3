@@ -54,7 +54,7 @@ Func getHourly()
 	If setLogReplace("Collect hourly..Done!", 1) Then Return -1
 	logUpdate()
 	
-	Return True
+	Return 1
 EndFunc
 
 #cs

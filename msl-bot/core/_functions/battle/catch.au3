@@ -20,11 +20,8 @@ Func catch($varImages, $boolOneAstromon = False, $boolRareAstromon = True)
 		If isArray($varImages) Then ;finding astromon within list
 			$pointArray = findImages($varImages, 100, 1000, 0, 263, 800, 473)
 		Else
-			If setLog("Searching for Bron", 1) Then Return -1
 			$pointArray = findImage($varImages, 100, 1000, 0, 263, 800, 473)
 		EndIf
-		
-		
 
 		If isArray($pointArray) = True Then ;found
 			Local $strGrade = _StringProper(StringRegExpReplace($pointArray[3], ".*catch-(.+)(\D)(\d+?|\d?)\.bmp", "$1$2"))
@@ -32,15 +29,9 @@ Func catch($varImages, $boolOneAstromon = False, $boolRareAstromon = True)
 			$pointArray[1] -= 50
 
 			;catching astromons
-			clickPoint($pointArray)
-			
-			_Sleep(500)
-			If getLocation() = "battle-astromon-full" Then
-				If setLogReplace("Catching astromons... Astromon bag full!", 1) Then Return -1
-				logUpdate()
-				Return $astromons
-			EndIf
+			clickPoint($pointArray, 5, 100)
 
+			_Sleep(500)
 			ControlSend($hWindow, "", "", "{ESC}")
 			_Sleep(100)
 			ControlSend($hWindow, "", "", "{ESC}")
@@ -48,6 +39,11 @@ Func catch($varImages, $boolOneAstromon = False, $boolRareAstromon = True)
 
 			clickUntil($pointArray, "catch-success,battle,battle-astromon-full", 500, 100)
 
+			If getLocation() = "battle-astromon-full" Then
+				If setLogReplace("Catching astromons... Astromon bag full!", 1) Then Return -1
+				logUpdate()
+				Return $astromons
+			EndIf
 
 			;waiting for success location or battle location
 			Local $boolCaught = False
