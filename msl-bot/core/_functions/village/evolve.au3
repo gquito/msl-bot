@@ -106,7 +106,7 @@ Func evolveClickMon($monster)
 		ControlSend($hWindow, "", "", "{RIGHT}")
 		If _Sleep(500) Then Return -1
 
-		If TimerDiff($timerStart) > 45000 Then Return False ;45 Seconds
+		If TimerDiff($timerStart) > 60000 Then Return False ; 1 minute
 		$monEvo = findImage("monster-" & $monster, 100, 500, 9, 101, 292, 449)
 	WEnd
 	
@@ -171,7 +171,7 @@ Func evolveMon($monster)
 		; Do Awakening
 		If setLogReplace($logBaseStr & "Awakening", 2) Then Return -1
 		If _Sleep(10) Then Return -1
-		clickUntil("424, 394", "monsters-awaken")
+		clickUntil("424, 394", "monsters-awaken", 20, 500)
 
 		; Abort if out of gold
 		If getLocation() = "buy-gold" Then
@@ -181,12 +181,12 @@ Func evolveMon($monster)
 
 		; Confirm Awakening
 		If _Sleep(10) Then Return -1
-		clickUntil("308, 316", "monsters-evolution")
+		clickUntil("308, 316", "monsters-evolution", 20, 500)
 		
 		; Do Evolution
 		If setLogReplace($logBaseStr & "Evolving", 2) Then Return -1
 		If _Sleep(10) Then Return -1
-		clickUntil("657, 394", "monsters-evolve")
+		clickUntil("657, 394", "monsters-evolve", 20, 500)
 
 		; Abort if out of gold
 		If getLocation() = "buy-gold" Then
@@ -196,11 +196,11 @@ Func evolveMon($monster)
 
 		; Confirm Evolution
 		If _Sleep(10) Then Return -1
-		clickUntil("308, 316", "unknown")
+		clickUntil("308, 316", "unknown", 20, 500)
 		
 		; Speed through Evolution
 		If _Sleep(10) Then Return -1
-		clickUntil($game_coorTap, "monsters-astromon", 10, 500)
+		clickUntil($game_coorTap, "monsters-astromon", 20, 500)
 		
 		; Close Dialog
 		If _Sleep(100) Then Return -1

@@ -32,8 +32,6 @@ Func findImage($strImage, $intTolerance = 10, $duration = 100, $left = 0, $top =
 		$bottom = 0
 	EndIf
 	
-	
-	
 	If StringInStr($strImage, "-") Then ;image with specified folder
 		$strImage = StringSplit($strImage, "-", 2)[0] & "\" & $strImage
 	EndIf
@@ -55,10 +53,10 @@ Func findImage($strImage, $intTolerance = 10, $duration = 100, $left = 0, $top =
 	Local $pointArray = [-1, -1]
 	Local $tempSearch;
 
-	_CaptureRegion("", $left, $top, $right, $bottom)
 	Local $startTimer = TimerInit()
 	While TimerDiff($startTimer) < $duration
-		If _Sleep(10) Then Return 0
+		_CaptureRegion("", $left, $top, $right, $bottom)
+		If _Sleep(100) Then Return 0
 
 		$tempSearch = _ImagesSearch($arrayImages, 1, $pointArray[0], $pointArray[1], $intTolerance)
 
