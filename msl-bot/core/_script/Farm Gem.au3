@@ -57,15 +57,18 @@ Func farmGemMain($monster, $justEvolve, $gemsToFarm, $maxRefill, $freeSpace)
 		If _Sleep(10) Then Return -1
 		If setLog("Going to evolve " & $monster & "...", 1) Then Return -1
 		
+		; Evolve all mimics the user has to the highest stage available
 		Local $monsNeededToEvo = evolve($monster)
 		While Not ($monsNeededToEvo > 0)
+			; Exit out if an error was encountered
 			If $monsNeededToEvo == False Then
 				If setLog("Error: Something went wrong in the evolving process!", 1) Then Return -1
 				Return False
 			ElseIf $monsNeededToEvo < 0 Then 
 				Return -1
 			EndIf
-		
+			
+			; Increase the iterations by 1, and the freespace by 16 (since 16 mons make an evo3)
 			$cIteration += 1
 			$freeSpace += 16
 			setList("Iteration: " & $cIteration & "/" & $totalIteration & "|Farmed Gems: " & $cIteration*100 & "|Gem Refill Used: " & $gemUsed & "/" & $maxRefill)
@@ -73,12 +76,17 @@ Func farmGemMain($monster, $justEvolve, $gemsToFarm, $maxRefill, $freeSpace)
 			$monsNeededToEvo = evolve($monster)
 		WEnd	
 		
-		; Catch any additional mons needed
+		; Calculates the number of iterations that can be causght in a single run based off the freespace available
 		Local $numIterationsCatching =  _Min(BitShift($freeSpace, 4), $numIteration - $cIteration)
+		
+		; Catch any additional mons needed
 		If $justEvolve = 0 Then
 			If _Sleep(10) Then Return -1
 			
+			; Calculates the number of mons that need to be caught to satisfy the remaining number of iterations
 			Local $needCatch = (($numIterationsCatching - 1) * 16) + $monsNeededToEvo
+			
+			; Catch any remaining mons
 			If $needCatch >= 0 Then
 				If setLog("Going to collect " & $needCatch & " " & $monster & "s...", 1) Then Return -1
 				farmGemCatching($needCatch, $monster, $gemUsed, $maxRefill)

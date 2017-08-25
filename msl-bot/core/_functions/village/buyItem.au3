@@ -24,13 +24,15 @@ Func buyItem($item, $maxGold)
 			setLog("Did not recognize the item: " & $item)
 			Return $itemsBought
 	EndSwitch
+	
+	_logBuyStatus("Buying " & $item & "...", True)
 
-	If setLogReplace("Buying " & $item & "... Navigating to shop.") Then Return -1
+	If _logBuyStatus("Navigating to shop.") Then Return -1
 	If navigate("village", "shop") = True Then
 		Local $arrayAreas = [[185, 156, 262, 244], [185, 243, 256, 321], [189, 320, 261, 398], [187, 398, 260, 480], [480, 150, 540, 210]]
 
 		Do
-			If setLogReplace("Buying " & $item & "... Searching for item.") Then Return -1
+			If _logBuyStatus("Searching for item.") Then Return -1
 
 			clickPoint("223,433", 3, 100)
 			_CaptureRegion()
@@ -39,24 +41,24 @@ Func buyItem($item, $maxGold)
 			For $area = 0 To 4
 				Local $findItem = findImage($itemImage, 50, 500, $arrayAreas[$area][0], $arrayAreas[$area][1], $arrayAreas[$area][2], $arrayAreas[$area][3])
 				If isArray($findItem) Then
-					If setLogReplace("Buying " & $item & "... An item found") Then Return -1
+					If _logBuyStatus("An item found") Then Return -1
 					clickPoint($findItem, 5, 250) ;select item
 
 					If $item = "soulstone" Then ;prevent buy 3* soul
 						If isArray(findImage("shop-x5", 50, 100, 533, 209, 755, 268)) = True Then
 							If isArray(findImage("shop-10k", 50, 100, 537, 414, 773, 477)) = True Then
-								If setLogReplace("Buying " & $item & "... Not a 4* soulstone.") Then Return -1
+								If _logBuyStatus("Not a 4* soulstone.") Then Return -1
 								ContinueLoop
 							EndIf
 						ElseIf isArray(findImage("shop-x1", 50, 100, 533, 209, 755, 268)) = True Then
 							If isArray(findImage("shop-10k", 50, 100, 537, 414, 773, 477)) = False Then
-								If setLogReplace("Buying " & $item & "... Not a 4* soulstone.") Then Return -1
+								If _logBuyStatus("Not a 4* soulstone.") Then Return -1
 								ContinueLoop
 							EndIf
 						EndIf
 					EndIf
 
-					If setLogReplace("Buying " & $item & "... Checking prices.") Then Return -1
+					If _logBuyStatus("Checking prices.") Then Return -1
 
 					Local $price = 0
 					Select
@@ -73,7 +75,7 @@ Func buyItem($item, $maxGold)
 						Case isArray(findImage("shop-150k", 50, 100, 537, 414, 773, 477)) = True
 							$price = 150000
 						Case Else
-							If setLogReplace("Buying " & $item & "... Could not check price!") Then Return -1
+							If _logBuyStatus("Could not check price!") Then Return -1
 							navigate("village")
 							logUpdate()
 							Return $itemsBought
@@ -86,14 +88,14 @@ Func buyItem($item, $maxGold)
 						WEnd
 						_CaptureRegion("item-bought" & $fileCounter & ".bmp", 529, 154, 778, 478)
 
-						If setLogReplace("Buying " & $item & "... Purchasing for " & $price & " gold.") Then Return -1
+						If _logBuyStatus("Purchasing for " & $price & " gold.") Then Return -1
 						logUpdate()
 						clickUntil("650, 446", "unknown") ;until prompt shows up
 						clickWhile("412, 310", "unknown", 3, 1000) ;until prompt disappears
 
 						_ArrayAdd($itemsBought, $item & "," & $price)
 					Else
-						If setLogReplace("Buying " & $item & "... price exceeds limit!", 1) Then Return -1
+						If _logBuyStatus("price exceeds limit!", 1) Then Return -1
 					EndIf
 				EndIf
 			Next
@@ -109,12 +111,23 @@ Func buyItem($item, $maxGold)
 			Local $secondPixel = _GDIPlus_BitmapGetPixel($hBitmap, 653, 202)
 		Until $firstPixel = $secondPixel
 
-		If setLogReplace("Buying " & $item & "... Done!") Then Return -1
+		If _logBuyStatus("Done!") Then Return -1
 		navigate("village")
 		logUpdate()
 	Else
-		If setLogReplace("Buying " & $item & "... Could not navigate to shop!") Then Return -1
+		If _logBuyStatus("Could not navigate to shop!") Then Return -1
 	EndIf
 
 	Return $itemsBought
+EndFunc
+
+Func _logBuyStatus($log = "", $set = False)
+	Static Local $header
+	
+	If $set Then
+		$header = $log
+		Return True
+	Else
+		Return setLogReplace($header & " " & $log)
+	EndIf
 EndFunc

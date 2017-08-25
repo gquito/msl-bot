@@ -21,6 +21,7 @@ Func farmGuardian($sellGems, $maxGemRefill, ByRef $gemsUsed)
 	Local $roundNumber = [0,0]		; The curround Round Number. [Curruent Round, Total Rounds]
 	Local $autoMode = $AUTO_ROUND	; This is to determine at what points auto-battle will be enabled
 	Local $runCount = 0
+	Local $selectBoss = 1
 	
 	While True
 
@@ -47,7 +48,7 @@ Func farmGuardian($sellGems, $maxGemRefill, ByRef $gemsUsed)
 				EndIf
 			
 			Case "battle-auto"
-				If Not doAutoBattle($roundNumber, $autoMode) Then
+				If Not doAutoBattle($roundNumber, $autoMode, $selectBoss) Then
 					setLog("Unknown error in Auto-Battle!", 1, $LOG_ERROR)
 				EndIf
 				

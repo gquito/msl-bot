@@ -184,7 +184,6 @@ Func doBattleEnd($doQuest, ByRef $doHourly, $shoppingList, $goldSpent, $maxGold,
 	Return $questSuccess & $hourlySuccess & $guardianSuccess & $restartSuccess
 EndFunc
 
-
 Func doQuest($doQuest)
 	; Check if this run completed a quest and pick it up to avoid missing it
 	If $doQuest = 1 And checkPixel($battle_pixelQuest) = True Then getQuest()

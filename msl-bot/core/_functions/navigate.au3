@@ -140,17 +140,35 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 						Case "village"
 							clickWhile($village_coorPlay, "village")
 							Switch waitLocation("unknown,dialogue", 3000)
-								Case "unknown"
+								Case "unknown"									
+									_Sleep(250)
+									If getLocation() == "bingo-play" Then
+										playBingo()
+										_Sleep(100)
+									EndIf
+									
 									If isArray(findImage("misc-close", 100)) = True Then
 										clickPoint(findImage("misc-close", 30), 3, 100) ;to close any windows open
 										clickWhile($village_coorPlay, "village")
 									EndIf
+									
 								Case "dialogue"
-									clickPoint($game_coorDialogueSkip, 3, 100)
+									clickWhile($game_coorDialogueSkip, "dialogue")
+									_Sleep(100)
+									
+									If getLocation() == "bingo-play" Then
+										playBingo()
+										_Sleep(100)
+									EndIf
+									
 									If isArray(findImage("misc-close", 100)) = True Then
 										clickPoint(findImage("misc-close", 30), 3, 100) ;to close any windows open
 										clickWhile($village_coorPlay, "village")
 									EndIf
+									
+								Case "bingo-play"
+									playBingo()
+							
 							EndSwitch
 							If waitLocation("map", 10000) = "map" Then ExitLoop
 						Case "astroleague", "map-battle", "association", "clan"
@@ -169,6 +187,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 					If Not(waitLocation("battle,battle-auto", 8000)) = "" Then ExitLoop
 				Case Else
 					setLog("Unknown main location: " & $strMainLocation & ".")
+					ExitLoop
 			EndSwitch
 			If _Sleep(100) Then Return -1
 		WEnd

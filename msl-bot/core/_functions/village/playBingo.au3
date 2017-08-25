@@ -30,8 +30,6 @@ Func playBingo()
 			Case "bingo-play"
 				setLog("Clicking Bingo", 1, $LOG_DEBUG)
 				clickWhile($bingo_coorGetPiece, "bingo-play")
-				;_Sleep(250)
-				;clickPoint($bingo_coorGetPiece)
 				$timer = TimerInit()
 				
 			Case "bingo-wait"
@@ -44,7 +42,7 @@ Func playBingo()
 				setLog("Dialogue Found", 1, $LOG_DEBUG)
 				clickPoint($game_coorDialogueSkip)
 				
-			Case "bingo-success"
+			Case "bingo-prize"
 				setLog("Bingo!", 1)
 				clickPoint("400,325")
 				
@@ -52,9 +50,9 @@ Func playBingo()
 				setLog("Bingo is over!", 1)
 				ExitLoop
 			
-			Case "map", "astroleague", "map-stage", "toc", "association", "clan", "starstone-dungeons", "golem-dungeons", "elemental-dungeons", "quests"
-				navigate("map", "village")
-				If _Sleep(2000) Then ExitLoop
+			;Case "map", "astroleague", "map-stage", "toc", "association", "clan", "starstone-dungeons", "golem-dungeons", "elemental-dungeons", "quests"
+			;	navigate("map", "village")
+			;	If _Sleep(2000) Then ExitLoop
 				
 			Case "pause"
 				clickPoint($battle_coorContinue, 1, 2000)
@@ -65,9 +63,9 @@ Func playBingo()
 			Case "lost-connection"
 				clickPoint($game_coorConnectionRetry)
 				
-			;Case Else
-			;	navigate("map", "village")
-			;	If _Sleep(2000) Then ExitLoop
+			Case Else
+				navigate("village")
+				If _Sleep(2000) Then ExitLoop
 			
 		EndSwitch
 	WEnd

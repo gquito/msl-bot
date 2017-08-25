@@ -26,28 +26,31 @@ Func farmGoldDungeon()
 			Case "battle-auto"
 				If Not doAutoBattle($roundNumber, $autoMode, $selectBoss) Then
 					setLog("Unknown error in Auto-Battle!", 1, $LOG_ERROR)
-					;ExitLoop
 				EndIf
 				
 			Case "battle"
 				If Not doBattle($autoMode) Then
 					setLog("Unknown error in Battle!", 1, $LOG_ERROR)
-					;ExitLoop
 				EndIf
 				
 			Case "refill"
 				; If the number of used gems will not exceed the limit, purchase additional energy
 				If Not refilGems($gemsUsed, $maxGemRefill) Then 
 					setLog("Unknown error in Gem-Refill!", 1, $LOG_ERROR)
-					;ExitLoop
 				EndIf
 				
 			Case "battle-end-exp", "battle-sell"
 				clickPoint($game_coorTap)
 				
 			Case "battle-end"
-				Local $battle_coorNext = [500, 250]
-				clickUntil($battle_coorNext, "map-battle")
+				Local $battle_coorNext = [460, 275, 0xF9E7B7]
+				If checkPixel($battle_coorNext) Then
+					clickUntil($battle_coorNext, "map-battle")
+				Else
+					If setLog("Gold Dungeon Over") Then Return -1
+					navigate("map")
+					ExitLoop
+				EndIf
 				
 			Case "map-battle"
 				clickWhile($map_coorBattle, "map-battle")
@@ -84,7 +87,7 @@ Func farmGoldDungeon()
 				clickPoint($game_coorConnectionRetry)
 				
 			;Case Else
-			;	navigate("map", "gold-dungeons")
+			;	navigate("gold-dungeons")
 			
 		EndSwitch
 	WEnd

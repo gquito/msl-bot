@@ -115,9 +115,10 @@ Func debugPoint3()
 	getEmulatorHandle()
 
 	Local $size = WinGetClientSize($hWindow)
-	Local $pixel = [0,0]
-	$pixel[0] = _Min(_Max(0, MouseGetPos(0) - WinGetPos($hWindow)[0] - $diff[0]), $size[0])
-	$pixel[1] = _Min(_Max(0, MouseGetPos(1) - WinGetPos($hWindow)[1] - $diff[1]), $size[1])
+	Local $pixel = [MouseGetPos(0) - WinGetPos($hWindow)[0] - $diff[0], MouseGetPos(1) - WinGetPos($hWindow)[1] - $diff[1]]
+		
+	$pixel[0] = _Min(_Max(0, $pixel[0]), $size[0])
+	$pixel[1] = _Min(_Max(0, $pixel[1]), $size[1])
 	
 	_CaptureRegion()
 	Local $color = _ColorHexToRGB(_GDIPlus_BitmapGetPixel($hBitmap, $pixel[0], $pixel[1]))
