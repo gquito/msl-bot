@@ -6,6 +6,7 @@
 #include <ScreenCapture.au3>
 #include <GDIPlus.au3>
 #include <Array.au3>
+#include <Constants.au3>
 #include <FileConstants.au3>
 #include <MsgBoxConstants.au3>
 #include <ButtonConstants.au3>

@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=msl-bot v2.2.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=2.2.0.2
+#AutoIt3Wrapper_Res_Fileversion=2.2.1.0
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
@@ -11,8 +11,8 @@ Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
 Global $oldVersion = "2.0"
 Global $botSimpleVersion = "2.2"
-Global $botVersion = "v2.2.0.2"
-Global $botVersionValue = 2020002
+Global $botVersion = "v2.2.1.0"
+Global $botVersionValue = 2020100
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead($botConfigDir, "general", "scripts", ""), ",", 2)
 
@@ -48,6 +48,7 @@ Next
 GUICtrlSetData($listConfig, $generalConfig)
 
 loadLocation() ;loads up location from /core/location.txt
+loadPixelRecords()
 
 ;importing scripts
 #include "core/_script/imports.au3"
@@ -55,7 +56,7 @@ loadLocation() ;loads up location from /core/location.txt
 ;checking for update`````````````````````
 #include <Inet.au3>
 Local $versionFile = StringSplit(_INetGetSource("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/versions.txt", True), @CRLF, 2)
-If isArray($versionFile) = True Then
+If IsArray($versionFile) = True Then
 	Local $checkVersion = StringSplit(StringSplit($versionFile[0], "=", 2)[1], ",", 2)
 	Local $updateDescription = StringReplace(StringSplit($versionFile[1], "=", 2)[1], "|", @CRLF)
 	Local $directory = StringSplit($versionFile[2], "=", 2)[1]
@@ -104,7 +105,7 @@ EndIf
 ;``````````````````````````````````````````
 
 ;Hotkeys =====================================
-HotKeySet("{END}", "hotkeyStopBot")
+;HotKeySet("{END}", "hotkeyStopBot")
 HotKeySet("{F6}", "debugPoint1")
 HotKeySet("{F7}", "debugPoint2")
 
@@ -114,8 +115,8 @@ Func debugPoint1()
 	$pointDebug1[0] = MouseGetPos(0) - WinGetPos($hControl)[0]
 	$pointDebug1[1] = MouseGetPos(1) - WinGetPos($hControl)[1]
 
-	_CaptureRegion()
-	;ClipPut($pointDebug1[0] & "," & $pointDebug1[1] & ",0x" & Hex(_GDIPlus_BitmapGetPixel($hBitmap, $pointDebug1[0], $pointDebug1[1]), 6))
+	;_CaptureRegion()
+	;ClipPut($pointDebug1[0] & "," & $pointDebug1[1] & ",0x" & Hex(_GDIPlus_BitmapGetPixel($hBitmap, $pointDebug1[0], $pointDebug1[1]), 6) & "|")
 
 	If $pointDebug1[0] > 800 Or $pointDebug1[0] < 0 Or $pointDebug1[1] > 600 Or $pointDebug1[1] < 0 Then
 		$pointDebug1[0] = "?"
@@ -205,7 +206,7 @@ Func btnPauseClick()
 		GUICtrlSetData($btnPause, "Pause")
 		GUICtrlSetState($btnRun, $GUI_ENABLE)
 	EndIf
-EndFunc
+EndFunc   ;==>btnPauseClick
 
 ;function: frmMainClose
 ;-Exits application and saves the log
@@ -338,7 +339,7 @@ Func btnConfigEdit()
 	EndSwitch
 
 	;overwrite file
-	If Not($value = -1) Then IniWrite($botConfigDir, "general", $key, $value) ;write to config file
+	If Not ($value = -1) Then IniWrite($botConfigDir, "general", $key, $value) ;write to config file
 
 	Dim $arrayKeys = StringSplit(IniRead($botConfigDir, "general", "keys", ""), ",", 2)
 	Dim $generalConfig = ""
@@ -365,7 +366,7 @@ EndFunc   ;==>btnConfigEdit
 Func cmbLoadClick()
 	;pre
 	If GUICtrlRead($cmbLoad) = "Select a script.." Then
-		GUICtrlSetData($textOutput, "Select a script to see the description and help for each property in the script.")
+		GUICtrlSetData($textOutput, "Select a script to see the description and help for each property in the script." & @CRLF)
 		GUICtrlSetData($listScript, "") ;reset list
 		Return
 	EndIf
@@ -426,7 +427,7 @@ Func btnEditClick()
 	EndSwitch
 
 	;overwrite file
-	If Not($value = -1) Then IniWrite($botConfigDir, $strScript, $key, $value) ;write to config file
+	If Not ($value = -1) Then IniWrite($botConfigDir, $strScript, $key, $value) ;write to config file
 
 	cmbLoadClick()
 EndFunc   ;==>btnEditClick
@@ -491,7 +492,7 @@ Func btnSetClick()
 
 	Local $limit = "" ;
 
-	For $index = 0 To UBound($listLocation)-1
+	For $index = 0 To UBound($listLocation) - 1
 		$limit &= $listLocation[$index][0] & ", "
 	Next
 	$limit = StringTrimRight($limit, 2)
@@ -508,7 +509,7 @@ Func btnSetClick()
 	WEnd
 
 	If IsArray($listLocation) = False Then loadLocation()
-	For $index = 0 To UBound($listLocation)-1
+	For $index = 0 To UBound($listLocation) - 1
 		If $strLocation = $listLocation[$index][0] Then
 			Local $newLoc = $strLocation & ":"
 			For $pixelSet In StringSplit($listLocation[$index][1], "/", 2)
@@ -607,4 +608,20 @@ Func getEmulatorHandle()
 	$hControl = ControlGetHandle($botTitle, "", $botInstance)
 
 	$diff = ControlGetPos($botTitle, "", $hControl)
+
+	If $hControl = 0 Then
+		Local $processList = WinList()
+		For $i = 1 To UBound($processList) - 1
+			Local $size = WinGetClientSize($processList[$i][1])
+			If $size[0] = 804 And $size[1] = 590 Then
+				$hWindow = $processList[$i][1]
+				$hControl = ControlGetHandle($processList[$i][0], "", $botInstance)
+
+				$diff = ControlGetPos($processList[$i][0], "", $hControl)
+
+				setLog("Window handle was automatically found: Title: " & $processList[$i][0] & " (Handle: " & $processList[$i][1] & ")", 2)
+				ExitLoop
+			EndIf
+		Next
+	EndIf
 EndFunc   ;==>getEmulatorHandle

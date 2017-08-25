@@ -26,9 +26,15 @@ Func evolve($monster)
 	For $selectMon = 0 To 3
 		evolveClickMon($monster)
 
-		If setLogReplace("Evolving astromon...Ascending", 1) Then Return -1
+		If Not (getLocation() = "monsters-evolution") Then
+			clickUntil("600, 391", "monsters-evolution")
+		EndIf
+
+		If setLogReplace("Evolving astromon...Awakening", 1) Then Return -1
 
 		Local $empty3rdSlot = [583, 182, 0x7D624D]
+
+		_CaptureRegion()
 		While checkPixel($empty3rdSlot) = True
 			Local $evoSlime = findImage($monster, 130, 100, 314, 298, 772, 363)
 			While isArray($evoSlime)
@@ -62,7 +68,7 @@ Func evolve($monster)
 
 		;awakening and evolving
 		If _Sleep(10) Then Return -1
-		clickUntil("424, 394", "monsters-awaken")
+		clickUntil("424, 394", "monsters-awaken", 20, 500)
 
 		If getLocation() = "buy-gold" Then
 			setLog("Error: Out of gold!", 2)
@@ -71,9 +77,9 @@ Func evolve($monster)
 
 		If setLogReplace("Evolving astromon...Evolving", 2) Then Return -1
 		If _Sleep(10) Then Return -1
-		clickUntil("308, 316", "monsters-evolution")
+		clickUntil("308, 316", "monsters-evolution", 20, 500)
 		If _Sleep(10) Then Return -1
-		clickUntil("657, 394", "monsters-evolve")
+		clickUntil("657, 394", "monsters-evolve", 20, 500)
 
 		If getLocation() = "buy-gold" Then
 			setLog("Error: Out of gold!", 1)
@@ -81,7 +87,7 @@ Func evolve($monster)
 		EndIf
 
 		If _Sleep(10) Then Return -1
-		clickUntil("308, 316", "unknown")
+		clickUntil("308, 316", "unknown", 20, 500)
 		If _Sleep(10) Then Return -1
 		clickPoint($game_coorTap, 10, 500)
 		logUpdate()
@@ -110,7 +116,7 @@ Func evolve($monster)
 
 	;awakening and evolving
 	If _Sleep(10) Then Return -1
-	clickUntil("424, 394", "monsters-awaken")
+	clickUntil("424, 394", "monsters-awaken", 20, 500)
 
 	If getLocation() = "buy-gold" Then
 		setLog("Error: Out of gold!", 1)
@@ -118,9 +124,9 @@ Func evolve($monster)
 	EndIf
 
 	If _Sleep(10) Then Return -1
-	clickUntil("308, 316", "monsters-evolution")
+	clickUntil("308, 316", "monsters-evolution", 20, 500)
 	If _Sleep(10) Then Return -1
-	clickUntil("657, 394", "monsters-evolve")
+	clickUntil("657, 394", "monsters-evolve", 20, 500)
 
 	If getLocation() = "buy-gold" Then
 		setLog("Error: Out of gold!", 1)
@@ -164,7 +170,7 @@ Func evolveClickMon($monster)
 		ControlSend($hWindow, "", "", "{RIGHT}")
 		If _Sleep(500) Then Return -1
 
-		If TimerDiff($timerStart) > 150000 Then Return False;3 minutes
+		If TimerDiff($timerStart) > 60000 Then Return False;1 minutes
 		$monEvo = findImage($monster, 130, 500, 9, 101, 292, 449)
 	WEnd
 	If setLogReplace("Evolving astromon...Found!", 1) Then Return -1

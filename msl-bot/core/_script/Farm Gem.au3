@@ -97,6 +97,30 @@ Func farmGemCatching(ByRef $needCatch, ByRef $gemUsed, $maxRefill)
 
 		Local $locTimer = TimerInit()
 		While enterStage("map-phantom-forest", "normal", "any", False) = False
+			If getLocation() = "refill" Then
+				If Not($gemUsed = null) And ($gemUsed + 30 <= $maxRefill) Then
+					While getLocation() = "refill"
+						clickPoint($game_coorRefill, 1, 1000)
+					WEnd
+
+					If getLocation() = "buy-gem" Or getLocation() = "unknown" Then
+						setLog("Out of gems!", 2)
+						ExitLoop
+					EndIf
+
+					clickUntil($game_coorRefillConfirm, "refill")
+					clickWhile("705, 99", "refill")
+
+					If setLog("Refill gems: " & $gemUsed + 30 & "/" & $maxRefill, 0) Then ExitLoop
+					$gemUsed += 30
+				Else
+					setLog("Gem used exceed max gems!", 0)
+					ExitLoop
+				EndIf
+
+				navigate("map")
+			EndIf
+
 			If TimerDiff($locTimer) > 300000 Then ;5 minutes
 				If setLog("Error: Could not go into battle!", 1) Then Return -1
 				Return False

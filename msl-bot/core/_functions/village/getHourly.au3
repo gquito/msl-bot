@@ -63,6 +63,8 @@ EndFunc
 	Returns: 0, 1, 2 position of village
 	Author: GkevinOD (2017)
 #ce
+
+
 Func getVillagePos()
 	_CaptureRegion()
 	Select
