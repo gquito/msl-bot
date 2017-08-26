@@ -19,8 +19,10 @@ Func farmStarstoneMain($level, $refillGems, $high, $mid = 0, $low = 0)
 	Local $totHigh = $high
 	Local $totMid = $mid
 	Local $totLow = $low
-	setList("High Stones: " & $totHigh-$high  & "/" & $totHigh & "|Mid Stones: " & $totMid-$mid  & "/" & $totMid & "|Low Stones: " & $totLow-$low  & "/" & $totLow & "|Gems used: " & $maxGems-$refillGems & "/" & $maxGems)
-
+	Local $totEgg = 0
+	
+	_setStarstoneDisplay($high, $totHigh, $mid, $totMid, $low, $totLow, $totEgg)
+	
 	Local $arrayEllipse[3] = [".", "..", "..."]
 	setLogReplace("Enter stone dungeon, waiting...")
 
@@ -38,14 +40,14 @@ Func farmStarstoneMain($level, $refillGems, $high, $mid = 0, $low = 0)
 		If $tempCounter > 2 Then $tempCounter = 0
 
 		If _Sleep(1000) Then Return False
-		setList("High Stones: " & $totHigh-$high  & "/" & $totHigh & "|Mid Stones: " & $totMid-$mid  & "/" & $totMid & "|Low Stones: " & $totLow-$low  & "/" & $totLow & "|Gems used: " & $maxGems-$refillGems & "/" & $maxGems)
+		_setStarstoneDisplay($high, $totHigh, $mid, $totMid, $low, $totLow, $totEgg)
 	WEnd
 
 	setLog("Battle detected, beginning to farm stones.")
 	;grind for starstone
 	While (($high > 0) Or ($mid > 0) Or ($low > 0))
-		setList("High Stones: " & $totHigh-$high  & "/" & $totHigh & "|Mid Stones: " & $totMid-$mid  & "/" & $totMid & "|Low Stones: " & $totLow-$low  & "/" & $totLow & "|Gems used: " & $maxGems-$refillGems & "/" & $maxGems)
-
+		_setStarstoneDisplay($high, $totHigh, $mid, $totMid, $low, $totLow, $totEgg)
+	
 		Local $currLocation = getLocation()
 
 		antiStuck("map")
@@ -90,6 +92,8 @@ Func farmStarstoneMain($level, $refillGems, $high, $mid = 0, $low = 0)
 							Case "HIGH"
 								$high -= $stoneInfo[2]
 						EndSwitch
+					Else
+						$totEgg += 1
 					EndIf
 				EndIf
 			Case "defeat"
@@ -107,6 +111,10 @@ Func farmStarstoneMain($level, $refillGems, $high, $mid = 0, $low = 0)
 		EndSwitch
 	WEnd
 
-	setList("High Stones: " & $totHigh-$high  & "/" & $totHigh & "|Mid Stones: " & $totMid-$mid  & "/" & $totMid & "|Low Stones: " & $totLow-$low  & "/" & $totLow)
+	_setStarstoneDisplay($high, $totHigh, $mid, $totMid, $low, $totLow, $totEgg)
 	Return True
+EndFunc
+
+Func _setStarstoneDisplay($high, $totHigh, $mid, $totMid, $low, $totLow, $totEgg)
+	setList("High Stones: " & $totHigh-$high  & "/" & $totHigh & "|Mid Stones: " & $totMid-$mid  & "/" & $totMid & "|Low Stones: " & $totLow-$low  & "/" & $totLow & "|Eggs: " & $totEgg)
 EndFunc

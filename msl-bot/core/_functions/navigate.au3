@@ -156,6 +156,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 									If getLocation() == "bingo-play" Then
 										playBingo()
 										_Sleep(100)
+										clickWhile($village_coorPlay, "village")
 									EndIf
 									
 									If isArray(findImage("misc-close", 100)) = True Then
@@ -170,6 +171,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 									If getLocation() == "bingo-play" Then
 										playBingo()
 										_Sleep(100)
+										clickWhile($village_coorPlay, "village")
 									EndIf
 									
 									If isArray(findImage("misc-close", 100)) = True Then
@@ -179,6 +181,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 									
 								Case "bingo-play"
 									playBingo()
+									clickWhile($village_coorPlay, "village")
 							
 							EndSwitch
 							If waitLocation("map", 10000) = "map" Then ExitLoop

@@ -192,7 +192,7 @@ Func sellGemGolemFilter($intGolem)
 	EndIf
 EndFunc
 
-Global $stoneIndex = ["GOLD", "NORMAL;HIGH", "NORMAL;MID", "NORMAL;LOW", "WOOD;HIGH", "WOOD;MID", "WOOD;LOW", "WATER;HIGH", "WATER;MID", "WATER;LOW", "FIRE;HIGH", "FIRE;MID", "FIRE;LOW", "LIGHT;HIGH", "LIGHT;MID", "LIGHT;LOW", "DARK;HIGH", "DARK;MID", "DARK;LOW"]
+Global $stoneIndex = ["GOLD", "EGG", "UNKNOWN", "NORMAL;HIGH", "NORMAL;MID", "NORMAL;LOW", "WOOD;HIGH", "WOOD;MID", "WOOD;LOW", "WATER;HIGH", "WATER;MID", "WATER;LOW", "FIRE;HIGH", "FIRE;MID", "FIRE;LOW", "LIGHT;HIGH", "LIGHT;MID", "LIGHT;LOW", "DARK;HIGH", "DARK;MID", "DARK;LOW"]
 Func getStone()
 	waitLocation("battle-sell,battle-sell-item", 2000)
 
@@ -201,9 +201,9 @@ Func getStone()
 
 	For $stone In $stoneIndex
 		If checkPixelRecord(getPixelRecord($stone), "392, 162") > 95 Then
-			If $stone = "GOLD" Then
-				$arrayData[0] = "GOLD"
-				Return $arrayData
+			If $stone == "GOLD" Or $stone == "EGG" Or $stone == "UNKNOWN" Then
+				$arrayData[0] = $stone
+				ExitLoop
 			EndIf
 
 			$arrayData[0] = StringSplit($stone, ";", 2)[0]
@@ -232,20 +232,33 @@ Func getStone()
 			clickUntil($battle_coorSellCancel, "battle-end")
 			setLog("Element: " & _StringProper($arrayData[0]) & "| Grade: " & _StringProper($arrayData[1]) & " x" & $arrayData[2], 2)
 			Return $arrayData
+			
 		Case "EGG"
 			clickUntil($battle_coorSellCancel, "battle-end")
 			setLog("Grade: Egg x1", 2)
 			Return $arrayData
+			
 		Case "GOLD"
 			clickUntil($battle_coorSellCancel, "battle-sell", 3, 2000)
 			clickUntil("300, 250", "battle-sell-item", 5, 500)
-			Return getStone()
+			Return $arrayData
+			
+		Case "UNKNOWN"
+			clickUntil($battle_coorSellCancel, "battle-end", 3, 2000)
+			setLog("Grade: Unknown", 2)
+			Return $arrayData
+			
 		Case Else
-			Local $element = getCombo("NORMAL,WOOD,WATER,FIRE,LIGHT,DARK", "NORMAL")
-			Local $grade = getCombo("HIGH,MID,LOW", "MID")
-			recordPixel($element & ";" & $grade, "392, 162", 9, 9)
-			recordPixel($element & ";" & $grade & ";" & getCombo("1,2,3,4,5", "3"), "460, 218", 20, 10)
-
+			Local $element = getCombo("NORMAL,WOOD,WATER,FIRE,LIGHT,DARK,UNKNOWN", "NORMAL")
+			
+			If $element <> "UNKNOWN" Then
+				Local $grade = getCombo("HIGH,MID,LOW", "MID")
+				recordPixel($element & ";" & $grade, "392, 162", 9, 9)
+				recordPixel($element & ";" & $grade & ";" & getCombo("1,2,3,4,5", "3"), "460, 218", 20, 10)
+			Else
+				recordPixel($element, "392, 162", 9, 9)
+			EndIf
+			
 			Return getStone()
 	EndSwitch
 EndFunc
