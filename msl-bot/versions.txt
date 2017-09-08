@@ -1,3 +1,3 @@
-latest-version=v2.2.1.0,2020100,2.2
-description=v2.2.1.0 Update log:|-Patch locations for 8/23 game update.|-Adjusted codes for stability and bug fixes.|-Farm Starstone recoded.||*New airship will not be able to collect hourly or click nezz temporarily.
+latest-version=v2.2.2.0,2020200,2.2
+description=v2.2.2.0 Update log:|-Bug fixes in farm starstone and evolving.|-New algorithm for finding maps.|-Added new maps.|-Auto update for location and pixel records.|-Added light stones for farm starstone. This will auto update when other pixels are found.|-Other Bug fixes.||*3rd ship, Albatross, will not work for collect hourly.
 directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
