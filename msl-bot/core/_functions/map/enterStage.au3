@@ -18,8 +18,8 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 		If setLogReplace("Entering " & $strMap & "..Searching", 1) Then Return -1
 
 		Local $timerStart = TimerInit()
-		Local $imgPoint = findImage($strImage, 50)
-		While Not isArray($imgPoint)
+		Local $mapPoint = getMapCoor($strMap)
+		While Not isArray($mapPoint)
 			If setLogReplace("Entering " & $strMap & "..Swiping", 1) Then Return -1
 			ControlSend($hWindow, "", "", "{LEFT}")
 
@@ -34,12 +34,12 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 			If Not checkLocations("astroleague, map-stage, association") = "" Then ControlSend($hWindow, "", "", "{ESC}")
 
 			_CaptureRegion()
-			$imgPoint = findImage($strImage, 50)
+			Local $mapPoint = getMapCoor($strMap)
 		WEnd
 		If setLogReplace("Entering " & $strMap & "..Stage Found.", 1) Then Return -1
 
 		;clicking map list and selecting difficulty
-		clickPoint($imgPoint, 1, 2000, False)
+		clickPoint($mapPoint, 1, 2000, False)
 
 		If Not getLocation() = "map-stage" Then Return False
 		Switch $strMode
@@ -92,13 +92,6 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 
 		If Not isArray($arrayStage) Then Return -1
 		clickWhile($arrayStage, "map-stage", 5, 2000)
-
-		;check for autorefill off
-		_CaptureRegion()
-		If checkPixel("752,305,0x49B5FF") = False Then
-			clickUntil("720,305", "unknown")
-			clickUntil("403,312", "map-battle")
-		EndIf
 
 		;applying autobattle mode
 		If $boolAuto = True Then

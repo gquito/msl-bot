@@ -88,8 +88,7 @@ Func evolve($monster)
 
 		If _Sleep(10) Then Return -1
 		clickUntil("308, 316", "unknown", 20, 500)
-		If _Sleep(10) Then Return -1
-		clickPoint($game_coorTap, 10, 500)
+
 		logUpdate()
 
 		getQuest() ;collecting quest
@@ -134,8 +133,7 @@ Func evolve($monster)
 	EndIf
 
 	If _Sleep(10) Then Return -1
-	clickUntil("308, 316", "unknown")
-	clickPoint($game_coorTap, 10, 500)
+	clickUntil("308, 316", "unknown", 3, 500)
 
 	;releasing slime--
 	navigate("village", "monsters")

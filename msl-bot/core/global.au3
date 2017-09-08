@@ -44,7 +44,7 @@
 		Global $village_coorMonsters = [253, 505]
 
 		Global $village_coorArrayQuestsTab = ["717,127", "592,125", "463,126", "333,125", "213,127"]
-		Global $village_coorHourly = ["296,115|486,67|683,107|685,289", "182,390|173,94|577,81|627,186", "686,123|503,113|241,160|166,402"] ;pos1, pos2, pos3 -> hourly1|hourly2|hourly3|shop
+		Global $village_coorHourly = ["296,115|486,67|683,107|685,289", "182,390|173,94|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100"]
 
 		Global $village_coorManage = [739, 199]
 		Global $village_coorUpgrade = [392, 415]
@@ -55,9 +55,26 @@
 		Global $village_coor5Star = "475,389"
 		Global $village_coorSell = [665, 394]
 		Global $village_coorSellConfirm = [398, 331]
-		Global $village_coorNezz = ["446,36|536,408|398,152", "360,159|26,78", "71,338|187,197"] ;pos1, pos2, pos3
+		Global $village_coorNezz = ["446,36|536,408|398,152", "360,159|26,78", "71,338|187,197", "460,443|679,54|460,148", "144,71|629,351|76,234"]
 
 	;map
+		Global $coorMaps = [["Phantom Forest", "map-astromon-league", -492, 46], ["Lunar Valley", "map-astromon-league", -289, -20], _
+							["Aria Lake", "map-astromon-league", -199, 83], ["Mirage Ruins", "map-astromon-league", -225, 230], _
+							["Dungeons", "map-astromon-league", -442, 327], ["Pagos Coast", "map-astromon-league", 244, 174], _
+							["Seabed Caves", "map-astromon-league", 461, 15], ["Magma Crags", "map-astromon-league", 689, 221], _
+							["Pagos Coast", "map-toc", -261, -135], ["Seabed Caves", "map-toc", -99, -316], _
+							["Magma Crags", "map-toc", 132, -112], ["Star Sanctuary", "map-toc", 293, -192], _
+							["Magma Crags", "map-golems", -355, -134], ["Star Sanctuary", "map-golems", -199, -221], _
+							["Sky Falls", "map-golems", 253, -85], ["Slumbering City", "map-golems", 327, -226], _
+							["Glacial Plains", "map-golems", 627, -179], ["Aurora Plateau", "map-golems", 737, -338], _
+							["Sky Falls", "map-4th-continent", -558, 60], ["Slumbering City", "map-4th-continent", -497, -79], _
+							["Glacial Plains", "map-4th-continent", -186, -26], ["Aurora Plateau", "map-4th-continent", -78, -193], _
+							["Astromon League", "map-astromon-league", 0, 0], ["Clan Plaza", "map-astromon-league", -17, 328], _
+							["Tower of Chaos", "map-toc", 0, 0], ["Ancient Dungeon", "map-golems", 0, 0], _
+							["Dragon Dungeon", "map-golems", 75, -226]]
+
+		Global $imageMarks = ["map-astromon-league", "map-toc", "map-golems", "map-4th-continent"]
+
 		Global $map_coorStarstoneDungeons = [169, 168]
 		Global $map_coorElementDungeons = [178, 235]
 		Global $map_coorGoldDungeons = [169, 309]

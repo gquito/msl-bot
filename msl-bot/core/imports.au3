@@ -51,6 +51,7 @@
 
 	;map
 		#include "_functions/map/enterStage.au3"
+		#include "_functions/map/getMapCoor.au3"
 
 	;village
 		#include "_functions/village/sellGems.au3"

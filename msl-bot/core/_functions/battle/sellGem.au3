@@ -192,7 +192,7 @@ Func sellGemGolemFilter($intGolem)
 	EndIf
 EndFunc
 
-Global $stoneIndex = ["GOLD", "NORMAL;HIGH", "NORMAL;MID", "NORMAL;LOW", "WOOD;HIGH", "WOOD;MID", "WOOD;LOW", "WATER;HIGH", "WATER;MID", "WATER;LOW", "FIRE;HIGH", "FIRE;MID", "FIRE;LOW", "LIGHT;HIGH", "LIGHT;MID", "LIGHT;LOW", "DARK;HIGH", "DARK;MID", "DARK;LOW"]
+Global $stoneIndex = ["GOLD", "EGG", "NORMAL;HIGH", "NORMAL;MID", "NORMAL;LOW", "WOOD;HIGH", "WOOD;MID", "WOOD;LOW", "WATER;HIGH", "WATER;MID", "WATER;LOW", "FIRE;HIGH", "FIRE;MID", "FIRE;LOW", "LIGHT;HIGH", "LIGHT;MID", "LIGHT;LOW", "DARK;HIGH", "DARK;MID", "DARK;LOW"]
 Func getStone()
 	waitLocation("battle-sell,battle-sell-item", 2000)
 
@@ -201,10 +201,14 @@ Func getStone()
 
 	For $stone In $stoneIndex
 		If checkPixelRecord(getPixelRecord($stone), "392, 162") > 95 Then
-			If $stone = "GOLD" Then
-				$arrayData[0] = "GOLD"
-				Return $arrayData
-			EndIf
+			Switch $stone
+				Case "GOLD"
+					$arrayData[0] = "GOLD"
+					ExitLoop
+				Case "EGG"
+					$arrayData[0] = "EGG"
+					ExitLoop
+			EndSwitch
 
 			$arrayData[0] = StringSplit($stone, ";", 2)[0]
 			$arrayData[1] = StringSplit($stone, ";", 2)[1]

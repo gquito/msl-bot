@@ -118,6 +118,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 							clickUntil($game_pixelBack, "village")
 							If waitLocation("village", 5000) Then ExitLoop
 						Case "unknown", "inbox", "shop", "astroleague", "map-stage", "clan", "association", "starstone-dungeons", "map-battle"
+							clickPoint($game_coorTap)
 							If checkPixel($game_pixelBack) = True Then clickPoint($game_pixelBack, 3)
 							clickUntil(findImage("misc-close", 30), "village", 3, 1000) ;to close any windows open
 						Case Else
