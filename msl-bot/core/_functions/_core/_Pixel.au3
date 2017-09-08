@@ -1,3 +1,168 @@
+Func pixelRecordSearch($pixelRecord, $left, $top, $right, $bottom)
+	Local $width = $pixelRecord[1], $height = $pixelRecord[2]
+	Local $pixels = StringSplit($pixelRecord[3], ",", 2)
+
+	Local $checkPixel[0]
+	For $pixel In $pixels
+		_ArrayAdd($checkPixel, "0x" & StringSplit($pixel, "x", 2)[1])
+	Next
+
+	For $y = $top To $bottom-$top Step $height
+		For $x = $left To $right-$left Step $width
+			For $pixel In $pixels
+				If checkPixel($x & "," & $y & "," & "0x" & StringSplit($pixel, "x", 2)[1], 10) Then
+
+				EndIf
+			Next
+		Next
+	Next
+EndFunc
+
+
+;functions: loadPixelRecords
+;-Reads pixel record text file into array global variable
+;parameters:
+;-path: Path to the text file
+;returns: boolean
+;author: GkevinOD(2017)
+
+;[name, startingpoint, width, height, ""]
+Global $pixelRecords[0]
+Func loadPixelRecords($path = @ScriptDir & "/core/pixel-records.txt")
+	Local $lineCount = _FileCountLines($path)
+	Local $fileHandle = FileOpen($path, $FO_READ)
+
+	Global $pixelRecords[0]
+
+	For $i = 1 To $lineCount
+		If FileReadLine($fileHandle, $i) = "" Then ContinueLoop
+		Local $pixelList = StringSplit(FileReadLine($fileHandle, $i), "|", 2)[1]
+		Local $pixelRecord = StringSplit(StringSplit(FileReadLine($fileHandle, $i), "|", 2)[0], ",", 2)
+
+		_ArrayAdd($pixelRecords, $pixelRecord[0] & "," & $pixelRecord[1] & "," & $pixelRecord[2] & "|" & $pixelList, 0, null, null, 1)
+	Next
+
+	FileClose($fileHandle)
+Endfunc
+
+;function: recordPixel
+;-Records set of pixels within a rectangle border and saves into a txt
+;parameters:
+;-name: String for set of pixel.
+;-startingPoint: Array or String for top left point of rectangle
+;-width: Width of rectangle
+;-height: Height of rectangle
+;-filePath: Path to txt file
+;returns: boolean
+;author: GkevinOD (2017)
+
+Func recordPixel($name, $startingPoint, $width, $height, $filePath = @ScriptDir & "/core/pixel-records.txt")
+	_CaptureRegion()
+
+	$startingPoint = StringStripWS($startingPoint, 8)
+	If Not isArray($startingPoint) Then
+		$startingPoint = StringSplit($startingPoint, ",", 2)
+	EndIf
+
+	;name,x,y,width,height|...
+	Local $pixelRecord = $name & "," & $width & "," & $height & "|"
+
+	Local $oldPixel = Hex(_GDIPlus_BitmapGetPixel($hBitmap, $startingPoint[0], $startingPoint[1]), 6)
+	Local $samePixel = 0
+	For $y = $startingPoint[1] To $height+$startingPoint[1]-1
+		For $x = $startingPoint[0] To $width+$startingPoint[0]-1
+			Local $newPixel = Hex(_GDIPlus_BitmapGetPixel($hBitmap, $x, $y), 6)
+
+			If $newPixel = $oldPixel Then
+				$samePixel += 1
+			Else
+				$pixelRecord &=  $samePixel & "x" & $oldPixel & ","
+				$oldPixel = $newPixel
+				$samePixel = 1
+			EndIf
+		Next
+	Next
+	$pixelRecord &=  $samePixel & "x" & $oldPixel & ","
+
+	$pixelRecord = StringTrimRight($pixelRecord, 1)
+	FileWrite($filePath, @CRLF & $pixelRecord)
+
+	loadPixelRecords()
+EndFunc
+
+;function: getPixelRecord
+;-Returns the set of pixels recorded from recordPixel
+;parameters:
+;-name: String of the set of pixel
+;returns: pixelRecord
+;author: GkevinOD (2017)
+
+Func getPixelRecord($name)
+	For $pixelRecord In $pixelRecords
+		If StringSplit($pixelRecord, ",", 2)[0] = $name Then
+			Local $pixelList = StringSplit($pixelRecord, "|", 2)[1]
+			Local $pixelSplit = StringSplit(StringSplit($pixelRecord, "|", 2)[0], ",", 2)
+
+			Local $newPixelRecord[4] = [$pixelSplit[0], $pixelSplit[1], $pixelSplit[2], $pixelList]
+			Return $newPixelRecord
+		EndIf
+	Next
+	Return Null
+EndFunc
+
+;function: checkPixelRecord
+;-Checks if pixel record matches, with a tolerance rate.
+;parameters:
+;-pixelRecord: pixelRecord(String)
+;-startingPoint: Array or String for top left point of rectangle
+;-rate: 0-1, the percentage of pixels in order to be accepted.
+;returns: rate-percentage of pixels that are correct
+;author: GkevinOD (2017)
+
+Func checkPixelRecord($pixelRecord, $startingPoint)
+	If isArray($pixelRecord) = False Then Return 0
+
+	;variables for calculating rate
+	Local $totalSize, $correctPixels = 0
+
+	;if starting point is string, convert to array
+	$startingPoint = StringStripWS($startingPoint, 8)
+	If Not isArray($startingPoint) Then
+		$startingPoint = StringSplit($startingPoint, ",", 2)
+	EndIf
+
+	;process
+	Local $pixels = StringSplit($pixelRecord[3], ",", 2)
+	$totalSize = $pixelRecord[1] * $pixelRecord[2]
+
+	Local $counter = 0 ;To traverse through pixels
+	Local $numLoop = Int(StringSplit($pixels[$counter], "x", 2)[0])
+	_CaptureRegion()
+
+	;Local $timerInit = TimerInit()
+
+	For $y = $startingPoint[1] To $pixelRecord[2]+$startingPoint[1]-1
+		For $x = $startingPoint[0] To $pixelRecord[1]+$startingPoint[0]-1
+			If $numLoop > 0 Then
+				$numLoop -= 1
+			EndIf
+
+			If checkPixel($x & "," & $y & ",0x" & StringSplit($pixels[$counter], "x", 2)[1], 10) Then
+				$correctPixels += 1
+			EndIf
+
+			If $numLoop = 0 Then
+				If $counter < UBound($pixels)-1 Then $counter += 1
+				$numLoop = Int(StringSplit($pixels[$counter], "x", 2)[0])
+			EndIf
+		Next
+	Next
+
+	;setLog("Dim: " & $pixelRecord[1] & "x" & $pixelRecord[2] & " - " & TimerDiff($timerInit))
+
+	Return $correctPixels/$totalSize*100
+EndFunc
+
 ;function: checkPixel
 ;-Takes a coordinate and compares that pixel with a specified pixel
 ;parameters:
@@ -177,3 +342,4 @@ Func _ColorHexToRGB($nColor)
 	Local $sRet[3] = [_ColorGetRed($nColor), _ColorGetGreen($nColor), _ColorGetBlue($nColor)]
 	Return $sRet
 EndFunc
+

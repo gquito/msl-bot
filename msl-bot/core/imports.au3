@@ -6,6 +6,7 @@
 #include <ScreenCapture.au3>
 #include <GDIPlus.au3>
 #include <Array.au3>
+#include <Constants.au3>
 #include <FileConstants.au3>
 #include <MsgBoxConstants.au3>
 #include <ButtonConstants.au3>
@@ -50,6 +51,7 @@
 
 	;map
 		#include "_functions/map/enterStage.au3"
+		#include "_functions/map/getMapCoor.au3"
 
 	;village
 		#include "_functions/village/sellGems.au3"

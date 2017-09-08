@@ -65,8 +65,8 @@ Func clickUntil($coorPoint, $strLocation, $num = 5, $speed = 500)
 	For $numClick = 0 To $num-1
 		Local $startTime = TimerInit()
 		While TimerDiff($startTime) < $speed
-			If Not(checkLocations($strLocation)) = "" Then Return True
 			If _Sleep(100) Then Return -1
+			If Not(checkLocations($strLocation)) = "" Then Return True
 		WEnd
 
 		clickPoint($coorPoint, 1, 0, False)
@@ -96,8 +96,8 @@ Func clickWhile($coorPoint, $strLocation, $num = 5, $speed = 500)
 	For $numClick = 0 To $num-1
 		Local $startTime = TimerInit()
 		While TimerDiff($startTime) < $speed
-			If checkLocations($strLocation) = "" Then Return True
 			If _Sleep(100) Then Return -1
+			If checkLocations($strLocation) = "" Then Return True
 		WEnd
 
 		clickPoint($coorPoint, 1, 0, False)
