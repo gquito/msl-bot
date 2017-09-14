@@ -137,7 +137,8 @@ Func _getGuardianMon($idMon)
 				Until isArray($foundPixel) = False
 		Case 2
 			;Only looks for energy since all monsters are to be selected
-			$foundMon = _findColor("678,265", "1,210", 0xFACF27, 10)
+			Local $tempPoint = _findColor("678,265", "1,210", 0xFACF27, 10)
+			If isArray($tempPoint) = True Then $foundMon = $tempPoint
 	EndSwitch
 
 	Return $foundMon
