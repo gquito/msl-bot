@@ -75,7 +75,7 @@ Func _getMapMarks()
 
 	;Adding marks that are found in map
 	For $myMark In $imageMarks
-		Local $imageCoor = findImage($myMark, 50)
+		Local $imageCoor = findImage($myMark, 100)
 
 		;If image found then it adds a mark into $finalArr
 		If isArray($imageCoor) Then

@@ -151,12 +151,23 @@ EndFunc
 ;gui for combo input
 Func getCombo($strItems, $default = "")
 	Opt("GUIOnEventMode", 0)
-	$strItems = StringReplace($strItems, ", ", ",")
+	$strItems = StringStripWS($strItems, 8)
 
 	Local $frmBoolean = GUICreate("Select a new value:", 190, 70, -1, -1, BitOR($WS_POPUPWINDOW, $WS_SYSMENU, $WS_CAPTION))
 	Local $cmbItems = GUICtrlCreateCombo($default, 10, 10, 170, 20, BitOR($CBS_DROPDOWNLIST, $CBS_SORT))
-	GUICtrlSetData($cmbItems, StringRegExpReplace(StringReplace($strItems, ",", "|"), "(" & $default & "\|?|\|" & $default & ")", ""))
+	;GUICtrlSetData($cmbItems, StringRegExpReplace(StringReplace($strItems, ",", "|"), "(" & $default & "\|?|\|" & $default & ")", ""))
+	Local $arrayData = StringSplit($strItems, ",", 2)
+	Local $newString = ""
 
+	For $item In $arrayData
+		If $item <> $default Then
+			$newString &= $item & "|"
+		EndIf
+	Next
+
+	$newString = StringLeft($newString, StringLen($newString)-1)
+
+	GUICtrlSetData($cmbItems, $newString)
 	Local $btnOkay = GUICtrlCreateButton("Okay", 10, 35, 50, 25)
 	Local $btnCancel = GUICtrlCreateButton("Cancel", 130, 35, 50, 25)
 

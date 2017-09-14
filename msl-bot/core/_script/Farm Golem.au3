@@ -10,7 +10,7 @@ Func farmGolem()
 	Local $buyEggs = IniRead($botConfigDir, "Farm Golem", "buy-eggs", 0)
 	Local $buySoulstones = IniRead($botConfigDir, "Farm Golem", "buy-soulstones", 1)
 	Local $maxGoldSpend = IniRead($botConfigDir, "Farm Golem", "max-gold-spend", 100000)
-	Local $guardian = IniRead($botConfigDir, "Farm Golem", "farm-guardian", 0)
+	Local $guardian = IniRead($botConfigDir, "Farm Golem", "guardian-mode", "2")
 	Local $intGem = IniRead($botConfigDir, "Farm Golem", "max-spend-gem", 0)
 	Local $selectBoss = IniRead($botConfigDir, "Farm Golem", "select-boss", 1)
 	Local $keepAllGrade = IniRead($botConfigDir, "Farm Golem", "keep-all-grade", 6)
@@ -38,7 +38,7 @@ EndFunc   ;==>farmGolem
 	sellStats: (String) Sell gems with stats specified
 	sellSubstats = (String) Sell gems with substats specified
 	intGem: (Int) Maximum number of gems the bot can spend for refill.
-	guardian: (Int) 1=True; 0=False
+	guardian: (Int) -1, 0, 1, 2 -> -1 OFF, 0 LEFT, 1 RIGHT, 2 BOTH
 	quest: (Int) 1=True; 0=False
 	hourly: (Int) 1=True; 0=False
 
@@ -94,9 +94,10 @@ Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, 
 			Case "00", "01", "02", "03", "04", "05", "06", "07", "08", "09"
 				If $checkHourly = True Then $getHourly = True
 				If $checkGuardian = True Then $getGuardian = True
-			Case "10" ;to prevent checking twice
+			Case "10", "11", "12" ;to prevent checking twice
 				$checkHourly = True
-			Case "35";to prevent checking twice
+				$checkGuardian = True
+			Case "35", "36", "37";to prevent checking twice
 				$checkGuardian = True
 			Case "30", "31", "32", "33", "34"
 				If $checkGuardian = True Then $getGuardian = True
@@ -140,7 +141,7 @@ Func farmGolemMain($strGolem, $selectBoss, $intGem, $guardian, $quest, $hourly, 
 				EndIf
 
 				If $getGuardian = True Then
-					If $guardian = 1 Then $intGuardian += farmGuardian(0, $intGem, $intGemUsed)
+					If $guardian <> "OFF" Then $intGuardian += farmGuardian($guardian)
 					$checkGuardian = False
 					$getGuardian = False
 				EndIf

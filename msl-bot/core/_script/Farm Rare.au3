@@ -10,7 +10,7 @@ Func farmRare()
 	Local $maxGoldSpend = Int(IniRead($botConfigDir, "Farm Rare", "max-gold-spend", 100000))
 	Local $intGem = Int(IniRead($botConfigDir, "Farm Rare", "max-spend-gem", 0))
 	Local $map = "map-" & StringReplace(IniRead($botConfigDir, "Farm Rare", "map", "phantom forest"), " ", "-")
-	Local $guardian = IniRead($botConfigDir, "Farm Rare", "guardian-dungeon", "0")
+	Local $guardian = IniRead($botConfigDir, "Farm Rare", "guardian-mode", "2")
 	Local $difficulty = IniRead($botConfigDir, "Farm Rare", "difficulty", "normal")
 	Local $stage = IniRead($botConfigDir, "Farm Rare", "stage", "gold")
 	Local $sellGems = StringSplit(IniRead($botConfigDir, "Farm Rare", "sell-gems-grade", "1,2,3"), ",", 2)
@@ -34,7 +34,7 @@ EndFunc   ;==>farmRare
 	rawCapture: (String) "legendary,variant,rare..." This type of string format.
 	sellGems: (String) "1,2,3,4" This type of string format.
 	intGem: (Int) Maximum number of gems to allow bot to spend on refill
-	guardian: (Int) 1=True; 0=False
+	guardian: (Int) -1, 0, 1, 2 -> -1 OFF, 0 LEFT, 1 RIGHT, 2 BOTH
 	quest: (Int) 1=True; 0=False
 	hourly: (Int) 1=True; 0=False
 
@@ -66,7 +66,7 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 	Local $displayMissed = ""
 
 	Local $getHourly = False
-	Local $getGuardian = False
+	Local $getGuardian = True
 	Local $checkHourly = True ;bool to prevent checking twice
 	Local $checkGuardian = True ;bool to prevent checking twice
 
@@ -78,9 +78,10 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 			Case "00", "01", "02", "03", "04", "05", "06", "07", "08", "09"
 				If $checkHourly = True Then $getHourly = True
 				If $checkGuardian = True Then $getGuardian = True
-			Case "10" ;to prevent checking twice
+			Case "10", "11", "12" ;to prevent checking twice
 				$checkHourly = True
-			Case "35";to prevent checking twice
+				$checkGuardian = True
+			Case "35", "36", "37";to prevent checking twice
 				$checkGuardian = True
 			Case "30", "31", "32", "33", "34"
 				If $checkGuardian = True Then $getGuardian = True
@@ -134,23 +135,16 @@ Func farmRareMain($map, $difficulty, $stage, $rawCapture, $sellGems, $intGem, $g
 				EndIf
 
 				If getLocation() = "battle-end" Then
-					If Not Mod($dataRuns + 1, 20) = 0 Then
+					If $getGuardian = True Then
+						If $guardian <> "OFF" Then $dataGuardians += farmGuardian($guardian)
+						$checkGuardian = False
+						$getGuardian = False
+					EndIf
+
+					If getLocation() = "battle-end" Then
 						If clickUntil($battle_coorRestart, "unknown,refill", 30, 1000) = True Then
 							If getLocation() = "refill" Then ContinueLoop
 							$dataRuns += 1
-						EndIf
-					Else
-						If $getGuardian = True Then
-							If $guardian = 1 Then $dataGuardians += farmGuardian($sellGems, $intGem, $intGemUsed)
-							$checkGuardian = False
-							$getGuardian = False
-						EndIf
-
-						If getLocation() = "battle-end" Then
-							If clickUntil($battle_coorRestart, "unknown,refill", 30, 1000) = True Then
-								If getLocation() = "refill" Then ContinueLoop
-								$dataRuns += 1
-							EndIf
 						EndIf
 					EndIf
 				EndIf
