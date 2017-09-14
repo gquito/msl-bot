@@ -151,7 +151,7 @@ EndFunc
 ;gui for combo input
 Func getCombo($strItems, $default = "")
 	Opt("GUIOnEventMode", 0)
-	$strItems = StringStripWS($strItems, 8)
+	$strItems = StringReplace($strItems, ", ", ",")
 
 	Local $frmBoolean = GUICreate("Select a new value:", 190, 70, -1, -1, BitOR($WS_POPUPWINDOW, $WS_SYSMENU, $WS_CAPTION))
 	Local $cmbItems = GUICtrlCreateCombo($default, 10, 10, 170, 20, BitOR($CBS_DROPDOWNLIST, $CBS_SORT))

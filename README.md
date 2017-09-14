@@ -22,7 +22,7 @@ Mainly programmed to gain experience with GitHub and because of the enjoyment of
    
 - Setting up key map:
 
-   ![key map](https://i.imgur.com/DdErwbJ.png)
+   ![key map](https://i.imgur.com/hErS3fY.png)
 
 - Inside MSL turn off all settings.
   - Especially the Low-Res Mode and Low Power Mode have it set to 'OFF'
