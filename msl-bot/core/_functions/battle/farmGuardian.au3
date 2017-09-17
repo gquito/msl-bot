@@ -52,11 +52,17 @@ Func farmGuardian($idMon)
 				Else
 					ExitLoop
 				EndIf
-			Case "battle-end"
-				clickUntil("400, 260", "unknown,guardian-dungeons")
 
 			Case "map-battle"
 				clickUntil($map_coorBattle, "battle-auto,battle,unknown")
+
+				;Exit early if cannot go into battle. Usually means full gems or full inventory
+				If checkLocations("battle-auto,battle,unknown") = "" Then
+					ExitLoop
+				EndIf
+
+			Case "battle-end"
+				clickUntil("400, 260", "unknown,guardian-dungeons")
 
 			Case "battle"
 				clickUntil($battle_coorAuto, "battle-auto", 3, 2000)
@@ -90,14 +96,15 @@ EndFunc
 
 	Return:
 		2D array of the energy location of the monster found.
-		*Empty string on not found.
-		*On error returns -1
+		*Empty array if nothing found.
 #ce
 
 Func _getGuardianMon($idMon)
 	_CaptureRegion()
 
 	Local $foundMon[2] ;[x, y]
+
+	If getLocation() <> "guardian-dungeons" Then Return $foundMon
 
 	Switch $idMon
 		Case 0 To 1
@@ -111,7 +118,7 @@ Func _getGuardianMon($idMon)
 				Local $yDisplace = 0
 
 				Do
-					Local $foundPixel = _findColor("577," & 265+$yDisplace, "1," & 150-$yDisplace, $colorSet[0], 30)
+					Local $foundPixel = _findColor("577," & 270+$yDisplace, "1," & 199-$yDisplace, $colorSet[0], 25)
 
 					If isArray($foundPixel) = True Then
 						;Add in coordinations with color for checkPixels
@@ -123,7 +130,7 @@ Func _getGuardianMon($idMon)
 						;Counting correct pixels within the sequence
 						Local $correctPixels = 0
 						For $i = 0 To 9
-							If checkPixel($pixelSet[$i], 30) = True Then $correctPixels += 1
+							If checkPixel($pixelSet[$i], 25) = True Then $correctPixels += 1
 						Next
 
 						If $correctPixels >= 5 Then ;50% of pixels are correct
@@ -132,12 +139,12 @@ Func _getGuardianMon($idMon)
 							ExitLoop
 						EndIf
 
-						$yDisplace = $foundPixel[1]-264
+						$yDisplace = $foundPixel[1]-269
 					EndIf
 				Until isArray($foundPixel) = False
 		Case 2
 			;Only looks for energy since all monsters are to be selected
-			Local $tempPoint = _findColor("678,265", "1,210", 0xFACF27, 10)
+			Local $tempPoint = _findColor("678,270", "1,199", 0xFACF27, 10)
 			If isArray($tempPoint) = True Then $foundMon = $tempPoint
 	EndSwitch
 

@@ -26,10 +26,11 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 			Case "shop"
 				Local $villagePos = getVillagePos()
 				If $villagePos <> -1 Then
-					clickUntil(StringSplit($village_coorHourly[$villagePos], "|", 2)[UBound($village_coorHourly)-2], "shop")
+					Local $rewardPoints = StringSplit($village_coorHourly[$villagePos], "|", 2)
+					clickUntil($rewardPoints[UBound($rewardPoints)-1], "shop")
 				EndIf
 
-				If Not(getLocation() = "shop") Then
+				If getLocation() <> "shop" Then
 					Local $shadyShop = findImage("misc-shop", 50, 100)
 					If isArray($shadyShop) = True Then clickUntil($shadyShop, "shop")
 				EndIf
