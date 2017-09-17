@@ -10,7 +10,7 @@
 Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
 Global $oldVersion = "2.0"
-Global $botSimpleVersion = "2.3"
+Global $botSimpleVersion = "2.2"
 Global $botVersion = "v2.2.3.3"
 Global $botVersionValue = 2020303
 Global $botName = "MSL Bot"
