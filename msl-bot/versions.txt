@@ -1,3 +1,3 @@
-latest-version=v2.2.3.2,2020302,2.2
-description=v2.2.3.2 Update log:|- Recoded farmGuardian to support selective astromon farming.|- Increased tolerance in getMapCoor for problems swiping and not recognizing marks.|- Fixed navigate to support the new getMapCoor function.|- Added support for the new ship, Albatross. (Not Tested)|- Added new mark to prevent as backup when astromon league mark is not available.|- Changed times to farm for guardian dungeons to minutes 00 and 30 in system clock.||* New keymap! Use 'setupKeymap()' function to easily set keymap. This is for scrolling in guardian dungeon astromon list.||--Instructions for setupKeymap():||1. Click keymap icon on top right of your nox app.|- Clear the current keymaps.|2. Run bot and go to Debug tab.|3. Type in "setupKeymap()" inside the Test Code: textbox.|4. Let the bot create the keymap and then hit save.
+latest-version=v2.2.3.3,2020303,2.2
+description=v2.2.3.3 Update log:|- Adjusted farmGuardian values.|- Fixed navigate shop error.|- Refactor enterStage function.
 directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
