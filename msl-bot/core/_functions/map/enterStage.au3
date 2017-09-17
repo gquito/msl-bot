@@ -100,7 +100,7 @@ Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = 
 							ExitLoop
 						Else
 							ControlSend($hWindow, "", "", "{LEFT}")
-							If getLocation() <> "map-stage" Then ContinueLoop(2) ) ;Goes back to main loop if misclick happens
+							If getLocation() <> "map-stage" Then ContinueLoop(2) ;Goes back to main loop if misclick happens
 						EndIf
 
 						If _Sleep(1000) Then Return -1

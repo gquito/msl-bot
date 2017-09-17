@@ -67,14 +67,14 @@
 							["Magma Crags", "map-golems", -355, -134], ["Star Sanctuary", "map-golems", -199, -221], _
 							["Sky Falls", "map-golems", 253, -85], ["Slumbering City", "map-golems", 327, -226], _
 							["Glacial Plains", "map-golems", 627, -179], ["Aurora Plateau", "map-golems", 737, -338], _
-							["Sky Falls", "map-4th-continent", -558, 60], ["Slumbering City", "map-4th-continent", -497, -79], _
-							["Glacial Plains", "map-4th-continent", -186, -26], ["Aurora Plateau", "map-4th-continent", -78, -193], _
 							["Astromon League", "map-astromon-league", 0, 0], ["Clan Plaza", "map-astromon-league", -17, 328], _
 							["Tower of Chaos", "map-toc", 0, 0], ["Ancient Dungeon", "map-golems", 0, 0], _
 							["Dragon Dungeon", "map-golems", 75, -226], ["Phantom Forest", "map-dungeons", -46, -265], _
 							["Lunar Valley", "map-dungeons", 160, -331], ["Aria Lake", "map-dungeons", 233, -257], _
 							["Mirage Ruins", "map-dungeons", 216, -103], ["Astromon League", "map-dungeons", 441, -305], _
-							["Dungeons", "map-dungeons", 0, 0], ["Pagos Coast", "map-dungeons", 686, -143]]
+							["Dungeons", "map-dungeons", 0, 0], ["Pagos Coast", "map-dungeons", 686, -143], _
+							["Sky Falls", "map-sky-falls", 0, 0], ["Slumbering City", "map-sky-falls", 27, -193], _
+							["Glacial Plains", "map-sky-falls", 338, -124], ["Aurora Plateau", "map-sky-falls", 446, -306]]
 
 		Global $imageMarks = ["map-astromon-league", "map-toc", "map-golems", "map-4th-continent"]
 
