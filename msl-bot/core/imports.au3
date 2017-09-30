@@ -21,6 +21,7 @@
 #include <Math.au3>
 #include <GuiEdit.au3>
 #include <String.au3>
+#include <Misc.au3>
 
 ;global variables
 #include "global.au3"

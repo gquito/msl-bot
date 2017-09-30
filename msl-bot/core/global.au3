@@ -44,7 +44,7 @@
 		Global $village_coorMonsters = [253, 505]
 
 		Global $village_coorArrayQuestsTab = ["717,127", "592,125", "463,126", "333,125", "213,127"]
-		Global $village_coorHourly = ["296,115|486,67|683,107|685,289", "182,390|173,94|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100"]
+		Global $village_coorHourly = ["296,115|486,67|683,107|685,289", "182,390|173,94|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100", "165,272|288,99|437,123|706,53|606,235", "157,210|327,48|528,401|225,241|540,138"]
 
 		Global $village_coorManage = [739, 199]
 		Global $village_coorUpgrade = [392, 415]
@@ -55,7 +55,7 @@
 		Global $village_coor5Star = "475,389"
 		Global $village_coorSell = [665, 394]
 		Global $village_coorSellConfirm = [398, 331]
-		Global $village_coorNezz = ["446,36|536,408|398,152", "360,159|26,78", "71,338|187,197", "460,443|679,54|460,148", "144,71|629,351|76,234"]
+		Global $village_coorNezz = ["446,36|536,408|398,152", "360,159|26,78", "71,338|187,197", "460,443|679,54|460,148", "144,71|629,351|76,234", "", ""]
 
 	;map
 		Global $coorMaps = [["Phantom Forest", "map-astromon-league", -492, 46], ["Lunar Valley", "map-astromon-league", -289, -20], _
@@ -67,11 +67,14 @@
 							["Magma Crags", "map-golems", -355, -134], ["Star Sanctuary", "map-golems", -199, -221], _
 							["Sky Falls", "map-golems", 253, -85], ["Slumbering City", "map-golems", 327, -226], _
 							["Glacial Plains", "map-golems", 627, -179], ["Aurora Plateau", "map-golems", 737, -338], _
-							["Sky Falls", "map-4th-continent", -558, 60], ["Slumbering City", "map-4th-continent", -497, -79], _
-							["Glacial Plains", "map-4th-continent", -186, -26], ["Aurora Plateau", "map-4th-continent", -78, -193], _
 							["Astromon League", "map-astromon-league", 0, 0], ["Clan Plaza", "map-astromon-league", -17, 328], _
 							["Tower of Chaos", "map-toc", 0, 0], ["Ancient Dungeon", "map-golems", 0, 0], _
-							["Dragon Dungeon", "map-golems", 75, -226]]
+							["Dragon Dungeon", "map-golems", 75, -226], ["Phantom Forest", "map-dungeons", -46, -265], _
+							["Lunar Valley", "map-dungeons", 160, -331], ["Aria Lake", "map-dungeons", 233, -257], _
+							["Mirage Ruins", "map-dungeons", 216, -103], ["Astromon League", "map-dungeons", 441, -305], _
+							["Dungeons", "map-dungeons", 0, 0], ["Pagos Coast", "map-dungeons", 686, -143], _
+							["Sky Falls", "map-sky-falls", 0, 0], ["Slumbering City", "map-sky-falls", 27, -193], _
+							["Glacial Plains", "map-sky-falls", 338, -124], ["Aurora Plateau", "map-sky-falls", 446, -306]]
 
 		Global $imageMarks = ["map-astromon-league", "map-toc", "map-golems", "map-4th-continent"]
 

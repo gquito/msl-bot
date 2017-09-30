@@ -128,6 +128,6 @@ Func farmGemCatching(ByRef $needCatch, ByRef $gemUsed, $maxRefill)
 		WEnd
 
 		If _Sleep(10) Then Return -1
-		$needCatch -= farmAstromonMain("catch-one-star", $needCatch, 0, 0, $gemUsed, $maxRefill)
+		$needCatch -= farmAstromonMain("catch-one-star", $needCatch, 1, 0, $gemUsed, $maxRefill)
 	WEnd
 EndFunc

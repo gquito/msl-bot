@@ -24,15 +24,13 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 		Switch $strLocation
 			;village
 			Case "shop"
-				If isArray(findImage("misc-village-pos1", 50)) Then
-					clickUntil(StringSplit($village_coorHourly[0], "|", 2)[3], "shop")
-				ElseIf isArray(findImage("misc-village-pos2", 50)) Then
-					clickUntil(StringSplit($village_coorHourly[1], "|", 2)[3], "shop")
-				ElseIf isArray(findImage("misc-village-pos3", 50)) Then
-					clickUntil(StringSplit($village_coorHourly[2], "|", 2)[3], "shop")
+				Local $villagePos = getVillagePos()
+				If $villagePos <> -1 Then
+					Local $rewardPoints = StringSplit($village_coorHourly[$villagePos], "|", 2)
+					clickUntil($rewardPoints[UBound($rewardPoints)-1], "shop")
 				EndIf
 
-				If Not(getLocation() = "shop") Then
+				If getLocation() <> "shop" Then
 					Local $shadyShop = findImage("misc-shop", 50, 100)
 					If isArray($shadyShop) = True Then clickUntil($shadyShop, "shop")
 				EndIf
@@ -45,7 +43,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				clickUntil($village_coorQuests, "quests")
 			;map
 			Case "guardian-dungeons"
-				clickUntil(findImage("map-dungeons", 50), "starstone-dungeons,golem-dungeons")
+				clickUntil(getMapCoor("Dungeons"), "starstone-dungeons,golem-dungeons")
 				clickUntil($map_coorGuardianDungeons, "guardian-dungeons")
 			Case "golem-dungeons"
 				If setLogReplace("Navigating to golems..", 1) Then Return -1

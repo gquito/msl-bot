@@ -1,100 +1,152 @@
-#cs ----------------------------------------------------------------------------
- Function: farmGuardian
- Goes into guardian dungeons and attacks all dungeons
+#cs
+	Function: farmGuardian
+		Farms guardian dungeon monsters selectively.
 
- Parameters:
-	sellGems: (array) Gems to sell; Not array will not sell
-	refillEnergy: (int) Amount of gems available to use to sell gems. >30 can refill once.
-	gemUsed: (ByRef int) Increments 30 when refill
+	Parameters:
+		-idMon: 0 for first astromon, 1 for right astromon, 2 for both astromon
 
- Return:
-	#number of dungeons run
-	-1 on bot stop
-#ce ----------------------------------------------------------------------------
+	Return:
+		Number of guardian dungeon runs.
+		*On error returns -1
+#ce
 
-Func farmGuardian($sellGems, $refillEnergy, ByRef $gemUsed)
-	If navigate("map", "guardian-dungeons") = False Then Return 0
-	If setLog("Checking for guardian dungeons...", 1) Then Return -1
-	Local $currLocation = getLocation()
+Func farmGuardian($idMon)
+	setLog("Starting to farm guardian dungeons.")
+	navigate("map")
 
-	Local $countRun = 0
-	While $currLocation = "guardian-dungeons"
-		Local $energyPoint = findImage("misc-dungeon-energy", 50)
-		If isArray($energyPoint) And (clickUntil($energyPoint, "map-battle", 50) = 1) Then
-			clickWhile($map_coorBattle, "map-battle")
-			If _Sleep(500) Then Return -1
+	Local $numRuns = 0 ;Total number of dungeon runs
 
-			Local $currLocation = getLocation()
+	While True
+		If _Sleep(10) Then Return -1
+		Switch checkLocations("battle-boss,unknown,battle,battle-auto,pause,battle-end-exp,battle-sell,battle-end,guardian-dungeons,refill,map-battle")
+			Case "" ;For locations that are not part of farming dungeons
+				Local $tempTimer = TimerInit()
+				While TimerDiff($tempTimer) < 300000 ;five minutes
+					If navigate("map", "guardian-dungeons") = True Then ExitLoop
+					If _Sleep(5000) Then Return -1
+				WEnd
 
-			If $currLocation = "battle-gem-full" Or $currLocation = "map-gem-full" Then
-				If isArray($sellGems) Then
-					If setLog("Gem box is full, going to sell gems...", 1) Then Return -1
-					If navigate("village", "manage") = 1 Then sellGems($sellGems)
+				;Returns early if cannot navigate within 5 minutes
+				If TimerDiff($tempTimer) >= 300000 Then ExitLoop
 
-					clickUntil("misc-dungeon-energy", "map-battle")
-					clickWhile($map_coorBattle, "map-battle", 5)
+			Case "guardian-dungeons"
+				;Finding available astromon within 10 seconds
+				Local $monPoint ;Point of an available astromon
+
+				Local $tempTimer = TimerInit()
+				While TimerDiff($tempTimer) < 10000 ;10 seconds
+					$monPoint = _getGuardianMon($idMon)
+					If $monPoint[0] <> "" Then ExitLoop
+
+					ControlSend($hWindow, "", "", "{UP}") ;Tries to check for other mons by scrolling up
+					If _Sleep(500) Then Return -1
+				WEnd
+
+				;End farm guardian if dungeon not longer found
+				If TimerDiff($tempTimer) >= 10000 Then ExitLoop
+
+				;Enter into map-battle location and lets the case for map battle take over
+				If clickUntil($monPoint, "map-battle") = True Then
+					$numRuns += 1
+					setLogReplace("Found dungeon, attacking x" & $numRuns)
 				Else
-					If setLog("Gem box is full!", 1) Then Return -1
-					navigate("map")
-
 					ExitLoop
 				EndIf
-			EndIf
 
-			If getLocation() = "refill" Then
-				If $gemUsed + 30 <= $refillEnergy Then
-					While getLocation() = "refill"
-						clickPoint($game_coorRefill, 1, 1000)
-					WEnd
+			Case "map-battle"
+				clickUntil($map_coorBattle, "battle-auto,battle,unknown")
 
-					If getLocation() = "buy-gem" Or getLocation() = "unknown" Then
-						setLog("Out of gems!", 2)
-						Return $countRun
-					EndIf
-
-					clickUntil($game_coorRefillConfirm, "refill")
-					clickWhile("705, 99", "refill")
-
-					If setLog("Refill gems: " & $gemUsed + 30 & "/" & $refillEnergy, 0) Then ExitLoop
-					$gemUsed += 30
-				Else
-					setLog("Gem used exceed max gems!", 0)
-					Return $countRun
+				;Exit early if cannot go into battle. Usually means full gems or full inventory
+				If checkLocations("battle-auto,battle,unknown") = "" Then
+					ExitLoop
 				EndIf
-				clickWhile($map_coorBattle, "map-battle")
-			EndIf
 
-			$countRun += 1
-			If setLogReplace("Found dungeon, attacking x" & $countRun & ".", 1) Then Return -1
+			Case "battle-end"
+				clickUntil("400, 260", "unknown,guardian-dungeons")
 
-			Local $initTime = TimerInit()
-			While True
-				If _Sleep(1000) Then Return -1
-				If getLocation() = "battle-end-exp" Then ExitLoop
+			Case "battle"
+				clickUntil($battle_coorAuto, "battle-auto", 3, 2000)
 
-				If Int(TimerDiff($initTime)/1000) > 240 Then
-					If setLog("Error: Could not finish Guardian dungeon within 5 minutes, exiting.") Then Return -1
+			Case "battle-end-exp", "battle-sell"
+				clickUntil($game_coorTap, "battle-end", 20, 500)
 
-					navigate("map")
-					Return $countRun
-				EndIf
-			WEnd
+			Case "battle-end"
+				clickUntil("400,250", "unknown,guardian-dungeons")
 
-			clickUntil($game_coorTap, "battle-end", 100, 100)
-			clickWhile("400,250", "battle-end")
+			Case "pause"
+				clickUntil($battle_coorContinue, "battle,battle-auto")
 
-			waitLocation("guardian-dungeons", 10000)
-			$currLocation = getLocation()
-		Else
-			If $countRun = 0 Then
-				If setLog("Guardian dungeon not found, going back to map.", 1) Then Return -1
-			EndIf
-
-			navigate("map")
-			Return $countRun
-		EndIf
+			Case "refill"
+				ExitLoop
+		EndSwitch
 	WEnd
 
+	setLog("Finished farming guardian dungeons.")
+
 	navigate("map")
-	Return $countRun
+	Return $numRuns
+EndFunc
+
+#cs
+	Function: _getGuardianMon
+		Helper function for farmGuardian. Searches for an available monster on the 'guardian-dungeons' location
+
+	Parameters:
+		- $idMon: 0 for first astromon, 1 for right astromon, 2 for both astromon
+
+	Return:
+		2D array of the energy location of the monster found.
+		*Empty array if nothing found.
+#ce
+
+Func _getGuardianMon($idMon)
+	_CaptureRegion()
+
+	Local $foundMon[2] ;[x, y]
+
+	If getLocation() <> "guardian-dungeons" Then Return $foundMon
+
+	Switch $idMon
+		Case 0 To 1
+			Local $colorSet[10] ;10 colors of the selected astromon icon
+
+			For $i = 0 To 9
+				$colorSet[$i] = "0x" & Hex(_GDIPlus_BitmapGetPixel($hBitmap, 346+(62*$idMon), 195+$i), 6)
+			Next
+
+			;Check for first pixel and then check for other 4 pixels relative to the first pixel
+				Local $yDisplace = 0
+
+				Do
+					Local $foundPixel = _findColor("577," & 270+$yDisplace, "1," & 199-$yDisplace, $colorSet[0], 25)
+
+					If isArray($foundPixel) = True Then
+						;Add in coordinations with color for checkPixels
+						Local $pixelSet[10]
+						For $i = 0 to 9
+							$pixelSet[$i] = $foundPixel[0] & "," & $foundPixel[1]+$i & "," & $colorSet[$i]
+						Next
+
+						;Counting correct pixels within the sequence
+						Local $correctPixels = 0
+						For $i = 0 To 9
+							If checkPixel($pixelSet[$i], 25) = True Then $correctPixels += 1
+						Next
+
+						If $correctPixels >= 5 Then ;50% of pixels are correct
+							$foundMon = $foundPixel
+							$foundMon[0] += 50
+							ExitLoop
+						EndIf
+
+						$yDisplace = $foundPixel[1]-269
+					EndIf
+				Until isArray($foundPixel) = False
+		Case 2
+			;Only looks for energy since all monsters are to be selected
+			Local $tempPoint = _findColor("678,270", "1,199", 0xFACF27, 10)
+			If isArray($tempPoint) = True Then $foundMon = $tempPoint
+	EndSwitch
+
+	Return $foundMon
 EndFunc

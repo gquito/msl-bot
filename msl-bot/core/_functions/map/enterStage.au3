@@ -1,124 +1,144 @@
-#cs ----------------------------------------------------------------------------
- Function: enterStage
- Algorithm for entering a stage in the maps.
+#cs
+	Function: enterStage
+		Algorithm for entering a stage in the maps.
 
- Parameters:
-	strImage - Image name of the map.
-	strMode - Modes include: normal, hard, extreme
-	strBonus - Bonus include: exp, gold, any
-	boolAuto - Boolean for autobattle mode.
+	Parameters:
+		strImage - Image name of the map.
+		strMode - Modes include: normal, hard, extreme
+		strBonus - Bonus include: exp, gold, any
+		boolAuto - Boolean for autobattle mode.
 
- Returns: (boolean) On success returns true, fail return false
-	-1 on Bot Stop
-#ce ----------------------------------------------------------------------------
+	Returns: (boolean) On success returns true, fail return false
+#ce
 
 Func enterStage($strImage, $strMode = "normal", $strBonus = "gold", $boolAuto = False)
-	If Not(waitLocation("map") = "") Then
-		Local $strMap = StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "")
-		If setLogReplace("Entering " & $strMap & "..Searching", 1) Then Return -1
+	setLog("Beginning to enter stage.")
 
-		Local $timerStart = TimerInit()
-		Local $mapPoint = getMapCoor($strMap)
-		While Not isArray($mapPoint)
-			If setLogReplace("Entering " & $strMap & "..Swiping", 1) Then Return -1
-			ControlSend($hWindow, "", "", "{LEFT}")
+	Local $stageFound = False
 
-			If TimerDiff($timerStart) > 120000 Then ;two minutes
-				If setLogReplace("Entering " & $strMap & "..Could not find area.", 1) Then Return -1
-				If navigate("village") = True Then
+	Local $scriptTimer = TimerInit()
+	While TimerDiff($scriptTimer) < 300000 ;5 Minutes
+
+		Switch checkLocations("map,map-stage,map-battle,battle-gem-full,unknown")
+			Case ""
+				;Goes into map if location is not within list above
+				Local $tempTimer = TimerInit()
+				While navigate("map") = False
+					If TimerDiff($tempTimer) > 120000 Then ;2 minutes
+						If setLog("Could not enter map location.") Then Return -1
+						Return False
+					EndIf
+				WEnd
+			Case "map"
+				;Looks for stage
+				Local $strMap = StringReplace(_StringProper(StringReplace($strImage, "-", " ")), "Map ", "") ;Proper map name: "map-phantom-forest" -> "Phantom Forest"
+				If setLog("-Searching for " & $strMap & ".") Then Return -1
+
+				Local $mapPoint = getMapCoor($strMap) ;Coordinates of found map.
+
+				Local $tempTimer = TimerInit()
+				While isArray($mapPoint) = False
+					If TimerDiff($tempTimer) > 120000 Then ; two minutes
+						If setLog("Could not find stage.") Then Return -1
+						Return False
+					EndIf
+
+					;If a map has not been found scrolls left
+					ControlSend($hWindow, "", "", "{LEFT}")
+					If _Sleep(500) Then Return -1
+
+					If getLocation() <> "map" Then ContinueLoop(2) ;Goes back to main loop if misclick happens
+
+					$mapPoint = getMapCoor($strMap)
+				WEnd
+
+				$stageFound = True
+				If clickUntil($mapPoint, "map-stage", 5, 1500) = False Then
+					If setLog("Could not select stage.") Then Return -1
 					Return False
 				EndIf
-			EndIf
 
-			If _Sleep(500) Then Return -1
-			If Not checkLocations("astroleague, map-stage, association") = "" Then ControlSend($hWindow, "", "", "{ESC}")
+			Case "map-stage"
+				If $stageFound = True Then
+					;Selecting difficulty
+					If setLog("-Changing difficulty to " & $strMode & ".") Then Return -1
+					clickPoint($map_coorMode, 1, 500, False)
 
-			_CaptureRegion()
-			Local $mapPoint = getMapCoor($strMap)
-		WEnd
-		If setLogReplace("Entering " & $strMap & "..Stage Found.", 1) Then Return -1
+					Switch $strMode
+						Case "normal"
+							clickPoint($map_coorNormal, 1, 500, False)
+						Case "hard"
+							clickPoint($map_coorHard, 1, 500, False)
+						Case "extreme"
+							clickPoint($map_coorExtreme, 1, 500, False)
+						Case Else
+							If setLog("Could not change difficulty.") Then Return -1
+					EndSwitch
 
-		;clicking map list and selecting difficulty
-		clickPoint($mapPoint, 1, 2000, False)
+					;Selecting stage level (Probably recode in the future to not use images.'
+					If setLog("-Searching for stage level.") Then Return -1
 
-		If Not getLocation() = "map-stage" Then Return False
-		Switch $strMode
-			Case "normal" ;Normal
-				If setLogReplace("Entering " & $strMap & "..Mode: Normal", 1) Then Return -1
-				clickPoint($map_coorMode, 1, 500, False)
-				clickPoint($map_coorNormal, 1, 500, False)
-			Case "hard" ;Hard
-				If setLogReplace("Entering " & $strMap & "..Mode: Hard", 1) Then Return -1
-				clickPoint($map_coorMode, 1, 500, False)
-				clickPoint($map_coorHard, 1, 500, False)
-			Case "extreme" ;Extreme
-				If setLogReplace("Entering " & $strMap & "..Mode: Expert", 1) Then Return -1
-				clickPoint($map_coorMode, 1, 500, False)
-				clickPoint($map_coorExtreme, 1, 500, False)
-			Case Else
-				If setLog("Input error: " & $strMode & " not within 1-3 modes.", 1) Then Return -1
-				Return 0
+					Local $arrayStage ;Point to go into map-battle
+
+					Local $tempTimer = TimerInit()
+					While isArray($arrayStage) = False
+						If TimerDiff($tempTimer) > 20000 Then
+							If setLog("Could not go into a stage level.") Then Return -1
+							Return False
+						EndIf
+
+						Switch $strBonus
+							Case "gold"
+								$arrayStage = findImage("misc-gold-bonus", 50)
+							Case "exp"
+								$arrayStage = findImage("misc-exp-bonus", 50)
+							Case Else
+								$arrayStage = findImage("misc-stage-energy", 100)
+						EndSwitch
+
+						If isArray($arrayStage) = True Then
+							ExitLoop
+						Else
+							ControlSend($hWindow, "", "", "{LEFT}")
+							If getLocation() <> "map-stage" Then ContinueLoop(2) ;Goes back to main loop if misclick happens
+						EndIf
+
+						If _Sleep(1000) Then Return -1
+					WEnd
+
+					If setLog(StringStripWS("-Entering " & $strBonus & " stage.", 4)) Then Return -1
+					clickUntil($arrayStage, "map-battle", 5, 2000)
+				Else
+					;Happens when accidentally clicked a map during scroll sequence
+					navigate("map")
+				EndIf
+
+			Case "map-battle"
+				;Applying autobattle mode.
+				If $boolAuto = True Then
+					If setLog("-Enabling autobattle mode.") Then Return -1
+					clickUntil($map_pixelAutoBattle20xUnchecked, "autobattle-prompt")
+					clickWhile($map_coorConfirmAutoBattle, "autobattle-prompt")
+				EndIf
+
+				If waitLocation("map-battle,autobattle-prompt") = "autobattle-prompt" Then
+					clickUntil("496, 327", "map-battle")
+				EndIf
+
+				;Starting battle
+				If setLog("-Going into battle.") Then Return -1
+				clickUntil($map_coorBattle, "battle-auto,battle,unknown")
+
+				;Return early if cannot go into battle. Usually means full gems or full inventory
+				If checkLocations("battle-auto,battle,unknown") = "" Then
+					If setLog("Could not go into battle.") Then Return -1
+					Return False
+				Else
+					If setLog("Finished entering stage.") Then Return -1
+					Return True
+				EndIf
 		EndSwitch
+	WEnd
 
-		;selecting a stage
-		Local $startTimer = TimerInit()
-		Switch $strBonus
-			Case "gold"
-				Local $arrayStage = findImage("misc-gold-bonus", 50)
-				While isArray($arrayStage) = False
-					ControlSend($hWindow, "", "", "{LEFT}")
-					If _Sleep(2000) Then Return -1
-
-					$arrayStage = findImage("misc-gold-bonus", 50)
-					If isArray($arrayStage) Then $arrayStage[1] += 20
-					If TimerDiff($startTimer) > 20000 Then ExitLoop
-				WEnd
-				If setLogReplace("Entering " & $strMap & "..Entering gold stage", 1) Then Return -1
-			Case "exp"
-				Local $arrayStage = findImage("misc-exp-bonus", 50)
-				While isArray($arrayStage) = False
-					ControlSend($hWindow, "", "", "{LEFT}")
-					If _Sleep(2000) Then Return -1
-
-					$arrayStage = findImage("misc-exp-bonus", 50)
-					If isArray($arrayStage) Then $arrayStage[1] += 20
-					If TimerDiff($startTimer) > 20000 Then ExitLoop
-				WEnd
-				If setLogReplace("Entering " & $strMap & "..Entering exp stage", 1) Then Return -1
-			Case Else
-				If setLogReplace("Entering " & $strMap & "..Entering random stage", 1) Then Return -1
-				Local $arrayStage = findImage("misc-stage-energy", 100, 5000)
-		EndSwitch
-
-		If Not isArray($arrayStage) Then Return -1
-		clickWhile($arrayStage, "map-stage", 5, 2000)
-
-		;applying autobattle mode
-		If $boolAuto = True Then
-			If setLogReplace("Entering " & $strMap & "..Autobattle Mode", 1) Then Return -1
-			clickUntil($map_pixelAutoBattle20xUnchecked, "autobattle-prompt")
-			clickWhile($map_coorConfirmAutoBattle, "autobattle-prompt")
-		EndIf
-
-		If waitLocation("map-battle,autobattle-prompt") = "autobattle-prompt" Then
-			clickUntil("496, 327", "map-battle")
-		EndIf
-
-		;launching stage
-		clickWhile($map_coorBattle, "map-battle")
-		If Not checkLocations("map-gem-full, battle-gem-full") = "" Then
-			If setLogReplace("Entering " & $strMap & "..Gem box full!", 1) Then Return -1
-			Return False
-		EndIf
-
-		If getLocation() = "refill" Then
-			Return False
-		EndIf
-
-		logUpdate()
-		Return Not(waitLocation("battle,unknown,battle-auto", 10000) = "")
-	EndIf
-
-	logUpdate()
-	Return False
+	Return False ;If time runs out
 EndFunc
