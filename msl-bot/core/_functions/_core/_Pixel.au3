@@ -1,24 +1,3 @@
-Func pixelRecordSearch($pixelRecord, $left, $top, $right, $bottom)
-	Local $width = $pixelRecord[1], $height = $pixelRecord[2]
-	Local $pixels = StringSplit($pixelRecord[3], ",", 2)
-
-	Local $checkPixel[0]
-	For $pixel In $pixels
-		_ArrayAdd($checkPixel, "0x" & StringSplit($pixel, "x", 2)[1])
-	Next
-
-	For $y = $top To $bottom-$top Step $height
-		For $x = $left To $right-$left Step $width
-			For $pixel In $pixels
-				If checkPixel($x & "," & $y & "," & "0x" & StringSplit($pixel, "x", 2)[1], 10) Then
-
-				EndIf
-			Next
-		Next
-	Next
-EndFunc
-
-
 ;functions: loadPixelRecords
 ;-Reads pixel record text file into array global variable
 ;parameters:
@@ -31,8 +10,6 @@ Global $pixelRecords[0]
 Func loadPixelRecords($path = @ScriptDir & "/core/pixel-records.txt")
 	Local $lineCount = _FileCountLines($path)
 	Local $fileHandle = FileOpen($path, $FO_READ)
-
-	Global $pixelRecords[0]
 
 	For $i = 1 To $lineCount
 		If FileReadLine($fileHandle, $i) = "" Then ContinueLoop
@@ -56,7 +33,7 @@ Endfunc
 ;returns: boolean
 ;author: GkevinOD (2017)
 
-Func recordPixel($name, $startingPoint, $width, $height, $filePath = @ScriptDir & "/core/pixel-records.txt")
+Func recordPixel($name, $startingPoint, $width, $height, $filePath = @ScriptDir & "/core/pixel-records-extra.txt")
 	_CaptureRegion()
 
 	$startingPoint = StringStripWS($startingPoint, 8)
@@ -87,7 +64,9 @@ Func recordPixel($name, $startingPoint, $width, $height, $filePath = @ScriptDir 
 	$pixelRecord = StringTrimRight($pixelRecord, 1)
 	FileWrite($filePath, @CRLF & $pixelRecord)
 
+	Global $pixelRecords[0]
 	loadPixelRecords()
+	loadPixelRecords(@ScriptDir & "/core/pixel-records-extra.txt")
 EndFunc
 
 ;function: getPixelRecord
@@ -115,11 +94,11 @@ EndFunc
 ;parameters:
 ;-pixelRecord: pixelRecord(String)
 ;-startingPoint: Array or String for top left point of rectangle
-;-rate: 0-1, the percentage of pixels in order to be accepted.
+;-colorException: Colors that the bot will not count. Array ["color,variation;color,variation"]
 ;returns: rate-percentage of pixels that are correct
 ;author: GkevinOD (2017)
 
-Func checkPixelRecord($pixelRecord, $startingPoint)
+Func checkPixelRecord($pixelRecord, $startingPoint, $colorException = "")
 	If isArray($pixelRecord) = False Then Return 0
 
 	;variables for calculating rate
@@ -135,6 +114,11 @@ Func checkPixelRecord($pixelRecord, $startingPoint)
 	Local $pixels = StringSplit($pixelRecord[3], ",", 2)
 	$totalSize = $pixelRecord[1] * $pixelRecord[2]
 
+	Local $pixelExceptions
+	If $colorException <> "" Then
+		$pixelExceptions = StringSplit($colorException, ";", 2)
+	EndIf
+
 	Local $counter = 0 ;To traverse through pixels
 	Local $numLoop = Int(StringSplit($pixels[$counter], "x", 2)[0])
 	_CaptureRegion()
@@ -147,7 +131,20 @@ Func checkPixelRecord($pixelRecord, $startingPoint)
 				$numLoop -= 1
 			EndIf
 
-			If checkPixel($x & "," & $y & ",0x" & StringSplit($pixels[$counter], "x", 2)[1], 10) Then
+			Local $cont = True
+			If $colorException <> "" Then
+				For $exception In $pixelExceptions
+					Local $_color = StringSplit($exception, ",", 2)[0]
+					Local $_var = StringSplit($exception, ",", 2)[1]
+					If checkPixel($x & "," & $y & "," & $_color, $_var) = True Then
+						$totalSize -= 1
+						$cont = False
+						ExitLoop
+					EndIf
+				Next
+			EndIf
+
+			If $cont = True And checkPixel($x & "," & $y & ",0x" & StringSplit($pixels[$counter], "x", 2)[1], 50) Then
 				$correctPixels += 1
 			EndIf
 
@@ -159,7 +156,8 @@ Func checkPixelRecord($pixelRecord, $startingPoint)
 	Next
 
 	;setLog("Dim: " & $pixelRecord[1] & "x" & $pixelRecord[2] & " - " & TimerDiff($timerInit))
-
+	;setLog($correctPixels & "/" & $totalSize)
+	If $totalSize = 0 Then Return 0
 	Return $correctPixels/$totalSize*100
 EndFunc
 

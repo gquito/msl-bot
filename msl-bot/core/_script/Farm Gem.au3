@@ -96,7 +96,7 @@ Func farmGemCatching(ByRef $needCatch, ByRef $gemUsed, $maxRefill)
 		WEnd
 
 		Local $locTimer = TimerInit()
-		While enterStage("map-phantom-forest", "normal", "any", False) = False
+		While enterStage("Phantom Forest", "normal", "1", False) = False
 			If getLocation() = "refill" Then
 				If Not($gemUsed = null) And ($gemUsed + 30 <= $maxRefill) Then
 					While getLocation() = "refill"

@@ -61,17 +61,19 @@ Func farmGuardian($idMon)
 					ExitLoop
 				EndIf
 
+				;**Will add for sell gems and refill energy
+			Case "battle-boss"
+				waitLocation("battle-auto", 5000)
+				clickPoint("406, 209") ;clicks boss
+
 			Case "battle-end"
-				clickUntil("400, 260", "unknown,guardian-dungeons")
+				clickUntil("400, 260", "unknown,guardian-dungeons") ;clicks exit
 
 			Case "battle"
 				clickUntil($battle_coorAuto, "battle-auto", 3, 2000)
 
 			Case "battle-end-exp", "battle-sell"
 				clickUntil($game_coorTap, "battle-end", 20, 500)
-
-			Case "battle-end"
-				clickUntil("400,250", "unknown,guardian-dungeons")
 
 			Case "pause"
 				clickUntil($battle_coorContinue, "battle,battle-auto")

@@ -76,7 +76,7 @@
 							["Sky Falls", "map-sky-falls", 0, 0], ["Slumbering City", "map-sky-falls", 27, -193], _
 							["Glacial Plains", "map-sky-falls", 338, -124], ["Aurora Plateau", "map-sky-falls", 446, -306]]
 
-		Global $imageMarks = ["map-astromon-league", "map-toc", "map-golems", "map-4th-continent"]
+		Global $imageMarks = ["map-astromon-league", "map-toc", "map-golems", "map-4th-continent", "map-sky-falls"]
 
 		Global $map_coorStarstoneDungeons = [169, 168]
 		Global $map_coorElementDungeons = [178, 235]
