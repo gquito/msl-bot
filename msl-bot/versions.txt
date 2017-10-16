@@ -1,3 +1,3 @@
-latest-version=v2.2.4.0,2020400,2.2
-description=v2.2.4.0 Update log:|- Fix map not selecting last continent maps.|- Added support for selecting specific stage level in story mode.|- Added buy first item when buying from shop.||*I will be refactoring most of the codes and redesigning the GUI. If you have any current issues with the bot running refer to Discord help or bugs-and-issues channels.||* New keymap! Use 'setupKeymap()' function to easily set keymap. Selecting levels in story mode.||--Instructions for setupKeymap():||1. Click keymap icon on top right of your nox app.|- Clear the current keymaps.|2. Run bot and go to Debug tab.|3. Type in "setupKeymap()" inside the Test Code: textbox.|4. Click the keymap icon again and let go of your physical mouse.|5. Let the bot create the keymap and then hit save.
+latest-version=v2.2.4.1,2020401,2.2
+description=v2.2.4.1 Update log:|- Added additional step in enterStage algorithm to prevent having Auto Astrochips turned off.
 directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
