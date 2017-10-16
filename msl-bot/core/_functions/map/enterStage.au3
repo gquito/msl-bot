@@ -126,6 +126,11 @@ Func enterStage($strImage, $strMode = "normal", $levelStage = "exp", $boolAuto =
 				EndIf
 
 			Case "map-battle"
+				;Making sure autofill astrochips are on.
+				If clickUntil("737, 306", "unknown") Then ;Autofill toggle
+					If clickUntil("400, 323", "map-battle") = False Then ContinueLoop ;Autofill Astrochips button
+				EndIf
+
 				;Applying autobattle mode.
 				If $boolAuto = True Then
 					If setLog("-Enabling autobattle mode.") Then Return -1
