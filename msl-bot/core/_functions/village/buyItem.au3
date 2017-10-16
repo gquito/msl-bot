@@ -18,6 +18,8 @@ Func buyItem($item, $maxGold)
 			$itemImage = "shop-egg"
 		Case "soulstone"
 			$itemImage = "shop-soulstone"
+		Case "first-item-only"
+			$itemImage = ""
 		Case Else
 			setLog("Did not recognize the item: " & $item)
 			Return $itemsBought
@@ -25,10 +27,22 @@ Func buyItem($item, $maxGold)
 
 	If setLogReplace("Buying items... Navigating to shop.") Then Return -1
 	If navigate("village", "shop") = True Then
+		If setLogReplace("Buying items... Buying for item.") Then Return -1
+		clickUntil("650, 446", "unknown") ;until prompt shows up
+		clickWhile("412, 310", "unknown", 3, 1000) ;until prompt disappears
+
+		If $item = "first-item-only" Then
+			If setLogReplace("Buying items... Done!") Then Return -1
+			navigate("village")
+			logUpdate()
+
+			Return $itemsBought
+		EndIf
+
 		Local $arrayAreas = [[185, 156, 262, 244], [185, 243, 256, 321], [189, 320, 261, 398], [187, 398, 260, 480]]
 
 		Do
-			If setLogReplace("Buying items... Searching for item.") Then Return -1
+			If setLogReplace("Buying items... Searching first item.") Then Return -1
 
 			clickPoint("223,433", 3, 100)
 			_CaptureRegion()
@@ -75,10 +89,10 @@ Func buyItem($item, $maxGold)
 
 					If $price <= $maxGold Then ;make purchase
 						Local $fileCounter = 1
-						While FileExists(@ScriptDir & "/item-bought" & $fileCounter & ".bmp")
+						While FileExists(@ScriptDir & "/items-bought/" & $botName & $fileCounter & ".bmp")
 							$fileCounter += 1
 						WEnd
-						_CaptureRegion("item-bought" & $fileCounter & ".bmp", 529, 154, 778, 478)
+						_CaptureRegion("items-bought/" & $botName & $fileCounter & ".bmp", 529, 154, 778, 478)
 
 						If setLogReplace("Buying items... Purchasing " & $item & " for " & $price & " gold.") Then Return -1
 						logUpdate()

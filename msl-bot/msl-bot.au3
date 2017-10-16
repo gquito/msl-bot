@@ -3,7 +3,7 @@
 #AutoIt3Wrapper_Outfile=msl-bot v2.2.exe
 #AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=An open-sourced Monster Super League bot
-#AutoIt3Wrapper_Res_Fileversion=2.2.3.4
+#AutoIt3Wrapper_Res_Fileversion=2.2.4.1
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 
 ;Initialize Bot
@@ -11,8 +11,8 @@ Global $botConfig = "config.ini"
 Global $botConfigDir = @ScriptDir & "/profiles/" & $botConfig
 Global $oldVersion = "2.0"
 Global $botSimpleVersion = "2.2"
-Global $botVersion = "v2.2.3.4"
-Global $botVersionValue = 2020304
+Global $botVersion = "v2.2.4.1"
+Global $botVersionValue = 2020401
 Global $botName = "MSL Bot"
 Global $arrayScripts = StringSplit(IniRead($botConfigDir, "general", "scripts", ""), ",", 2)
 
@@ -64,6 +64,7 @@ EndIf
 
 loadLocation() ;loads up location from /core/location.txt
 loadPixelRecords()
+loadPixelRecords(@ScriptDir & "/core/pixel-records-extra.txt")
 
 ;importing scripts
 #include "core/_script/imports.au3"
@@ -664,21 +665,24 @@ Func setupKeymap()
 	MouseClickDrag("Left", $initialPos[0]-224, $initialPos[1]+202, $initialPos[0]-495, $initialPos[1]+341, 10)
 	Send("{LEFT}")
 
-	If _Sleep(2000) Then Return -1
-
 	;Right keymap
 	setLog("Setting up right keymap...")
 
 	MouseClickDrag("Left", $initialPos[0]-620, $initialPos[1]+306, $initialPos[0]-483, $initialPos[1]+206, 10)
 	Send("{RIGHT}")
 
-	If _Sleep(2000) Then Return -1
-
 	;Up keymap
 	setLog("Setting up up keymap...")
 
 	MouseClickDrag("Left", $initialPos[0]-386, $initialPos[1]+313, $initialPos[0]-386, $initialPos[1]+241, 10)
 	Send("{UP}")
+	MouseClickDrag("Left", $initialPos[0]-386, $initialPos[1]+241, $initialPos[0]-450, $initialPos[1]+241, 10)
+
+	;Down keymap
+	setLog("Setting up down keymap...")
+
+	MouseClickDrag("Left", $initialPos[0]-386, $initialPos[1]+241, $initialPos[0]-386, $initialPos[1]+313, 10)
+	Send("{DOWN}")
 
 	setLog("Setup complete.")
 EndFunc

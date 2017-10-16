@@ -43,7 +43,7 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				clickUntil($village_coorQuests, "quests")
 			;map
 			Case "guardian-dungeons"
-				clickUntil(getMapCoor("Dungeons"), "starstone-dungeons,golem-dungeons")
+				clickWhile(getMapCoor("Dungeons"), "map")
 				clickUntil($map_coorGuardianDungeons, "guardian-dungeons")
 			Case "golem-dungeons"
 				If setLogReplace("Navigating to golems..", 1) Then Return -1
@@ -71,8 +71,11 @@ Func navigate($strMainLocation, $strLocation = "", $forceGiveUp = False)
 				;clicking map list and selecting difficulty
 				clickUntil($imgPoint, "golem-dungeons", 3, 3000)
 			Case "starstone-dungeons"
-				clickUntil(findImage("map-dungeons", 50), "starstone-dungeons,golem-dungeons")
+				clickWhile(getMapCoor("Dungeons"), "map")
 				clickUntil($map_coorStarstoneDungeons, "starstone-dungeons")
+			Case "elemental-dungeons"
+				clickWhile(getMapCoor("Dungeons"), "map")
+				clickUntil($map_coorElementDungeons, "elemental-dungeons")
 			;battle
 			Case "catch-mode"
 				If checkPixel($battle_pixelUnavailable) Then Return False
