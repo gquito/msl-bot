@@ -1,1 +1,7 @@
-back:
+back:20, 20
+tap:795, 547
+battle-pause:34, 338
+battle-give-up:446, 314
+battle-end-airship:330, 387
+battle-end-map:399, 386
+battle-end-monsters:466, 385
