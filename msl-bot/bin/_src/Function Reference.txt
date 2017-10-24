@@ -39,6 +39,8 @@ Control:
 System:
     - _Sleep($iDuration, [$iDelay]): Sleep that accounts for script state.
 
+    - DisplayDebug([$vDebug]): Display debug information.
+
 MSL:
     - captureRegion([$sFileName]): Updates global bitmap.
 

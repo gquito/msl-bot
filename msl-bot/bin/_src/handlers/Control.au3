@@ -37,7 +37,7 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
         EndIf
 
         ;Actual clicks
-        If $g_bRealMouse = False Then ;Click without mouse simulation
+        If $g_bRealMouse = True Then ;Click without mouse simulation
             WinActivate($hWindow)
 
             Local $t_aDesktopPoint = WinGetPos($hControl)
@@ -46,7 +46,8 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
 
             MouseClick("left", $aNewPoint[0], $aNewPoint[1], 1, 0) ;For real mouse clicks
         Else
-            ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0], $aNewPoint[1]) ;For simulated clicks
+            Local $t_aOffset = ControlGetPos($hWindow, "", $hControl)
+            ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0]+$t_aOffset[0], $aNewPoint[1]+$t_aOffset[1]) ;For simulated clicks
         EndIf
 
         If _Sleep($iInterval) Then Return -2

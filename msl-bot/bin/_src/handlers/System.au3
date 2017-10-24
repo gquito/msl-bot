@@ -20,3 +20,16 @@ Func _Sleep($iDuration, $iDelay = 50)
     WEnd
     Return False
 EndFunc
+
+#cs 
+    Function: Displays global debug variable.
+    Parameter:
+        $vDebug: Data containing debug information.
+#ce
+Func DisplayDebug($vDebug = $g_vDebug)
+    If isArray($vDebug) = True Then
+        _ArrayDisplay($vDebug)
+    Else   
+        MsgBox(0, "MSL Bot DEBUG", $vDebug)
+    EndIf
+EndFunc

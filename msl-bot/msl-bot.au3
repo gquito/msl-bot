@@ -7,12 +7,14 @@ Initialize()
 Func Initialize()
     _GDIPlus_Startup()
     $g_bRunning = True
-    $g_hWindow = WinGetHandle("User1")
-    $g_hControl = ControlGetHandle("User1", "", "[CLASS:AnglePlayer_0; INSTANCE:1]")
+    $g_sWindowTitle = "User2"
+    $g_sControlInstance = "[CLASS:subWin; INSTANCE:1]"
+    $g_hWindow = WinGetHandle($g_sWindowTitle)
+    $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
 
     $g_aLocations = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt", ">", ":")
-    $g_aPixel = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt")
-    $g_aPoints = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt")
+    $g_aPixels = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt", ">", ":")
+    $g_aPoints = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt", ">", ":")
     MsgBox(0, "", navigate("village", True))
-    ;clickPoint("20,20")
+    DisplayDebug()
 EndFunc

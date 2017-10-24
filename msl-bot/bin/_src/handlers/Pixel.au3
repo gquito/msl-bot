@@ -20,6 +20,7 @@ EndFunc
         $iVariation: The maximum color variation compared to the actual pixel.
         $hBitmap: Bitmap to compare the pixels for.
     Returns: Boolean => if pixel(s) meet condition.
+    Extended: List of color1, color2, and their variations.
 #ce
 Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap)
     Local $aPixels[0] ;pixels to check
@@ -76,6 +77,13 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap)
     ;checking if pixel is within variation
     Local Const $iTotalPixels = UBound($aPixels) ;Total pixels
 
+    ;Debug information ===============================
+    Global $g_vDebug[1][3]
+    $g_vDebug[0][0] = "Color1"
+    $g_vDebug[0][1] = "Color2"
+    $g_vDebug[0][2] = "Variation"
+    ;====================================================
+
     For $i = 0 To $iTotalPixels-1
         Local $t_aCurrPixel = $aPixels[$i]
 
@@ -83,7 +91,19 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap)
         Local $t_iY = $t_aCurrPixel[1] ;y coordinate
         Local $t_cColor = $t_aCurrPixel[2] ;color
 
-        If compareColors($t_cColor, getColor($t_iX, $t_iY, $hBitmap)) > $iVariation Then
+        Local $t_cColor2 = getColor($t_iX, $t_iY, $hBitmap) ;current color in position
+        Local $t_iColorDifference = compareColors($t_cColor, $t_cColor2)
+
+        ;Extended information ===============================
+        ReDim $g_vDebug[UBound($g_vDebug)+1][3]
+        Local $t_iIndex = UBound($g_vDebug)-1
+
+        $g_vDebug[$t_iIndex][0] = $t_cColor
+        $g_vDebug[$t_iIndex][1] = $t_cColor2
+        $g_vDebug[$t_iIndex][2] = $t_iColorDifference
+        ;====================================================
+
+        If $t_iColorDifference > $iVariation Then
             Return False
         EndIf
     Next

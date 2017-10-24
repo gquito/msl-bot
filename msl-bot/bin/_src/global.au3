@@ -4,6 +4,7 @@
 
 ;Application variables
     Global $g_sErrorMessage = "" ;Message when functions calls error code.
+    Global $g_vDebug = Null ;Extra information given after an execution of a select function.
     Global $g_bRunning = False ;If any scripts are running
     Global $g_bPaused = False ;If any scripts are paused
     Global $g_hHBitmap = Null ;WINAPI bitmap handle.

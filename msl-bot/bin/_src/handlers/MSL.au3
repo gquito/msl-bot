@@ -20,6 +20,7 @@ EndFunc
 	Parameters:
 		$aLocations: Format=[["LOCATION_NAME", "PIXEL_SET"], [...]]
 	Returns: String game location.
+	Extended: Location pixel data.
 #ce
 Func getLocation($aLocations = $g_aLocations)
 	captureRegion() ;Updates global bitmap
@@ -34,7 +35,7 @@ Func getLocation($aLocations = $g_aLocations)
 	Local $t_sLocation = "" ;Temporary location to double check location.
 	For $i = 0 To $iSize-1
 		Local $t_aLocation = $aLocations[$i]
-		;_ArrayDisplay($t_aLocation)
+		If $t_aLocation[0] = "" Or StringMid($t_aLocation[0], 0, 1) = ";" Then ContinueLoop
 
 		If isPixelOR($t_aLocation[1], 20) = True Then
 			;checks in 200 miliseconds for same location.
@@ -42,11 +43,13 @@ Func getLocation($aLocations = $g_aLocations)
 			captureRegion()
 
 			If isPixelOR($t_aLocation[1], 20) = True Then
+				Global $g_vDebug = $t_aLocation
 				Return $t_aLocation[0] ;Returns confirmed location.
 			EndIf
 		EndIf
 	Next
 
+	Global $g_vDebug = ""
 	Return "unknown" ;If no location from database is found.
 EndFunc
 
@@ -58,11 +61,11 @@ EndFunc
 		$bReturnBool: If false, returns the location string found.
 	Returns: String or Boolean depending on $bReturnBool
 #ce
-Func waitLocation($vLocations, $iInterval, $bReturnBool = False)
+Func waitLocation($vLocations, $iInterval, $bReturnBool = True)
 	Local $iTimerInit = TimerInit()
 	While (TimerDiff($iTimerInit) < $iInterval)
 		Local $t_vResult = isLocation($vLocations, $bReturnBool)
-		If $t_vResult = True Or $t_vResult <> "" Then
+		If $t_vResult <> "" Then
 			Return $t_vResult
 		EndIf
 
@@ -82,22 +85,23 @@ EndFunc
 	Returns: String or Boolean depending on $bReturnBool
 #ce
 Func isLocation($vLocations, $bReturnBool = True)
-	Local $aLocations = []
+	Local $aLocations = Null
 	Local $sCurrLocation = getLocation()
 
-	If $sCurrLocation = -1 Then Return -1
+	If $sCurrLocation = -1 Or $sCurrLocation = -2 Then Return $sCurrLocation
 
 	;Fixing argument format= ["location", "..."]
 	If isArray($vLocations) = False Then
 		;Expected format: "location, ..."
-		$vLocations = $STR_STRIPALL ;Removes all whitespace.
+		$vLocations = StringStripWS($vLocations, $STR_STRIPALL) ;Removes all whitespace.
 		$aLocations = StringSplit($vLocations, ",", $STR_NOCOUNT)
 	Else
 		$aLocations = $vLocations
 	EndIf
 
 	;Checking array if location exists
-	For $sLocation In $aLocations
+	For $i = 0 To UBound($aLocations)-1
+		Local $sLocation = $aLocations[$i]
 		If $sLocation = $sCurrLocation Then
 			;found
 			If $bReturnBool = True Then Return True

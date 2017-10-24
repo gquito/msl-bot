@@ -18,8 +18,8 @@ Func navigate($sLocation, $bForceSurrender = False)
             Case "battle", "battle-auto", "catch-mode", "pause"
                 If $bForceSurrender = True Then
                     ;Force surrender algorithm
-                    If clickUntil(getArg($g_aPoints, "battle-pause"), "pause", 30, 1000) = True Then
-                        clickWhile(getArg($g_aPoints, "battle-give-up"), "pause,unknown", 60, 1000)
+                    If clickUntil(getArg($g_aPoints, "battle-pause"), "isLocation", "pause", 30, 1000) = True Then
+                        clickWhile(getArg($g_aPoints, "battle-give-up"), "isLocation", "pause,unknown", 60, 1000)
                     EndIf
 
                     ;Sets up for normal locations
@@ -45,8 +45,7 @@ Func navigate($sLocation, $bForceSurrender = False)
                 Switch $t_sCurrLocation
                     Case "battle-end" 
                         ;Goes directly from battle-end to village
-                        Local $t_aArguments = ["unknown,village", True]
-                        clickUntil(getArg($g_aPoints, "battle-end-airship"), "isLocation", $t_aArguments, 60, 1000) ;60 seconds of clicking.
+                        clickUntil(getArg($g_aPoints, "battle-end-airship"), "isLocation", "unknown,village", 60, 1000) ;60 seconds of clicking.
                         
                         Return waitLocation("village", 60000, True) ;waits for village location for 60 seconds
                     Case Else
@@ -56,14 +55,13 @@ Func navigate($sLocation, $bForceSurrender = False)
                         While getLocation() <> "village"
                             If TimerDiff($t_vTimerInit) >= 300000 Then Return False ;5 minutes
                                 
-                            If clickPoint(getArg($g_aPoints, "tap")) = -2 Then Return -2
-
                             ;Handles back or esc
                             If isPixel(getArg($g_aPixels, "back"), 20) = True Then
                                 If clickPoint(getArg($g_aPoints, "back")) = -2 Then Return -2
                             Else
                                 ;Usually stuck in place with an in game window and an Exit button for the window.
-                                closeWindow()
+                                If closeWindow() = -2 Or skipDialogue() = -2 Then Return -2
+                                If clickPoint(getArg($g_aPoints, "tap")) = -2 Then Return -2
                             EndIf
 
                             If _Sleep(100) Then Return -2
