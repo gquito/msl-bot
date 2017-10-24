@@ -118,3 +118,19 @@ Func getRound()
 	If isLocation("unknown,battle,battle-auto") Then Return 0
 	;If isPixel(getArg($g_aPixels, "round"))
 EndFunc
+
+#cs 
+	Function: Tries to close a in game window interface.
+	Return: If window was closed successfully then return true. Else return false.
+#ce
+Func closeWindow()
+
+EndFunc
+
+#cs 
+	Function: Tries to close dialogue between players in game
+	Return: If dialogue has been closed successfully then return true. Else return false.
+#ce
+Func skipDialogue()
+
+EndFunc

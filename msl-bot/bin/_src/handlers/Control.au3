@@ -128,10 +128,11 @@ EndFunc
     Parameters:
         $sKey = Key to send. Look up https://www.autoitscript.com/autoit3/docs/appendix/SendKeys.htm
         $hWindow = Window handle to send keys to.
+        $sControlInstance = Control ID or Control instance.
     Returns: True if nothing goes wrong. -1 With error if handle not found.
 #ce
-Func sendKey($sKey, $hWindow = $g_hWindow)
-    Local $iResult = ControlSend($hWindow, "", "", $sKey)
+Func sendKey($sKey, $hWindow = $g_hWindow, $sControlInstance = $g_sControlInstance)
+    Local $iResult = ControlSend($hWindow, "", $sControlInstance, $sKey)
 
     If $iResult = 1 Then
         Return True

@@ -8,6 +8,8 @@
     Global $g_bPaused = False ;If any scripts are paused
     Global $g_hHBitmap = Null ;WINAPI bitmap handle.
     Global $g_hBitmap = Null ;GDIPlus bitmap handle.
+    Global $g_sWindowTitle = "" ;Emulator window title.
+    Global $g_sControlInstance = "" ;OPENGL/DIRECTX Control instance.
     Global $g_hWindow = Null ;Handle for emulator window
     Global $g_hControl = Null ;Handle for control window
 
