@@ -52,3 +52,7 @@ MSL:
    
     - waitLocation($vLocations, $iInterval, [$bReturnBool]): Waits for location for specified amount of time.
         - $aLocations Format: ["location", "..."] or "location,..."
+
+    - closeWindow([$sPixelName], [$aPixelList]): Closes in-game window.
+
+    - skipDialogue(): Skips in-game dialogue

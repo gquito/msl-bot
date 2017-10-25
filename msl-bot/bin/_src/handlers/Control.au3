@@ -74,6 +74,8 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
     ;Fix format to array: [arg1, arg2, ...]
     If isArray($vArg) = False And $vArg <> Null Then
         $aArg = StringSplit($vArg, ",", $STR_NOCOUNT)
+    Else   
+        $aArg = $vArg
     EndIf
 
     For $i = 0 To $iAmount-1

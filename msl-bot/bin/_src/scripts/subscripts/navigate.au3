@@ -86,8 +86,7 @@ Func navigate($sLocation, $bForceSurrender = False)
 
                             ;Handles clan notification and bingo popups.
                             If clickWhile(getArg($g_aPoints, "village-play"), "isLocation", "village", 10, 1000) = True Then ;click for 10 seconds
-                                skipDialogue()
-                                closeWindow()
+                                If skipDialogue() = -2 Or closeWindow() = -2 Then Return -2
                             EndIf
 
                             If _Sleep(100) Then Return -2

@@ -125,10 +125,32 @@ EndFunc
 
 #cs 
 	Function: Tries to close a in game window interface.
+	Parameters:
+		$sPixelName: Name for argument within a formated argument array.
+		$aPixelList: Formatted argument array.
 	Return: If window was closed successfully then return true. Else return false.
 #ce
-Func closeWindow()
+Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
+	Local $aPixelSet = StringSplit(getArg($sPixelName, $aPixelList), "/", $STR_NOCOUNT)
+	
+	For $i = 0 To UBound($aPixelSet)-1
+		captureRegion()
 
+		Local $t_iTimerInit = TimerInit()
+		While isPixel($aPixelSet[$i], 10) = True
+			If TimerDiff($t_iTimerInit) >= 5000 Then Return False ;ten seconds
+			;Closing until pixel is not the same.
+			Local $t_aPixel = StringSplit($aPixelSet[$i], ",", $STR_NOCOUNT)
+
+			Local $vResult = clickPoint($t_aPixel, 1, 0)
+			If _Sleep(500) = True Or $vResult = -2 Then Return -2
+			captureRegion()
+
+			If isPixel($aPixelSet[$i]) = False Then Return True
+		WEnd
+	Next
+
+	Return False
 EndFunc
 
 #cs 
@@ -136,5 +158,10 @@ EndFunc
 	Return: If dialogue has been closed successfully then return true. Else return false.
 #ce
 Func skipDialogue()
+	Local $t_iTimerInit = TimerInit()
+	While getLocation() = "dialogue"
+		If TimerDiff($t_iTimerInit) >= 20000 Then Return False ;twenty seconds
 
+		If clickPoint(getArg("dialogue-skip", $g_aPoints)) = -2 Or _Sleep(200) = True Then Return -2
+	WEnd
 EndFunc
