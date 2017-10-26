@@ -138,12 +138,12 @@ Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
 
 		Local $t_iTimerInit = TimerInit()
 		While isPixel($aPixelSet[$i], 10) = True
-			If TimerDiff($t_iTimerInit) >= 5000 Then Return False ;ten seconds
+			If TimerDiff($t_iTimerInit) >= 2000 Then Return False ;two seconds
 			;Closing until pixel is not the same.
 			Local $t_aPixel = StringSplit($aPixelSet[$i], ",", $STR_NOCOUNT)
 
 			Local $vResult = clickPoint($t_aPixel, 1, 0)
-			If _Sleep(500) = True Or $vResult = -2 Then Return -2
+			If _Sleep(200) = True Or $vResult = -2 Then Return -2
 			captureRegion()
 
 			If isPixel($aPixelSet[$i]) = False Then Return True

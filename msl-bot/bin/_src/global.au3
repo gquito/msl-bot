@@ -1,6 +1,9 @@
 ;Constants
     Global Const $g_aControlSize = [800, 552] ;Default emulator size.
     Global Const $g_aRandomClicks = [-5, 5] ;Random click spread
+    Global Const $BKGD_NONE = 0, $BKGD_WINAPI = 1, $BKGD_ADB = 2
+    Global Const $MOUSE_REAL = 0, $MOUSE_CONTROL = 1, $MOUSE_ADB = 2
+    Global Const $SWIPE_KEYMAP = 0, $SWIPE_ADB = 1
 
 ;Application variables
     Global $g_sErrorMessage = "" ;Message when functions calls error code.
@@ -15,8 +18,11 @@
     Global $g_hControl = Null ;Handle for control window
 
 ;Config variables
-    Global $g_bBackground = True ;If ScreenCapture is done in the background.
-    Global $g_bRealMouse = False ;To use real mouse instead of simulations.
+    Global $g_sAdbPort = "62001" ;Android debug bridge port. Default is 62001 for nox
+    Global $g_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
+    Global $g_iBackgroundMode = $BKGD_WINAPI ;Type of background
+    Global $g_iMouseMode = $MOUSE_CONTROL ;Type of mouse control
+    Global $g_iSwipeMode = $SWIPE_ADB ;Type of swipe control
 
 ;MSL variables
     Global $g_aLocations = [] ;Data locations

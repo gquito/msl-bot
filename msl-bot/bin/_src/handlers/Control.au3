@@ -1,6 +1,39 @@
 #include-once
 #include "../imports.au3"
 
+Func adbShell($sCommand, $sAdbPort = $g_sAdbPort, $sAdbPath = $g_sAdbPath)
+    Local $iPID = RunWait('"' & $sAdbPath & '"' & " -s 127.0.0.1:" & $sAdbPort & " shell " & '"' & $sCommand & '"')
+    ProcessClose($iPID)
+
+    Return StdoutRead($iPID)
+EndFunc
+
+Func swipe($vArgument, $iSwipeMode = $g_iSwipeMode)
+    If $iSwipeMode = $SWIPE_KEYMAP Then
+        ;Pre-set-up keymap
+    Else
+        ;Adb swipe mode
+        Local $aPoints[4]
+
+        ;Formatting argument to [x1, y1, x2, y2]
+        If isArray($vArgument) = True Then
+            $aPoints = $vArgument
+        Else
+            $vArgument = StringSplit($vArgument, ",", $STR_NOCOUNT)
+            $aPoints = $vArgument
+        EndIf
+
+        If UBound($aPoints) <> 4 Then 
+          ;handle error
+            $g_sErrorMessage = "swipe() => Invalid argument for points."
+           Return -1
+        EndIf
+
+        ;executing swipe
+        adbShell("input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
+    EndIf
+EndFunc
+
 #cs
     Function: Clicks point in specified location.
     Parameters:
@@ -12,7 +45,7 @@
         $hWindow: Window handle to send clicks for.
         $hControl: Control handle to send clicks for.
 #ce
-Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClicks, $bRealMouse = $g_bRealMouse, $hWindow = $g_hWindow, $hControl = $g_hControl)
+Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClicks, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
     Local $aPoint[2] ;Point array
 
     ;Fixing format to [x, y]
@@ -37,17 +70,25 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
         EndIf
 
         ;Actual clicks
-        If $g_bRealMouse = True Then ;Click without mouse simulation
+        If $iMouseMode = $MOUSE_REAL Then
+            ;clicks using real mouse.
             WinActivate($hWindow)
 
             Local $t_aDesktopPoint = WinGetPos($hControl)
             $aNewPoint[0] += $t_aDesktopPoint[0]
             $aNewPoint[1] += $t_aDesktopPoint[1]
 
-            MouseClick("left", $aNewPoint[0], $aNewPoint[1], 1, 0) ;For real mouse clicks
-        Else
+            MouseClick("left", $aNewPoint[0], $aNewPoint[1], 1, 0)
+        ElseIf $iMouseMode = $MOUSE_CONTROL Then
+            ;clicks using fake mouse.
             Local $t_aOffset = ControlGetPos($hWindow, "", $hControl)
             ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0]+$t_aOffset[0], $aNewPoint[1]+$t_aOffset[1]) ;For simulated clicks
+        ElseIf $iMouseMode = $MOUSE_ADB Then
+            ;clicks using adb commands
+            adbShell("input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
+        Else
+            $g_sErrorMessage = "clickPoint() => Invalid mouse mode: " & $iMouseMode
+            Return -1
         EndIf
 
         If _Sleep($iInterval) Then Return -2
@@ -68,7 +109,7 @@ EndFunc
         $hControl: Control handle to send clicks for.
     Return: True if condition was met and false if maximum clicks exceeds.
 #ce
-Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $bRealMouse = $g_bRealMouse, $hWindow = $g_hWindow, $hControl = $g_hControl)
+Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
 	Local $aArg[0] ;Function arguments
 
     ;Fix format to array: [arg1, arg2, ...]
@@ -85,7 +126,7 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
 			If Call($sBooleanFunction, $aArg) = True Then Return True
 		WEnd
 
-		If clickPoint($aPoint, 1, 0) = -2 Then Return -2
+		If clickPoint($aPoint, 1, 0, $vRandom, $iMouseMode, $hWindow, $hControl) = -2 Then Return -2
 	Next
     
 	Return False
@@ -105,7 +146,7 @@ EndFunc
         $hControl: Control handle to send clicks for.
     Return: True if condition is not met and false if maximum clicks exceeds.
 #ce
-Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $bRealMouse = $g_bRealMouse, $hWindow = $g_hWindow, $hControl = $g_hControl)
+Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
 	Local $aArg[0] ;Function arguments
 
     ;Fix format to array: [arg1, arg2, ...]
@@ -120,7 +161,7 @@ Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
 			If Call($sBooleanFunction, $aArg) = False Then Return True
 		WEnd
 
-        If clickPoint($aPoint, 1, 0) = -2 Then Return -2
+        If clickPoint($aPoint, 1, 0, $vRandom, $iMouseMode, $hWindow, $hControl) = -2 Then Return -2
 	Next
 
     Return False ;If condition is still true
@@ -158,11 +199,11 @@ EndFunc
         $hControl: Control to take a bitmap image from.
     Return: Handle of bitmap in memory.
 #ce
-Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth = $g_aControlSize[0], $iHeight = $g_aControlSize[1], $bBackground = $g_bBackground, $hControl = $g_hControl)
+Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth = $g_aControlSize[0], $iHeight = $g_aControlSize[1], $iBackgroundMode = $g_iBackgroundMode, $hControl = $g_hControl)
 	_GDIPlus_BitmapDispose($hBitmap)
     _WinAPI_DeleteObject($hHBitmap)
 
-    If $bBackground = True Then
+    If $iBackgroundMode = $BKGD_WINAPI Then
 		Local $hDC_Capture = _WinAPI_GetWindowDC($hControl)
 		Local $hMemDC = _WinAPI_CreateCompatibleDC($hDC_Capture)
 		$hHBitmap = _WinAPI_CreateCompatibleBitmap($hDC_Capture, $iWidth, $iHeight)
@@ -177,10 +218,12 @@ Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth
 		_WinAPI_DeleteDC($hMemDC)
 		_WinAPI_SelectObject($hMemDC, $hObjectOld)
 		_WinAPI_ReleaseDC($hControl, $hDC_Capture)
-    Else
+    Elseif $iBackgroundMode = $BKGD_NONE Then
 		Local $aWinPos = WinGetPos($hControl)
         Local $aNewPoint = [$iX + $aWinPos[0], $iY + $aWinPos[1]]
 		$hBitmap = _ScreenCapture_Capture("", $aNewPoint[0], $aNewPoint[1], $aNewPoint[0] + $iWidth, $aNewPoint[1] + $iHeight)
+    ElseIf $iBackgroundMode = $BKGD_ADB Then
+
     EndIf
 EndFunc
 
