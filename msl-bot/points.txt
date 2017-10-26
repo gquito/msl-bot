@@ -5,3 +5,4 @@ battle-give-up:446, 314
 battle-end-airship:330, 387
 battle-end-map:399, 386
 battle-end-monsters:466, 385
+dialogue-skip:756, 23
