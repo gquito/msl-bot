@@ -28,7 +28,7 @@ Func navigate($sLocation, $bForceSurrender = False)
                     While $t_sCurrLocation <> "battle-end"
                         If TimerDiff($t_iTimerInit) >= 120000 Then Return False ;2 Minutes, prevents infinite loop.
 
-                        If clickPoint(getArg($g_aPoints, "tap")) = -2 Then Return -2
+                        clickPoint(getArg($g_aPoints, "tap"))
                         $t_sCurrLocation = getLocation()
 
                         If _Sleep(100) Then Return -2
@@ -47,7 +47,7 @@ Func navigate($sLocation, $bForceSurrender = False)
                         ;Goes directly from battle-end to village
                         clickUntil(getArg($g_aPoints, "battle-end-airship"), "isLocation", "unknown,village", 60, 1000) ;60 seconds of clicking.
                         
-                        Return waitLocation("village", 60000, True) ;waits for village location for 60 seconds
+                        Return waitLocation("village", 60, True) ;waits for village location for 60 seconds
                     Case Else
                         ;All other locations will need either click back or esc to get to village.
 
@@ -57,17 +57,18 @@ Func navigate($sLocation, $bForceSurrender = False)
                                 
                             ;Handles back or esc
                             If isPixel(getArg($g_aPixels, "back"), 20) = True Then
-                                If clickPoint(getArg($g_aPoints, "back")) = -2 Then Return -2
+                                clickPoint(getArg($g_aPoints, "back"))
                             Else
                                 ;Usually stuck in place with an in game window and an Exit button for the window.
-                                If closeWindow() = -2 Or skipDialogue() = -2 Then Return -2
+                                closeWindow()
+                                skipDialogue()
                                 If clickPoint(getArg($g_aPoints, "tap")) = -2 Then Return -2
                             EndIf
 
-                            If _Sleep(100) Then Return -2
+                            If _Sleep(1000) Then Return -2
                         WEnd
 
-                        Return getLocation() = "village"
+                        Return True
                 EndSwitch
             Case "map"
                 Switch $t_sCurrLocation
@@ -76,7 +77,7 @@ Func navigate($sLocation, $bForceSurrender = False)
                         Local $t_aArguments = ["unknown,map", True]
                         clickUntil(getArg($g_aPoints, "battle-end-airship"), "isLocation", $t_aArguments, 60, 1000) ;60 seconds of clicking.
                         
-                        Return waitLocation("map", 60000, True) ;waits for map location for 60 seconds
+                        Return waitLocation("map", 60, True) ;waits for map location for 60 seconds
                     Case "village"
                         ;Goes directly to map from village
                         Local $t_iTimerInit = TimerInit()
@@ -85,22 +86,21 @@ Func navigate($sLocation, $bForceSurrender = False)
                             If TimerDiff($t_iTimerInit) >= 180000 Then Return False ;3 minutes
 
                             ;Handles clan notification and bingo popups.
-                            If clickWhile(getArg($g_aPoints, "village-play"), "isLocation", "village", 10, 1000) = True Then ;click for 10 seconds
-                                If skipDialogue() = -2 Or closeWindow() = -2 Then Return -2
-                            EndIf
+                            clickWhile(getArg($g_aPoints, "village-play"), "isLocation", "village", 10, 1000) ;click for 10 seconds
 
-                            If _Sleep(100) Then Return -2
+                            skipDialogue() 
+                            closeWindow()
+
+                            If _Sleep(1000) Then Return -2
                         WEnd
+
+                        Return True
                     Case Else
                         ;Uses navigate village algorithm to easily go to map
                         Local $t_bResult = navigate("village")
-                        If $t_bResult = -1 Or $t_bResult = -2 Then Return $t_bResult
+                        If $t_bResult = False Then Return False
 
-                        If $t_bResult = True Then
-                            Return navigate("map")
-                        Else
-                            Return False
-                        EndIf
+                        Return navigate("map")
                 EndSwitch
         EndSwitch
     WEnd

@@ -4,10 +4,11 @@
 #cs
 	Function: Captures region and if there is saves into bmp if there is a specified file name.
 	Parameters:
+		$iMode: Change mode of capture: $MODE_BITMAP(0) uses WinAPI to create a bitmap. $MODE_ADB(1) sends screencap command and creates bitmap from file created.
 		$sFileName: File name saved to main folder.
 #ce
-Func captureRegion($sFileName = "")
-	getBitmapHandles($g_hHBitmap, $g_hBitmap)
+Func captureRegion($sFileName = "", $iX = 0, $iY = 0, $iWidth = $g_aControlSize[0], $iHeight = $g_aControlSize[1], $iBackgroundMode = $g_iBackgroundMode)
+	getBitmapHandles($g_hHBitmap, $g_hBitmap, $iX, $iY, $iWidth, $iHeight, $iBackgroundMode)
 
 	If $sFileName <> "" Then
 		$sFileName = StringReplace($sFileName, ".bmp", "")
@@ -57,19 +58,19 @@ EndFunc
 	Function: Waits for a location to appear and returns when it does.
 	Parameters:
 		$vLocations: Array or stirng of locations. Format=["location", "..."] or "location,..."
-		$iInterval: How long to wait for in milliseconds
+		$iSeconds: How long to wait for in seconds
 		$bReturnBool: If false, returns the location string found.
 	Returns: String or Boolean depending on $bReturnBool
 #ce
-Func waitLocation($vLocations, $iInterval, $bReturnBool = True)
+Func waitLocation($vLocations, $iSeconds, $bReturnBool = True)
 	Local $iTimerInit = TimerInit()
-	While (TimerDiff($iTimerInit) < $iInterval)
+	While (TimerDiff($iTimerInit) < $iSeconds*1000)
 		Local $t_vResult = isLocation($vLocations, $bReturnBool)
 		If $t_vResult <> "" Then
 			Return $t_vResult
 		EndIf
 
-		If _Sleep(100) Then Return -2
+		If _Sleep(1000) Then Return -2
 	WEnd
 
 	;Not found within timeframe
@@ -131,19 +132,24 @@ EndFunc
 	Return: If window was closed successfully then return true. Else return false.
 #ce
 Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
-	Local $aPixelSet = StringSplit(getArg($sPixelName, $aPixelList), "/", $STR_NOCOUNT)
-	
-	For $i = 0 To UBound($aPixelSet)-1
-		captureRegion()
+	Local $t_sPixels = getArg($aPixelList, $sPixelName)
 
+	If $t_sPixels = "" Or $t_sPixels = -1 Then
+		$g_sErrorMessage = "closeWindow() => No pixel found."
+		Return -1
+	EndIf
+
+	Local $aPixelSet = StringSplit($t_sPixels, "/", $STR_NOCOUNT)
+	For $i = 0 To UBound($aPixelSet)-1
 		Local $t_iTimerInit = TimerInit()
 		While isPixel($aPixelSet[$i], 10) = True
 			If TimerDiff($t_iTimerInit) >= 2000 Then Return False ;two seconds
 			;Closing until pixel is not the same.
 			Local $t_aPixel = StringSplit($aPixelSet[$i], ",", $STR_NOCOUNT)
+			
+			clickPoint($t_aPixel, 1, 0)
+			If _Sleep(1000) Then Return -2
 
-			Local $vResult = clickPoint($t_aPixel, 1, 0)
-			If _Sleep(200) = True Or $vResult = -2 Then Return -2
 			captureRegion()
 
 			If isPixel($aPixelSet[$i]) = False Then Return True
@@ -162,6 +168,9 @@ Func skipDialogue()
 	While getLocation() = "dialogue"
 		If TimerDiff($t_iTimerInit) >= 20000 Then Return False ;twenty seconds
 
-		If clickPoint(getArg("dialogue-skip", $g_aPoints)) = -2 Or _Sleep(200) = True Then Return -2
+		clickPoint(getArg($g_aPoints, "dialogue-skip"))
+		If _Sleep(200) Then Return -2
 	WEnd
+
+	Return True
 EndFunc

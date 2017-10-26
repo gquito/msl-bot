@@ -106,7 +106,7 @@ EndFunc
 		$sValueSeparator: The character used to separate value from identifier.
 #ce
 Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":")
-	Local $sData = BinaryToString(InetRead($sUrl))
+	Local $sData = BinaryToString(InetRead($sUrl, $INET_FORCERELOAD))
 
 	If $sData = "" Then ;Error handle
 		$g_sErrorMessage = "getArgFromURL() => No information was found: " & $sUrl

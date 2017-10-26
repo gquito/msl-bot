@@ -6,7 +6,7 @@
     Parameter:
         $iX: y-Coordinate
         $iY: x-Coordinate
-        $hBitmap: Bitmap handle in memory
+        $hBitmap: Bitmap handle
     Return: Hex String => 0xFFFFFF.
 #ce
 Func getColor($iX, $iY, $hBitmap = $g_hBitmap)

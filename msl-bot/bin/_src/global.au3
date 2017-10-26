@@ -12,6 +12,7 @@
     Global $g_bPaused = False ;If any scripts are paused
     Global $g_hHBitmap = Null ;WINAPI bitmap handle.
     Global $g_hBitmap = Null ;GDIPlus bitmap handle.
+    Global $g_sHexDump = Null ;Pixel data from dump
     Global $g_sWindowTitle = "" ;Emulator window title.
     Global $g_sControlInstance = "" ;OPENGL/DIRECTX Control instance.
     Global $g_hWindow = Null ;Handle for emulator window
@@ -20,8 +21,9 @@
 ;Config variables
     Global $g_sAdbPort = "62001" ;Android debug bridge port. Default is 62001 for nox
     Global $g_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
-    Global $g_iBackgroundMode = $BKGD_WINAPI ;Type of background
-    Global $g_iMouseMode = $MOUSE_CONTROL ;Type of mouse control
+    Global $g_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
+    Global $g_iBackgroundMode = $BKGD_ADB ;Type of background
+    Global $g_iMouseMode = $MOUSE_ADB ;Type of mouse control
     Global $g_iSwipeMode = $SWIPE_ADB ;Type of swipe control
 
 ;MSL variables

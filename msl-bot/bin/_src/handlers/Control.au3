@@ -1,13 +1,27 @@
 #include-once
 #include "../imports.au3"
 
-Func adbShell($sCommand, $sAdbPort = $g_sAdbPort, $sAdbPath = $g_sAdbPath)
-    Local $iPID = RunWait('"' & $sAdbPath & '"' & " -s 127.0.0.1:" & $sAdbPort & " shell " & '"' & $sCommand & '"')
+#cs 
+    Function: Sends command to Android Debug Bridge and returns output
+    Parameters:
+        $sCommand: Command to send
+        $sAdbPort: If more than one device, port is needed.
+        $sAdbPath: ADB executable path.
+    Returns: Output after command has been executed.
+#ce
+Func adbCommand($sCommand, $sAdbPort = $g_sAdbPort, $sAdbPath = $g_sAdbPath)
+    Local $iPID = RunWait('"' & $sAdbPath & '"' & " -s 127.0.0.1:" & $sAdbPort & " " & $sCommand, "", @SW_HIDE, $STDOUT_CHILD)
+    Local $sResult = StdoutRead($iPID)
     ProcessClose($iPID)
 
-    Return StdoutRead($iPID)
+    Return $sResult
 EndFunc
 
+#cs 
+    Function: Sends swipes to emulator
+    Parameters:
+        $vArguments: If swipe mode 
+#ce
 Func swipe($vArgument, $iSwipeMode = $g_iSwipeMode)
     If $iSwipeMode = $SWIPE_KEYMAP Then
         ;Pre-set-up keymap
@@ -30,7 +44,7 @@ Func swipe($vArgument, $iSwipeMode = $g_iSwipeMode)
         EndIf
 
         ;executing swipe
-        adbShell("input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
+        adbCommand("shell input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
     EndIf
 EndFunc
 
@@ -50,10 +64,20 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
 
     ;Fixing format to [x, y]
     If isArray($vPoint) = False Then
+        If $vPoint = "" Or $vPoint = -1 Then
+            $g_sErrorMessage = "clickPoint() => Invalid points."
+            Return -1
+        EndIf
+
         Local $t_aPoint = StringSplit($vPoint, ",", $STR_NOCOUNT)
         $aPoint[0] = StringStripWS($t_aPoint[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
         $aPoint[1] = StringStripWS($t_aPoint[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
     Else
+        If UBound($vPoint) < 2 Then 
+            $g_sErrorMessage = "clickPoint() => Invalid points."
+            Return -1
+        EndIf
+        
         $aPoint[0] = $vPoint[0]
         $aPoint[1] = $vPoint[1]
     EndIf
@@ -85,7 +109,7 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
             ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0]+$t_aOffset[0], $aNewPoint[1]+$t_aOffset[1]) ;For simulated clicks
         ElseIf $iMouseMode = $MOUSE_ADB Then
             ;clicks using adb commands
-            adbShell("input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
+            adbCommand("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
         Else
             $g_sErrorMessage = "clickPoint() => Invalid mouse mode: " & $iMouseMode
             Return -1
@@ -93,6 +117,8 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
 
         If _Sleep($iInterval) Then Return -2
     Next
+
+    Return 0
 EndFunc
 
 #cs
@@ -218,12 +244,14 @@ Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth
 		_WinAPI_DeleteDC($hMemDC)
 		_WinAPI_SelectObject($hMemDC, $hObjectOld)
 		_WinAPI_ReleaseDC($hControl, $hDC_Capture)
+    
     Elseif $iBackgroundMode = $BKGD_NONE Then
 		Local $aWinPos = WinGetPos($hControl)
         Local $aNewPoint = [$iX + $aWinPos[0], $iY + $aWinPos[1]]
 		$hBitmap = _ScreenCapture_Capture("", $aNewPoint[0], $aNewPoint[1], $aNewPoint[0] + $iWidth, $aNewPoint[1] + $iHeight)
     ElseIf $iBackgroundMode = $BKGD_ADB Then
-
+        adbCommand("shell screencap " & $g_sEmuSharedFolder[0] & $g_sWindowTitle & ".png")
+		$hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & $g_sWindowTitle & ".png")
     EndIf
 EndFunc
 
@@ -231,8 +259,8 @@ EndFunc
     Function: Create image file from bitmap in memory.
     Parameters:
         $sName: Name of file without extension.
-        $hHBitmap: WINAPI bitmap handle.
+        $hBitmap: GDI Plus bitmap
 #ce
-Func saveHBitmap($sName, $hHBitmap = $g_hHBitmap)
-    _WinAPI_SaveHBITMAPToFile (@ScriptDir & "\" & $sName & ".bmp", $hHBitmap)
+Func savehBitmap($sName, $hBitmap = $g_hBitmap)
+    _WinAPI_SaveHBITMAPToFile (@ScriptDir & "\" & $sName & ".bmp", _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap))
 EndFunc

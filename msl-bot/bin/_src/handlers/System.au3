@@ -29,7 +29,9 @@ EndFunc
 Func DisplayDebug($vDebug = $g_vDebug)
     If isArray($vDebug) = True Then
         _ArrayDisplay($vDebug)
+        MsgBox(0, "MSL Bot DEBUG", "Error Message:" & @CRLF & $g_sErrorMessage)
     Else   
-        MsgBox(0, "MSL Bot DEBUG", $vDebug)
+        MsgBox(0, "MSL Bot DEBUG", $vDebug & @CRLF & "Error Message:" & @CRLF & $g_sErrorMessage)
     EndIf
+    
 EndFunc
