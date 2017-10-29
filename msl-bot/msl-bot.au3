@@ -17,18 +17,7 @@ Func Initialize()
     $g_aLocations = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt", ">", ":")
     $g_aPixels = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt", ">", ":")
     $g_aPoints = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt", ">", ":")
-    ;_ArrayDisplay($g_aPixels)
-    captureRegion()
-    
-    Local $t_iTimerInit = TimerInit()
+    getScriptsFromUrl($g_aScripts, "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scripts.txt")
 
-    ;Local $aTest = getRound()
-    addLog($g_aLog, "Hello...")
-    addLog($g_aLog, "World...")
-    Local $sTest = "" & getHour(NowTimeStamp())
-    Local $sResult = $sTest & @LF & TimerDiff($t_iTimerInit)
-
-    _ArrayDisplay($g_aLog)
-    MsgBox(0, "", $sResult)
-    DisplayDebug()
+    CreateMslGUI()
 EndFunc

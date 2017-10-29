@@ -1,7 +1,6 @@
 #include-once
 #include "../imports.au3"
 
-CreateMslGUI()
 Func CreateMslGUI()
     Local Const $GUI_FONTSIZE = 11
     Global $hParent = GUICreate("MSL Bot v3", 400, 400)
@@ -24,9 +23,6 @@ Func CreateMslGUI()
     TabAddControl($hTb_HomeTab, $tb_Script, $hLbl_Scripts)
 
     Global $hCmb_Scripts = _GUICtrlComboBox_Create($hParent, "", 146, 10, 150, -1, $CBS_DROPDOWNLIST)
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "Test")
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "Test2")
-    _GUICtrlComboBox_SetCurSel($hCmb_Scripts, 0)
     TabAddControl($hTb_HomeTab, $tb_Script, $hCmb_Scripts)
 
     Global $hBtn_Start = _GUICtrlButton_Create($hParent, "Start", 298, 9, 50, 23)
@@ -40,6 +36,7 @@ Func CreateMslGUI()
     Global $hLV_ScriptConfig = _GUICtrlListView_Create($hParent, "", 20, 86, 360, 200, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER+$WS_BORDER)
     _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Name", 120, 2)
     _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Value", 240, 2)
+    _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Description", 240, 2)
     _GUICtrlListView_SetExtendedListViewStyle($hLV_ScriptConfig, $LVS_EX_DOUBLEBUFFER+$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
     _GUICtrlListView_AddItem($hLV_ScriptConfig, "Row 1")
     _GUICtrlListView_AddItem($hLV_ScriptConfig, "Row 2")
@@ -54,26 +51,26 @@ Func CreateMslGUI()
     Local $t_aGroup = [$hTb_Main, $hTb_HomeTab]
     Global $g_aTabgroup = [$t_aGroup]
     TabUpdate($g_aTabgroup)
+
+    ;Register WM_COMMAND and WM_NOTIFY for UDF controls
+    GUIRegisterMsg($WM_COMMAND, "WM_COMMAND")
+    GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
+    While True
+        Switch GUIGetMsg()
+            Case $GUI_EVENT_MOUSEMOVE
+                Local $aMousePos = MouseGetPos()
+                Local $aWindowPos = WinGetPos($hTb_Main[0])
+                Local $aInsidePos = _GUICtrlTab_GetDisplayRect($hTb_Main[0])
+                $aWindowPos[0] += $aInsidePos[0]
+                $aWindowPos[1] += $aInsidePos[1]
+
+                Local $aRelativePos = [$aMousePos[0]- $aWindowPos[0], $aMousePos[1] - $aWindowPos[1]]
+                If isArray($aRelativePos) Then
+                    WinSetTitle($hParent, "", $aRelativePos[0] & ", " & $aRelativePos[1])
+                EndIf
+            Case $GUI_EVENT_CLOSE
+                ExitLoop
+        EndSwitch
+    WEnd
 EndFunc
-
-;Register WM_COMMAND and WM_NOTIFY for UDF controls
-GUIRegisterMsg($WM_COMMAND, "WM_COMMAND")
-GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
-While True
-    Switch GUIGetMsg()
-        Case $GUI_EVENT_MOUSEMOVE
-            Local $aMousePos = MouseGetPos()
-            Local $aWindowPos = WinGetPos($hTb_Main[0])
-            Local $aInsidePos = _GUICtrlTab_GetDisplayRect($hTb_Main[0])
-            $aWindowPos[0] += $aInsidePos[0]
-            $aWindowPos[1] += $aInsidePos[1]
-
-            Local $aRelativePos = [$aMousePos[0]- $aWindowPos[0], $aMousePos[1] - $aWindowPos[1]]
-            If isArray($aRelativePos) Then
-                WinSetTitle($hParent, "", $aRelativePos[0] & ", " & $aRelativePos[1])
-            EndIf
-        Case $GUI_EVENT_CLOSE
-            ExitLoop
-    EndSwitch
-WEnd
 
