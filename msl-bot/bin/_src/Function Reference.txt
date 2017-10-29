@@ -21,18 +21,18 @@ Argument:
     - getArgsFromURL($sUrl, [$sArgSeparator], [$sValueSeparator]): Returns a formated argument array from URL data.
 
 Control:
-    - clickPoint($vPoint, [$iAmount], [$iInterval], [$vRandom], [$bRealMouse], [$hWindow], [$hControl]): Sends clicks to handle
+    - clickPoint($vPoint, [$iAmount], [$iInterval], [$vRandom], [$iMouseMode], [$hWindow], [$hControl]): Sends clicks to handle
         - $vPoint Format: [x, y] or "x,y"
 
-    - clickUntil($aPoint, $sBooleanFunction, $vArg, [$iAmount], [$iInterval], [$vRandom], [$bRealMouse], [$hWindow], [$hControl]): Sends specified number of clicks and stops when condition is true
+    - clickUntil($aPoint, $sBooleanFunction, $vArg, [$iAmount], [$iInterval], [$vRandom], [$iMouseMode], [$hWindow], [$hControl]): Sends specified number of clicks and stops when condition is true
         - $vArg Format: [arg1, arg2, ...] or "arg1,arg2,..."
 
-    - clickWhile($aPoint, $sBooleanFunction, $vArg, [$iAmount], [$iInterval], [$vRandom], [$bRealMouse], [$hWindow], [$hControl]): Sends specified number of clicks and stops when condition is false
+    - clickWhile($aPoint, $sBooleanFunction, $vArg, [$iAmount], [$iInterval], [$vRandom], [$iMouseMode], [$hWindow], [$hControl]): Sends specified number of clicks and stops when condition is false
         - $vArg Format: [arg1, arg2, ...] or "arg1,arg2,..."
 
     - sendKey($sKey, [$hWindow])
 
-    - getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, [$iX], [$iY], [$iWidth], [$iHeight], [$bBackground], [$hControl]): Saves bitmaps to reference variables
+    - getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, [$iX], [$iY], [$iWidth], [$iHeight], [$iBackgroundMode], [$hControl]): Saves bitmaps to reference variables
 
     - saveHBitmap($sName, [$hHBitmap]): Creates a bmp file from the WINAPI Bitmap Handle.
 
@@ -56,3 +56,5 @@ MSL:
     - closeWindow([$sPixelName], [$aPixelList]): Closes in-game window.
 
     - skipDialogue(): Skips in-game dialogue
+
+    - getRound([$aPixels]): Returns [current, max] rounds.

@@ -25,7 +25,7 @@ EndFunc
 Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap)
     Local $aPixels[0] ;pixels to check
 
-    If $vArg = "" Then ;returns early if vArg is empty
+    If ($vArg = "") Or ($vArg = -1) Then ;returns early if vArg is empty
         $g_sErrorMessage = "(isPixel:17) => No Arguments Found."
         Return -1
     EndIf

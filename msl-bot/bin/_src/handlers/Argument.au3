@@ -12,13 +12,12 @@ Func getArg($aArgs, $name)
 	If $aArgs = -1 Then Return -1
 
 	For $i = 0 To UBound($aArgs)-1
-		If UBound($aArgs[$i]) <> 2 Then ;Error not valid format
+		If UBound($aArgs) = 0 Then ;Error not valid format
 			$g_sErrorMessage = "getArg() => Invalid argument format."
 			Return -1
 		EndIf
 		
-		Local $t_aArg = $aArgs[$i]
-		If $t_aArg[0] = $name Then Return $t_aArg[1]
+		If $aArgs[$i][0] = $name Then Return $aArgs[$i][1]
 	Next
 
 	$g_sErrorMessage = 'getArg() => Argument not found: "' & $name & '"'
@@ -35,7 +34,7 @@ EndFunc
 #ce
 Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 	Local $iArgSize = 0
-	Local $aArgs[$iArgSize] ;Final formated argument array.
+	Local $aArgs[$iArgSize][2] ;Final formated argument array.
 	Local Const $iSize = StringLen($sArgs)
 
 	Local $sName = "", $sValue = ""
@@ -63,10 +62,10 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 					If $sChar = $sArgSeparator Then
 						;Indicates finished argument
 						$iArgSize += 1
-						ReDim $aArgs[$iArgSize]
+						ReDim $aArgs[$iArgSize][2]
 
-						Local $t_aArg = [$sName, $sValue]
-						$aArgs[$iArgSize-1] = $t_aArg
+						$aArgs[$iArgSize-1][0] = $sName
+						$aArgs[$iArgSize-1][1] = $sValue
 
 						;Reset for next argument
 						$bName = False
@@ -89,10 +88,10 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 
 	;Adds last argument
 	$iArgSize += 1
-	ReDim $aArgs[$iArgSize]
+	ReDim $aArgs[$iArgSize][2]
 
-	Local $t_aArg = [$sName, $sValue]
-	$aArgs[$iArgSize-1] = $t_aArg
+	$aArgs[$iArgSize-1][0] = $sName
+	$aArgs[$iArgSize-1][1] = $sValue
 
 	;Formated Argument should be: [[arg1, value1], [arg2, value2], [..., ...]]
 	Return $aArgs

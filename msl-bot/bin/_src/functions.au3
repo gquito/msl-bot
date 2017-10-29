@@ -5,5 +5,6 @@
 #include "handlers/Control.au3"
 #include "handlers/System.au3"
 #include "handlers/MSL.au3"
+#include "handlers/Log.au3"
 
 #include "scripts/subscripts/navigate.au3"

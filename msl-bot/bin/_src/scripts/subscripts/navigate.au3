@@ -9,6 +9,8 @@
     Returns: Boolean if successful or not.
 #ce
 Func navigate($sLocation, $bForceSurrender = False)
+    $sLocation = StringStripWS(StringLower($sLocation), $STR_STRIPALL)
+
     Local $t_sCurrLocation = "" ;Location
     While $t_sCurrLocation <> $sLocation
         $t_sCurrLocation = getLocation()
@@ -62,7 +64,8 @@ Func navigate($sLocation, $bForceSurrender = False)
                                 ;Usually stuck in place with an in game window and an Exit button for the window.
                                 closeWindow()
                                 skipDialogue()
-                                If clickPoint(getArg($g_aPoints, "tap")) = -2 Then Return -2
+
+                                clickPoint(getArg($g_aPoints, "tap"))
                             EndIf
 
                             If _Sleep(1000) Then Return -2
@@ -97,11 +100,16 @@ Func navigate($sLocation, $bForceSurrender = False)
                         Return True
                     Case Else
                         ;Uses navigate village algorithm to easily go to map
-                        Local $t_bResult = navigate("village")
+                        Local $t_bResult = navigate("village", $bForceSurrender)
                         If $t_bResult = False Then Return False
 
-                        Return navigate("map")
+                        Return navigate("map", $bForceSurrender)
                 EndSwitch
+
+                Case "golem-dungeons"
+                    If navigate("map", $bForceSurrender) = False Then Return False
+
+                    
         EndSwitch
     WEnd
 EndFunc

@@ -249,6 +249,7 @@ Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth
 		Local $aWinPos = WinGetPos($hControl)
         Local $aNewPoint = [$iX + $aWinPos[0], $iY + $aWinPos[1]]
 		$hBitmap = _ScreenCapture_Capture("", $aNewPoint[0], $aNewPoint[1], $aNewPoint[0] + $iWidth, $aNewPoint[1] + $iHeight)
+        
     ElseIf $iBackgroundMode = $BKGD_ADB Then
         adbCommand("shell screencap " & $g_sEmuSharedFolder[0] & $g_sWindowTitle & ".png")
 		$hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & $g_sWindowTitle & ".png")

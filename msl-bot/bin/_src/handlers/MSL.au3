@@ -27,25 +27,24 @@ Func getLocation($aLocations = $g_aLocations)
 	captureRegion() ;Updates global bitmap
 
 	;Going through location data and using isPixelAND() function to check each location.
-	Local Const $iSize = UBound($aLocations)
-	If $iSize = 0 Or isArray($aLocations) = False Or isArray($aLocations[0]) = False Then
+	Local Const $iSize = UBound($aLocations, $UBOUND_ROWS)
+	If ($iSize = 0) Or (isArray($aLocations) = False) Then
 		$g_sErrorMessage = "getLocation() => Invalid argument."
 		Return -1
 	EndIf
 
 	Local $t_sLocation = "" ;Temporary location to double check location.
 	For $i = 0 To $iSize-1
-		Local $t_aLocation = $aLocations[$i]
-		If $t_aLocation[0] = "" Or StringMid($t_aLocation[0], 0, 1) = ";" Then ContinueLoop
+		If $aLocations[$i][0] = "" Or StringMid($aLocations[$i][0], 0, 1) = ";" Then ContinueLoop
 
-		If isPixelOR($t_aLocation[1], 20) = True Then
+		If isPixelOR($aLocations[$i][1], 20) = True Then
 			;checks in 200 miliseconds for same location.
-			If _Sleep(200) Then Return -2
+			If ($g_iBackgroundMode <> $BKGD_ADB) And _Sleep(200) Then Return -2
 			captureRegion()
 
-			If isPixelOR($t_aLocation[1], 20) = True Then
-				Global $g_vDebug = $t_aLocation
-				Return $t_aLocation[0] ;Returns confirmed location.
+			If isPixelOR($aLocations[$i][1], 20) = True Then
+				Global $g_vDebug = [$aLocations[$i][0], $aLocations[$i][1]]
+				Return $aLocations[$i][0] ;Returns confirmed location.
 			EndIf
 		EndIf
 	Next
@@ -117,11 +116,45 @@ EndFunc
 
 #cs
 	Function: Retrieves which round the battle is currently.
-	Return: 1-4 If success. 0 If round was not found.
+	Parameters:
+		$aPixels: List where the pixel rounds are.
+	Return: Current round and the number of total rounds: Array format=[current, max]
 #ce
-Func getRound()
-	If isLocation("unknown,battle,battle-auto") Then Return 0
-	;If isPixel(getArg($g_aPixels, "round"))
+Func getRound($aPixels = $g_aPixels)
+	Local $iMax = 0 ;Max number of rounds
+	;Getting max number of rounds
+	For $i = 2 To 4
+		Local $t_sArgument = getArg($aPixels, "max-round-" & $i)
+		If ($t_sArgument = "") Or ($t_sArgument = -1) Then ContinueLoop
+
+		If isPixel($t_sArgument) = True Then
+			$iMax = $i
+			ExitLoop
+		EndIf
+	Next
+	If $iMax = 0 Then 
+		$g_sErrorMessage = "getRound() => Could not find max."
+		Return -1
+	EndIf
+
+	Local $iCurr = 0 ;Current round
+	;Getting current round
+	For $i = 1 To $iMax
+		Local $t_sArgument = getArg($aPixels, "curr-round-" & $i)
+		If ($t_sArgument = "") Or ($t_sArgument = -1) Then ContinueLoop
+
+		If isPixel($t_sArgument) = True Then
+			$iCurr = $i
+			ExitLoop
+		EndIf
+	Next
+	If $iCurr = 0 Then 
+		$g_sErrorMessage = "getRound() => Could not find current."
+		Return -1
+	EndIf
+
+	Local $t_aResult = [$iCurr, $iMax]
+	Return $t_aResult
 EndFunc
 
 #cs 
