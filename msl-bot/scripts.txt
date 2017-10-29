@@ -1,1 +1,1 @@
-farm_script:"description:This is the description.map:'asd,description1',gem:'asd2,description2',other:'asd3,description3'"
+farm_script:"description:This is the description.map:'asd|description1',gem:'asd2|description2',other:'asd3|description3'"
