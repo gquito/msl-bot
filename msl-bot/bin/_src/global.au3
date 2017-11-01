@@ -33,3 +33,8 @@
     Global $g_aLocations = [] ;Data locations [[location, value], ...]
     Global $g_aPixels = [] ;Individual pixel data [[name, pixel], ...]
     Global $g_aPoints = [] ;Significant Points in game [[name, point], ...]
+
+;GUI variables
+    Global $g_aComboMenu = Null ;Holds temporary context menus from combo type settings.
+    Global $g_hEditConfig = Null ;Handle for the edit control created when editing a setting.
+    Global $g_iEditConfig = Null ;Index for the item being edited

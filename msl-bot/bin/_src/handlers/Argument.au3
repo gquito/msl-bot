@@ -116,3 +116,23 @@ Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":")
 
 	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
 EndFunc
+
+#cs 
+	Function: Reads data from file and formats into a readable argument list.
+	Parameters:
+		$sPath: Path to file for for data. Usually in a raw form of text file.
+		$sArgSeparator: The character used to separate each argument and value.
+		$sValueSeparator: The character used to separate value from identifier.
+#ce
+Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
+	Local $sData = FileRead($sPath)
+
+	If $sData = "" Then ;Error handle
+		$g_sErrorMessage = "getArgFromURL() => No information was found: " & $sPath
+		Return -1
+	EndIf
+
+	$sData = StringReplace($sData, @LF, $sArgSeparator)
+
+	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
+EndFunc

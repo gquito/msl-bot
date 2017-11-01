@@ -13,11 +13,12 @@
 
 #include <GUITab.au3>
 #include <GUIRichEdit.au3>
+#include <GUIEdit.au3>
 #include <GUIListView.au3>
 #include <GUIConstants.au3>
 #include <GUIComboBox.au3>
 #include <GUIButton.au3>
-#include <TabConstants.au3>
+#include <GUIMenu.au3>
 
 #include "global.au3"
 #include "functions.au3"
