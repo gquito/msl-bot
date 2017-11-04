@@ -5,10 +5,10 @@
 	Function: Gets value of argument from an array of arguments
 	Parameters:
 		$aArgs: Array => [[arg1, value1], [arg2, value2]]
-		$name: String => "arg1"
+		$sName: String => "arg1"
 	Return: Value of the found argument => "value1"
 #ce
-Func getArg($aArgs, $name)
+Func getArg($aArgs, $sName)
 	If $aArgs = -1 Then Return -1
 
 	For $i = 0 To UBound($aArgs)-1
@@ -17,10 +17,10 @@ Func getArg($aArgs, $name)
 			Return -1
 		EndIf
 		
-		If $aArgs[$i][0] = $name Then Return $aArgs[$i][1]
+		If $aArgs[$i][0] = $sName Then Return $aArgs[$i][1]
 	Next
 
-	$g_sErrorMessage = 'getArg() => Argument not found: "' & $name & '"'
+	$g_sErrorMessage = 'getArg() => Argument not found: "' & $sName & '"'
 	Return -1
 EndFunc
 
@@ -108,7 +108,7 @@ Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":")
 	Local $sData = BinaryToString(InetRead($sUrl, $INET_FORCERELOAD))
 
 	If $sData = "" Then ;Error handle
-		$g_sErrorMessage = "getArgFromURL() => No information was found: " & $sUrl
+		$g_sErrorMessage = "getArgFromURL() => No information was found URL: " & $sUrl
 		Return -1
 	EndIf
 
@@ -128,7 +128,7 @@ Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
 	Local $sData = FileRead($sPath)
 
 	If $sData = "" Then ;Error handle
-		$g_sErrorMessage = "getArgFromURL() => No information was found: " & $sPath
+		$g_sErrorMessage = "getArgFromFile() => No information was found in path: " & $sPath
 		Return -1
 	EndIf
 

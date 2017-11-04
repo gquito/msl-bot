@@ -7,6 +7,7 @@ Func CreateMslGUI()
     GUISetBkColor(0xFFFFFF)
     GUISetFont($GUI_FONTSIZE)
     GUISetState(@SW_SHOW, $hParent)
+    _WINAPI_Setfocus($hParent)
 
     Global $hTb_Main = TabCreate($hParent, 0, 0)
     Local $tb_Home = TabCreateItem($hTb_Main, "Home", 100)
@@ -61,5 +62,6 @@ Func CreateMslGUI()
     ;Register WM_COMMAND and WM_NOTIFY for UDF controls
     GUIRegisterMsg($WM_COMMAND, "WM_COMMAND")
     GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
+
     GUIMainLoop()
 EndFunc

@@ -43,8 +43,6 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
             If $nNotifyCode = $EN_KILLFOCUS Then 
                 handleEdit($g_hEditConfig, $g_iEditConfig, $hLV_ScriptConfig)
             EndIf
-
-            WinSetTitle($hParent, "", $nNotifyCode)
     EndSwitch
     Return $GUI_RUNDEFMSG
 EndFunc 
@@ -95,12 +93,10 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
                             ;Shows edit in the position.
                             createEdit($g_hEditConfig, $g_iEditConfig, $hLV_ScriptConfig)
                         Case "List"
-                            
+                            createListEditor($hParent, $hLV_ScriptConfig, $iIndex)
                         Case "Custom"
 
                     EndSwitch
-                Case Else
-                    ;WinSetTitle($hParent, "", $iCode)
             EndSwitch
         Case Else
             If $iCode = $TCN_SELCHANGE Then TabUpdate($g_aTabGroup)
@@ -117,6 +113,9 @@ Func handleCombo(ByRef $iCode, ByRef $hListView)
         If $iCode = $aContext[0] Then
             ;Replaced text from the listview
             _GUICtrlListView_SetItemText($hListView, _GUICTrlListView_GetSelectedIndices($hListView, True)[1], $aContext[1], 1)
+            _saveSettings()
+
+            Return 0
         EndIf
     Next
 EndFunc
@@ -145,6 +144,8 @@ Func handleEdit(ByRef $hEdit, ByRef $iIndex, $hListView)
 
     $hEdit = Null
     $iIndex = Null
+
+    _saveSettings()
 EndFunc
 
 ;For context menu for text combo configs
@@ -173,6 +174,156 @@ Func endEdit()
     HotKeySet("{ENTER}")
 EndFunc
 
+Func createListEditor($hParent, $hListView, $iIndex)
+    Opt("GUIOnEventMode", 1)
+    ; [gui handle, listview inside gui, combo handle, combo values, parent handle, listview handle, item index]
+    Local $aCurrent = StringSplit(_GUICtrlListView_GetItemText($hListView, $iIndex, 1), ",", $STR_NOCOUNT)
+    Local $aDefault = StringSplit(_GUICtrlListView_GetItemText($hListView, $iIndex, 4), ",", $STR_NOCOUNT)
+
+    Local $t_aListEditor[7] ;Holds the array items from comment above.
+    Local $t_aPos = WinGetPos($hParent)
+    $t_aListEditor[0] = GUICreate("Edit List", 150, 182, $t_aPos[0]+(($t_aPos[2]-150)/2), $t_aPos[1]+(($t_aPos[3]-150)/2), -1, $WS_EX_TOPMOST, $hParent)
+    $t_aListEditor[1] = GUICtrlCreateListView("", 2, 2, 146, 100, $LVS_SINGLESEL+$LVS_REPORT+$LVS_NOSORTHEADER+$WS_BORDER)
+    Local $t_hListView = GUICtrlGetHandle($t_aListEditor[1])
+
+    _GUICtrlListView_SetExtendedListViewStyle($t_hListView, $LVS_EX_DOUBLEBUFFER+$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+    _GUICtrlListView_AddColumn($t_hListView, "-Included Values-", 125, 2)
+    ControlDisable("", "", HWnd(_GUICtrlListView_GetHeader($t_hListView))) ;Prevents changing column size
+
+    ;adding current items.
+    For $i = 0 To UBound($aCurrent, $UBOUND_ROWS)-1
+        If $aCurrent[$i] <> "" Then _GUICtrlListView_AddItem($t_hListView, $aCurrent[$i])
+
+        ;Removing existing values from default to add those non exisiting in a combo later.
+        For $j = 0 To UBound($aDefault, $UBOUND_ROWS)-1
+            If $aDefault[$j] = $aCurrent[$i] Then
+                $aDefault[$j] = Null
+            EndIf
+        Next
+    Next
+
+    $t_aListEditor[4] = $hParent
+    $t_aListEditor[5] = $hListView
+    $t_aListEditor[6] = $iIndex
+
+    GUICtrlCreateButton("Move up", 2, 104, 72)
+    GUICtrlSetOnEvent(-1, "ListEditor_btnMoveUp")
+    GUICtrlCreateButton("Move down", 75, 104, 72)
+    GUICtrlSetOnEvent(-1, "ListEditor_btnMoveDown")
+
+    GUICtrlCreateButton("Remove", 2, 129, 145)
+    GUICtrlSetOnEvent(-1, "ListEditor_btnRemove")
+
+    GUICtrlCreateButton("Add", 2, 154, 42)
+    GUICtrlSetOnEvent(-1, "ListEditor_btnAdd")
+
+    $t_aListEditor[2] = GUICtrlCreateCombo("", 46, 155, 100, -1, $CBS_DROPDOWNLIST)
+    _GUICtrlComboBox_SetItemHeight(GUICtrlGetHandle($t_aListEditor[2]), 17)
+
+    Local $sComboItems = "" ;stores excluded items in combo item format.
+    For $i = 0 To UBound($aDefault, $UBOUND_ROWS)-1
+        If $aDefault[$i] <> Null Then $sComboItems &= "|" & $aDefault[$i]
+    Next
+    $sComboItems = StringMid($sComboItems, 2)
+    GUICtrlSetData($t_aListEditor[2], $sComboItems)
+    If $sComboItems <> "" Then _GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($t_aListEditor[2]), 0)
+
+    $t_aListEditor[3] = $sComboItems
+
+    $g_aListEditor = $t_aListEditor
+    GUISetOnEvent($GUI_EVENT_CLOSE, "ListEditor_Close", $g_aListEditor[0])
+
+    GUISetState(@SW_SHOW, $g_aListEditor[0])
+    GUISetState(@SW_DISABLE, $g_aListEditor[4])
+
+    _WinAPI_SetFocus($g_aListEditor[0])
+EndFunc
+
+;Moves selected item up index
+Func ListEditor_btnMoveUp()
+    Local $aData = _GUICtrlListView_GetSelectedIndices($g_aListEditor[1], True)
+    If $aData[0] > 0 Then
+        If $aData[1] > 0 Then
+            Local $sTemp = _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1]-1)
+            _GUICtrlListView_SetItemText($g_aListEditor[1], $aData[1]-1, _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1]))
+            _GUICtrlListView_SetItemText($g_aListEditor[1], $aData[1], $sTemp)
+            
+            _GUICtrlListView_SetItemSelected($g_aListEditor[1], $aData[1]-1, True, True)
+            _WinAPI_SetFocus(GUICtrlGetHandle($g_aLIstEditor[1]))
+        Else
+            _GUICtrlListView_SetItemSelected($g_aListEditor[1], $aData[1], True, True)
+            _WinAPI_SetFocus(GUICtrlGetHandle($g_aLIstEditor[1]))
+        EndIf
+    EndIf
+EndFunc
+
+;Moves selected item down in index
+Func ListEditor_btnMoveDown()
+    Local $aData = _GUICtrlListView_GetSelectedIndices($g_aListEditor[1], True)
+    If $aData[0] > 0 Then
+        If $aData[1] < _GUICtrlListView_GetItemCount($g_aListEditor[1])-1 Then
+            Local $sTemp = _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1]+1)
+            _GUICtrlListView_SetItemText($g_aListEditor[1], $aData[1]+1, _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1]))
+            _GUICtrlListView_SetItemText($g_aListEditor[1], $aData[1], $sTemp)
+            
+            _GUICtrlListView_SetItemSelected($g_aListEditor[1], $aData[1]+1, True, True)
+            _WinAPI_SetFocus(GUICtrlGetHandle($g_aListEditor[1]))
+        Else
+            _GUICtrlListView_SetItemSelected($g_aListEditor[1], $aData[1], True, True)
+            _WinAPI_SetFocus(GUICtrlGetHandle($g_aLIstEditor[1]))
+        EndIf
+    EndIf
+EndFunc
+
+;Removes item selected from listview and adds to combobox
+Func ListEditor_btnRemove()
+    Local $aData = _GUICtrlListView_GetSelectedIndices($g_aListEditor[1], True)
+    If $aData[0] > 0 Then
+        $g_aListEditor[3] &= "|" &  _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1])
+
+        If StringMid($g_aListEditor[3], 1, 1) = "|" Then $g_aListEditor[3] = StringMid($g_aListEditor[3], 2)
+
+        GUICtrlSetData($g_aListEditor[2], "")
+        GUICtrlSetData($g_aListEditor[2], $g_aListEditor[3])
+
+        _GUICtrlListView_DeleteItemsSelected($g_aListEditor[1])
+        _GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($g_aListEditor[2]), 0)
+    EndIf
+EndFunc
+
+;Adds item from combobox to listview 
+Func ListEditor_btnAdd()
+    Local $sText = GUICtrlRead($g_aListEditor[2])
+    If $sText <> "" Then
+        _GUICtrlListView_AddItem($g_aListEditor[1], $sText)
+
+        $g_aListEditor[3] = StringReplace(StringReplace($g_aListEditor[3], $sText, ""), "||", "|")
+        GUICtrlSetData($g_aListEditor[2], "")
+        GUICtrlSetData($g_aListEditor[2], $g_aListEditor[3])
+        _GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($g_aListEditor[2]), 0)
+    EndIf
+EndFunc
+
+Func ListEditor_Close()
+    Opt("GUIOnEventMode", 0)
+    ; Saves changed settings to the listview.
+    Local $sNew = "";
+    Local $iSize = _GUICtrlListView_GetItemCount($g_aListEditor[1])
+    For $i = 0 To $iSize-1
+        $sNew &= "," & _GUICtrlListView_GetItemText($g_aListEditor[1], $i)
+    Next
+    $sNew = StringMid($sNew, 2) 
+
+    _GUICtrlListView_SetItemText($g_aListEditor[5], $g_aListEditor[6], $sNew, 1)
+
+    _WinAPI_DestroyWindow($g_aListEditor[0])
+    GUISetState(@SW_ENABLE, $g_aListEditor[4])
+
+    _GUICtrlListView_SetItemSelected($g_aListEditor[5], $g_aListEditor[6], True, True)
+    _WinAPI_SetFocus($g_aListEditor[5])
+
+    _saveSettings()
+EndFunc
 
 #cs ##########################################
     Functions for changing control data and display
@@ -226,50 +377,35 @@ Func getScriptsFromUrl(ByRef $aScripts, $sUrl)
     $aScripts = $t_aScripts
 EndFunc
 
-Func getScriptsFromFile(ByRef $aScripts, $sPath)
-    Local $aRawScripts = getArgsFromFile($sPath, ">", ":") ;[[script, 'description:"",config:"value|description"']]
-    Local $iNumScripts = UBound($aRawScripts, $UBOUND_ROWS)
+;Replaces values in script list with values saved in profile
+Func getConfigsFromFile(ByRef $aScripts, $sScript, $sProfilePath = $g_sProfilePath)
+    $sScript = StringReplace($sScript, " ", "_")
+    Local $iIndex = getScriptIndex($aScripts, $sScript)
+    If $iIndex = -1 Then
+        $g_sErrorMessage = "saveSettings() => Script not found in database. Could not save."
+        Return -1
+    EndIf
 
-    Local $t_aScripts[0] ;Temporarily stores script data
+    Local $t_aRawConfig = getArgsFromFile($sProfilePath & "\" & $sScript)
 
-    For $i = 0 To $iNumScripts-1
-        Local $aRawScript = [$aRawScripts[$i][0], $aRawScripts[$i][1]] ;[script, 'description:"",config:"value|description"']
-        Local $aScript[3] ;stores a single script [script, description, []]
-        
-        $aScript[0] = $aRawScript[0]
-        If $aScript[0] = "" Then ContinueLoop
+    ;Creates temporary variables to access the nested arrays and values.
+    Local $t_aScript = $aScripts[$iIndex] ;[script, description, [[config, value, description], [..., ..., ...]]]
+    Local $t_aConfigs = $t_aScript[2] ;[[config, value, description], [..., ..., ...]]
 
-        ;getting description and then configs
-        Local $aRawConfigList = formatArgs(StringReplace($aRawScript[1], "'", '"'), ",", ":") ;[[description, ""], [config, "value|description"]]
-        Local $iRawConfigListSize = UBound($aRawConfigList, $UBOUND_ROWS)
+    For $i = 0 To UBound($t_aConfigs)-1 
+        Local $t_aConfig = $t_aConfigs[$i] 
+        Local $sValue = getArg($t_aRawConfig, $t_aConfig[0])
+        If $svalue <> -1 Then $t_aConfig[1] = $sValue
 
-        Local $aScriptDescription = [$aRawConfigList[0][0], $aRawConfigList[0][1]] ;[description, ""]
-        $aScript[1] = $aScriptDescription[1]
-
-        Local $aConfigList[$iRawConfigListSize-1] ;stores all config in format [config, value, description]
-        For $j = 1 To $iRawConfigListSize-1 ;skips the script description
-            Local $aRawConfig = [$aRawConfigList[$j][0], $aRawConfigList[$j][1]] ; [config, "value|description"]
-            Local $aFormatedConfig[5] ;Stores [config, value, description, type, hidden value]
-
-            $aFormatedConfig[0] = $aRawConfig[0]
-
-            Local $aSplitValueDescription = StringSplit($aRawConfig[1], "|", $STR_NOCOUNT)
-            _ArrayDisplay($aSplitValueDescription) ;Debug the values
-
-            $aFormatedConfig[1] = $aSplitValueDescription[0]
-            $aFormatedConfig[2] = $aSplitValueDescription[1]
-            $aFormatedConfig[3] = $aSplitValueDescription[2]
-            $aFormatedConfig[4] = $aSplitValueDescription[3]
-
-            $aConfigList[$j-1] = $aFormatedConfig
-        Next
-
-        $aScript[2] = $aConfigList
-        ReDim $t_aScripts[$i+1]
-        $t_aScripts[$i] = $aScript
+        ;save new config value
+        $t_aConfigs[$i] = $t_aConfig
     Next
+    
+    ;save new configs to script
+    $t_aScript[2] = $t_aConfigs
 
-    $aScripts = $t_aScripts
+    ;save to script list
+    $aScripts[$iIndex] = $t_aScript
 EndFunc
 
 #cs 
@@ -280,7 +416,7 @@ EndFunc
     Returns: The array of the script
     `Empty string on not found.
 #ce
-Func getScriptData(ByRef $aScripts, $sScript)
+Func getScriptData($aScripts, $sScript)
     Local $iSize = UBound($aScripts, $UBOUND_ROWS)
     For $i = 0 To $iSize-1
         ;Looks at first element of each array. The script in: [script, description, [[config, value, description], [..., ..., ...]]]
@@ -289,6 +425,25 @@ Func getScriptData(ByRef $aScripts, $sScript)
     Next
 
     Return ""
+EndFunc
+
+#cs 
+    Function: Retrieves script data with specified script name
+    Parameters:
+        $aScripts: [[script, [[config, value], [..., ...]]], ...]
+        $sScript: The script text to find.
+    Returns: Index of the script
+    `-1 if not found.
+#ce
+Func getScriptIndex(ByRef $aScripts, $sScript)
+    Local $iSize = UBound($aScripts, $UBOUND_ROWS)
+    For $i = 0 To $iSize-1
+        ;Looks at first element of each array. The script in: [script, description, [[config, value, description], [..., ..., ...]]]
+        Local $aScript = $aScripts[$i]
+        If $aScript[0] = $sScript Then Return $i
+    Next
+
+    Return -1
 EndFunc
 
 #cs 
@@ -324,6 +479,64 @@ Func displayScriptData(ByRef $hListView, $aScript)
         _GUICtrlListView_AddSubItem($hListView, $i, $aConfig[3], 3) ;type
         _GUICtrlListView_AddSubItem($hListView, $i, $aConfig[4], 4) ;type values
     Next
+EndFunc
+
+#cs 
+    Function: Saves script data to list of scripts
+    Parameters:
+        $aScripts: [[script, description, [[config, value, description], [..., ..., ...]]], ...]
+        $sScript: The script text to save to.
+        $hListView: Listview will contain script data. C1:Config Name, C2: Value. C3:Description, C4:Type, C5:Type Values
+        $sFilePath: File path to save data to. If empty string then does not save.
+#ce
+Func saveSettings(ByRef $aScripts, $sScript, $hListView, $sFilePath = $g_sProfilePath & "\" & StringReplace($sScript, " ", "_"))
+    $sScript = StringReplace($sScript, " ", "_")
+    Local $iIndex = getScriptIndex($aScripts, $sScript)
+    If $iIndex = -1 Then
+        $g_sErrorMessage = "saveSettings() => Script not found in database. Could not save."
+        Return -1
+    EndIf
+
+    ;Creates temporary variables to access the nested arrays and values.
+    Local $t_aScript = $aScripts[$iIndex] ;[script, description, [[config, value, description], [..., ..., ...]]]
+    Local $t_aConfigs = $t_aScript[2] ;[[config, value, description], [..., ..., ...]]
+
+    ;Going through listview column 2 items
+    Local Const $eColumn = 1 ;The listview column with the values
+    For $i = 0 To UBound($t_aConfigs)-1 ;Assumes the listview has the same number of rows as the number of configs
+        Local $t_aConfig = $t_aConfigs[$i] ;[config, value, description]
+        $t_aConfig[1] = _GUICtrlListView_GetItemText($hListView, $i, $eColumn)
+
+        ;save new config value
+        $t_aConfigs[$i] = $t_aConfig
+
+    Next
+    
+    ;save new configs to script
+    $t_aScript[2] = $t_aConfigs
+
+    ;save to script list
+    $aScripts[$iIndex] = $t_aScript
+
+    ;save to file
+    If $sFilePath <> "" Then
+        Local $sConfigData = ""
+        For $i = 0 To UBound($t_aConfigs)-1
+            Local $t_aConfig = $t_aConfigs[$i] ;[config, value, description]
+            $sConfigData &= @LF & $t_aConfig[0] & ':"' & $t_aConfig[1] & '"'
+        Next
+        $sConfigData = StringMid($sConfigData, 2)
+
+        FileOpen($sFilePath, $FO_OVERWRITE+$FO_CREATEPATH)
+        FileWrite($sFilePath, $sConfigData)
+        FileClose($sFilePath)
+    EndIf
+EndFunc
+
+Func _saveSettings()
+    Local $sScriptName
+    _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $sScriptName)
+    saveSettings($g_aScripts, $sScriptName, $hLV_ScriptConfig)
 EndFunc
 
 ;Helper functions

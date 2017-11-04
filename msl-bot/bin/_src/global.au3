@@ -21,6 +21,7 @@
     Global $g_aLog[0][3] ;Keeps track of [log, time, type]
 
 ;Config variables
+    Global $g_sProfilePath = @ScriptDir & "\profiles\main" ;Path to current seleted profile 
     Global $g_sAdbPort = "62001" ;Android debug bridge port. Default is 62001 for nox
     Global $g_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
     Global $g_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
@@ -36,5 +37,8 @@
 
 ;GUI variables
     Global $g_aComboMenu = Null ;Holds temporary context menus from combo type settings.
+    
     Global $g_hEditConfig = Null ;Handle for the edit control created when editing a setting.
     Global $g_iEditConfig = Null ;Index for the item being edited
+
+    Global $g_aListEditor = Null ;Holds temporary gui and controls for list type settings.

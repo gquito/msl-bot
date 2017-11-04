@@ -13,11 +13,19 @@ Func Initialize()
     $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
     $g_iBackgroundMode = $BKGD_ADB
     $g_sAdbPort = 62026
+    $g_sProfilePath = @ScriptDir & "\profiles\" & $g_sWindowTitle
 
     $g_aLocations = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt", ">", ":")
     $g_aPixels = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt", ">", ":")
     $g_aPoints = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt", ">", ":")
+
     getScriptsFromUrl($g_aScripts, "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scripts.txt")
+    For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
+        Local $aScript = $g_aScripts[$i]
+        If FileExists($g_sProfilePath & "\" & $aScript[0]) = True Then
+            getConfigsFromFile($g_aScripts, $aScript[0])
+        EndIf
+    Next
 
     CreateMslGUI()
 EndFunc
