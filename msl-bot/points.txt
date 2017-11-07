@@ -13,3 +13,4 @@ golem-dungeons-b9:624, 361
 golem-dungeons-b10:624, 429
 map-battle-play:706, 492
 battle-auto:33, 214
+boss:402, 239
