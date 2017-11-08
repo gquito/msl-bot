@@ -1,67 +1,79 @@
 #include-once
 #include "../imports.au3"
 
-Func CreateMslGUI()
+Func CreateGUI()
     Local Const $GUI_FONTSIZE = 11
-    Global $hParent = GUICreate("MSL Bot v3", 400, 400)
+    Global $hParent = GUICreate("MSL Bot v3", 400, 380, -9999, -9999)
     GUISetBkColor(0xFFFFFF)
-    GUISetFont($GUI_FONTSIZE)
+    GUISetFont(8.5)
     GUISetState(@SW_SHOW, $hParent)
     _WINAPI_Setfocus($hParent)
 
-    Global $hTb_Main = TabCreate($hParent, 0, 0)
-    Local $tb_Home = TabCreateItem($hTb_Main, "Home", 100)
-    Local $tb_Config = TabCreateItem($hTb_Main, "Config", 100)
-    Local $tb_Debug = TabCreateItem($hTb_Main, "Debug", 100)
-    Local $tb_About = TabCreateItem($hTb_Main, "About", 100)
-
-    Global $hTb_HomeTab = TabCreate($hTb_Main[0], 0, 0)
-    Local $tb_Script = TabCreateItem($hTb_HomeTab, "Script", 200)
-    Local $tb_Log = TabcreateItem($hTb_HomeTab, "Log", 200)
-    TabAddControl($hTb_Main, $tb_Home, $hTb_HomeTab[0])
+    Global $hTb_Main = GUICtrlGetHandle(GUICtrlCreateTab(0, 0, 400, 380, $TCS_TOOLTIPS+$WS_TABSTOP+$WS_CLIPSIBLINGS+$TCS_FIXEDWIDTH))
+    _GUICtrlTab_SetItemSize($hTb_Main, 100, 18)
 
 ;################################################## SCRIPT TAB ##################################################
-    Global $hLbl_Scripts = GUICtrlCreateLabel("Select a script:", 50, 12, 96)
-    TabAddControl($hTb_HomeTab, $tb_Script, $hLbl_Scripts)
+    GUICtrlCreateTabItem("Script")
 
-    Global $hCmb_Scripts = _GUICtrlComboBox_Create($hParent, "", 146, 10, 150, -1, $CBS_DROPDOWNLIST)
+    GUISetFont(11)
+    Global $idLbl_Scripts = GUICtrlCreateLabel("Select a script:", 50, 32, 96)
+    GUISetFont(8.5)
+
+    Global $hCmb_Scripts = GUICtrlGetHandle(GUICtrlCreateCombo("", 146, 30, 150, -1, $CBS_DROPDOWNLIST))
     _GuiCtrlComboBox_AddString($hCmb_Scripts, "Farm Rare")
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Golem")
-    TabAddControl($hTb_HomeTab, $tb_Script, $hCmb_Scripts)
 
-    Global $hBtn_Start = _GUICtrlButton_Create($hParent, "Start", 298, 9, 50, 23)
-    TabAddControl($hTb_HomeTab, $tb_Script, $hBtn_Start)
+    Global $hBtn_Start = GUICtrlGetHandle(GUICtrlCreateButton("Start", 298, 29, 50, 23))
 
-    GUISetFont(8.5)
-    Global $hLbl_ScriptDescription = GUICtrlCreateLabel("Select a script for a description of the process", 20, 36, 360, 46, $WS_BORDER+$SS_CENTER)
-    GUISetFont($GUI_FONTSIZE)
-    TabAddControl($hTb_HomeTab, $tb_Script, $hLbl_ScriptDescription)
+    Global $hLbl_ScriptDescription = GUICtrlCreateLabel("Select a script for a description of the process", 20, 56, 360, 46, $WS_BORDER+$SS_CENTER)
 
-    Global $hLV_ScriptConfig = _GUICtrlListView_Create($hParent, "", 20, 86, 360, 200, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER+$WS_BORDER)
-    _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Setting", 120, 2)
+    Global $hLV_ScriptConfig = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 106, 360, 200, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
+    _GUICtrlListView_SetExtendedListViewStyle($hLV_ScriptConfig, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+    _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Setting", 116, 2)
     _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Value (Double click to edit)", 240, 2)
     ;hidden
     _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Description", 0) 
     _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Type", 0) 
     _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Type Values", 0) 
     ;end hidden
-    _GUICtrlListView_SetExtendedListViewStyle($hLV_ScriptConfig, $LVS_EX_DOUBLEBUFFER+$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
     ControlDisable("", "", HWnd(_GUICtrlListView_GetHeader($hLV_ScriptConfig))) ;Prevents changing column size
-    TabAddControl($hTb_HomeTab, $tb_Script, $hLV_ScriptConfig)
 
-    GUISetFont(8.5)
-    Global $hLbl_ConfigDescription = GUICtrlCreateLabel("Click on a setting for a description.", 20, 290, 360, 56, $WS_BORDER+$SS_CENTER)
-    GUISetFont($GUI_FONTSIZE)
-    TabAddControl($hTb_HomeTab, $tb_Script, $hLbl_ConfigDescription)
+    Global $hLbl_ConfigDescription = GUICtrlCreateLabel("Click on a setting for a description.", 20, 310, 360, 56, $WS_BORDER+$SS_CENTER)
 ;################################################## END SCRIPT TAB ##################################################
 
-    Local $t_aGroup = [$hTb_Main, $hTb_HomeTab]
-    Global $g_aTabgroup = [$t_aGroup]
-    TabUpdate($g_aTabgroup)
+;################################################## LOG TAB ##################################################
+    GUICtrlCreateTabItem("Log")
+
+    GUISetFont(11)
+    Global $idLbl_RunningScript = GUICtrlCreateLabel("Running Script: " & $g_sScript, 0, 32, 400, -1, $SS_CENTER)
+    GUISetFont(8.5)
+
+    Global $idPB_Progress = GUICtrlCreateProgress(34, 55, 242, 21)
+
+    Global $hBtn_Stop = GUICtrlGetHandle(GUICtrlCreateButton("Stop", 278, 54, 40, 23))
+    Global $hBtn_Pause = GUICtrlGetHandle(GUICtrlCreateButton("Pause", 318, 54, 50, 23))
+    ControlDisable("", "", $hBtn_Pause)
+    ControlDisable("", "", $hBtn_Stop)
+
+    Global $hLV_Stat = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 86, 360, 180, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
+    _GUICtrlListView_SetExtendedListViewStyle($hLV_Stat, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+    _GUICtrlListView_AddColumn($hLV_Stat, "Stat", 116, 2)
+    _GUICtrlListView_AddColumn($hLV_Stat, "Value", 240, 2)
+
+    Global $hLV_Log = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 270, 360, 100, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
+    _GUICtrlListView_SetExtendedListViewStyle($hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+    _GUICtrlListView_AddColumn($hLV_Log, "Time", 76, 2)
+    _GUICtrlListView_AddColumn($hLV_Log, "Log", 280, 2)
+    _GUICtrlListView_JustifyColumn($hLV_Log, 0, 0)
+    _GUICtrlListView_JustifyColumn($hLV_Log, 1, 0)
+
+;################################################## END LOG TAB ##################################################
+    _GUICtrlTab_ActivateTab($hTb_Main, 0)
 
     ;Register WM_COMMAND and WM_NOTIFY for UDF controls
     GUIRegisterMsg($WM_COMMAND, "WM_COMMAND")
     GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
 
-    GUIMainLoop()
+    WinMove($hParent, "", (@DesktopWidth / 2)-200, (@DesktopHeight / 2)-200)
+    GUIMain()
 EndFunc

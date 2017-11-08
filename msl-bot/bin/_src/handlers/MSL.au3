@@ -39,7 +39,7 @@ Func getLocation($aLocations = $g_aLocations)
 
 		If isPixelOR($aLocations[$i][1], 20) = True Then
 			;checks in 200 miliseconds for same location.
-			If ($g_iBackgroundMode <> $BKGD_ADB) And _Sleep(200) Then Return -2
+			If ($g_iBackgroundMode <> $BKGD_ADB) And (_Sleep(200) = True) Then Return -2
 			captureRegion()
 
 			If isPixelOR($aLocations[$i][1], 20) = True Then
@@ -175,6 +175,8 @@ Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
 	Local $aPixelSet = StringSplit($t_sPixels, "/", $STR_NOCOUNT)
 	For $i = 0 To UBound($aPixelSet)-1
 		Local $t_iTimerInit = TimerInit()
+		If isPixel($aPixelSet[$i], 10) = True Then addLog($g_aLog, "-Closing window.", $LOG_NORMAL)
+
 		While isPixel($aPixelSet[$i], 10) = True
 			If TimerDiff($t_iTimerInit) >= 2000 Then Return False ;two seconds
 			;Closing until pixel is not the same.
@@ -198,6 +200,9 @@ EndFunc
 #ce
 Func skipDialogue()
 	Local $t_iTimerInit = TimerInit()
+	Local $sLocation = getLocation()
+
+	If $sLocation = "dialogue" Then addLog($g_aLog, "-Skipping dialogue.", $LOG_NORMAL)
 	While getLocation() = "dialogue"
 		If TimerDiff($t_iTimerInit) >= 20000 Then Return False ;twenty seconds
 

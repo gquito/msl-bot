@@ -8,13 +8,28 @@
         $sLog: Message to put into the log
         $iLevel: The log level. $LOG_NORMAL (0), $LOG_DEBUG (1), $LOG_ERROR (2)
 #ce
-Func addLog(ByRef $aLog, $sLog, $iLevel = $LOG_NORMAL, $iTimeStamp = NowTimeStamp())
+Func addLog(ByRef $aLog, $sLog, $iLevel = $LOG_NORMAL, $bDisplay = True, $hListView = $hLV_Log, $iTimeStamp = NowTimeStamp())
     Local $iRowSize = UBound($aLog, $UBOUND_ROWS)
     ReDim $aLog[$iRowSize+1][3]
 
     $aLog[$iRowSize][0] = $sLog
     $aLog[$iRowSize][1] = $iLevel
     $aLog[$iRowSize][2] = $iTimeStamp
+
+    If $bDisplay Then displayLog($aLog, $hListView)
+EndFunc
+
+#cs 
+    Function: Displays log data into ListView control
+    Parameters:
+        $aLog: Log array stored in [##][3] array
+        $hListView: Listview control handle
+#ce
+Func displayLog($aLog, $hListView)
+    For $i = _GUICtrlListView_GetItemCount($hListView) To UBound($aLog, $UBOUND_ROWS)-1
+        _GUICtrlListView_InsertItem($hListView, formatTime($aLog[$i][2]), 0)
+        _GUICtrlListView_SetItemText($hListView, 0, $aLog[$i][0], 1)
+    Next
 EndFunc
 
 #cs 
@@ -40,6 +55,14 @@ Func NowTimeStamp()
 EndFunc
 
 #cs 
+    Function: Formats time to readable string
+    Returns: HH:MM:SS
+#ce
+Func formatTime($sTimeStamp = NowTimeStamp())
+    Return getHour($sTimeStamp) & ":" & getMinute($sTimeStamp) & ":" & getSecond($sTimeStamp)
+EndFunc
+
+#cs 
     Function: Retrieves hour from timestamp
     Returns: ## hour.
 #ce
@@ -53,4 +76,12 @@ EndFunc
 #ce
 Func getMinute($sTimeStamp = NowTimeStamp())
     Return StringMid($sTimeStamp, 11, 2)
+EndFunc
+
+#cs 
+    Function: Retrieves second from timestamp
+    Returns: ## second.
+#ce
+Func getSecond($sTimeStamp = NowTimeStamp())
+    Return StringMid($sTimeStamp, 13, 2)
 EndFunc

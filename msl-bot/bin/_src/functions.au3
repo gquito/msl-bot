@@ -6,5 +6,5 @@
 #include "handlers/System.au3"
 #include "handlers/MSL.au3"
 #include "handlers/Log.au3"
-
-#include "scripts/subscripts/navigate.au3"
+#include "handlers/Image.au3"
+#include "handlers/_ImageSearch.au3"

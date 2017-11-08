@@ -1,3 +1,5 @@
+#AutoIt3Wrapper_UseX64=n
+
 #include-once
 #include "bin/_src/imports.au3"
 
@@ -6,7 +8,11 @@ Initialize()
 ;Function: Initialize GUI and data.
 Func Initialize()
     _GDIPlus_Startup()
-    $g_bRunning = True
+
+    If FileExists(@TempDir & "\ImageSearchDLL.dll") = False Then
+        _CreateTempDLL() ;Creates dll file in windows temporary directory.
+    EndIf
+
     $g_sWindowTitle = "User2"
     $g_sControlInstance = "[CLASS:subWin; INSTANCE:1]"
     $g_hWindow = WinGetHandle($g_sWindowTitle)
@@ -27,5 +33,11 @@ Func Initialize()
         EndIf
     Next
 
-    CreateMslGUI()
+    CreateGUI()
+EndFunc
+
+Func MSLMain()
+    If $g_bRunning = True Then
+        Call(StringReplace($g_sScript, " ", "_"), $g_aScriptArgs)
+    EndIf
 EndFunc

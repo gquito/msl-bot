@@ -5,17 +5,23 @@
     Control Event Handling
 #ce ##########################################
 
-Func GUIMainLoop()
+Func GUIMain()
     While True
-        Local $iCode = GUIGetMsg()
-        Switch $iCode 
-            Case $GUI_EVENT_CLOSE
-                ExitLoop
-            Case Else
-                ;Handles the combo config contextmenu
-                handleCombo($iCode, $hLV_ScriptConfig)
-        EndSwitch
+        GUI_HANDLE()
+        MSLMain()
     WEnd
+EndFunc
+
+Func GUI_HANDLE()
+    Local $iCode = GUIGetMsg()
+    Switch $iCode 
+        Case $GUI_EVENT_CLOSE
+            GUISetState(@SW_HIDE, $hParent)
+            CloseApp()
+        Case Else
+            ;Handles the combo config contextmenu
+            handleCombo($iCode, $hLV_ScriptConfig)
+    EndSwitch
 EndFunc
 
 Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
@@ -25,6 +31,18 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
     Local $hCtrl = $lParam
 
     Switch $hCtrl
+        Case $hBtn_Start
+            If $nNotifycode = $BN_CLICKED Then
+                Start()
+            EndIf
+        Case $hBtn_Stop
+            If $nNotifyCode = $BN_CLICKED Then
+                Stop()
+            EndIf
+        Case $hBtn_Pause
+            If $nNotifyCode = $BN_CLICKED Then
+                Pause()
+            EndIf
         Case $hCmb_Scripts
             If $nNotifyCode = $CBN_SELCHANGE Then 
                 ;Change listview display for script configs
@@ -37,11 +55,6 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
                     displayScriptData($hLV_ScriptConfig, $aScript)
                     GUICtrlSetData($hLbl_ScriptDescription, $aScript[1])
                 EndIf
-            EndIf
-        Case $g_hEditConfig
-            ;handles editing type Text of the listview configs
-            If $nNotifyCode = $EN_KILLFOCUS Then 
-                handleEdit($g_hEditConfig, $g_iEditConfig, $hLV_ScriptConfig)
             EndIf
     EndSwitch
     Return $GUI_RUNDEFMSG
@@ -61,6 +74,9 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
         Case $hLV_ScriptConfig
             Switch $iCode
                 Case $LVN_ITEMCHANGED, $NM_CLICK
+                    ;handles edit updates 
+                    If $g_hEditConfig <> Null Then handleEdit($g_hEditConfig, $g_iEditConfig, $hLV_ScriptConfig)
+
                     ;Switches config description label
                     $tScriptConfigInfo = DLLStructCreate($tagNMITEMACTIVATE, $lparam)
 
@@ -98,16 +114,80 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
 
                     EndSwitch
             EndSwitch
-        Case Else
-            If $iCode = $TCN_SELCHANGE Then TabUpdate($g_aTabGroup)
     EndSwitch
     Return $GUI_RUNDEFMSG
 EndFunc   ;==>WM_NOTIFY
+
+; Handles script and closing app
+Func CloseApp()
+    _GDIPlus_Shutdown()
+    Exit
+EndFunc
+
+Func Start()
+;Initializing variables
+    _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $g_sScript)
+
+    Local $t_aScriptArgs[_GUICtrlListView_GetItemCount($hLV_ScriptConfig)+1] ;Contains script args
+    $t_aScriptArgs[0] = "CallArgArray"
+    For $i = 1 To UBound($t_aScriptArgs, $UBOUND_ROWS)-1
+        ;Retrieves the values column for each setting
+        $t_aScriptArgs[$i] = _GUICtrlListView_GetItemText($hLV_ScriptConfig, $i-1, 1) 
+    Next
+
+;Setting control states
+    GUICtrlSetData($idLbl_RunningScript, "Running Script: " & $g_sScript)
+    ControlDisable("", "", $hCmb_Scripts)
+    ControlDisable("", "", $hLV_ScriptConfig)
+    ControlDisable("", "", $hBtn_Start)
+    ControlEnable("", "", $hBtn_Stop)
+    ControlEnable("", "", $hBtn_Pause)
+
+    _GUICtrlTab_ClickTab($hTb_Main, 1)
+
+;Calls to runs scripts
+    $g_aScriptArgs = $t_aScriptArgs
+    $g_bRunning = True
+EndFunc
+
+Func Stop()
+;Resets variables
+    $g_aScriptArgs = Null
+    $g_sScript = ""
+
+;Setting control states
+    GUICtrlSetData($idLbl_RunningScript, "Running Script: ")
+    ControlEnable("", "", $hCmb_Scripts)
+    ControlEnable("", "", $hLV_ScriptConfig)
+    ControlEnable("", "", $hBtn_Start)
+    ControlDisable("", "", $hBtn_Stop)
+    ControlDisable("", "", $hBtn_Pause)
+
+    _GUICtrlTab_ClickTab($hTb_Main, 0)
+
+;Calls to stop scripts
+    $g_bRunning = False
+EndFunc
+
+Func Pause()
+    $g_bPaused = Not($g_bPaused)
+
+    If $g_bPaused = True Then
+        ;From not being paused to being paused
+        _GUICtrlButton_SetText($hBtn_Pause, "Unpause")
+        ControlDisable("", "", $hBtn_Stop)
+    Else
+        ;From being paused to being unpaused
+        _GUICtrlButton_SetText($hBtn_Pause, "Pause")
+        ControlEnable("", "", $hBtn_Stop)
+    EndIf
+EndFunc
 
 ;Some helper functions for handling controls----
 
 ;Handles the combo config contextmenu
 Func handleCombo(ByRef $iCode, ByRef $hListView)
+    If isArray($g_aComboMenu) = False Then Return
     For $i = 1 To UBound($g_aComboMenu, $UBOUND_ROWS)-1
         Local $aContext = $g_aComboMenu[$i] ;Hold [idContext, "name"]
         If $iCode = $aContext[0] Then
@@ -115,6 +195,7 @@ Func handleCombo(ByRef $iCode, ByRef $hListView)
             _GUICtrlListView_SetItemText($hListView, _GUICTrlListView_GetSelectedIndices($hListView, True)[1], $aContext[1], 1)
             _saveSettings()
 
+            $g_aComboMenu = Null
             Return 0
         EndIf
     Next
@@ -152,15 +233,13 @@ EndFunc
 Func createEdit(ByRef $hEdit, ByRef $iIndex, $hListView, $bNumber = True)
     If $iIndex = Null Then $iIndex = _GUICtrlListView_GetSelectedIndices($hListView, True)[1]
     Local $sText = _GUICtrlListView_GetItemText($hListView, $iIndex, 1)
-
-    Local Const $iX_Offset = 21, $iY_Offset = 130
     Local $aSize = _GUICtrlListView_GetSubItemRect($hListView, $iIndex, 1)
 
-    Local $aDim = [$aSize[0]+$iX_Offset, $aSize[1]+$iY_Offset, $aSize[2]-$aSize[0]-1, $aSize[3]-$aSize[1]]
-    Local $iStyle = $WS_CHILD+$WS_VISIBLE+$ES_WANTRETURN+$ES_CENTER
+    Local $aDim = [$aSize[0], $aSize[1], $aSize[2]-$aSize[0], $aSize[3]-$aSize[1]]
+    Local $iStyle = $WS_VISIBLE+$ES_WANTRETURN+$ES_CENTER
     If $bNumber = True Then $iStyle+=$ES_NUMBER
 
-    $hEdit = _GUICtrlEdit_Create($hParent, $sText, $aDim[0], $aDim[1], $aDim[2], $aDim[3], $iStyle)
+    $hEdit = _GUICtrlEdit_Create($hLV_ScriptConfig, $sText, $aDim[0], $aDim[1], $aDim[2], $aDim[3], $iStyle)
     
     _GUICtrlEdit_SetSel($hEdit, 0, -1)
     _WinAPI_SetFocus($hEdit)
@@ -304,6 +383,7 @@ Func ListEditor_btnAdd()
     EndIf
 EndFunc
 
+;Destroys Window and saves data into listview item
 Func ListEditor_Close()
     Opt("GUIOnEventMode", 0)
     ; Saves changed settings to the listview.
@@ -533,6 +613,7 @@ Func saveSettings(ByRef $aScripts, $sScript, $hListView, $sFilePath = $g_sProfil
     EndIf
 EndFunc
 
+;saveSettings for main GUI
 Func _saveSettings()
     Local $sScriptName
     _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $sScriptName)

@@ -5,18 +5,20 @@
     Function: Sleep that accounts for script state
     Parameters:
         $iDuration: Amount of time to sleep in milliseconds
-        $iDelay: Delay between checking the script state in milliseconds
     Returns: True if script needs to be stopped.
 #ce
-Func _Sleep($iDuration, $iDelay = 50)
+Func _Sleep($iDuration)
     Local $vTimerInit = TimerInit()
     While TimerDiff($vTimerInit) < $iDuration
+        displayLog($g_aLog, $hLV_Log)
+
         While $g_bPaused = True
-            Sleep($iDelay)
+            displayLog($g_aLog, $hLV_Log)
+            GUI_HANDLE()
         WEnd
 
         If $g_bRunning = False Then Return True 
-        Sleep($iDelay)
+        GUI_HANDLE()
     WEnd
     Return False
 EndFunc

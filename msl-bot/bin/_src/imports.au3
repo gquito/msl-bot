@@ -25,5 +25,11 @@
 
 #include "gui/Design.au3"
 #include "gui/Handler.au3"
-#include "gui/TabHandler.au3"
 
+#include "scripts/Farm_Golem.au3"
+
+#include "scripts/sub/Helper.au3"
+#include "scripts/sub/navigate.au3"
+#include "scripts/sub/doHourly.au3"
+#include "scripts/sub/collectQuest.au3"
+#include "scripts/sub/doRefill.au3"
