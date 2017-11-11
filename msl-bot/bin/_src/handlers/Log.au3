@@ -1,6 +1,42 @@
 #include-once
 #include "../imports.au3"
 
+#cs
+    Function: Updates current data
+    Parameters:
+        $aData: Reference to data array.
+        $aNewData: Data to apply to reference variable
+#ce
+Func updateData(ByRef $aData, $aNewData)
+    ;Updates data array in order of new data.
+    Local $iSize = UBound($aNewData, $UBOUND_ROWS)
+
+    ReDim $aData[$iSize][2]
+    For $i = 0 To $iSize-1
+        Local $t_aData = formatArgs($aNewData)
+        $aData[$i][0] = $t_aData[$i][0]
+        $aData[$i][1] = $t_aData[$i][1]
+    Next
+EndFunc
+
+#cs 
+    Function: Displays data to Listview Control.
+    Parameters:
+        $aData: Data containing [[name, value], ...]
+        $hListView: Listview Control handle.
+#ce
+Func displayData($aData, $hListView)
+    Local $iSize = UBound($aData, $UBOUND_ROWS)
+    For $i = 0 To $iSize-1
+        ;Adds item if does not exist
+        If _GUICtrlListView_GetItemCount($hListView) < $i+1 Then
+            _GUICtrlListView_AddItem($hListView, StringReplace($aData[$i][0], "_", " "))
+        EndIf
+
+        _GUICtrlListView_SetItemText($hListView, $i, $aData[$i][1], 1)
+    Next
+EndFunc
+
 #cs 
     Function: Adds a log into the log array
     Parameters:
@@ -84,4 +120,17 @@ EndFunc
 #ce
 Func getSecond($sTimeStamp = NowTimeStamp())
     Return StringMid($sTimeStamp, 13, 2)
+EndFunc
+
+#cs 
+    Function: Converts seconds to formated string. EX: 00 H 00 M 00 S
+    Parameters:
+        $iSeconds: Seconds.
+#ce
+Func getTimeString($iSeconds)
+	If $iSeconds >= 3600 Then
+		Return Int($iSeconds / 60 / 60) & "H " & Int(Mod($iSeconds / 60, 60)) & "M " & Int(Mod($iSeconds, 60)) & "S"
+	Else
+		Return Int($iSeconds / 60) & "M " & Int(Mod($iSeconds, 60)) & "S"
+	EndIf
 EndFunc

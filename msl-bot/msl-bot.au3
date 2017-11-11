@@ -39,9 +39,10 @@ EndFunc
 
 Func MSLMain()
     If $g_bRunning = True Then
-        ;Local $aTest = [$g_sProfilePath, $g_sAdbPath, $g_sAdbDevice, $g_sEmuSharedFolder[0], $g_sEmuSharedFolder[1], $g_sWindowTitle, $g_sControlInstance, $g_iBackgroundMode, $g_iMouseMode, $g_iSwipeMode]
-        ;_ArrayDisplay($aTest)
-
         Call(StringReplace($g_sScript, " ", "_"), $g_aScriptArgs)
+        If @error = 0xDEAD And @extended = 0xBEEF Then
+            MsgBox($MB_ICONERROR+$MB_OK, "Function does not exist.", "Function for the script does not exist: " & StringReplace($g_sScript, " ", "_"))
+            Stop()
+        EndIf 
     EndIf
 EndFunc

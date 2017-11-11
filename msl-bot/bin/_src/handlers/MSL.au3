@@ -23,8 +23,8 @@ EndFunc
 	Returns: String game location.
 	Extended: Location pixel data.
 #ce
-Func getLocation($aLocations = $g_aLocations)
-	captureRegion() ;Updates global bitmap
+Func getLocation($aLocations = $g_aLocations, $bUpdate = True)
+	If $bUpdate = True Then captureRegion() ;Updates global bitmap
 
 	;Going through location data and using isPixelAND() function to check each location.
 	Local Const $iSize = UBound($aLocations, $UBOUND_ROWS)
@@ -38,6 +38,8 @@ Func getLocation($aLocations = $g_aLocations)
 		If $aLocations[$i][0] = "" Or StringMid($aLocations[$i][0], 0, 1) = ";" Then ContinueLoop
 
 		If isPixelOR($aLocations[$i][1], 20) = True Then
+			If $bUpdate = True Then Return $aLocations[$i][0] ;no double check if update is false.
+
 			;checks in 200 miliseconds for same location.
 			If ($g_iBackgroundMode <> $BKGD_ADB) And (_Sleep(200) = True) Then Return -2
 			captureRegion()
@@ -187,7 +189,7 @@ Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
 
 			captureRegion()
 
-			If isPixel($aPixelSet[$i]) = False Then Return True
+			If isPixel($aPixelSet[$i], 10) = False Then Return True
 		WEnd
 	Next
 

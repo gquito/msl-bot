@@ -31,28 +31,36 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap)
     EndIf
 
     ;Fixing argument format to [[x, y, color], [...]]
-    If IsArray($vArg) = True Then
-        If IsArray($vArg[0]) = True Then
+    If isArray($vArg) = True Then
+        If isArray($vArg[0]) = True Then
             ;Expected format: "[[x, y, color], [...]]"
             Local $aPixel = $vArg
         Else
-            ;Expected format: ["x,y,color", "..."]
-            Local Const $iSize = UBound($vArg)
-            ReDim $aPixels[$iSize]
+            If StringInStr($vArg[0], ",") = True Then
+                ;Expected format: ["x,y,color", "..."]
+                Local Const $iSize = UBound($vArg)
+                ReDim $aPixels[$iSize]
 
-            For $i = 0 To $iSize-1
-                Local $t_aPixel = StringSplit($vArg[$i], ",", $STR_NOCOUNT)
-                If UBound($t_aPixel) <> 3 Then ContinueLoop
+                For $i = 0 To $iSize-1
+                    Local $t_aPixel = StringSplit($vArg[$i], ",", $STR_NOCOUNT)
+                    If UBound($t_aPixel) <> 3 Then ContinueLoop
 
-                Local $t_iX = StringStripWS($t_aPixel[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
-                Local $t_iY = StringStripWS($t_aPixel[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
-                Local $t_cColor = StringStripWS($t_aPixel[2], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+                    Local $t_iX = StringStripWS($t_aPixel[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+                    Local $t_iY = StringStripWS($t_aPixel[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+                    Local $t_cColor = StringStripWS($t_aPixel[2], $STR_STRIPLEADING + $STR_STRIPTRAILING)
 
-                Local $t_aFormatedPixel = [$t_iX, $t_iY, $t_cColor]
+                    Local $t_aFormatedPixel = [$t_iX, $t_iY, $t_cColor]
+
+                    ReDim $aPixels[UBound($aPixels)+1]
+                    $aPixels[UBound($aPixels)-1] = $t_aFormatedPixel
+                Next
+            Else
+                ;Expected format: ["x", "y", "color"]
+                Local $t_aFormatedPixel = [$vArg[0], $vArg[1], $vArg[2]]
 
                 ReDim $aPixels[UBound($aPixels)+1]
                 $aPixels[UBound($aPixels)-1] = $t_aFormatedPixel
-            Next
+            EndIf
         EndIf
     Else
         ;Expected format: "x,y,color|..."
@@ -151,4 +159,55 @@ Func compareColors($nColor1, $nColor2, $nRetType=1)
 	Else
 		Return $nRet
 	EndIf
+EndFunc
+
+#cs
+	Function: Looks for a color within a certion boundary
+	Parameters:
+		$startingPoint: A point array [x, y] or string "x,y" of the top left of the boundary
+		$size: A point array [x, y] or string "x,y" of the size of the boundary
+		$variation: Maximum variation from the original color
+		$skipx: Number of pixels to skip on the x axis
+	    $skipy: Number of pixels to skip on the y axis
+	Return:
+		- The point array of the pixel.
+		*Returns -1 if not found.
+#ce
+
+Func findColor($startingPoint, $size, $color, $variation = 10, $skipx = 1, $skipy = 1)
+	Local $x, $y
+	Local $width, $height
+
+	;Split starting point array/string to its variables
+	If isArray($startingPoint) = False Then
+		Local $split = StringSplit(StringStripWS($startingPoint, 8), ",", 2)
+		$x = $split[0]
+		$y = $split[1]
+	Else
+		$x = $startingPoint[0]
+		$y = $startingPoint[1]
+	EndIf
+
+	If isArray($size) = False Then
+		Local $split = StringSplit(StringStripWS($size, 8), ",", 2)
+		$width = $split[0]
+		$height = $split[1]
+	Else
+		$width = $size[0]
+		$height = $size[1]
+	EndIf
+
+	;Process
+	For $x1 = $x to $x+$width Step $skipx
+		For $y1 = $y to $y+$height Step $skipy
+			Local $tempPixel = [$x1, $y1, $color]
+			If isPixel($tempPixel, $variation) = True Then
+				Local $tempPoint = [$x1, $y1]
+				Return $tempPoint
+			EndIf
+		Next
+	Next
+
+	;If not found
+	Return -1
 EndFunc

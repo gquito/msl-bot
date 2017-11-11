@@ -6,6 +6,7 @@
     Parameters:
         $sLocation: One of the locations.
         $bForceSurrender: If in battle will surrender the match
+        $bLog: Show log or not
     Returns: Boolean if successful or not.
 #ce
 Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
@@ -18,13 +19,29 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
     While $t_sCurrLocation <> $sLocation
         ;Handles force surrender 
         Switch $t_sCurrLocation
+            Case "defeat" 
+                If clickUntil(getArg($g_aPoints, "battle-give-up"), "isLocation", "unknown,battle-end-exp,battle-sell,battle-sell-item,battle-end") = True Then
+                    ;Sets up for normal locations
+                    Local $t_iTimerInit = TimerInit()
+
+                    While $t_sCurrLocation <> "battle-end"
+                        If TimerDiff($t_iTimerInit) >= 120000 Then Return False ;2 Minutes, prevents infinite loop.
+
+                        clickPoint(getArg($g_aPoints, "tap"))
+                        If _Sleep(1000) Then Return -2
+
+                        $t_sCurrLocation = getLocation()
+                    WEnd
+                Else
+                    Return False
+                EndIf
             Case "battle", "battle-auto", "catch-mode", "pause"
                 If $bForceSurrender = True Then
                     If $bLog Then addLog($g_aLog, "-Forcing to surrender.", $LOG_NORMAL)
 
                     ;Force surrender algorithm
                     If clickUntil(getArg($g_aPoints, "battle-pause"), "isLocation", "pause", 30, 1000) = True Then
-                        clickWhile(getArg($g_aPoints, "battle-give-up"), "isLocation", "pause,unknown", 60, 1000)
+                        clickWhile(getArg($g_aPoints, "battle-give-up"), "isLocation", "pause,unknown", 10, 1000)
                     EndIf
 
                     ;Sets up for normal locations
@@ -58,9 +75,9 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     Case Else
                         ;All other locations will need either click back or esc to get to village.
 
-                        Local $t_vTimerInit = TimerInit() ;Will only do this for max 1 minutes
+                        Local $t_vTimerInit = TimerInit() 
                         While getLocation() <> "village"
-                            If TimerDiff($t_vTimerInit) >= 60000 Then Return False ;1 minutes
+                            If TimerDiff($t_vTimerInit) >= 30000 Then Return False ;30 seconds
                                 
                             ;Handles back or esc
                             If isPixel(getArg($g_aPixels, "back"), 20) = True Then
@@ -71,9 +88,20 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                                 skipDialogue()
 
                                 clickPoint(getArg($g_aPoints, "tap"))
-                            EndIf
 
-                            If _Sleep(1000) Then Return -2
+                                ;Tries ADB send keyevent escape
+                                If TimerDiff($t_vTimerInit) > 10000 Then
+                                    If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
+                                        adbCommand("shell input keyevent ESCAPE")
+                                        adbCommand("shell input keyevent ESCAPE")
+                                        adbCommand("shell input keyevent ESCAPE")
+
+                                        If getLocation() <> "unknown" Then ContinueLoop(2)
+                                    EndIf
+                                EndIf
+                             EndIf
+
+                            If _Sleep(500) Then Return -2
                         WEnd
 
                         If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
@@ -101,18 +129,22 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                             skipDialogue()
                             closeWindow()
 
+                            clickPoint(getArg($g_aPoints, "tap"))
                             If _Sleep(500) Then Return -2
                         WEnd
 
                         If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
                         Return True
                     Case Else
+                        If _Sleep(10) Then Return -2
+
                         ;Uses navigate village algorithm to easily go to map
                         If $bLog Then addLog($g_aLog, "-Navigating to village.")
 
                         Local $t_bResult = navigate("village", $bForceSurrender, False)
                         If $t_bResult = False Then Return False
 
+                        If _Sleep(10) Then Return -2
                         Local $bResult = navigate("map", $bForceSurrender, False)
                         If $bResult = True Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
                         Return $bResult ;waits for map location for 60 seconds

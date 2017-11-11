@@ -3,7 +3,7 @@
 
 Func CreateGUI()
     Local Const $GUI_FONTSIZE = 11
-    Global $hParent = GUICreate("MSL Bot v3", 400, 380, -9999, -9999)
+    Global $hParent = GUICreate("MSL Bot v3.0", 400, 380, -9999, -9999)
     GUISetBkColor(0xFFFFFF)
     GUISetFont(8.5)
     GUISetState(@SW_SHOW, $hParent)
@@ -20,8 +20,9 @@ Func CreateGUI()
     GUISetFont(8.5)
 
     Global $hCmb_Scripts = GUICtrlGetHandle(GUICtrlCreateCombo("_Config", 146, 30, 150, -1, $CBS_DROPDOWNLIST))
-    _GuiCtrlComboBox_AddString($hCmb_Scripts, "_Hourly")
-    _GuiCtrlComboBox_AddString($hCmb_Scripts, "Farm Rare")
+    _GUICtrlComboBox_AddString($hCmb_Scripts, "_Hourly")
+    _GUICtrlComboBox_AddString($hCmb_Scripts, "_Filter")
+    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Rare")
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Golem")
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Gem")
 
@@ -32,8 +33,8 @@ Func CreateGUI()
 
     Global $hLV_ScriptConfig = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 106, 360, 200, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
     _GUICtrlListView_SetExtendedListViewStyle($hLV_ScriptConfig, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
-    _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Setting", 116, 2)
-    _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Value (Double click to edit)", 240, 2)
+    _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Setting", 116, 0)
+    _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Value (Double click to edit)", 240, 0)
     ;hidden
     _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Description", 0) 
     _GUICtrlListView_AddColumn($hLV_ScriptConfig, "Type", 0) 
@@ -61,13 +62,13 @@ Func CreateGUI()
 
     Global $hLV_Stat = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 86, 360, 180, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
     _GUICtrlListView_SetExtendedListViewStyle($hLV_Stat, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
-    _GUICtrlListView_AddColumn($hLV_Stat, "Stat", 116, 2)
-    _GUICtrlListView_AddColumn($hLV_Stat, "Value", 240, 2)
+    _GUICtrlListView_AddColumn($hLV_Stat, "Stat", 116, 0)
+    _GUICtrlListView_AddColumn($hLV_Stat, "Value", 240, 0)
 
     Global $hLV_Log = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 270, 360, 100, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
     _GUICtrlListView_SetExtendedListViewStyle($hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
-    _GUICtrlListView_AddColumn($hLV_Log, "Time", 76, 2)
-    _GUICtrlListView_AddColumn($hLV_Log, "Log", 280, 2)
+    _GUICtrlListView_AddColumn($hLV_Log, "Time", 76, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Log", 280, 0)
     _GUICtrlListView_JustifyColumn($hLV_Log, 0, 0)
     _GUICtrlListView_JustifyColumn($hLV_Log, 1, 0)
 

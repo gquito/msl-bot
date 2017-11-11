@@ -10,8 +10,11 @@
 Func _Sleep($iDuration)
     Local $vTimerInit = TimerInit()
     While TimerDiff($vTimerInit) < $iDuration
+        If ($g_bRunning = True) And ($g_hScriptTimer <> Null) Then
+            WinSetTitle($hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", "") & " - " & getTimeString(TimerDiff($g_hScriptTimer)/1000))
+        EndIf
+        
         displayLog($g_aLog, $hLV_Log)
-
         While $g_bPaused = True
             displayLog($g_aLog, $hLV_Log)
             GUI_HANDLE()

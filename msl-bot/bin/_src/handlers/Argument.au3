@@ -25,6 +25,31 @@ Func getArg($aArgs, $sName)
 EndFunc
 
 #cs
+	Function: Sets value of argument from array of arguments
+	Parameters:
+		$aArgs: Array => [[arg1, value1], [arg2, value2]]
+		$sName: String => "arg1"
+		$sValue: New value to set arg to
+	Returns:
+		True if success, false if argument found.
+#ce
+Func setArg(ByRef $aArgs, $sName, $sValue)
+	Local $iIndex = -1 ;index of argument
+	For $i = 0 To UBound($aArgs)-1
+		If $aArgs[$i][0] = $sName Then 
+			$iIndex = $i
+			ExitLoop
+		EndIf
+	Next
+
+	;if not found returns early
+	If $iIndex = -1 Then Return False
+
+	$aArgs[$iIndex][1] = $sValue
+	Return True
+EndFunc
+
+#cs
 	Function: Convert string of arguments into a readable array.
 	Parameters:
 		$sArgs: String => "arg1=value1,arg2=value2, arg3=value3"

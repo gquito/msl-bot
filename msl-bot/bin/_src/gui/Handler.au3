@@ -141,6 +141,7 @@ EndFunc
 
 Func Start()
 ;Initializing variables
+    GUICtrlSetData($idPB_Progress, 0)
     UpdateSettings()
 
     ;Pre Conditions
@@ -169,6 +170,11 @@ Func Start()
         EndIf
     EndIf
 
+    If ($g_iMouseMode = $MOUSE_REAL) Or ($g_iSwipeMode = $SWIPE_REAL) Then
+        MsgBox($MB_ICONWARNING+$MB_OK, "Script is using real mouse.", "Mouse cursor will be moved automatically. To stop the script, press ESCAPE key.")
+        HotKeySet("{ESC}", "Stop")
+    EndIf
+
 ;Processing
     _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $g_sScript)
 
@@ -195,6 +201,9 @@ Func Start()
 EndFunc
 
 Func Stop()
+    GUICtrlSetData($idPB_Progress, 0)
+    HotKeySet("{Esc}") ;unbinds hotkey
+
 ;Resets variables
     FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
     $g_aScriptArgs = Null
@@ -212,6 +221,7 @@ Func Stop()
 
 ;Calls to stop scripts
     $g_bRunning = False
+    WinSetTitle($hParent, "", $g_sAppTitle)
 EndFunc
 
 Func Pause()
@@ -265,7 +275,7 @@ EndFunc
 Func handleEdit(ByRef $hEdit, ByRef $iIndex, $hListView)
     ;Handles changes to the config setting.
     Local $sNew = _GUICtrlEdit_GetText($hEdit)
-    _GUICtrlListView_SetItemText($hListView, $iIndex, $sNew, 1)
+    If $sNew <> "" Then _GUICtrlListView_SetItemText($hListView, $iIndex, $sNew, 1)
     _GUICtrlEdit_Destroy($hEdit)
 
     If _GUICtrlListView_GetItemText($hListView, $iIndex) = "Profile Name" Then
