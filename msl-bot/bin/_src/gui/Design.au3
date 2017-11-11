@@ -19,11 +19,14 @@ Func CreateGUI()
     Global $idLbl_Scripts = GUICtrlCreateLabel("Select a script:", 50, 32, 96)
     GUISetFont(8.5)
 
-    Global $hCmb_Scripts = GUICtrlGetHandle(GUICtrlCreateCombo("", 146, 30, 150, -1, $CBS_DROPDOWNLIST))
+    Global $hCmb_Scripts = GUICtrlGetHandle(GUICtrlCreateCombo("_Config", 146, 30, 150, -1, $CBS_DROPDOWNLIST))
+    _GuiCtrlComboBox_AddString($hCmb_Scripts, "_Hourly")
     _GuiCtrlComboBox_AddString($hCmb_Scripts, "Farm Rare")
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Golem")
+    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Gem")
 
     Global $hBtn_Start = GUICtrlGetHandle(GUICtrlCreateButton("Start", 298, 29, 50, 23))
+    ControlDisable("", "", $hBtn_Start)
 
     Global $hLbl_ScriptDescription = GUICtrlCreateLabel("Select a script for a description of the process", 20, 56, 360, 46, $WS_BORDER+$SS_CENTER)
 
@@ -50,7 +53,8 @@ Func CreateGUI()
 
     Global $idPB_Progress = GUICtrlCreateProgress(34, 55, 242, 21)
 
-    Global $hBtn_Stop = GUICtrlGetHandle(GUICtrlCreateButton("Stop", 278, 54, 40, 23))
+    Global $idBtn_Stop = GUICtrlCreateButton("Stop", 278, 54, 40, 23)
+    Global $hBtn_Stop = GUICtrlGetHandle($idBtn_Stop)
     Global $hBtn_Pause = GUICtrlGetHandle(GUICtrlCreateButton("Pause", 318, 54, 50, 23))
     ControlDisable("", "", $hBtn_Pause)
     ControlDisable("", "", $hBtn_Stop)
@@ -68,6 +72,8 @@ Func CreateGUI()
     _GUICtrlListView_JustifyColumn($hLV_Log, 1, 0)
 
 ;################################################## END LOG TAB ##################################################
+
+    ChangeScript()
     _GUICtrlTab_ActivateTab($hTb_Main, 0)
 
     ;Register WM_COMMAND and WM_NOTIFY for UDF controls

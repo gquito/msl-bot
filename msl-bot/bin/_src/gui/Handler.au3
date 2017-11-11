@@ -15,6 +15,8 @@ EndFunc
 Func GUI_HANDLE()
     Local $iCode = GUIGetMsg()
     Switch $iCode 
+        Case $idBtn_Stop
+            Stop()
         Case $GUI_EVENT_CLOSE
             GUISetState(@SW_HIDE, $hParent)
             CloseApp()
@@ -44,17 +46,8 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
                 Pause()
             EndIf
         Case $hCmb_Scripts
-            If $nNotifyCode = $CBN_SELCHANGE Then 
-                ;Change listview display for script configs
-                Local $sItem ;Stores selected item text
-                _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $sItem)
-                $sItem = StringReplace($sItem, " ", "_")
-
-                Local $aScript = getScriptData($g_aScripts, $sItem)
-                If isArray($aScript) Then
-                    displayScriptData($hLV_ScriptConfig, $aScript)
-                    GUICtrlSetData($hLbl_ScriptDescription, $aScript[1])
-                EndIf
+            If $nNotifyCode = $CBN_SELCHANGE Then
+                ChangeScript()
             EndIf
     EndSwitch
     Return $GUI_RUNDEFMSG
@@ -119,13 +112,64 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
 EndFunc   ;==>WM_NOTIFY
 
 ; Handles script and closing app
+
+Func ChangeScript()
+    ;Change listview display for script configs
+    Local $sItem ;Stores selected item text
+    _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $sItem)
+
+    If StringLeft($sItem, 1) = "_" Then
+        ControlDisable("", "", $hBtn_Start)
+    Else
+        ControlEnable("", "", $hBtn_Start)
+    EndIf
+
+    $sItem = StringReplace($sItem, " ", "_")
+
+    Local $aScript = getScriptData($g_aScripts, $sItem)
+    If isArray($aScript) Then
+        displayScriptData($hLV_ScriptConfig, $aScript)
+        GUICtrlSetData($hLbl_ScriptDescription, $aScript[1])
+    EndIf
+EndFunc
+
 Func CloseApp()
+    FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
     _GDIPlus_Shutdown()
     Exit
 EndFunc
 
 Func Start()
 ;Initializing variables
+    UpdateSettings()
+
+    ;Pre Conditions
+    If $g_hWindow = 0 Or $g_hControl = 0 Then
+        MsgBox($MB_ICONERROR+$MB_OK, "Window/Control handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl)
+        Return -1
+    EndIf
+
+    If $g_iBackgroundMode = $BKGD_ADB Or $g_iMouseMode = $MOUSE_ADB Or $g_iSwipeMode = $SWIPE_ADB Then
+        If FileExists($g_sAdbPath) = False Then
+            MsgBox($MB_ICONERROR+$MB_OK, "Nox path does not exist.", "Path to adb.exe does not exist: " & $g_sAdbPath)
+            Return -1
+        EndIf
+
+        If StringInStr(adbCommand("get-state"), "error") = True Then
+            MsgBox($MB_ICONERROR+$MB_OK, "Adb device does not exist.", "Device is not connected or does not exist: " & $g_sAdbDevice & @CRLF & @CRLF & adbCommand("devices"))
+            Return -1
+        EndIf
+
+        If $g_iBackgroundMode = $BKGD_ADB Then
+            CaptureRegion()
+            If FileExists($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png") = False Then
+                MsgBox($MB_ICONERROR+$MB_OK, "Shared folder not valid.", "Image file was not created: " & $g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+                Return -1
+            EndIf
+        EndIf
+    EndIf
+
+;Processing
     _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $g_sScript)
 
     Local $t_aScriptArgs[_GUICtrlListView_GetItemCount($hLV_ScriptConfig)+1] ;Contains script args
@@ -152,6 +196,7 @@ EndFunc
 
 Func Stop()
 ;Resets variables
+    FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
     $g_aScriptArgs = Null
     $g_sScript = ""
 
@@ -223,14 +268,42 @@ Func handleEdit(ByRef $hEdit, ByRef $iIndex, $hListView)
     _GUICtrlListView_SetItemText($hListView, $iIndex, $sNew, 1)
     _GUICtrlEdit_Destroy($hEdit)
 
+    If _GUICtrlListView_GetItemText($hListView, $iIndex) = "Profile Name" Then
+        $g_sProfilePath = @ScriptDir & "\profiles\" & $sNew & "\"
+
+        getScriptsFromUrl($g_aScripts, "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scripts.txt")
+        For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
+            Local $aScript = $g_aScripts[$i]
+            If FileExists($g_sProfilePath & "\" & $aScript[0]) = True Then
+                getConfigsFromFile($g_aScripts, $aScript[0])
+            EndIf
+        Next
+
+        If FileExists($g_sProfilePath & "_Config") = True Then
+            getConfigsFromFile($g_aScripts, "_Config", $g_sProfilePath)
+        EndIf
+
+        Local $t_aScripts = $g_aScripts[0]
+        Local $t_aScript = $t_aScripts[2]
+        Local $t_aConfig = $t_aScript[0]
+
+        $t_aConfig[1] = $sNew
+        $t_aScript[0] = $t_aConfig
+        $t_aScripts[2] = $t_aScript
+        $g_aScripts[0] = $t_aScripts
+
+        ChangeScript()
+    Else
+        _saveSettings()
+    EndIf
+
+    UpdateSettings()
     $hEdit = Null
     $iIndex = Null
-
-    _saveSettings()
 EndFunc
 
 ;For context menu for text combo configs
-Func createEdit(ByRef $hEdit, ByRef $iIndex, $hListView, $bNumber = True)
+Func createEdit(ByRef $hEdit, ByRef $iIndex, $hListView, $bNumber = False)
     If $iIndex = Null Then $iIndex = _GUICtrlListView_GetSelectedIndices($hListView, True)[1]
     Local $sText = _GUICtrlListView_GetItemText($hListView, $iIndex, 1)
     Local $aSize = _GUICtrlListView_GetSubItemRect($hListView, $iIndex, 1)
@@ -462,7 +535,7 @@ Func getConfigsFromFile(ByRef $aScripts, $sScript, $sProfilePath = $g_sProfilePa
     $sScript = StringReplace($sScript, " ", "_")
     Local $iIndex = getScriptIndex($aScripts, $sScript)
     If $iIndex = -1 Then
-        $g_sErrorMessage = "saveSettings() => Script not found in database. Could not save."
+        $g_sErrorMessage = "getConfigsFromFile() => Could not find script data."
         Return -1
     EndIf
 
@@ -491,7 +564,7 @@ EndFunc
 #cs 
     Function: Retrieves script data with specified script name
     Parameters:
-        $aScripts: [[script, [[config, value], [..., ...]]], ...]
+        $aScripts: [[script, description, [[config, value, description], [..., ..., ...]]], ...]
         $sScript: The script text to find.
     Returns: The array of the script
     `Empty string on not found.
@@ -510,7 +583,7 @@ EndFunc
 #cs 
     Function: Retrieves script data with specified script name
     Parameters:
-        $aScripts: [[script, [[config, value], [..., ...]]], ...]
+        $aScripts: [[script, description, [[config, value, description], [..., ..., ...]]], ...]
         $sScript: The script text to find.
     Returns: Index of the script
     `-1 if not found.
@@ -552,7 +625,7 @@ Func displayScriptData(ByRef $hListView, $aScript)
     For $i = 0 To $iSize-1
         Local $aConfig = $aConfigList[$i] ;[config, value, description]
         _GUICtrlListView_AddItem($hListView, StringReplace($aConfig[0], "_", " "))
-        _GUICtrlListView_AddSubItem($hListView, $i, StringReplace($aConfig[1], "_", " "), 1)
+        _GUICtrlListView_AddSubItem($hListView, $i, $aConfig[1], 1)
 
         ;hidden values
         _GUICtrlListView_AddSubItem($hListView, $i, $aConfig[2], 2) ;description
@@ -611,6 +684,8 @@ Func saveSettings(ByRef $aScripts, $sScript, $hListView, $sFilePath = $g_sProfil
         FileWrite($sFilePath, $sConfigData)
         FileClose($sFilePath)
     EndIf
+
+    UpdateSettings()
 EndFunc
 
 ;saveSettings for main GUI
@@ -618,6 +693,62 @@ Func _saveSettings()
     Local $sScriptName
     _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $sScriptName)
     saveSettings($g_aScripts, $sScriptName, $hLV_ScriptConfig)
+EndFunc
+
+;updates global variables
+Func UpdateSettings()
+    Local $aConfig = formatArgs(getScriptData($g_aScripts, "_Config")[2]) ;This is the list of configs
+
+    ;[script, description, [[config, value, description], [..., ..., ...]]]
+    $g_sProfilePath = @ScriptDir & "\profiles\" & getArg($aConfig, "Profile_Name") & "\"
+    Local $t_sAdbPath = getArg($aConfig, "ADB_Path")
+    Local $t_sAdbDevice = getArg($aConfig, "ADB_Device")
+    Local $t_sEmuSharedFolder[2] = [getArg($aConfig, "ADB_Shared_Folder1"), getArg($aConfig, "ADB_Shared_Folder2")]
+    Local $t_sWindowTitle = getArg($aConfig, "Emulator_Title")
+    Local $t_sControlInstance = "[CLASS:" & getArg($aConfig, "Emulator_Class") & "; INSTANCE:" & getArg($aConfig, "Emulator_Instance") & "]"
+    $g_iBackgroundMode = Execute("$BKGD_" & StringUpper(getArg($aConfig, "Capture_Mode")))
+    $g_iMouseMode = Execute("$MOUSE_" & StringUpper(getArg($aConfig, "Mouse_Mode")))
+    $g_iSwipeMode = Execute("$SWIPE_" & StringUpper(getArg($aConfig, "Swipe_Mode")))
+
+    ;handles default settings
+    If StringLeft($t_sAdbPath, 1) <> "~" Then 
+        $g_sAdbPath = $t_sAdbPath 
+    Else 
+        $g_sAdbPath = $d_sAdbPath
+    EndIf
+
+    If StringLeft($t_sAdbDevice, 1) <> "~" Then 
+        $g_sAdbDevice = $t_sAdbDevice 
+    Else 
+        $g_sAdbDevice = $d_sAdbDevice 
+    EndIf
+
+    If StringLeft($t_sEmuSharedFolder[0], 1) <> "~" Then 
+        $g_sEmuSharedFolder[0] = $t_sEmuSharedFolder[0]
+    Else 
+        $g_sEmuSharedFolder[0] = $d_sEmuSharedFolder[0]
+    EndIf
+
+    If StringLeft($t_sEmuSharedFolder[1], 1) <> "~" Then 
+        $g_sEmuSharedFolder[1] = $t_sEmuSharedFolder[1]
+    Else 
+        $g_sEmuSharedFolder[1] = $d_sEmuSharedFolder[1]
+    EndIf
+
+    If StringLeft($t_sWindowTitle, 1) <> "~" Then 
+        $g_sWindowTitle = $t_sWindowTitle
+    Else 
+        $g_sWindowTitle = $d_sWindowTitle
+    EndIf
+
+    If StringLeft($t_sControlInstance, 1) <> "~" Then 
+        $g_sControlInstance = $t_sControlInstance
+    Else 
+        $g_sControlInstance = $d_sControlInstance
+    EndIf
+
+    $g_hWindow = WinGetHandle($g_sWindowTitle)
+    $g_hControl = ControlGetHandle($g_hWindow, "", $t_sControlInstance)
 EndFunc
 
 ;Helper functions

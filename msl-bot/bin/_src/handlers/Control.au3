@@ -5,16 +5,18 @@
     Function: Sends command to Android Debug Bridge and returns output
     Parameters:
         $sCommand: Command to send
-        $sAdbPort: If more than one device, port is needed.
+        $sAdbDevice: If more than one device, device is needed.
         $sAdbPath: ADB executable path.
     Returns: Output after command has been executed.
 #ce
-Func adbCommand($sCommand, $sAdbPort = $g_sAdbPort, $sAdbPath = $g_sAdbPath)
-    Local $iPID = RunWait('"' & $sAdbPath & '"' & " -s 127.0.0.1:" & $sAdbPort & " " & $sCommand, "", @SW_HIDE, $STDOUT_CHILD)
-    Local $sResult = StdoutRead($iPID)
-    ProcessWait($iPID)
-    ProcessClose($iPID)
-    ProcessWaitClose($iPID)
+Func adbCommand($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+    Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
+
+    Local $sResult = ""
+    While 1
+        $sResult &= StdoutRead($iPID)
+        If @error Then ExitLoop
+    WEnd
     StdioClose($iPID)
 
     Return $sResult
@@ -24,11 +26,12 @@ EndFunc
     Function: Sends swipes to emulator
     Parameters:
         $aPoints: x1, y1, x2, y2
+            - If in $SWIPE_KEYMAP mode, uses "left", "right", "up", "down" using ControlSend
 #ce
 Func clickDrag($aPoints, $iSwipeMode = $g_iSwipeMode)
     If $iSwipeMode = $SWIPE_KEYMAP Then
         ;Pre-set-up keymap
-    Else
+    ElseIf $iSwipeMode = $SWIPE_ADB Then
         ;Adb swipe mode
         If isArray($aPoints) = False Then
             $aPoints = StringSplit($aPoints, ",", $STR_NOCOUNT)
@@ -42,6 +45,12 @@ Func clickDrag($aPoints, $iSwipeMode = $g_iSwipeMode)
 
         ;executing swipe
         adbCommand("shell input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
+    ElseIf $iSwipeMode = $SWIPE_REAL Then
+        ;clickdrags using real mouse.
+        WinActivate($g_hWindow)
+
+        Local $aOffset = WinGetPos($g_hControl)
+        MouseClickDrag("left", $aPoints[0]+$aOffset[0], $aPoints[1]+$aOffset[1], $aPoints[2]+$aOffset[0], $aPoints[3]+$aOffset[1])
     EndIf
 EndFunc
 
@@ -245,12 +254,12 @@ Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth
     Elseif $iBackgroundMode = $BKGD_NONE Then
 		Local $aWinPos = WinGetPos($hControl)
         Local $aNewPoint = [$iX + $aWinPos[0], $iY + $aWinPos[1]]
-		$hBitmap = _ScreenCapture_Capture("", $aNewPoint[0], $aNewPoint[1], $aNewPoint[0] + $iWidth, $aNewPoint[1] + $iHeight)
-        _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap)
+		$hHBitmap = _ScreenCapture_Capture("", $aNewPoint[0], $aNewPoint[1], $aNewPoint[0] + $iWidth, $aNewPoint[1] + $iHeight, False)
+        $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBitmap)
         
     ElseIf $iBackgroundMode = $BKGD_ADB Then
-        adbCommand("shell screencap " & $g_sEmuSharedFolder[0] & $g_sWindowTitle & ".png")
-		$hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & $g_sWindowTitle & ".png")
+        adbCommand("shell screencap " & $g_sEmuSharedFolder[0] & "\" & $g_sWindowTitle & ".png")
+		$hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
         $hHBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap)
     EndIf
 EndFunc

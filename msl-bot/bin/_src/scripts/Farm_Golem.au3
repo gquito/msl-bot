@@ -5,6 +5,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
     Local Const $aLocations = ["battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "defeat", "pause", "battle-gem-full", "map-gem-full", "unknown"]
 
     ;Variables
+    Local $hTimer = Null ;Timer for when the location is not known.
     Local $iUsedGems = 0 ;Number of gems used since script has started.
     Local $bBossSelected = False ;Resets every new round
     Local $bPerformHourly = False ;Boolean that signifies whether to do hourly or not. Decides on battle ends
@@ -12,10 +13,13 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
 
     ; Main script loop
     addLog($g_aLog, "```Farm Golem script has started.")
+
+    If isLocation($aLocations, False) = "" Then navigate("map")
     While ($iRuns = 0) Or ($iRun < $iRuns)
         If _Sleep(500) then ExitLoop
         
         Local $sLocation = isLocation($aLocations, False)
+        If $sLocation <> "" Then $hTimer = Null
         Switch $sLocation
             Case "battle-end-exp", "battle-sell", "battle-sell-item"
                 clickPoint(getArg($g_aPoints, "tap"))
@@ -86,10 +90,14 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                 EndIf
                 
             Case ""
-                If _Sleep(3000) Then Return -2
-                If isLocation($aLocations) = "" Then
-                    If navigate("map", True) = False Then
-                        addLog($g_aLog, "Something went wrong!", $LOG_ERROR)
+                ;Waits 20 seconds before knowing that it is stuck in an unspecified location.
+                If $hTimer = Null Then 
+                    $hTimer = TimerInit()
+                Else
+                    If TimerDiff($hTimer) >= 20000 Then
+                        If navigate("map", True) = False Then
+                            addLog($g_aLog, "Something went wrong!", $LOG_ERROR)
+                        EndIf
                     EndIf
                 EndIf
         EndSwitch

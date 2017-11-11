@@ -13,14 +13,7 @@ Func Initialize()
         _CreateTempDLL() ;Creates dll file in windows temporary directory.
     EndIf
 
-    $g_sWindowTitle = "User2"
-    $g_sControlInstance = "[CLASS:subWin; INSTANCE:1]"
-    $g_hWindow = WinGetHandle($g_sWindowTitle)
-    $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
-    $g_iBackgroundMode = $BKGD_ADB
-    $g_sAdbPort = 62026
-    $g_sProfilePath = @ScriptDir & "\profiles\" & $g_sWindowTitle
-
+    ; Default configs and constants
     $g_aLocations = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt", ">", ":")
     $g_aPixels = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt", ">", ":")
     $g_aPoints = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt", ">", ":")
@@ -33,11 +26,22 @@ Func Initialize()
         EndIf
     Next
 
+    ;User configs
+    Local $aFolders = _FileListToArray(@ScriptDir & "\profiles\", "*", $FLTA_FOLDERS)
+    If isArray($aFolders) = True And $aFolders[0] > 0 Then
+        ;Found existing profile..
+        getConfigsFromFile($g_aScripts, "_Config", @ScriptDir & "\profiles\" & $aFolders[1] & "\")
+    EndIf
+
+    UpdateSettings()
     CreateGUI()
 EndFunc
 
 Func MSLMain()
     If $g_bRunning = True Then
+        ;Local $aTest = [$g_sProfilePath, $g_sAdbPath, $g_sAdbDevice, $g_sEmuSharedFolder[0], $g_sEmuSharedFolder[1], $g_sWindowTitle, $g_sControlInstance, $g_iBackgroundMode, $g_iMouseMode, $g_iSwipeMode]
+        ;_ArrayDisplay($aTest)
+
         Call(StringReplace($g_sScript, " ", "_"), $g_aScriptArgs)
     EndIf
 EndFunc

@@ -35,64 +35,76 @@ EndFunc
 Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 	Local $iArgSize = 0
 	Local $aArgs[$iArgSize][2] ;Final formated argument array.
-	Local Const $iSize = StringLen($sArgs)
 
-	Local $sName = "", $sValue = ""
-	Local $bName = False, $bQuoted = False
-	For $i = 0 To $iSize
-		Local $sChar = StringMid($sArgs, $i, 1)
-		If $bName = False Then ;Handles name
-			Switch $sChar
-				Case $sArgSeparator, '"'
-					$g_sErrorMessage = "formatArgs() => Invalid character in argument name."
-					Return -1
-				Case $sValueSeparator
-					$bName = True
-				Case " "
-					ContinueLoop
-				Case Else
-					$sName &= $sChar
-			EndSwitch
-		Else ;Handles value
-			If $sChar = '"' Then 
-				$bQuoted = Not($bQuoted)
-			Else
-				If $bQuoted = False Then 
-					If $sChar = " " Then ContinueLoop
-					If $sChar = $sArgSeparator Then
-						;Indicates finished argument
-						$iArgSize += 1
-						ReDim $aArgs[$iArgSize][2]
+	If isArray($sArgs) = False Then
+		Local Const $iSize = StringLen($sArgs)
 
-						$aArgs[$iArgSize-1][0] = $sName
-						$aArgs[$iArgSize-1][1] = $sValue
-
-						;Reset for next argument
-						$bName = False
-						$sName = ""
-						$sValue = ""
-					Else
-						$sValue &= $sChar ;Non-quoted
-					EndIf
+		Local $sName = "", $sValue = ""
+		Local $bName = False, $bQuoted = False
+		For $i = 0 To $iSize
+			Local $sChar = StringMid($sArgs, $i, 1)
+			If $bName = False Then ;Handles name
+				Switch $sChar
+					Case $sArgSeparator, '"'
+						$g_sErrorMessage = "formatArgs() => Invalid character in argument name."
+						Return -1
+					Case $sValueSeparator
+						$bName = True
+					Case " "
+						ContinueLoop
+					Case Else
+						$sName &= $sChar
+				EndSwitch
+			Else ;Handles value
+				If $sChar = '"' Then 
+					$bQuoted = Not($bQuoted)
 				Else
-					$sValue &= $sChar ;Quoted
+					If $bQuoted = False Then 
+						If $sChar = " " Then ContinueLoop
+						If $sChar = $sArgSeparator Then
+							;Indicates finished argument
+							$iArgSize += 1
+							ReDim $aArgs[$iArgSize][2]
+
+							$aArgs[$iArgSize-1][0] = $sName
+							$aArgs[$iArgSize-1][1] = $sValue
+
+							;Reset for next argument
+							$bName = False
+							$sName = ""
+							$sValue = ""
+						Else
+							$sValue &= $sChar ;Non-quoted
+						EndIf
+					Else
+						$sValue &= $sChar ;Quoted
+					EndIf
 				EndIf
 			EndIf
+		Next
+		
+		If $bQuoted = True Then ;No closing quote
+			$g_sErrorMessage = "formatArgs() => Quote has not been closed."
+			Return -1
 		EndIf
-	Next
-	
-	If $bQuoted = True Then ;No closing quote
-		$g_sErrorMessage = "formatArgs() => Quote has not been closed."
-		Return -1
+
+		;Adds last argument
+		$iArgSize += 1
+		ReDim $aArgs[$iArgSize][2]
+
+		$aArgs[$iArgSize-1][0] = $sName
+		$aArgs[$iArgSize-1][1] = $sValue
+	Else
+		For $i = 0 To UBound($sArgs)-1
+			$iArgSize += 1
+			ReDim $aArgs[$iArgSize][2]
+
+			Local $aArg = $sArgs[$i]
+
+			$aArgs[$iArgSize-1][0] = $aArg[0]
+			$aArgs[$iArgSize-1][1] = $aArg[1]
+		Next
 	EndIf
-
-	;Adds last argument
-	$iArgSize += 1
-	ReDim $aArgs[$iArgSize][2]
-
-	$aArgs[$iArgSize-1][0] = $sName
-	$aArgs[$iArgSize-1][1] = $sValue
-
 	;Formated Argument should be: [[arg1, value1], [arg2, value2], [..., ...]]
 	Return $aArgs
 EndFunc

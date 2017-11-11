@@ -4,7 +4,7 @@
 
     Global Const $BKGD_NONE = 0, $BKGD_WINAPI = 1, $BKGD_ADB = 2
     Global Const $MOUSE_REAL = 0, $MOUSE_CONTROL = 1, $MOUSE_ADB = 2
-    Global Const $SWIPE_KEYMAP = 0, $SWIPE_ADB = 1
+    Global Const $SWIPE_KEYMAP = 0, $SWIPE_ADB = 1, $SWIPE_REAL = 2
     Global Const $LOG_NORMAL = 0, $LOG_DEBUG = 1, $LOG_ERROR = 2
 
 ;Application variables
@@ -16,8 +16,6 @@
     Global $g_bPaused = False ;If any scripts are paused
     Global $g_hHBitmap = Null ;WINAPI bitmap handle.
     Global $g_hBitmap = Null ;GDIPlus bitmap handle.
-    Global $g_sWindowTitle = "" ;Emulator window title.
-    Global $g_sControlInstance = "" ;OPENGL/DIRECTX Control instance.
     Global $g_hWindow = Null ;Handle for emulator window
     Global $g_hControl = Null ;Handle for control window
     Global $g_aLog[0][3] ;Keeps track of [log, time, type]
@@ -25,13 +23,25 @@
 ;Config variables
     Global $g_sImageSearchPath = @TempDir & "\ImageSearchDLL.dll" ;ImageSearchDLL default path
     Global $g_sImagesPath = @ScriptDir & "\bin\images\" ;Path to images
-    Global $g_sProfilePath = @ScriptDir & "\profiles\main\" ;Path to current seleted profile 
-    Global $g_sAdbPort = "62001" ;Android debug bridge port. Default is 62001 for nox
+    Global $g_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile 
+    Global $g_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox
     Global $g_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
     Global $g_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
     Global $g_iBackgroundMode = $BKGD_ADB ;Type of background
     Global $g_iMouseMode = $MOUSE_ADB ;Type of mouse control
     Global $g_iSwipeMode = $SWIPE_ADB ;Type of swipe control
+    Global $g_sWindowTitle = "NoxPlayer" ;Emulator window title.
+    Global $g_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
+
+    Global $d_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile 
+    Global $d_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox
+    Global $d_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
+    Global $d_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
+    Global $d_iBackgroundMode = $BKGD_ADB ;Type of background
+    Global $d_iMouseMode = $MOUSE_ADB ;Type of mouse control
+    Global $d_iSwipeMode = $SWIPE_ADB ;Type of swipe control
+    Global $d_sWindowTitle = "NoxPlayer" ;Emulator window title.
+    Global $d_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
 
 ;MSL variables/constants
     Global Const $g_aImageMarks = ["map-astromon-league", "map-toc", "map-golems", "map-4th-continent", "map-sky-falls"]
