@@ -20,3 +20,4 @@ refill:364, 423
 refill-confirm:406, 308
 battle-sell-item-cancel:454, 395
 battle-sell-item-sell:430, 398
+battle-sell-item-okay:397, 399
