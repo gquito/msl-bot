@@ -98,7 +98,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                         If filterGem($aGem) = False Then
                             ;Selling gem
                             $sStatus = "Sold"
-                            $iSellProfit = $aGem[5]
+                            $iSellProfit += Int($aGem[5])
 
                             clickWhile(getArg($g_aPoints, "battle-sell-item-sell"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
                         Else 

@@ -39,10 +39,19 @@ EndFunc
 
 Func MSLMain()
     If $g_bRunning = True Then
+        ;Other preconditions
+        If $g_iBackgroundMode = $BKGD_ADB Then
+            CaptureRegion()
+            If FileExists($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png") = False Then
+                MsgBox($MB_ICONERROR+$MB_OK, "Shared folder not valid.", "Image file was not created: " & $g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+                Stop()
+            EndIf
+        EndIf
+
         Call(StringReplace($g_sScript, " ", "_"), $g_aScriptArgs)
         If @error = 0xDEAD And @extended = 0xBEEF Then
             MsgBox($MB_ICONERROR+$MB_OK, "Function does not exist.", "Function for the script does not exist: " & StringReplace($g_sScript, " ", "_"))
             Stop()
-        EndIf 
+        EndIf
     EndIf
 EndFunc

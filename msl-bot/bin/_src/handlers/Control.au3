@@ -15,7 +15,7 @@ Func adbCommand($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
     Local $sResult = ""
     While 1
         $sResult &= StdoutRead($iPID)
-        If @error Then ExitLoop
+        If @error Or (ProcessExists($iPID) = False) Then ExitLoop
     WEnd
     StdioClose($iPID)
 
