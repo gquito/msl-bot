@@ -15,3 +15,5 @@ map-battle-play:706, 492
 battle-auto:33, 214
 boss:402, 239
 quick-restart:403, 263
+refill:364, 423
+refill-confirm:406, 308
