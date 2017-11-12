@@ -1,4 +1,4 @@
-Global $aVersion = [3, 1, 1] ;Major, Minor, Build
+Global $aVersion = [3, 1, 2] ;Major, Minor, Build
 
 #AutoIt3Wrapper_UseX64=n
 #include-once

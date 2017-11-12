@@ -106,7 +106,14 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                             $sStatus = "Sold"
                             $iSellProfit += Int($aGem[5])
 
-                            clickWhile(getArg($g_aPoints, "battle-sell-item-sell"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
+                            If clickWhile(getArg($g_aPoints, "battle-sell-item-sell"), "isLocation", "battle-sell-item", 10, 200) = False Then
+                                $sStatus = "Unknown" ;If could not sell because got stuck in battle-sell-item
+                                Local $t_hTimer = TimerInit()
+                                While (isLocation("batte-end") = "") And ($t_hTimer < 5000)
+                                    clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
+                                    If _Sleep(100) Then ExitLoop
+                                WEnd
+                            EndIf
                         Else 
                             ;Keeping gem
                             $sStatus = "Kept"
@@ -117,6 +124,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
 
                         ;Display info and setting data
                         addLog($g_aLog, $sStatus & ": " & stringGem($aGem), $LOG_NORMAL)
+                        clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 20, 200)
                     EndIf
                 EndIf
 
@@ -191,25 +199,23 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                     $iDefeat += 1
                     addLog($g_aLog, "You have been defeated.", $LOG_NORMAL)
                 EndIf
-            Case "battle-boss"
-                If $bBossSelected = False Then
-                    If _Sleep(1000) Then ExitLoop
-                    clickPoint(getArg($g_aPoints, "boss"))
-
-                    $bBossSelected = True
-                EndIf
 
             Case "battle-gem-full", "map-gem-full"
                 addLog($g_aLog, "Gem inventory is full.", $LOG_ERROR)
                 navigate("village")
                 ExitLoop
 
+            Case "battle-boss"
+                If $bBossSelected = False Then ContinueCase
+
             Case "unknown", "battle-auto"
                 Local $aRound = getRound()
-                If ((isArray($aRound) = True) And ($aRound[0] = $aRound[1]) And ($bBossSelected = False)) Or ($sLocation = "battle-boss") Then
+                If ($sLocation = "battle-boss") Or (($bBossSelected = False) And ((isArray($aRound) = True) And ($aRound[0] = $aRound[1]))) Then
+                    If _Sleep(1000) Then ExitLoop
+
                     Local $t_iTimerInit = TimerInit()
-                    While (isLocation("battle-auto,battle") = "") And (TimerDiff($t_iTimerInit) < 3000)
-                        If _Sleep(10) Then ExitLoop
+                    While (isLocation("battle-auto,battle") = "") And (TimerDiff($t_iTimerInit) < 5000)
+                        If _Sleep(10) Then ExitLoop(2)
                     WEnd
                     clickPoint(getArg($g_aPoints, "boss"))
 
