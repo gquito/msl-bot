@@ -1,5 +1,6 @@
-#AutoIt3Wrapper_UseX64=n
+Global $aVersion = [3, 1, 0] ;Major, Minor, Build
 
+#AutoIt3Wrapper_UseX64=n
 #include-once
 #include "bin/_src/imports.au3"
 

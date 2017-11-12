@@ -8,7 +8,7 @@
     Global Const $LOG_NORMAL = 0, $LOG_DEBUG = 1, $LOG_ERROR = 2
 
 ;Application variables
-    Global $g_sAppTitle = "MSL Bot v3.0" ;Bot app title
+    Global $g_sAppTitle = "MSL Bot v" & $aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] ;Bot app title
     Global $g_sErrorMessage = "" ;Message when functions calls error code.
     Global $g_sScript = "" ;Current name of the running script.
     Global $g_aScriptArgs = Null ;Arguments for running script.

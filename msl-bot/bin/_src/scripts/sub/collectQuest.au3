@@ -37,7 +37,7 @@ Func collectQuest()
 		Return False
 	EndIf
     
-	navigate("village")
+	navigate("village", False, False)
 
     addLog($g_aLog, "Finished collecting quests.", $LOG_NORMAL)
 	Return True

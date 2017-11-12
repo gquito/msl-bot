@@ -10,13 +10,15 @@
     Returns: Boolean if successful or not.
 #ce
 Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
-    Local $t_sCurrLocation = getLocation() ;Location
-    If $t_sCurrLocation = $sLocation Then Return True
-
+    Local $t_sCurrLocation ;Will store current location.
+    
     If $bLog Then addLog($g_aLog, "Navigating to '" & $sLocation & "'.", $LOG_NORMAL)
     $sLocation = StringStripWS(StringLower($sLocation), $STR_STRIPALL)
 
     While $t_sCurrLocation <> $sLocation
+        If _Sleep(10) Then Return False
+        $t_sCurrLocation = getLocation()
+
         ;Handles force surrender 
         Switch $t_sCurrLocation
             Case "defeat" 
@@ -90,7 +92,7 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                         Local $t_vTimerInit = TimerInit() 
                         While getLocation() <> "village"
                             If getLocation($g_aLocations, False) = "battle-end" Then ContinueLoop(2)
-                            If TimerDiff($t_vTimerInit) >= 30000 Then Return False ;30 seconds
+                            If TimerDiff($t_vTimerInit) > 30000 Then Return False ;30 seconds
                                 
                             ;Handles back or esc
                             If isPixel(getArg($g_aPixels, "back"), 20) = True Then
@@ -216,8 +218,7 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     Return False
                 EndIf
         EndSwitch
-
-        $t_sCurrLocation = getLocation()
-        If _Sleep(10) Then Return False
     WEnd
+
+    Return True
 EndFunc

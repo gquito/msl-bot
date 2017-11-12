@@ -2,8 +2,21 @@
 #include "../imports.au3"
 
 Func CreateGUI()
+    Local $sUpdate = ""
+    Local $t_aVersion[0] ;Will contain [Major,Minor,Build]
+    Local $t_sRaw = StringSplit(BinaryToString(INetRead("https://raw.githubusercontent.com/GkevinOD/msl-bot/v3.0/msl-bot/msl-bot.au3", $INET_FORCERELOAD)), @CRLF, $STR_NOCOUNT)[0]
+    If StringInStr($t_sRaw, "[") And StringInStr($t_sRaw, "]") Then
+        Local $t_sRaw2 = StringSplit(StringStripWS($t_sRaw, $STR_STRIPALL), "[", $STR_NOCOUNT)[1]
+        Local $t_sRaw3 = StringSplit($t_sRaw2, "]", $STR_NOCOUNT)[0]
+        $t_aVersion = StringSplit($t_sRaw3, ",", $STR_NOCOUNT)
+    EndIf
+
+    If (UBound($t_aVersion) <> 3) Or ($t_aVersion[0] <> $aVersion[0]) Or ($t_aVersion[1] <> $aVersion[1]) Or ($t_aVersion[2] <> $aVersion[2]) Then
+        $sUpdate = " (Out-of-date)"
+    EndIf
+
     Local Const $GUI_FONTSIZE = 11
-    Global $hParent = GUICreate("MSL Bot v3.0", 400, 380, -9999, -9999)
+    Global $hParent = GUICreate($g_sAppTitle & $sUpdate, 400, 380, -9999, -9999)
     GUISetBkColor(0xFFFFFF)
     GUISetFont(8.5)
     GUISetState(@SW_SHOW, $hParent)

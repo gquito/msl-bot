@@ -35,13 +35,13 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
         EndIf
 
         ;Handles time finish estimation and progressbar
+        If $iRuns <> 0 Then GUICtrlSetData($idPB_Progress, ($iRun/$iRuns)*100)
         Local $iEstimated = ($iCurEstimated - TimerDiff($hEstimated))/1000 ;Estimated time left in seconds
         Local $iDenom = ($iCurEstimated/1000)
         If $iLongestEstimated < $iDenom Or $iLongestEstimated = 0 Or $iLongestEstimated = Null Then $iLongestEstimated = $iDenom
         If ($iRun <> 0) And ($iRuns <> 0) And ($iEstimated >= 0) Then 
             If $iRun > 2 Then 
                 setArg($aData, "Estimated_Finish", getTimeString($iEstimated))
-                GUICtrlSetData($idPB_Progress, 100 - ($iEstimated/$iLongestEstimated*100))
             Else
                 setArg($aData, "Estimated_Finish", "Need more data.")
             EndIf
@@ -68,7 +68,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
         Switch $sLocation
             Case "battle-end-exp", "battle-sell", "battle-sell-item"
                 ;Clicks 2nd position just in case. Stop
-                clickUntil("229,234", "isLocation", "battle-sell,battle-sell-item", 10, 500)
+                clickUntil("229,234", "isLocation", "battle-sell,battle-sell-item", 30, 500)
 
                 ;Going into battle-sell-item location.
                 Local $t_sLoc = getLocation($g_aLocations, False)
@@ -120,7 +120,6 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                     EndIf
                 EndIf
 
-                clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 10, 500)
             Case "refill"
                 ;Refill function handles starting the quickrestart and or the start battle from map-battle. Also handles the error messages
                 If $iUsedGems+30 <= $iGems Then
@@ -156,6 +155,8 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
 
                     $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
                     $hEstimated = TimerInit()
+                Else
+                    navigate("map", False, False)
                 EndIf
             Case "battle"
                 ;toggles the auto mode to on.
@@ -197,6 +198,12 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
 
                     $bBossSelected = True
                 EndIf
+
+            Case "battle-gem-full", "map-gem-full"
+                addLog($g_aLog, "Gem inventory is full.", $LOG_ERROR)
+                navigate("village")
+                ExitLoop
+
             Case "unknown", "battle-auto"
                 Local $aRound = getRound()
                 If ((isArray($aRound) = True) And ($aRound[0] = $aRound[1]) And ($bBossSelected = False)) Or ($sLocation = "battle-boss") Then
