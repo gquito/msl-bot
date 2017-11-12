@@ -4,9 +4,9 @@
 Func collectQuest()
 	addLog($g_aLog, "Collecting quests.", $LOG_NORMAL)
     addLog($g_aLog, "-Navigating to 'quests.'")
-	If navigate("quests", False) = True Then
+	If navigate("quests", False, False) = True Then
         ;Locates quest notification indicating there is a quest available for collecting
-		Local $aTab = findColor("747,116", "600,1", 0xDA101B, 20, -1, 1) 
+		Local $aTab = findColor("747,116", "-600,1", 0xDA101B, 20, -1, 1) 
 
         Local $hTimer = TimerInit()
 		While isArray($aTab)
@@ -30,7 +30,7 @@ Func collectQuest()
 			EndIf
 
 			CaptureRegion()
-			$aTab = findColor("747,116", "600,1", 0xDA101B, 20, -1, 1) 
+			$aTab = findColor("747,116", "-600,1", 0xDA101B, 20, -1, 1) 
 		WEnd
 	Else
 		addLog($g_aLog, "Failed to navigate to 'quests.'", $LOG_ERROR)

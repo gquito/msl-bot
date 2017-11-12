@@ -81,9 +81,15 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                 EndIf
 
                 If $t_sLoc = "battle-sell-item" Then
+                    If isPixel(getArg($g_aPixels, "battle-sell-item-gold"), 10) = True Then
+                        ;Tries to avoid gold bonus
+                        clickPoint(getArg($g_aPoints, "battle-sell-item-okay"), 1, 0)
+                        ContinueLoop
+                    EndIf
+
                     ;Actual filtering
                     Local $aGem = getGemData()
-                    If $aGem[0] = "-" Then
+                    If $aGem[1] = "-" Then
                         addLog($g_aLog, "Could not identify gem/egg.", $LOG_ERROR)
                         If clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200) = False Then
                             clickWhile(getArg($g_aPoints, "battle-sell-item-okay"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
