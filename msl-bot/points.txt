@@ -21,3 +21,4 @@ refill-confirm:406, 308
 battle-sell-item-cancel:293, 400
 battle-sell-item-sell:500, 400
 battle-sell-item-okay:377, 400
+village-quests:460, 502
