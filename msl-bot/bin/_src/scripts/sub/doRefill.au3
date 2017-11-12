@@ -23,7 +23,7 @@ Func doRefill()
                 EndIf
 
                 ;handles if in map-battle
-                If getLocation() = "map-battle" Then
+                If getLocation($g_aLocations, False) = "map-battle" Then
                     clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "unknown,battle,battle-auto", 5, 500)
                     If waitLocation("battle,battle-auto", 30) = True Then
                         addLog($g_aLog, "In battle.")

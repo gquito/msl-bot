@@ -185,9 +185,9 @@ Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
 			Local $t_aPixel = StringSplit($aPixelSet[$i], ",", $STR_NOCOUNT)
 			
 			clickPoint($t_aPixel, 1, 0)
-			If _Sleep(1000) Then Return -2
 
-			captureRegion()
+			If _Sleep(500) Then Return -2
+			CaptureRegion()
 
 			If isPixel($aPixelSet[$i], 10) = False Then Return True
 		WEnd

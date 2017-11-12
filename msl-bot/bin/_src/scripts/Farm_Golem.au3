@@ -113,6 +113,8 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                         addLog($g_aLog, $sStatus & ": " & stringGem($aGem), $LOG_NORMAL)
                     EndIf
                 EndIf
+
+                clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 10, 500)
             Case "refill"
                 ;Refill function handles starting the quickrestart and or the start battle from map-battle. Also handles the error messages
                 If $iUsedGems+30 <= $iGems Then
@@ -136,7 +138,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                 ;If still in battle-end location then clicks quick restarts. Usually if collectQuest or doHourly has been called then not in battle-end
                 If getLocation() = "battle-end" Then 
                     $bBossSelected = False
-                    If $iRun >= $iRuns Then ExitLoop
+                    If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
                     If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "unknown,battle-auto,battle,map-battle") Then 
                         If waitLocation("map-battle", 5) = True Then
                             ;Happens when coming from defeat
@@ -154,7 +156,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                 clickPoint(getArg($g_aPoints, "battle-auto"))
             Case "map"
                 $bBossSelected = False
-                If $iRun >= $iRuns+1 Then ExitLoop
+                If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
 
                 ;Navigate to golems
                 If navigate("golem-dungeons") Then
