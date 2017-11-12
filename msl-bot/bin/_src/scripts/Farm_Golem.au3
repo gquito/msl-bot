@@ -61,7 +61,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
         displayData($aData, $hLV_Stat)
         ;--------------------------------------------------------------------
 
-        If _Sleep(500) then ExitLoop
+        If _Sleep(500) Then ExitLoop
         Local $sLocation = isLocation($aLocations, False)
         If $sLocation <> "" And $sLocation <> "unknown" Then $hUnknownTimer = Null
 
@@ -166,7 +166,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                 If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
 
                 ;Navigate to golems
-                If navigate("golem-dungeons") Then
+                If navigate("golem-dungeons") = True Then
                     ;Select golem level
                     addLog($g_aLog, "Entering golem B" & $iLevel & ".", $LOG_NORMAL)
                     If clickUntil(getArg($g_aPoints, "golem-dungeons-b" & $iLevel), "isLocation", "map-battle", 5, 500) = False Then
@@ -208,7 +208,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                 Local $aRound = getRound()
                 If ((isArray($aRound) = True) And ($aRound[0] = $aRound[1]) And ($bBossSelected = False)) Or ($sLocation = "battle-boss") Then
                     Local $t_iTimerInit = TimerInit()
-                    While (isLocation("battle-auto,battle") = "") Or TimerDiff($t_iTimerInit) < 3000
+                    While (isLocation("battle-auto,battle") = "") And (TimerDiff($t_iTimerInit) < 3000)
                         If _Sleep(10) Then ExitLoop
                     WEnd
                     clickPoint(getArg($g_aPoints, "boss"))
@@ -228,7 +228,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                 If $hUnknownTimer = Null Then 
                     $hUnknownTimer = TimerInit()
                 Else
-                    If TimerDiff($hUnknownTimer) >= 20000 Then
+                    If TimerDiff($hUnknownTimer) > 20000 Then
                         If navigate("map", True) = False Then
                             addLog($g_aLog, "Something went wrong!", $LOG_ERROR)
                         EndIf

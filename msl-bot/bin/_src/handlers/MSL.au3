@@ -41,7 +41,7 @@ Func getLocation($aLocations = $g_aLocations, $bUpdate = True)
 			If $bUpdate = True Then Return $aLocations[$i][0] ;no double check if update is false.
 
 			;checks in 200 miliseconds for same location.
-			If ($g_iBackgroundMode <> $BKGD_ADB) And (_Sleep(200) = True) Then Return -2
+			If ($g_iBackgroundMode <> $BKGD_ADB) And (_Sleep(200) = True) Then Return ""
 			captureRegion()
 
 			If isPixelOR($aLocations[$i][1], 20) = True Then
@@ -71,7 +71,7 @@ Func waitLocation($vLocations, $iSeconds, $bReturnBool = True)
 			Return $t_vResult
 		EndIf
 
-		If _Sleep(1000) Then Return -2
+		If _Sleep(1000) Then Return False
 	WEnd
 
 	;Not found within timeframe
@@ -90,7 +90,7 @@ Func isLocation($vLocations, $bReturnBool = True)
 	Local $aLocations = Null
 	Local $sCurrLocation = getLocation()
 
-	If $sCurrLocation = -1 Or $sCurrLocation = -2 Then Return $sCurrLocation
+	If $sCurrLocation = -1 Then Return False
 
 	;Fixing argument format= ["location", "..."]
 	If isArray($vLocations) = False Then
@@ -186,7 +186,7 @@ Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
 			
 			clickPoint($t_aPixel, 1, 0)
 
-			If _Sleep(500) Then Return -2
+			If _Sleep(500) Then Return False
 			CaptureRegion()
 
 			If isPixel($aPixelSet[$i], 10) = False Then Return True
@@ -209,7 +209,7 @@ Func skipDialogue()
 		If TimerDiff($t_iTimerInit) >= 20000 Then Return False ;twenty seconds
 
 		clickPoint(getArg($g_aPoints, "dialogue-skip"))
-		If _Sleep(200) Then Return -2
+		If _Sleep(200) Then Return False
 	WEnd
 
 	Return True
