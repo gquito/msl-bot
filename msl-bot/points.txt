@@ -24,3 +24,7 @@ battle-sell-item-okay:377, 400
 village-quests:460, 502
 map-battle-autobattle:653, 422
 map-battle-autobattle-confirm:331, 318
+map-stage-mode:677, 80
+map-stage-normal:678, 111
+map-stage-hard:678, 141
+map-stage-extreme:676, 170
