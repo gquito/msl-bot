@@ -1,8 +1,8 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
-    Local Const $aLocations = ["defeat", "battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "defeat", "pause", "battle-gem-full", "map-gem-full", "unknown"]
+Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
+    Local Const $aLocations = ["defeat", "battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "pause", "battle-gem-full", "map-gem-full", "unknown"]
 
     ;Variables
     Local $aData[8][2] = [["Runs", "0/" & $iRuns], ["Win_Rate", "0%"], ["Average_Time", "0M 00S"], ["Estimated_Finish", "00H 00M 00S"], ["Refill", "0/" & $iGems], ["Gems_Kept", "0"], ["Eggs", "0"], ["Sell_Profit", "0"]]
@@ -77,6 +77,8 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
                     If isArray($aGem) = True Then
                         clickUntil($aGem, "isLocation", "battle-sell-item")
                         $t_sLoc = "battle-sell-item"
+                    Else
+                        clickUntil("229,234", "isLocation", "battle-sell-item", 30, 500)
                     EndIf
                 EndIf
 
@@ -210,7 +212,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bQuests, $bHourly)
 
             Case "unknown", "battle-auto"
                 Local $aRound = getRound()
-                If ($sLocation = "battle-boss") Or (($bBossSelected = False) And ((isArray($aRound) = True) And ($aRound[0] = $aRound[1]))) Then
+                If ($bBoss = "Enabled") And (($sLocation = "battle-boss") Or (($bBossSelected = False) And ((isArray($aRound) = True) And ($aRound[0] = $aRound[1])))) Then
                     If _Sleep(1000) Then ExitLoop
 
                     Local $t_iTimerInit = TimerInit()

@@ -36,9 +36,11 @@
 #include "handlers/_ImageSearch.au3"
 
 #include "scripts/Farm_Golem.au3"
+#include "scripts/Farm_Rare.au3"
 
 #include "scripts/sub/_Helper.au3"
 #include "scripts/sub/navigate.au3"
 #include "scripts/sub/doHourly.au3"
 #include "scripts/sub/collectQuest.au3"
 #include "scripts/sub/doRefill.au3"
+#include "scripts/sub/enterStage.au3"

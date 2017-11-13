@@ -240,3 +240,54 @@ Func stringGem($aGemData)
 
 	Return $aGemData[0] & "*; " & $sShape & "; " & $sType & "; " & $sStat & "; " & $sSub
 EndFunc
+
+#cs
+	Function: Looks for level in map stage selection location.
+	Parameters:
+		$iLevel: Integer from 1-17.
+	Return:
+		Array point of where the energy is. -1 on not found.
+#ce
+Func findLevel($iLevel)
+	Local $sLocation = getLocation($g_aLocations, False)
+	If $sLocation = "map-stage" Then
+		If StringIsDigit($iLevel) = True Then
+			If ($iLevel > 0) And ($iLevel < 19) Then
+				;Looking for level using findImage			 
+				If $iLevel < 10 Then $iLevel = "0" & $iLevel ;Must be in format ##
+
+				Local $aPoint = findImage("level-n" & $iLevel, 100, 0, 402, 229, 50, 250) ;tolerance 100, rectangle at (402,229) dim. 50x250
+				If isArray($aPoint) = False Then Return -1
+				;Found point
+				
+				Local Const $iX_Offset = 300 ;Offset to direct found point to energy
+				$aPoint[0] += $iX_Offset
+
+				Return $aPoint
+			EndIf
+		Else
+			;usually gold, exp, fruit, or boss
+			Local $sLevel = StringLower($iLevel)
+			If $sLevel <> "boss" Then
+				Return findImage("level-" & $sLevel, 100, 0, 681, 229, 125, 250) ;tolerance 100; rectangle at (681,229) dim. 125x250
+			Else
+				;Checks second position if there is boss 
+				Local $t_hColor = 0x3A2923
+				Local $t_aPoint = [535, 469]
+				Do
+					Local $aBoss = findColor($t_aPoint, "1," & 229-$t_aPoint[1], $t_hColor, 20, 1, -1)
+					If isArray($aBoss) = False Then Return False
+
+					If (isPixel($t_aPoint[0] & "," & $t_aPoint[1]-7 & "," & 0x673A2C, 30) = False) And (isPixel($t_aPoint[0] & "," & $t_aPoint[1]-30 & "," & $t_hColor, 20) = True) Then
+						Local $aResult = [720, $t_aPoint[1]-30]
+						Return $aResult
+					Else
+						$t_aPoint[1] = findColor($t_aPoint[0] & "," & $t_aPoint[1], "1,-78", 0x673A2C, 30, 1, -1)[1]-13
+					EndIf
+				Until $t_aPoint[1] <= 229
+			EndIf
+		EndIf
+	EndIf
+
+	Return False
+EndFunc

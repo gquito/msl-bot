@@ -46,6 +46,8 @@ EndFunc
 #ce
 Func addLog(ByRef $aLog, $sLog, $iLevel = $LOG_NORMAL, $bDisplay = True, $hListView = $hLV_Log, $iTimeStamp = NowTimeStamp())
     Local $iRowSize = UBound($aLog, $UBOUND_ROWS)
+    If ($iRowSize > 0) And ($aLog[$iRowSize-1][0] = $sLog) Then Return ;Stops duplicate message
+
     ReDim $aLog[$iRowSize+1][3]
 
     $aLog[$iRowSize][0] = $sLog

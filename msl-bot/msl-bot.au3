@@ -1,9 +1,10 @@
-Global $aVersion = [3, 1, 2] ;Major, Minor, Build
+Global $aVersion = [3, 2, 0] ;Major, Minor, Build
 
 #AutoIt3Wrapper_UseX64=n
 #include-once
 #include "bin/_src/imports.au3"
 
+HotKeySet("+!^q", "ForceQuit")
 Initialize()
 
 ;Function: Initialize GUI and data.
@@ -55,4 +56,8 @@ Func MSLMain()
             Stop()
         EndIf
     EndIf
+EndFunc
+
+Func ForceQuit()
+    Exit ;Forces exit app
 EndFunc

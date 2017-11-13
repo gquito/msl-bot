@@ -177,8 +177,6 @@ Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
 	Local $aPixelSet = StringSplit($t_sPixels, "/", $STR_NOCOUNT)
 	For $i = 0 To UBound($aPixelSet)-1
 		Local $t_iTimerInit = TimerInit()
-		If isPixel($aPixelSet[$i], 10) = True Then addLog($g_aLog, "-Closing window.", $LOG_NORMAL)
-
 		While isPixel($aPixelSet[$i], 10) = True
 			If TimerDiff($t_iTimerInit) >= 2000 Then Return False ;two seconds
 			;Closing until pixel is not the same.
@@ -203,8 +201,7 @@ EndFunc
 Func skipDialogue()
 	Local $t_iTimerInit = TimerInit()
 	Local $sLocation = getLocation()
-
-	If $sLocation = "dialogue" Then addLog($g_aLog, "-Skipping dialogue.", $LOG_NORMAL)
+	
 	While getLocation() = "dialogue"
 		If TimerDiff($t_iTimerInit) >= 20000 Then Return False ;twenty seconds
 

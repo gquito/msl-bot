@@ -103,8 +103,13 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
                             createEdit($g_hEditConfig, $g_iEditConfig, $hLV_ScriptConfig)
                         Case "List"
                             createListEditor($hParent, $hLV_ScriptConfig, $iIndex)
-                        Case "Custom"
-
+                        Case "Setting"
+                            Local $sText = _GUICtrlListView_GetItemText($hLV_ScriptConfig, $iIndex, 4)
+                            Local $iScriptIndex = _GUICtrlComboBox_FindString($hCmb_Scripts, $sText)
+                            If $iScriptIndex <> -1 Then 
+                                _GUICtrlComboBox_SetCurSel($hCmb_Scripts, $iScriptIndex)
+                                ChangeScript()
+                            EndIf
                     EndSwitch
             EndSwitch
     EndSwitch
@@ -150,7 +155,7 @@ Func Start()
         Return -1
     EndIf
 
-    If $g_iBackgroundMode = $BKGD_ADB Or $g_iMouseMode = $MOUSE_ADB Or $g_iSwipeMode = $SWIPE_ADB Then
+    If ($g_iBackgroundMode = $BKGD_ADB) Or ($g_iMouseMode = $MOUSE_ADB) Or ($g_iSwipeMode = $SWIPE_ADB) Then
         If FileExists($g_sAdbPath) = False Then
             MsgBox($MB_ICONERROR+$MB_OK, "Nox path does not exist.", "Path to adb.exe does not exist: " & $g_sAdbPath)
             Return -1

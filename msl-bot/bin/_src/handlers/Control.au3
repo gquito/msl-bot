@@ -37,7 +37,7 @@ Func clickDrag($aPoints, $iSwipeMode = $g_iSwipeMode)
             $aPoints = StringSplit($aPoints, ",", $STR_NOCOUNT)
         EndIf
 
-        If UBound($aPoints) <> 4 Then 
+        If UBound($aPoints) < 4 Then 
           ;handle error
             $g_sErrorMessage = "swipe() => Invalid argument for points."
            Return -1

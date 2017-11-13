@@ -94,7 +94,8 @@
                                 ["Dungeons", "map-dungeons", 0, 0],                     ["Pagos Coast", "map-dungeons", 686, -143], _
                                 ["Sky Falls", "map-sky-falls", 0, 0],                   ["Slumbering City", "map-sky-falls", 27, -193], _
                                 ["Glacial Plains", "map-sky-falls", 338, -124],         ["Aurora Plateau", "map-sky-falls", 446, -306]]
-    Global $g_aSwipeLeft = [600, 550, 200, 550]
+    Global $g_aSwipeLeft = [600, 550, 200, 550, "left"]
+    Global $g_aSwipeDown = [434, 317, 434, 406, "down"]
 
     Global $g_aScripts = [] ;Script data [[script, description, [[config, value, description], [..., ..., ...]]], ...]
     Global $g_aLocations = [] ;Data locations [[location, value], ...]

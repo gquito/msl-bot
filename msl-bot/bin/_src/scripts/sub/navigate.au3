@@ -131,6 +131,39 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                         Local $bResult = waitLocation("map", 60, True) 
                         If $bResult = True Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
                         Return $bResult ;waits for map location for 60 seconds
+
+                    Case "map-battle", "map-stage", "association", "clan", "toc"
+                        Local $t_vTimerInit = TimerInit() 
+                        While getLocation() <> "map"
+                            If getLocation($g_aLocations, False) = "village" Then ContinueLoop(2)
+                            If TimerDiff($t_vTimerInit) > 30000 Then Return False ;30 seconds
+                                
+                            ;Handles back or esc
+                            If (isPixel(getArg($g_aPixels, "back"), 20) = True) And (getLocation($g_aLocations, False) <> "map-stage") Then
+                                clickPoint(getArg($g_aPoints, "back"))
+                            Else
+                                ;Usually stuck in place with an in game window and an Exit button for the window.
+                                closeWindow()
+                                skipDialogue()
+
+                                clickPoint(getArg($g_aPoints, "tap"))
+
+                                ;Tries ADB send keyevent escape
+                                If TimerDiff($t_vTimerInit) > 10000 Then
+                                    If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
+                                        adbCommand("shell input keyevent ESCAPE")
+                                        If getLocation() <> "unknown" Then ContinueLoop(2)
+                                    EndIf
+                                EndIf
+                             EndIf
+
+                            If _Sleep(500) Then Return False
+                        WEnd
+
+                        If getLocation($g_aLocations, False) = "map" Then 
+                            addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
+                            Return True
+                        EndIf
                     Case "village"
                         ;Goes directly to map from village
                         Local $t_iTimerInit = TimerInit()
@@ -179,27 +212,46 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
 
                 ;Scrolling through map to find ancient dungeon place.
                 If $bLog Then addLog($g_aLog, "-Swiping to golem dungeons.", $LOG_NORMAL)
+				Local $aPoint = getMapCoor("Ancient Dungeon") ;Coordinates of found map.
 
-                Local $t_iTimerInit = TimerInit()
-                While TimerDiff($t_iTimerInit) < 120000 ;Two minutes
-                    Local $aGolem = getMapCoor("Ancient Dungeon")
-                    If isArray($aGolem) = True Then
-                        If $bLog Then addLog($g_aLog, "-Clicking golem dungeons.", $LOG_NORMAL)
-                        If clickUntil($aGolem, "isLocation", "golem-dungeons", 5, 1000) = True Then
-                            If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                            Return True
+				Local $t_hTimer = TimerInit()
+				While isArray($aPoint) = False
+					If _Sleep(10) Then Return False
+					If TimerDiff($t_hTimer) > 30000 Then 
+						addLog($g_aLog, "Could not find golems.", $LOG_ERROR)
+						Return False
+					EndIf
+
+					;If map has not been found scrolls left
+					clickDrag($g_aSwipeLeft)
+
+					If getLocation() <> "map" Then navigate("map", False, False) ;Goes back to main loop if misclick happens
+					$aPoint = getMapCoor("Ancient Dungeon")
+				WEnd
+                
+				If clickWhile($aPoint, "isLocation", "map", 10, 1000) = False Then
+					addLog($g_aLog, "Could not enter to map-stage.", $LOG_ERROR)
+					Return False
+                Else
+					If getLocation() <> "golem-dungeons" Then
+                        If getLocation($g_aLocations, False) = "map-battle" Then 
+                            Local $bResult = clickUntil(getArg($g_aPoints, "back"), "isLocation", "golem-dungeons")
+                            If $bResult = False Then
+                                addLog($g_aLog, "Could not enter golem dungeons.", $LOG_ERROR)
+                                Return False
+                            Else  
+                                addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
+                                Return True
+                            EndIf
                         Else
-                            If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
+                            addLog($g_aLog, "Could not enter golem dungeons.", $LOG_ERROR)
                             Return False
                         EndIf
                     Else
-                        clickDrag($g_aSwipeLeft)
+                        addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
+                        Return True
                     EndIf
-
-                    If _Sleep(1000) Then Return False
-                    captureRegion()
-                WEnd
-
+				EndIf
             Case "quests"
                 If $t_sCurrLocation <> "village" Then
                     If $bLog Then addLog($g_aLog, "-Navigating to 'village'.")

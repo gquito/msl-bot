@@ -4,15 +4,15 @@
 #cs
  Function: Using ImageSearch find an image within the HBMP
  Parameters:
-	strImage - Image name without extension.
-	intTolerance - Tolerance of the image to look for.
-	duration - How long to keep checking for
+	$sImage - Image name without extension.
+	$iTolerance - Tolerance of the image to look for.
+	$iDuration - How long to keep checking for
  Returns:
 	On image found - Returns array
-	On image not found - Returns 0
+	On image not found - Returns -1
 #ce
 
-Func findImage($sImage, $iTolerance = 30, $iDuration = 100, $iLeft = 0, $iTop = 0, $iRight = 800, $iBottom = 552)
+Func findImage($sImage, $iTolerance = 30, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552)
 	If StringInStr($sImage, "-") Then ;image with specified folder
 		$sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage
 	EndIf
@@ -33,17 +33,15 @@ Func findImage($sImage, $iTolerance = 30, $iDuration = 100, $iLeft = 0, $iTop = 
 	Local $iResult;
 
 	Local $startTimer = TimerInit()
-	While TimerDiff($startTimer) < $iDuration
-		captureRegion("", $iLeft, $iTop, $iRight, $iBottom)
-		If _Sleep(100) Then Return 0
-
+	Do
+		captureRegion("", $iLeft, $iTop, $iWidth, $iHeight)
 		$iResult = _ImagesSearch($aImages, 1, $aPoint[0], $aPoint[1], $iTolerance)
 
 		If $iResult >= 0 Then
 			Local $aResult = [$aPoint[0]+$iLeft, $aPoint[1]+$iTop, $iResult, StringReplace($aImages[$iResult], $g_sImagesPath & StringSplit($sImage, "-", 2)[0] & "\", "")]
 			Return $aResult
 		EndIf
-	WEnd
+	Until (TimerDiff($startTimer) >= $iDuration) Or (_Sleep(100))
 
-	Return 0
+	Return -1
 EndFunc
