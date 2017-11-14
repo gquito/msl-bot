@@ -18,6 +18,8 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
         Switch $sLocation
         Case "map"
             enterStage($sMap, $sDifficulty, $sStage)
+        Case "battle"
+            
         EndSwitch
     WEnd
 EndFunc

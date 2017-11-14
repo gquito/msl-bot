@@ -173,32 +173,42 @@ Func Start()
     EndIf
 
 ;Processing
-    _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $g_sScript)
+    If $g_sScript = "" Then
+        _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $g_sScript)
 
-    Local $t_aScriptArgs[_GUICtrlListView_GetItemCount($hLV_ScriptConfig)+1] ;Contains script args
-    $t_aScriptArgs[0] = "CallArgArray"
-    For $i = 1 To UBound($t_aScriptArgs, $UBOUND_ROWS)-1
-        ;Retrieves the values column for each setting
-        $t_aScriptArgs[$i] = _GUICtrlListView_GetItemText($hLV_ScriptConfig, $i-1, 1) 
-    Next
+        Local $t_aScriptArgs[_GUICtrlListView_GetItemCount($hLV_ScriptConfig)+1] ;Contains script args
+        $t_aScriptArgs[0] = "CallArgArray"
+        For $i = 1 To UBound($t_aScriptArgs, $UBOUND_ROWS)-1
+            ;Retrieves the values column for each setting
+            $t_aScriptArgs[$i] = _GUICtrlListView_GetItemText($hLV_ScriptConfig, $i-1, 1) 
+        Next
 
-;Setting control states
-    GUICtrlSetData($idLbl_RunningScript, "Running Script: " & $g_sScript)
-    ControlDisable("", "", $hCmb_Scripts)
-    ControlDisable("", "", $hLV_ScriptConfig)
-    ControlDisable("", "", $hBtn_Start)
-    ControlEnable("", "", $hBtn_Stop)
-    ControlEnable("", "", $hBtn_Pause)
-
-    _GUICtrlTab_ClickTab($hTb_Main, 1)
-
-;Calls to runs scripts
-    $g_aScriptArgs = $t_aScriptArgs
+        $g_aScriptArgs = $t_aScriptArgs
+    EndIf
+    
+;Changing bot state and checking pixels
     $g_bRunning = True
+    CaptureRegion()
+    For $i = 0 To $g_aControlSize[0] Step 100
+        If getColor($i, $g_aControlSize[1]/2) <> "0x000000" Then 
+        ;Pass all conditions -> Setting control states
+            GUICtrlSetData($idLbl_RunningScript, "Running Script: " & $g_sScript)
+            ControlDisable("", "", $hCmb_Scripts)
+            ControlDisable("", "", $hLV_ScriptConfig)
+            ControlDisable("", "", $hBtn_Start)
+            ControlEnable("", "", $hBtn_Stop)
+            ControlEnable("", "", $hBtn_Pause)
+
+            _GUICtrlTab_ClickTab($hTb_Main, 1)
+            Return
+        EndIf
+    Next
+;Screen is black:
+    MsgBox($MB_ICONERROR+$MB_OK, "Could not capture correctly.", "Unable to correctly capture screen. Try changing Capture Mode.")
+    Stop()
 EndFunc
 
 Func Stop()
-    GUICtrlSetData($idPB_Progress, 0)
     HotKeySet("{Esc}") ;unbinds hotkey
 
 ;Resets variables
@@ -213,8 +223,6 @@ Func Stop()
     ControlEnable("", "", $hBtn_Start)
     ControlDisable("", "", $hBtn_Stop)
     ControlDisable("", "", $hBtn_Pause)
-
-    _GUICtrlTab_ClickTab($hTb_Main, 0)
 
 ;Calls to stop scripts
     $g_bRunning = False

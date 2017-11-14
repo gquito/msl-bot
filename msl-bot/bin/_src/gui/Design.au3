@@ -81,7 +81,7 @@ Func CreateGUI()
     Global $hLV_Log = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 270, 360, 100, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
     _GUICtrlListView_SetExtendedListViewStyle($hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
     _GUICtrlListView_AddColumn($hLV_Log, "Time", 76, 0)
-    _GUICtrlListView_AddColumn($hLV_Log, "Log", 280, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Log", 1000, 0)
     _GUICtrlListView_JustifyColumn($hLV_Log, 0, 0)
     _GUICtrlListView_JustifyColumn($hLV_Log, 1, 0)
 
