@@ -28,3 +28,5 @@ map-stage-mode:677, 80
 map-stage-normal:678, 111
 map-stage-hard:678, 141
 map-stage-extreme:676, 170
+battle-catch:785, 239
+catch-mode-cancel:782, 84
