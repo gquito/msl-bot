@@ -33,3 +33,9 @@ catch-mode-cancel:782, 84
 village-monsters:255, 508
 monsters-grid:133, 24
 monsters-manage:741, 176
+manage-grade1:327, 389
+manage-grade2:365, 389
+manage-grade3:402, 389
+manage-grade4:440, 389
+manage-sell-selected:670, 396
+manage-sell-confirm:382, 327
