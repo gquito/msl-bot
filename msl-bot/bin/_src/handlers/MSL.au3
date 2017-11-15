@@ -38,7 +38,7 @@ Func getLocation($aLocations = $g_aLocations, $bUpdate = True)
 		If $aLocations[$i][0] = "" Or StringMid($aLocations[$i][0], 0, 1) = ";" Then ContinueLoop
 
 		If isPixelOR($aLocations[$i][1], 20) = True Then
-			If $bUpdate = True Then Return $aLocations[$i][0] ;no double check if update is false.
+			If $bUpdate = False Then Return $aLocations[$i][0] ;no double check if update is false.
 
 			;checks in 200 miliseconds for same location.
 			If ($g_iBackgroundMode <> $BKGD_ADB) And (_Sleep(200) = True) Then Return ""

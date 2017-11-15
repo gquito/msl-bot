@@ -44,3 +44,4 @@
 #include "scripts/sub/collectQuest.au3"
 #include "scripts/sub/doRefill.au3"
 #include "scripts/sub/enterStage.au3"
+#include "scripts/sub/catch.au3"

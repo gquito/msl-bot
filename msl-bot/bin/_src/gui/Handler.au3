@@ -146,6 +146,7 @@ EndFunc
 
 Func Start()
 ;Initializing variables
+    $g_hScriptTimer = TimerInit()
     GUICtrlSetData($idPB_Progress, 0)
     UpdateSettings()
 
@@ -213,6 +214,7 @@ Func Stop()
 
 ;Resets variables
     FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+    $g_hScriptTimer = Null
     $g_aScriptArgs = Null
     $g_sScript = ""
 

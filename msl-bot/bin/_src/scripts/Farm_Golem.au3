@@ -11,6 +11,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
     Local $iCurEstimated = Null ;Current estimated in milliseconds
     Local $iLongestEstimated = Null ;Current longest estimated
 
+    Local $iRun = 0 ;Current run
     Local $hUnknownTimer = Null ;Timer for when the location is not known.
     Local $iDefeat = 0 ;Number of defeats
     Local $iUsedGems = 0 ;Number of gems used since script has started.
@@ -19,10 +20,8 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
     Local $iEggs = 0 ;Number of eggs kept
     Local $iGemsKept = 0 ;Number of gems kept
     Local $iSellProfit = 0 ;Gold profit from selling gems. Does not include the round bonuses
-    Local $iRun = 0 ;Current run
 
     ; Main script loop
-    $g_hScriptTimer = TimerInit()
     addLog($g_aLog, "```Farm Golem script has started.")
 
     If isLocation($aLocations, False) = "" Then navigate("map")
@@ -74,6 +73,8 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
                 Local $t_sLoc = getLocation($g_aLocations, False)
                 If $t_sLoc = "battle-sell" Then
                     Local $aGem = findColor("400,236", "-250,1", 0xFDF876, 10, -1)
+                    If isArray($aGem) = False Then  $aGem = findColor("400,252", "-250,1", 0xF769B9, 10, -1) ;egg pixel
+                    
                     If isArray($aGem) = True Then
                         clickUntil($aGem, "isLocation", "battle-sell-item")
                         $t_sLoc = "battle-sell-item"
@@ -91,7 +92,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
 
                     ;Actual filtering
                     Local $aGem = getGemData()
-                    If $aGem[1] = "-" Then
+                    If ($aGem[0] <> "EGG") And ($aGem[1] = "-") Then
                         addLog($g_aLog, "Could not identify gem/egg.", $LOG_ERROR)
                         If clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200) = False Then
                             clickWhile(getArg($g_aPoints, "battle-sell-item-okay"), "isLocation", "battle-sell-item,battle-sell", 10, 200)

@@ -68,6 +68,8 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                 While $t_sCurrLocation <> "battle-end"
                     If TimerDiff($t_iTimerInit) >= 120000 Then Return False ;2 Minutes, prevents infinite loop.
 
+                    clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
+                    clickPoint(getArg($g_aPoints, "battle-sell-item-okay"))
                     clickPoint(getArg($g_aPoints, "tap"))
                     If _Sleep(1000) Then Return False
 
@@ -269,6 +271,33 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
                     Return False
                 EndIf
+            Case "catch-mode"
+                Local $t_hTimer = TimerInit()
+                While TimerDiff($t_hTimer) < 20000
+                    Switch $t_sCurrLocation
+                        Case "battle-auto"
+                            clickPoint(getArg($g_aPoints, "battle-auto"))
+                        Case "battle"
+                            ;Looking for red hp pixels to that indicates if can click into catch-mode.
+                            If isPixelOr("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = True Then
+                                clickPoint(getArg($g_aPoints, "battle-catch"))
+                            EndIf
+                        Case "catch-mode"
+                            If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
+                            Return True
+                        Case "unknown"
+                        Case Else
+                            If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
+                            Return False
+                    EndSwitch
+
+                    If _Sleep(100) Then Return False
+                    $t_sCurrLocation = getLocation()
+                WEnd
+                Return False
+            Case Else
+                If $bLog Then addLog($g_aLog, "Cannot navigate to location: " & $sLocation)
+                Return False
         EndSwitch
     WEnd
 

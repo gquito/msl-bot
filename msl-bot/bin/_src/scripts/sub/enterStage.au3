@@ -13,7 +13,12 @@
 Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 	addLog($g_aLog, "Entering " & $sMap & " Stage " & $sStage & " on " & $sDifficulty & ".", $LOG_NORMAL)
 
-    If getLocation() = "map" Then navigate("village", False, False)
+    If getLocation() = "map" Then
+		Local $t_hTimer = TimerInit()
+		While (isArray(getMapCoor("Phantom Forest")) = False) And (TimerDiff($t_hTimer) < 10000)
+			clickDrag($g_aSwipeRight)
+		WEnd
+	EndIf
 
 	Local $bFound = False
 	Local $hTimer = TimerInit()
@@ -133,8 +138,14 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 
 				;Return early if cannot go into battle. Usually means full gems or full inventory
 				If isLocation("battle-auto,battle,unknown", False) = "" Then
-					addLog($g_aLog, "Could not enter battle.", $LOG_ERROR)
-					Return False
+					If _Sleep(2000) Then Return False
+					If isLocation("battle-auto,battle,unknown", False) = "" Then
+						addLog($g_aLog, "Could not enter battle.", $LOG_ERROR)
+						Return False
+					Else
+						addLog($g_aLog, "Finished entering stage.", $LOG_NORMAL)
+						Return True
+					EndIf
 				Else
 					addLog($g_aLog, "Finished entering stage.", $LOG_NORMAL)
 					Return True
