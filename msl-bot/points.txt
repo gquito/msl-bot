@@ -39,3 +39,4 @@ manage-grade3:402, 389
 manage-grade4:440, 389
 manage-sell-selected:670, 396
 manage-sell-confirm:382, 327
+play-again:529, 284
