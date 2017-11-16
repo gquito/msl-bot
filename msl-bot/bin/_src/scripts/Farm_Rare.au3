@@ -167,61 +167,31 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                     $iDefeat += 1
                     addLog($g_aLog, "You have been defeated.", $LOG_NORMAL)
                 EndIf
-            Case "battle-gem-full", "map-gem-full"
-                addLog($g_aLog, "Gem inventory is full.", $LOG_ERROR)
-                navigate("village")
-                ExitLoop
+            Case "battle-sell", "battle-end-exp", "battle-sell-item"
+                clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 30, 200)
             Case "astromon-full"
                 addLog($g_aLog, "Astromon bag is full.", $LOG_ERROR)
                 navigate("village")
                 ExitLoop
-            Case "battle-sell", "battle-end-exp", "battle-sell-item"
-                ;Clicks 2nd position just in case. Stop
-                clickUntil("229,234", "isLocation", "battle-sell,battle-sell-item", 30, 500)
+            Case "battle-gem-full", "map-gem-full"
+                addLog($g_aLog, "Gem box is full, selling gems.")
+                If navigate("manage") = True Then
+                    addLog($g_aLog, "Selling grades: " & $aGemGrade & ".", $LOG_NORMAL)
+                    For $iGrade in StringSplit($aGemGrade, ",", $STR_NOCOUNT)
+                        clickPoint(getArg($g_aPoints, "manage-grade" & $iGrade), 1, 0, Null)
+                        If _Sleep(500) Then Return False
+                    Next
 
-                ;Going into battle-sell-item location.
-                Local $t_sLoc = getLocation($g_aLocations, False)
-                If $t_sLoc = "battle-sell" Then
-                    Local $aGem = findColor("755,236", "-600,1", 0xFDF876, 10, -1)
-                    If isArray($aGem) = True Then
-                        clickUntil($aGem, "isLocation", "battle-sell-item")
-                        $t_sLoc = "battle-sell-item"
-                    Else
-                        clickUntil("229,234", "isLocation", "battle-sell-item", 30, 500)
-                    EndIf
+                    For $i = 0 To 3 
+                        clickPoint(getArg($g_aPoints, "manage-sell-selected"), 3, 100)
+                        clickPoint(getArg($g_aPoints, "manage-sell-confirm"), 3, 100, Null)
+                    Next
+
+                    addLog($g_aLog, "Finished selling gems.", $LOG_NORMAL)
+                    navigate("map", False, False)
+                Else
+                    addLog($g_aLog, "Could not navigate to manage.", $LOG_ERROR)
                 EndIf
-
-                If $t_sLoc = "battle-sell-item" Then
-                    If isPixel(getArg($g_aPixels, "battle-sell-item-gold"), 10) = True Then
-                        ;Tries to avoid gold bonus
-                        clickPoint(getArg($g_aPoints, "battle-sell-item-okay"), 1, 0)
-                        ContinueLoop
-                    EndIf
-
-                    ;Actual filtering
-                    Local $aGem = getGemData()
-                    If $aGem[0] = "-" Then
-                        If clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200) = False Then
-                            clickWhile(getArg($g_aPoints, "battle-sell-item-okay"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
-                        EndIf
-                    Else 
-                        ;Actual gem
-                        If StringInStr($aGemGrade, $aGem[0]) Then
-                            If clickWhile(getArg($g_aPoints, "battle-sell-item-sell"), "isLocation", "battle-sell-item", 10, 200) = False Then
-                                Local $t_hTimer = TimerInit()
-                                While (isLocation("batte-end") = "") And ($t_hTimer < 5000)
-                                    clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
-                                    If _Sleep(100) Then ExitLoop
-                                WEnd
-                            EndIf
-                        EndIf
-                    EndIf
-                EndIf
-
-                If clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200) = False Then
-                    clickWhile(getArg($g_aPoints, "battle-sell-item-okay"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
-                EndIf
-                clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 20, 200)
             Case "battle-boss"
                 If $bBossSelected = False Then ContinueCase
             Case "unknown", "battle-auto"

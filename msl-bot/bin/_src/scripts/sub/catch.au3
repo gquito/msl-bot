@@ -29,10 +29,16 @@ Func catch($aImages, $iAstrochips, $bLog = True)
 
     ;Found process
     While $iAstrochips > 0 
-        ;MsgBox(0, "", "Found something.")
         If $bLog Then addLog($g_aLog, "-Attempting to catch " & $sAstromon & " " & 4-$iAstrochips & "/3.", $LOG_NORMAL)
 
         If _Sleep(10) Then Return ""
+
+        Local $t_hTimer = TimerInit()
+        While getLocation() <> "catch-mode"
+            If TimerDiff($t_hTimer) > 10000 Then ExitLoop
+            If _Sleep(10) Then Return ""
+        WEnd
+
         If clickWhile($aFound, "isLocation", "catch-mode", 15, 200) = False Then
             If $bLog Then addLog($g_aLog, "Could not attempt to capture astromon.", $LOG_ERROR)
             Return "!" & $sAstromon
@@ -56,7 +62,7 @@ Func catch($aImages, $iAstrochips, $bLog = True)
             If _Sleep(10) Then Return ""
             CaptureRegion() ;Update
             $sLocation = getLocation($g_aLocations, False)
-        Until ($sLocation = "catch-success") Or ($sLocation = "battle-auto") Or ($sLocation = "catch-mode")
+        Until ($sLocation = "catch-success") Or ($sLocation = "battle-auto") Or ($sLocation = "catch-mode") Or ($sLocation = "pause")
 
         Switch $sLocation
         Case "catch-success"
@@ -68,6 +74,11 @@ Func catch($aImages, $iAstrochips, $bLog = True)
                 If $bLog Then addLog($g_aLog, "Could not catch " & $sAstromon & ".")
                 Return "!" & $sAstromon
             EndIf
+        Case "pause"
+            clickWhile(getArg($g_aPoints, "battle-continue"), "isLocation", "pause")
+            $iAstrochips += 1
+
+            navigate("catch-mode")
         EndSwitch
     WEnd
 

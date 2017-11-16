@@ -271,6 +271,7 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
                     Return False
                 EndIf
+
             Case "catch-mode"
                 Local $t_hTimer = TimerInit()
                 While TimerDiff($t_hTimer) < 20000
@@ -295,6 +296,60 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     $t_sCurrLocation = getLocation()
                 WEnd
                 Return False
+
+            Case "monsters"
+                If $t_sCurrLocation <> "village" Then
+                    If $bLog Then addLog($g_aLog, "-Navigating to village.", $LOG_NORMAL)
+                    If navigate("village", False, False) = False Then
+                        If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
+                        Return False
+                    EndIf
+                EndIf
+
+                Local $t_hTimer = TimerInit()
+                Local $bResult = False
+                While TimerDiff($t_hTimer) < 15000
+                    If _Sleep(10) Then Return False
+                    clickPoint(getArg($g_aPoints, "village-monsters"))
+                    If getLocation() = "monsters" Then
+                        $bResult = True
+                        ExitLoop
+                    EndIf
+                WEnd
+                If $bResult = True Then
+                    clickPoint(getArg($g_aPoints, "monsters-grid"), 10, 100)
+                    If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
+                    Return True
+                Else
+                    If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
+                EndIf
+            Case "manage"
+                If $t_sCurrLocation <> "monsters" Then
+                    If $bLog Then addLog($g_aLog, "-Navigating to monsters.", $LOG_NORMAL)
+                    If navigate("monsters", False, False) = False Then
+                        If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
+                        Return False
+                    EndIf
+                EndIf
+
+                Local $t_hTimer = TimerInit()
+                Local $bResult = False
+                While TimerDiff($t_hTimer) < 10000
+                    If _Sleep(10) Then Return False
+                    clickPoint(getArg($g_aPoints, "monsters-manage"), 1, 0, Null)
+                    If getLocation() = "manage" Then
+                        $bResult = True
+                        ExitLoop
+                    EndIf  
+                WEnd
+
+                If $bResult = True Then
+                    If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
+                    Return True
+                Else
+                    If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
+                    Return False
+                EndIf
             Case Else
                 If $bLog Then addLog($g_aLog, "Cannot navigate to location: " & $sLocation)
                 Return False
