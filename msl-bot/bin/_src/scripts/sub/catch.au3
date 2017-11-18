@@ -58,7 +58,9 @@ Func catch($aImages, ByRef $iAstrochips, $bLog = True)
         Local $t_hTimer = TimerInit()
         Local $sLocation ;stores current location
         Do
-            clickPoint(getArg($g_aPoints, "battle-continue"))
+            If TimerDiff($t_hTimer) < 2000 Then
+                clickPoint(getArg($g_aPoints, "battle-continue"))
+            EndIf
             clickPoint(getArg($g_aPoints, "tap"))
             If TimerDiff($t_hTimer) > 20000 Then 
                 If navigate("catch-mode", False, False) = True Then
