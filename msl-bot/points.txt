@@ -33,6 +33,7 @@ catch-mode-cancel:782, 84
 village-monsters:255, 508
 monsters-grid:133, 24
 monsters-manage:741, 176
+monsters-recent:266, 471
 manage-grade1:327, 389
 manage-grade2:365, 389
 manage-grade3:402, 389
