@@ -1,8 +1,8 @@
 #include-once
 #include "../../imports.au3"
 
-Func catch($aImages, $iAstrochips, $bLog = True)
-    If getLocation() <> "catch-mode" Then Return False
+Func catch($aImages, ByRef $iAstrochips, $bLog = True)
+    If (getLocation() <> "catch-mode") Then Return ""
 
     ;Format images to [image, image, image]
     If isArray($aImages) = False Then
@@ -17,7 +17,7 @@ Func catch($aImages, $iAstrochips, $bLog = True)
     Local $iSize = UBound($aImages, $UBOUND_ROWS)
     Local $aFound = Null ;This is where the astromon position is stored if found
     For $i = 0 To $iSize-1
-        $aFound = findImage("catch-" & StringReplace(StringStripWS(StringLower($aImages[$i]), $STR_STRIPTRAILING), " ", "-"), 120)
+        $aFound = findImage("catch-" & StringReplace(StringStripWS(StringLower($aImages[$i]), $STR_STRIPTRAILING), " ", "-"), 120, 0, 0, 263, 800, 210)
         $sAstromon = $aImages[$i]
         If isArray($aFound) = True Then ExitLoop
     Next
@@ -29,7 +29,7 @@ Func catch($aImages, $iAstrochips, $bLog = True)
 
     ;Found process
     While $iAstrochips > 0 
-        If $bLog Then addLog($g_aLog, "-Attempting to catch " & $sAstromon & " " & 4-$iAstrochips & "/3.", $LOG_NORMAL)
+        If $bLog Then addLog($g_aLog, "-Attempting to catch " & $sAstromon & " (" & 4-$iAstrochips & "/3).", $LOG_NORMAL)
 
         If _Sleep(10) Then Return ""
 
@@ -44,6 +44,11 @@ Func catch($aImages, $iAstrochips, $bLog = True)
             Return "!" & $sAstromon
         EndIf
 
+        If getLocation($g_aLocations, False) = "battle-astromon-full" Then
+            If $bLog Then addLog($g_aLog, "Astromon bag full.", $LOG_ERROR)
+            Return -1
+        EndIf
+
         ;In catch process
         $iAstrochips -= 1
         If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then ;speed catch
@@ -53,15 +58,32 @@ Func catch($aImages, $iAstrochips, $bLog = True)
         Local $t_hTimer = TimerInit()
         Local $sLocation ;stores current location
         Do
+            clickPoint(getArg($g_aPoints, "battle-continue"))
             clickPoint(getArg($g_aPoints, "tap"))
-            If TimerDiff($t_hTimer) > 10000 Then 
-                If $bLog Then addLog($g_aLog, "Failed to detect capture status.", $LOG_ERROR)
-                Return "!" & $sAstromon
+            If TimerDiff($t_hTimer) > 20000 Then 
+                If navigate("catch-mode", False, False) = True Then
+                    clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
+                    $sLocation = "catch-success"
+                    ExitLoop
+                Else
+                    If $bLog Then addLog($g_aLog, "Failed to detect capture status.", $LOG_ERROR)
+                    Return "!" & $sAstromon
+                EndIf
             EndIf
             
             If _Sleep(10) Then Return ""
             CaptureRegion() ;Update
             $sLocation = getLocation($g_aLocations, False)
+            If $sLocation = "battle" Then
+                If navigate("catch-mode", False, False) = True Then
+                    clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
+                    $sLocation = "catch-success"
+                    ExitLoop
+                Else
+                    If $bLog Then addLog($g_aLog, "Failed to detect capture status.", $LOG_ERROR)
+                    Return "!" & $sAstromon
+                EndIf
+            EndIf
         Until ($sLocation = "catch-success") Or ($sLocation = "battle-auto") Or ($sLocation = "catch-mode") Or ($sLocation = "pause")
 
         Switch $sLocation

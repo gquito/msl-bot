@@ -1,4 +1,4 @@
-Global $aVersion = [3, 4, 1] ;Major, Minor, Build
+Global $aVersion = [3, 5, 0] ;Major, Minor, Build
 
 #AutoIt3Wrapper_UseX64=n
 #include-once
@@ -22,19 +22,21 @@ Func Initialize()
     $g_aPoints = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt", ">", ":")
 
     getScriptsFromUrl($g_aScripts, "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scripts.txt")
+
+    ;User configs
+    Local $aFolders = _FileListToArray(@ScriptDir & "\profiles\", "*", $FLTA_FOLDERS)
+    If isArray($aFolders) = True And $aFolders[0] > 0 Then
+        ;Found existing profile..
+        $g_sProfilePath = @ScriptDir & "\profiles\" & $aFolders[1] & "\"
+        getConfigsFromFile($g_aScripts, "_Config", @ScriptDir & "\profiles\" & $aFolders[1] & "\")
+    EndIf
+
     For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
         Local $aScript = $g_aScripts[$i]
         If FileExists($g_sProfilePath & "\" & $aScript[0]) = True Then
             getConfigsFromFile($g_aScripts, $aScript[0])
         EndIf
     Next
-
-    ;User configs
-    Local $aFolders = _FileListToArray(@ScriptDir & "\profiles\", "*", $FLTA_FOLDERS)
-    If isArray($aFolders) = True And $aFolders[0] > 0 Then
-        ;Found existing profile..
-        getConfigsFromFile($g_aScripts, "_Config", @ScriptDir & "\profiles\" & $aFolders[1] & "\")
-    EndIf
 
     UpdateSettings()
     CreateGUI()
@@ -54,7 +56,8 @@ Func MSLMain()
         Call(StringReplace($g_sScript, " ", "_"), $g_aScriptArgs)
         If @error = 0xDEAD And @extended = 0xBEEF Then
             MsgBox($MB_ICONERROR+$MB_OK, "Function call error", "Function for the script does not exist or does not meet parameter count: " & StringReplace($g_sScript, " ", "_"))
-            Stop()
         EndIf
+
+        Stop()
     EndIf
 EndFunc

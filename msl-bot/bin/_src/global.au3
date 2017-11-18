@@ -9,6 +9,7 @@
 
 ;Application variables
     Global $g_sAppTitle = "MSL Bot v" & $aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] ;Bot app title
+    Global $g_sExtended = "" ;More info for functions
     Global $g_sErrorMessage = "" ;Message when functions calls error code.
     Global $g_sScript = "" ;Current name of the running script.
     Global $g_aScriptArgs = Null ;Arguments for running script.

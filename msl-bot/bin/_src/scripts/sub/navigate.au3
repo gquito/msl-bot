@@ -18,6 +18,7 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
     While $t_sCurrLocation <> $sLocation
         If _Sleep(10) Then Return False
         $t_sCurrLocation = getLocation()
+        If $t_sCurrLocation = $sLocation Then Return True
 
         ;Handles force surrender 
         Switch $t_sCurrLocation
@@ -42,8 +43,8 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     If $bLog Then addLog($g_aLog, "-Forcing to surrender.", $LOG_NORMAL)
 
                     ;Force surrender algorithm
-                    If clickUntil(getArg($g_aPoints, "battle-pause"), "isLocation", "pause", 30, 1000) = True Then
-                        clickWhile(getArg($g_aPoints, "battle-give-up"), "isLocation", "pause,unknown", 10, 1000)
+                    If clickUntil(getArg($g_aPoints, "battle-pause"), "isLocation", "pause", 150, 200) = True Then
+                        clickWhile(getArg($g_aPoints, "battle-give-up"), "isLocation", "pause,unknown", 10, 200)
                     EndIf
 
                     ;Sets up for normal locations
@@ -53,10 +54,16 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                         If TimerDiff($t_iTimerInit) >= 120000 Then Return False ;2 Minutes, prevents infinite loop.
 
                         clickPoint(getArg($g_aPoints, "tap"))
-                        If _Sleep(1000) Then Return False
+                        If _Sleep(100) Then Return False
 
                         $t_sCurrLocation = getLocation()
                     WEnd
+
+                    ;When location is battle-end, only available with force surrender on.
+                    If $sLocation = "battle-end" Then 
+                        If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
+                        Return True
+                    EndIf
                 Else   
                     ;Only catch-mode will need to be in one of the locations above.
                     If $sLocation <> "catch-mode" Then Return False 
@@ -274,14 +281,40 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
 
             Case "catch-mode"
                 Local $t_hTimer = TimerInit()
+                Local $aRound = getRound()
+                
                 While TimerDiff($t_hTimer) < 20000
                     Switch $t_sCurrLocation
                         Case "battle-auto"
-                            clickPoint(getArg($g_aPoints, "battle-auto"))
+                            Local $t_aRound = getRound()
+                            If isArray($aRound) And isArray($t_aRound) Then
+                                If $aRound[0] <> $t_aRound[0] Then ContinueCase
+                            EndIf
+
+                            If isPixelOR("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = False Then
+                                If isPixel("730,268,0xFED61D", 30) = False Then
+                                    clickPoint(getArg($g_aPoints, "battle-catch"))
+                                    If _Sleep(100) Then Return False
+                                    CaptureRegion()
+                                EndIf
+
+                                If isPixel("730,268,0xFED61D", 30) = True Then
+                                    waitLocation("catch-mode", 20)
+                                    $t_sCurrLocation = getLocation($g_aLocations, False)
+                                    ContinueLoop
+                                Else
+                                    clickPoint(getArg($g_aPoints, "battle-auto"))
+                                EndIf
+                            Else
+                                ContinueCase
+                            EndIf
                         Case "battle"
                             ;Looking for red hp pixels to that indicates if can click into catch-mode.
-                            If isPixelOr("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = True Then
-                                clickPoint(getArg($g_aPoints, "battle-catch"))
+                            If isPixelOR("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = True Then
+                                If clickUntil(getArg($g_aPoints, "battle-catch"), "isLocation", "catch-mode,unknown", 3, 100) = False Then
+                                    If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
+                                    Return False
+                                EndIf
                             EndIf
                         Case "catch-mode"
                             If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
@@ -292,7 +325,7 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                             Return False
                     EndSwitch
 
-                    If _Sleep(100) Then Return False
+                    If _Sleep(10) Then Return False
                     $t_sCurrLocation = getLocation()
                 WEnd
                 Return False
@@ -317,7 +350,22 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     EndIf
                 WEnd
                 If $bResult = True Then
-                    clickPoint(getArg($g_aPoints, "monsters-grid"), 10, 100)
+                    Local $t_hTimer = TimerInit()
+                    While isPixel("133,19,0xF6C02A", 20) = False
+                        If _Sleep(10) Then Return False
+                        If TimerDiff($t_hTimer) > 5000 Then ExitLoop
+                        clickPoint(getArg($g_aPoints, "monsters-grid"), 1, 0, Null)
+                        CaptureRegion()
+                    WEnd
+
+                    Local $t_hTimer = TimerInit()
+                    While isPixel("266,471,0x34F09B", 20) = False
+                        If _Sleep(10) Then Return False
+                        If TimerDiff($t_hTimer) > 5000 Then ExitLoop
+                        clickPoint(getArg($g_aPoints, "monsters-recent"), 1, 0, Null)
+                        CaptureRegion()
+                    WEnd
+                    
                     If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
                     Return True
                 Else

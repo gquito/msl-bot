@@ -38,6 +38,7 @@ Func CreateGUI()
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Rare")
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Golem")
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Gem")
+    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Astromon")
 
     Global $hBtn_Start = GUICtrlGetHandle(GUICtrlCreateButton("Start", 298, 29, 50, 23))
     ControlDisable("", "", $hBtn_Start)

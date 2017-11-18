@@ -1,7 +1,7 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
+Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly, $aDataPre = Null, $aDataPost = Null)
     Local Const $aLocations = ["defeat", "battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "pause", "battle-gem-full", "map-gem-full", "unknown"]
 
     ;Variables
@@ -57,7 +57,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
         setArg($aData, "Eggs", $iEggs)
         setArg($aData, "Sell_Profit", $iSellProfit)
 
-        displayData($aData, $hLV_Stat)
+        displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
         ;--------------------------------------------------------------------
 
         If _Sleep(500) Then ExitLoop
@@ -185,11 +185,11 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
                     Else
                         ;Enter into battle
                         If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "unknown,refill,battle,battle-auto", 5, 500) = True Then $iRun += 1
-                        If waitLocation("battle,battle-auto", 30) = True Then
+                        If waitLocation("battle,battle-auto", 45) = True Then
                             addLog($g_aLog, "In battle.")
                             
-                                $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
-                                $hEstimated = TimerInit()
+                            $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
+                            $hEstimated = TimerInit()
                         EndIf
                     EndIf
                 Else
@@ -248,5 +248,5 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly)
     WEnd
     addLog($g_aLog, "Farm Golem script has stopped.```")
 
-    Stop()
+    Return $aData
 EndFunc

@@ -95,6 +95,7 @@ Func _Debug()
             _ArrayDisplay($sResult)
             addLog($g_aLog, "{Array} <= " & $aLines[$i], $LOG_NORMAL)
         Else
+            If $sResult = False Then $sResult = "False"
             addLog($g_aLog, $sResult & " <= " & $aLines[$i], $LOG_NORMAL)
         EndIf
         

@@ -25,15 +25,49 @@ EndFunc
         $aData: Data containing [[name, value], ...]
         $hListView: Listview Control handle.
 #ce
-Func displayData($aData, $hListView)
-    Local $iSize = UBound($aData, $UBOUND_ROWS)
-    For $i = 0 To $iSize-1
+Func displayData($aData, $hListView, $aDataPre = Null, $aDataPost = Null)
+    Local $iSizeDataPre = 0, $iSizeDataPost = 0, $iSizeData = UBound($aData, $UBOUND_ROWS)
+    If isArray($aDataPre) = True Then $iSizeDataPre = UBound($aDataPre, $UBOUND_ROWS)
+    If isArray($aDataPost) = True Then $iSizeDataPost = UBound($aDataPost, $UBOUND_ROWS)
+        
+    Local $iTotalSize = $iSizeDataPre+$iSizeData+$iSizeDataPost
+
+    If _GUICtrlListView_GetItemCount($hListView) <> $iTotalSize Then
+        _GUICtrlLIstView_DeleteAllItems($hListView)
+    EndIf
+
+    Local $iCounter = 0
+    For $i = 0 To $iSizeDataPre-1
         ;Adds item if does not exist
-        If _GUICtrlListView_GetItemCount($hListView) < $i+1 Then
+        If _GUICtrlListView_GetItemCount($hListView) < $iTotalSize Then
+            _GUICtrlListView_AddItem($hListView, StringReplace($aDataPre[$i][0], "_", " "))
+        EndIf
+
+        _GUICtrlListView_SetItemText($hListView, $iCounter, StringReplace($aDataPre[$i][0], "_", " "))
+        _GUICtrlListView_SetItemText($hListView, $iCounter, $aDataPre[$i][1], 1)
+        $iCounter += 1
+    Next
+
+    For $i = 0 To $iSizeData-1
+        ;Adds item if does not exist
+        If _GUICtrlListView_GetItemCount($hListView) < $iTotalSize Then
             _GUICtrlListView_AddItem($hListView, StringReplace($aData[$i][0], "_", " "))
         EndIf
 
-        _GUICtrlListView_SetItemText($hListView, $i, $aData[$i][1], 1)
+        _GUICtrlListView_SetItemText($hListView, $iCounter, StringReplace($aData[$i][0], "_", " "))
+        _GUICtrlListView_SetItemText($hListView, $iCounter, $aData[$i][1], 1)
+        $iCounter += 1
+    Next
+
+    For $i = 0 To $iSizeDataPost-1
+        ;Adds item if does not exist
+        If _GUICtrlListView_GetItemCount($hListView) < $iTotalSize Then
+            _GUICtrlListView_AddItem($hListView, StringReplace($aDataPost[$i][0], "_", " "))
+        EndIf
+
+        _GUICtrlListView_SetItemText($hListView, $iCounter, StringReplace($aDataPost[$i][0], "_", " "))
+        _GUICtrlListView_SetItemText($hListView, $iCounter, $aDataPost[$i][1], 1)
+        $iCounter += 1
     Next
 EndFunc
 

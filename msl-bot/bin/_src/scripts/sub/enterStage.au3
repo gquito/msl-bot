@@ -18,6 +18,7 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 		While (isArray(getMapCoor("Phantom Forest")) = False) And (TimerDiff($t_hTimer) < 10000)
 			clickDrag($g_aSwipeRight)
 		WEnd
+		clickDrag($g_aSwipeRight)
 	EndIf
 
 	Local $bFound = False
@@ -71,8 +72,8 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 				If $bFound = True Then
 					;Selecting difficulty
 					addLog($g_aLog, "-Changing difficulty to " & $sDifficulty & ".", $LOG_NORMAL)
-					clickPoint(getArg($g_aPoints, "map-stage-mode"))
-					If _Sleep(300) Then Return False
+					clickPoint(getArg($g_aPoints, "map-stage-mode"), 5, 100)
+					If _Sleep(10) Then Return False
 
 					Switch $sDifficulty
 						Case "Normal", "Hard", "Extreme"
@@ -150,6 +151,8 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 					addLog($g_aLog, "Finished entering stage.", $LOG_NORMAL)
 					Return True
 				EndIf
+			Case "unknown"
+				closeWindow()
 		EndSwitch
 	WEnd
 
