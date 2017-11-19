@@ -1,12 +1,10 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly, $aDataPre = Null, $aDataPost = Null)
+Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
     Local Const $aLocations = ["defeat", "battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "pause", "battle-gem-full", "map-gem-full", "unknown"]
 
     ;Variables
-    Local $aData[8][2] = [["Runs", "0/" & $iRuns], ["Win_Rate", "0%"], ["Average_Time", "0M 00S"], ["Estimated_Finish", "00H 00M 00S"], ["Refill", "0/" & $iGems], ["Gems_Kept", "0"], ["Eggs", "0"], ["Sell_Profit", "0"]]
-    
     Local $hEstimated = Null ;Timer for estimated finish
     Local $iCurEstimated = Null ;Current estimated in milliseconds
     Local $iLongestEstimated = Null ;Current longest estimated
@@ -14,16 +12,34 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly, $
     Local $iRun = 0 ;Current run
     Local $hUnknownTimer = Null ;Timer for when the location is not known.
     Local $iDefeat = 0 ;Number of defeats
-    Local $iUsedGems = 0 ;Number of gems used since script has started.
+    Local $iUsedGems = 0 ;Used gems for refill
     Local $bBossSelected = False ;Resets every new round
-    Local $bPerformHourly = False ;Boolean that signifies whether to do hourly or not. Decides on battle ends
     Local $iEggs = 0 ;Number of eggs kept
     Local $iGemsKept = 0 ;Number of gems kept
     Local $iSellProfit = 0 ;Gold profit from selling gems. Does not include the round bonuses
 
-    ; Main script loop
-    addLog($g_aLog, "```Farm Golem script has started.")
+    If isArray($t_aData) = True Then
+        Local $t_Var = Int(StringSplit(getArg($t_aData, "Runs"), "/", $STR_NOCOUNT)[0])
+        If $t_Var <> -1 Then $iRun = $t_Var
 
+        Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
+        If $t_Var <> -1 Then $iUsedGems = $t_Var
+
+        Local $t_Var = Int(getArg($t_aData, "Gems_Kept"))
+        If $t_Var <> -1 Then $iGemsKept = $t_Var
+
+        Local $t_Var = Int(getArg($t_aData, "Eggs"))
+        If $t_Var <> -1 Then $iEggs = $t_Var
+
+        Local $t_Var = Int(getArg($t_aData, "Sell_Profit"))
+        If $t_Var <> -1 Then $iSellProfit = $t_Var
+    EndIf
+
+    ; Main script loop
+    Local $aData[8][2] = [["Runs", ""], ["Win_Rate", ""], ["Average_Time", ""], ["Estimated_Finish", ""], ["Refill", "" & $iGems], ["Gems_Kept", ""], ["Eggs", ""], ["Sell_Profit", ""]]
+    
+    addLog($g_aLog, "```Farm Golem script has started.")
+    
     If isLocation($aLocations, False) = "" Then navigate("map")
     While ($iRuns = 0) Or ($iRun < $iRuns+1)
         ;Settings data-----------------------------------------------------
@@ -73,7 +89,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly, $
                 Local $t_sLoc = getLocation($g_aLocations, False)
                 If $t_sLoc = "battle-sell" Then
                     Local $aGem = findColor("400,236", "-250,1", 0xFDF876, 10, -1)
-                    If isArray($aGem) = False Then  $aGem = findColor("400,252", "-250,1", 0xF769B9, 10, -1) ;egg pixel
+                    If isArray($aGem) = False Then $aGem = findColor("400,252", "-250,1", 0xF769B9, 10, -1) ;egg pixel
                     
                     If isArray($aGem) = True Then
                         clickUntil($aGem, "isLocation", "battle-sell-item")
@@ -149,7 +165,13 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly, $
                 If ($bQuests = "Enabled") And (isPixel(getArg($g_aPixels, "battle-end-quest")) = True) Then collectQuest()
 
                 ;Hourly will only be done in specific times. Refer to the function.
-                If ($bHourly = "Enabled") Then doHourly()
+                If ($bHourly = "Enabled") And ($g_bPerformHourly = True) Then doHourly()
+
+                ;Guardian dungeon will be done at the start of the script and every 30 minutes
+                If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $iUsedGems += Int(getArg($g_vExtended, "Refill"))
+                EndIf
 
                 ;If still in battle-end location then clicks quick restarts. Usually if collectQuest or doHourly has been called then not in battle-end
                 If getLocation() = "battle-end" Then 
@@ -173,6 +195,12 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $bBoss, $bQuests, $bHourly, $
                 ;toggles the auto mode to on.
                 clickPoint(getArg($g_aPoints, "battle-auto"))
             Case "map"
+                ;Guardian dungeon will be done at the start of the script and every 30 minutes
+                If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $iUsedGems += Int(getArg($g_vExtended, "Refill"))
+                EndIf
+
                 $bBossSelected = False
                 If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
 

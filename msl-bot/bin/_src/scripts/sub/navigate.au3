@@ -398,6 +398,42 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
                     Return False
                 EndIf
+            Case "guardian-dungeons"
+                If getLocation() = "map" Then
+                    Local $t_hTimer = TimerInit()
+                    While (isArray(getMapCoor("Phantom Forest")) = False) And (TimerDiff($t_hTimer) < 10000)
+                        clickDrag($g_aSwipeRight)
+                    WEnd
+                    clickDrag($g_aSwipeRight)
+                Else
+                    If navigate("map", $bForceSurrender, False) = False Then
+                        If $bLog Then addLog($g_aLog, "Could not enter into map.", $LOG_ERROR)
+                        Return False
+                    EndIf
+                EndIf
+
+                CaptureRegion()
+                Local $aPoint = getMapCoor("Dungeons") ;Coordinates of found map.
+                If isArray($aPoint) = True Then
+                    If $bLog Then addLog($g_aLog, "Clicking into Dungeons.", $LOG_NORMAL)
+
+                   If clickWhile($aPoint, "isLocation", "map", 20, 200) = True  Then
+                        $bResult = clickUntil(getArg($g_aPoints, "dungeons-guardian"), "isLocation", "guardian-dungeons", 10, 500)
+                        If $bResult = True Then
+                            If $bLog Then addLog($g_aLog, "Finished Navigating.", $LOG_NORMAL)
+                            Return True
+                        Else
+                            If $bLog Then addLog($g_aLog, "Could not click into guardian-dungeons.", $LOG_ERROR)
+                            Return False
+                        EndIf
+                    EndIf
+
+                    If $bLog Then addLog($g_aLog, "Could not click into Dungeons", $LOG_ERROR)
+                    Return False
+                Else
+                    If $bLog Then addLog($g_aLog, "Could not find dungeons place.", $LOG_ERROR)
+                    Return False
+                EndIf
             Case Else
                 If $bLog Then addLog($g_aLog, "Cannot navigate to location: " & $sLocation)
                 Return False

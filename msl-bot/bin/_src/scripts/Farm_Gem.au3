@@ -1,27 +1,41 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $bBoss, $bQuests, $bHourly, $aDataPre = Null, $aDataPost = Null)
+Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
     ;Variables
-    Local $aData[1][2] = [["Gems_Farmed", "0/" & $iGemsToFarm]]
-
+    Local $aFarmAstromonData = Null
     Local $iFarmedGems = 0 ;Number of gems farmed since script has started.
     Local $iUsedGems = 0 ;Number of gems used since script has started.
     Local $iNeedCatch = 16 ;Number of astromon to catch
     Local $iNeedEvo2 = 4 ;Number of evo2 needed for an evo3
 
+    If isArray($t_aData) = True Then
+        Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
+        If $t_Var <> -1 Then $iUsedGems = $t_Var
+    EndIf
+
     ; Main script loop
+    Local $aData[1][2] = [["Gems_Farmed", "0/" & $iGemsToFarm]]
+
     addLog($g_aLog, "```Farm Gem script has started.")
 
     While $iFarmedGems < $iGemsToFarm
+        If ($bHourly = "Enabled") And ($g_bPerformHourly = True) Then doHourly()
+
+        ;Guardian dungeon will be done at the start of the script and every 30 minutes
+        If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
+            $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+            $iUsedGems += Int(getArg($g_vExtended, "Refill"))
+        EndIf
+
         If _Sleep(10) Then ExitLoop(2)
         displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
 
         While $iNeedCatch > 0
-            Local $t_aData = Farm_Astromon($iNeedCatch, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems-$iUsedGems, $bBoss, $bQuests, $bHourly, $aData)
-            $aDataPost = $t_aData
+            Local $t_aResults = Farm_Astromon($iNeedCatch, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems-$iUsedGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $aDataPost, $aData)
+            $aDataPost = $t_aResults
             If _Sleep(10) Then ExitLoop(2)
-            Switch $g_sExtended
+            Switch $g_vExtended
                 Case "bag-full"
                     addLog($g_aLog, "Cannot continue to farm astromons because astromon bag became full.", $LOG_ERROR)
                     ExitLoop(2)
@@ -33,8 +47,8 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                     ExitLoop(2)
             EndSwitch
 
-            $iNeedCatch -= Int(getArg($t_aData, "Astromon_Caught"))
-            $iUsedGems += Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
+            $iNeedCatch -= Int(getArg($t_aResults, "Astromon_Caught"))
+            $iUsedGems += Int(StringSplit(getArg($t_aResults, "Refill"), "/", $STR_NOCOUNT)[0])
 
             setArg($aData, "Gems_Farmed", $iFarmedGems & "/" & $iGemsToFarm)
             displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
@@ -213,6 +227,9 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
         collectQuest()
     WEnd
     addLog($g_aLog, "Farm Astromon script has stopped.```")
+
+    Local $t_vExtended[1][2] = [["Refill", $iUsedGems]]
+    $g_vExtended = $t_vExtended
 
     Return $aData
 EndFunc

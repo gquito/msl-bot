@@ -22,6 +22,14 @@ Func CreateGUI()
     GUISetState(@SW_SHOW, $hParent)
     _WINAPI_Setfocus($hParent)
 
+    ;--------------------------------------------------------
+    Global $hDM_ForceQuit = GUICtrlCreateDummy()
+    Global $hDM_Debug = GUICtrlCreateDummy()
+    
+    Local $aAccelKeys[2][2] = [["^q", $hDM_ForceQuit], ["^d", $hDM_Debug]]
+    GUISetAccelerators($aAccelKeys)
+    ;--------------------------------------------------------
+    
     Global $hTb_Main = GUICtrlGetHandle(GUICtrlCreateTab(0, 0, 400, 380, $TCS_TOOLTIPS+$WS_TABSTOP+$WS_CLIPSIBLINGS+$TCS_FIXEDWIDTH))
     _GUICtrlTab_SetItemSize($hTb_Main, 100, 18)
 
@@ -39,6 +47,7 @@ Func CreateGUI()
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Golem")
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Gem")
     _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Astromon")
+    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Guardian")
 
     Global $hBtn_Start = GUICtrlGetHandle(GUICtrlCreateButton("Start", 298, 29, 50, 23))
     ControlDisable("", "", $hBtn_Start)

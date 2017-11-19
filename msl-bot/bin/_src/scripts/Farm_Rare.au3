@@ -1,12 +1,10 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $bBoss, $bQuests, $bHourly, $aDataPre = Null, $aDataPost = Null)
+Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
     Local Const $aLocations = ["battle", "battle-auto", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
     
     ;Variables
-    Local $aData[7][2] = [["Runs", "0/" & $iRuns], ["Win_Rate", "0%"], ["Average_Time", "0M 00S"], ["Estimated_Finish", "00H 00M 00S"], ["Refill", "0/" & $iGems], ["Caught", ""], ["Missed", ""]]
-    
     $aCapture = StringSplit($aCapture, ",", $STR_NOCOUNT)
     Local $iSize = UBound($aCapture)
     Local $aCaught[$iSize][2]; Data for caught and missed astromons
@@ -29,9 +27,24 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
     Local $iDefeat = 0 ;Number of defeats
     Local $iUsedGems = 0 ;Number of gems used since script has started.
     Local $bBossSelected = False ;Resets every new round
-    Local $bPerformHourly = False ;Boolean that signifies whether to do hourly or not. Decides on battle ends
+
+    If isArray($t_aData) = True Then
+        Local $t_Var = Int(StringSplit(getArg($t_aData, "Runs"), "/", $STR_NOCOUNT)[0])
+        If $t_Var <> -1 Then $iRun = $t_Var
+
+        Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
+        If $t_Var <> -1 Then $iUsedGems = $t_Var
+    
+        Local $t_Var = formatArgs(StringStripWS(getArg($t_aData, "Caught"), $STR_STRIPALL), ";", ":")
+        If $t_Var <> -1 Then $aCaught = $t_Var
+
+        Local $t_Var = formatArgs(StringStripWS(getArg($t_aData, "Missed"), $STR_STRIPALL), ";", ":")
+        If $t_Var <> -1 Then $aMissed = $t_Var
+    EndIf
 
     ; Main script loop
+    Local $aData[7][2] = [["Runs", ""], ["Win_Rate", ""], ["Average_Time", ""], ["Estimated_Finish", ""], ["Refill", ""], ["Caught", ""], ["Missed", ""]]
+    
     addLog($g_aLog, "```Farm Rare script has started.")
 
     If isLocation($aLocations, False) = "" Then navigate("map")
@@ -113,7 +126,13 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                 If ($bQuests = "Enabled") And (isPixel(getArg($g_aPixels, "battle-end-quest")) = True) Then collectQuest()
 
                 ;Hourly will only be done in specific times. Refer to the function.
-                If ($bHourly = "Enabled") Then doHourly()
+                If ($bHourly = "Enabled") And ($g_bPerformHourly = True) Then doHourly()
+
+                ;Guardian dungeon will be done at the start of the script and every 30 minutes
+                If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $iUsedGems += Int(getArg($g_vExtended, "Refill"))
+                EndIf
 
                 ;If still in battle-end location then clicks quick restarts. Usually if collectQuest or doHourly has been called then not in battle-end
                 If getLocation() = "battle-end" Then 
@@ -148,6 +167,12 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                     ExitLoop
                 EndIf
             Case "map"
+                ;Guardian dungeon will be done at the start of the script and every 30 minutes
+                If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $iUsedGems += Int(getArg($g_vExtended, "Refill"))
+                EndIf
+
                 $bBossSelected = False
                 If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
 

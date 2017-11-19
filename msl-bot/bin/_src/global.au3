@@ -9,7 +9,7 @@
 
 ;Application variables
     Global $g_sAppTitle = "MSL Bot v" & $aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] ;Bot app title
-    Global $g_sExtended = "" ;More info for functions
+    Global $g_vExtended = "" ;More info for functions
     Global $g_sErrorMessage = "" ;Message when functions calls error code.
     Global $g_sScript = "" ;Current name of the running script.
     Global $g_aScriptArgs = Null ;Arguments for running script.
@@ -22,7 +22,6 @@
     Global $g_hWindow = Null ;Handle for emulator window
     Global $g_hControl = Null ;Handle for control window
     Global $g_aLog[0][3] ;Keeps track of [log, time, type]
-    Global $g_aData[0][2] ;Keeps track of script data.
 
 ;Config variables
     Global $g_sImageSearchPath = @TempDir & "\ImageSearchDLL.dll" ;ImageSearchDLL default path
@@ -48,12 +47,17 @@
     Global $d_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
 
 ;MSL variables/constants
-    Global $g_aGemRanks = ["RUIN", "INTUITION", "CONVICTION,PROTECTION,VALOR,VITALITY,TENACITY,FORTITUDE,HEALING,FEROCITY", "LIFE"]
-    Global $g_aGemGrade6Price = [[39600,37799,36000,34199], [24750,23624,22500,21374], [19800,18899,18000,17099]]
-    Global $g_aGemGrade5Price = [[26400,25199,24000,22799], [16500,15749,15000,14249], [13200,12599,12000,11399]]
-    Global $g_aGemGrade4Price = [[15401,14699,14000,13299], [9625,9187,8750,8312], [7700,7349,7000,6649]]
+    Global Const $g_sScriptsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scriptsv2.txt"
+    Global Const $g_sPointsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt"
+    Global Const $g_sPixelsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt"
+    Global Const $g_sLocationsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt"
 
-    Global $g_aGem_pixelTypes = [  "RUIN:323,224,0xE8AE5A|411,223,0xEAAF5B|435,225,0xDCA456/363,223,0xE8AE5A|403,223,0xEFB45C|411,223,0xEAAF5B", _
+    Global Const $g_aGemRanks = ["RUIN", "INTUITION", "CONVICTION,PROTECTION,VALOR,VITALITY,TENACITY,FORTITUDE,HEALING,FEROCITY", "LIFE"]
+    Global Const $g_aGemGrade6Price = [[39600,37799,36000,34199], [24750,23624,22500,21374], [19800,18899,18000,17099]]
+    Global Const $g_aGemGrade5Price = [[26400,25199,24000,22799], [16500,15749,15000,14249], [13200,12599,12000,11399]]
+    Global Const $g_aGemGrade4Price = [[15401,14699,14000,13299], [9625,9187,8750,8312], [7700,7349,7000,6649]]
+
+    Global Const $g_aGem_pixelTypes = [  "RUIN:323,224,0xE8AE5A|411,223,0xEAAF5B|435,225,0xDCA456/363,223,0xE8AE5A|403,223,0xEFB45C|411,223,0xEAAF5B", _
                                 "FEROCITY:352,223,0xE4AA58|400,223,0xEBB05B|446,224,0xE5AB59", _
                                 "FORTITUDE:348,223,0xE8AE5A|396,223,0xEBB05B|446,224,0xF0B45D", _
                                 "HEALING:354,224,0xE0A757|402,223,0xF0B45C|444,225,0xDFA657", _
@@ -65,7 +69,7 @@
                                 "CONVICTION:345,224,0xE4AA58|385,222,0xE9AE5A|453,224,0xDFA657/345,223,0xE4AA59|393,223,0xE4AA59|453,224,0xDFA757", _
                                 "TENACITY:351,222,0xDDA556|401,222,0xDCA456|447,224,0xE2A858"]
 
-    Global $g_aGem_pixelStats = [  "F.HP:371,254,0xF2B65D|380,255,0xF7BA5F|397,254,0xF5B95E/366,254,0xECB15B|376,255,0xF6B95F|393,254,0xF0B45C", _
+    Global Const $g_aGem_pixelStats = [  "F.HP:371,254,0xF2B65D|380,255,0xF7BA5F|397,254,0xF5B95E/366,254,0xECB15B|376,255,0xF6B95F|393,254,0xF0B45C", _
                                 "F.ATK:358,255,0xE3AA58|395,255,0xF7BA5F|411,254,0xF3B75E", _
                                 "F.DEF:352,255,0xD59F53|401,256,0xF4B75E|416,254,0xF3B75E", _
                                 "P.ATK:361,255,0xEEB35C|371,255,0xF2B65D|414,254,0xEEB25C/383,255,0xE3AA58|393,255,0xF7BA5F|209,254,0xF3B75E/366,255,0xE5AC59|385,256,0xF2B65D|393,255,0xF7BA5F", _
@@ -95,10 +99,13 @@
                                 ["Dungeons", "map-dungeons", 0, 0],                     ["Pagos Coast", "map-dungeons", 686, -143], _
                                 ["Sky Falls", "map-sky-falls", 0, 0],                   ["Slumbering City", "map-sky-falls", 27, -193], _
                                 ["Glacial Plains", "map-sky-falls", 338, -124],         ["Aurora Plateau", "map-sky-falls", 446, -306]]
-    Global $g_aSwipeLeft = [600, 550, 200, 550, "left"]
-    Global $g_aSwipeDown = [434, 317, 434, 406, "down"]
-    Global $g_aSwipeRight = [200, 550, 600, 550, "right"]
+    Global Const $g_aSwipeLeft =    [600, 550, 200, 550, "left"]
+    Global Const $g_aSwipeDown =    [434, 317, 434, 406, "down"]
+    Global Const $g_aSwipeUp =      [434, 406, 434, 317, "up"]
+    Global Const $g_aSwipeRight =   [200, 550, 600, 550, "right"]
 
+    Global $g_bPerformHourly = False ;Status to do hourly or not.
+    Global $g_bPerformGuardian = True ;Status to do guardian or not.
     Global $g_aScripts = [] ;Script data [[script, description, [[config, value, description], [..., ..., ...]]], ...]
     Global $g_aLocations = [] ;Data locations [[location, value], ...]
     Global $g_aPixels = [] ;Individual pixel data [[name, pixel], ...]
@@ -106,11 +113,8 @@
 
 
 ;GUI variables
-    Global $hLV_Log, $hLV_Stat
-
+    Global $hLV_Log, $hLV_Stat ;log and stats listviews
     Global $g_aComboMenu = Null ;Holds temporary context menus from combo type settings.
-    
     Global $g_hEditConfig = Null ;Handle for the edit control created when editing a setting.
     Global $g_iEditConfig = Null ;Index for the item being edited
-
     Global $g_aListEditor = Null ;Holds temporary gui and controls for list type settings.

@@ -1,12 +1,11 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $bBoss, $bQuests, $bHourly, $aDataPre = Null, $aDataPost = Null)
+Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
     Local Const $aLocations = ["battle", "battle-auto", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
     
     ;Variables
     If $bFinalRound = "Enabled" Then $bFinishRound = "Enabled"
-    Local $aData[5][2] = [["Astromon_Caught", "0"], ["Runs", "0"], ["Refill", "0/" & $iGems], ["Rare_Caught", ""], ["Rare_Missed", ""]]
 
     $aCapture &= "," & $sAstromon
     $aCapture = StringSplit($aCapture, ",", $STR_NOCOUNT)
@@ -28,13 +27,28 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
     Local $hUnknownTimer = Null ;Timer for when the location is not known.
     Local $iUsedGems = 0 ;Number of gems used since script has started.
     Local $bBossSelected = False ;Resets every new round
-    Local $bPerformHourly = False ;Boolean that signifies whether to do hourly or not. Decides on battle ends
     Local $aRound = [0, 0] ;Rounds
     Local $iCurRound = 1 ;Current round
     Local $iSkipRound = -1 ;Skips if the round is this.
-    $g_sExtended = "Success"
+    $g_vExtended = "success"
+
+    If isArray($t_aData) = True Then
+        Local $t_Var = Int(StringSplit(getArg($t_aData, "Runs"), "/", $STR_NOCOUNT)[0])
+        If $t_Var <> -1 Then $iRun = $t_Var
+
+        Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
+        If $t_Var <> -1 Then $iUsedGems = $t_Var
+    
+        Local $t_Var = formatArgs(StringStripWS(getArg($t_aData, "Rare_Caught"), $STR_STRIPALL), ";", ":")
+        If $t_Var <> -1 Then $aCaught = $t_Var
+
+        Local $t_Var = formatArgs(StringStripWS(getArg($t_aData, "Rare_Missed"), $STR_STRIPALL), ";", ":")
+        If $t_Var <> -1 Then $aMissed = $t_Var
+    EndIf
 
     ; Main script loop
+    Local $aData[5][2] = [["Astromon_Caught", ""], ["Runs", ""], ["Refill", ""], ["Rare_Caught", ""], ["Rare_Missed", ""]]
+
     addLog($g_aLog, "```Farm Astromon script has started.")
 
     If isLocation($aLocations, False) = "" Then navigate("map")
@@ -95,7 +109,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                         Local $sResult = catch($aCapture, $iAstrochips, True)
                         If $sResult = -1 Then
                             addLog($g_aLog, "Astromon bag full.", $LOG_ERROR)
-                            $g_sExtended = "Error"
+                            $g_vExtended = "Error"
                             ExitLoop(2)
                         EndIf
                         If $sResult <> "" Then
@@ -158,7 +172,13 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 If ($bQuests = "Enabled") And (isPixel(getArg($g_aPixels, "battle-end-quest")) = True) Then collectQuest()
 
                 ;Hourly will only be done in specific times. Refer to the function.
-                If ($bHourly = "Enabled") Then doHourly()
+                If ($bHourly = "Enabled") And ($g_bPerformHourly = True) Then doHourly()
+
+                ;Guardian dungeon will be done at the start of the script and every 30 minutes
+                If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $iUsedGems += Int(getArg($g_vExtended, "Refill"))
+                EndIf
 
                 ;If still in battle-end location then clicks quick restarts. Usually if collectQuest or doHourly has been called then not in battle-end
                 If getLocation() = "battle-end" Then 
@@ -185,15 +205,21 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                         $iUsedGems+=30
                         addLog($g_aLog, "Refill " & $iUsedGems & "/" & $iGems, $LOG_NORMAL)
                     Else
-                        $g_sExtended = "error"
+                        $g_vExtended = "error"
                         ExitLoop
                     EndIf
                 Else
                     addLog($g_aLog, "Gems used has exceeded max gems.", $LOG_NORMAL)
-                    $g_sExtended = "gem-full"
+                    $g_vExtended = "gem-full"
                     ExitLoop
                 EndIf
             Case "map"
+                ;Guardian dungeon will be done at the start of the script and every 30 minutes
+                If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $iUsedGems += Int(getArg($g_vExtended, "Refill"))
+                EndIf
+
                 $bBossSelected = False
                 If ($iCaught >= $iCount) Then ExitLoop
 
@@ -222,7 +248,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             Case "astromon-full"
                 addLog($g_aLog, "Astromon bag is full.", $LOG_ERROR)
                 navigate("village", True)
-                $g_sExtended = "bag-full"
+                $g_vExtended = "bag-full"
                 ExitLoop
             Case "battle-gem-full", "map-gem-full"
                 addLog($g_aLog, "Gem box is full, selling gems.")

@@ -7,9 +7,26 @@
         $iDuration: Amount of time to sleep in milliseconds
     Returns: True if script needs to be stopped.
 #ce
+Global $bScheduled = False
 Func _Sleep($iDuration)
     Local $vTimerInit = TimerInit()
     While TimerDiff($vTimerInit) < $iDuration
+        Switch getMinute()
+            Case "00"
+                If $bScheduled = False Then 
+                    $g_bPerformHourly = True
+                    $g_bPerformGuardian = True
+                EndIf
+
+                $bScheduled = True
+            Case "30"
+                If $bScheduled = False Then $g_bPerformGuardian = True
+                
+                $bScheduled = True
+            Case Else
+                $bScheduled = False
+        EndSwitch
+
         If ($g_bRunning = True) And ($g_hScriptTimer <> Null) Then
             WinSetTitle($hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", "") & " - " & getTimeString(TimerDiff($g_hScriptTimer)/1000))
         EndIf
@@ -38,36 +55,6 @@ Func DisplayDebug($vDebug = $g_vDebug)
     Else   
         MsgBox(0, "MSL Bot DEBUG", $vDebug & @CRLF & "Error Message:" & @CRLF & $g_sErrorMessage)
     EndIf
-EndFunc
-
-Func ForceQuit()
-    Local $aWindows = WinList()
-
-    Local $sBotsList = "" ;List of opened instances, used if more than one instance
-    Local $iSize = 0 ;size of aBots
-    Local $aBots[0][2]
-
-    For $i = 0 To UBound($aWindows, $UBOUND_ROWS)-1
-        If StringLeft($aWindows[$i][0], 9) = "MSL Bot v" Then
-            $iSize = UBound($aBots, $UBOUND_ROWS)
-            ReDim $aBots[$iSize+1][2]
-
-            $aBots[$iSize][0] = $aWindows[$i][0]
-            $aBots[$iSize][1] = $aWindows[$i][1]
-
-            $sBotsList &= "[" & $iSize & "] " & $aWindows[$i][0] & " (" & $aWindows[$i][1] & ")" & @CRLF
-        EndIf
-    Next
-
-    Local $iResult = 0
-    If $iSize > 1 Then 
-        Do 
-            $iResult = InputBox("Multiple instances detected.", "Select which # bot to close: " & @CRLF & @CRLF & $sBotsList)
-            If $iResult = "" Then Return
-        Until ($iResult >= 0) And ($iResult <= $iSize)
-    EndIf
-
-    ProcessClose(WinGetProcess($aBots[$iResult][1]))
 EndFunc
 
 ;calls for debug prompt

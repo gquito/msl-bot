@@ -1,4 +1,4 @@
-Global $aVersion = [3, 5, 1] ;Major, Minor, Build
+Global $aVersion = [3, 6, 0] ;Major, Minor, Build
 
 #pragma compile(Out, msl-bot.exe)
 #pragma compile(Icon, bin\_src\msl-bot.ico)
@@ -7,15 +7,13 @@ Global $aVersion = [3, 5, 1] ;Major, Minor, Build
 #pragma compile(ProductName, Monster Super League Bot)
 #pragma compile(FileDescription, Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot)
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 3.5.1)
-#pragma compile(ProductVersion, 3.5.1)
+#pragma compile(FileVersion, 3.6.0)
+#pragma compile(ProductVersion, 3.6.0)
 #pragma compile(OriginalFilename, msl-bot.exe)
 
 #include-once
 #include "bin/_src/imports.au3"
 
-HotKeySet("+!^q", "ForceQuit")
-HotKeySet("+!^d", "Debug")
 Initialize()
 
 ;Function: Initialize GUI and data.
@@ -27,11 +25,11 @@ Func Initialize()
     EndIf
 
     ; Default configs and constants
-    $g_aLocations = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt", ">", ":")
-    $g_aPixels = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt", ">", ":")
-    $g_aPoints = getArgsFromURL("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt", ">", ":")
+    $g_aLocations = getArgsFromURL($g_sLocationsURL, ">", ":")
+    $g_aPixels = getArgsFromURL($g_sPixelsURL, ">", ":")
+    $g_aPoints = getArgsFromURL($g_sPointsURL, ">", ":")
 
-    getScriptsFromUrl($g_aScripts, "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scripts.txt")
+    getScriptsFromUrl($g_aScripts, $g_sScriptsURL)
 
     ;User configs
     Local $aFolders = _FileListToArray(@ScriptDir & "\profiles\", "*", $FLTA_FOLDERS)

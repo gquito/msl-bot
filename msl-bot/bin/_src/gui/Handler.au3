@@ -14,10 +14,12 @@ EndFunc
 
 Func GUI_HANDLE()
     Local $iCode = GUIGetMsg()
-    Switch $iCode 
+    Switch $iCode
+        Case $hDM_Debug
+            Debug()
         Case $idBtn_Stop
             Stop()
-        Case $GUI_EVENT_CLOSE
+        Case $GUI_EVENT_CLOSE, $hDM_ForceQuit
             GUISetState(@SW_HIDE, $hParent)
             CloseApp()
         Case Else
@@ -152,7 +154,7 @@ Func Start()
 
     ;Pre Conditions
     If $g_hWindow = 0 Or $g_hControl = 0 Then
-        MsgBox($MB_ICONERROR+$MB_OK, "Window/Control handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl)
+        MsgBox($MB_ICONERROR+$MB_OK, "Window/Control handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
         Return -1
     EndIf
 
@@ -190,22 +192,25 @@ Func Start()
 ;Changing bot state and checking pixels
     $g_bRunning = True
     CaptureRegion()
-    For $i = 0 To $g_aControlSize[0] Step 100
-        If getColor($i, $g_aControlSize[1]/2) <> "0x000000" Then 
-        ;Pass all conditions -> Setting control states
-            GUICtrlSetData($idLbl_RunningScript, "Running Script: " & $g_sScript)
-            ControlDisable("", "", $hCmb_Scripts)
-            ControlDisable("", "", $hLV_ScriptConfig)
-            ControlDisable("", "", $hBtn_Start)
-            ControlEnable("", "", $hBtn_Stop)
-            ControlEnable("", "", $hBtn_Pause)
+    If isPixel("100,457,0x1FA9CE|200,457,0x24ABBD|300,457,0x29AEA8|400,457,0x2FB091", 10) = False Then
+        For $i = 0 To $g_aControlSize[0] Step 100
+            Local $hColor = getColor($i, $g_aControlSize[1]/2)
+            If ($hColor <> "0x000000") Or ($hColor <> "0xFFFFFF") Then 
+            ;Pass all conditions -> Setting control states
+                GUICtrlSetData($idLbl_RunningScript, "Running Script: " & $g_sScript)
+                ControlDisable("", "", $hCmb_Scripts)
+                ControlDisable("", "", $hLV_ScriptConfig)
+                ControlDisable("", "", $hBtn_Start)
+                ControlEnable("", "", $hBtn_Stop)
+                ControlEnable("", "", $hBtn_Pause)
 
-            _GUICtrlTab_ClickTab($hTb_Main, 1)
-            Return
-        EndIf
-    Next
+                _GUICtrlTab_ClickTab($hTb_Main, 1)
+                Return
+            EndIf
+        Next
+    EndIf
 ;Screen is black:
-    MsgBox($MB_ICONERROR+$MB_OK, "Could not capture correctly.", "Unable to correctly capture screen. Try changing Capture Mode.")
+    MsgBox($MB_ICONERROR+$MB_OK, "Could not capture correctly.", "Unable to correctly capture screen. Try changing 'Capture Mode' or Nox 'Graphics Rendering Mode.'")
     Stop()
 EndFunc
 
@@ -288,7 +293,7 @@ Func handleEdit(ByRef $hEdit, ByRef $iIndex, $hListView)
     If _GUICtrlListView_GetItemText($hListView, $iIndex) = "Profile Name" Then
         $g_sProfilePath = @ScriptDir & "\profiles\" & $sNew & "\"
 
-        getScriptsFromUrl($g_aScripts, "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scripts.txt")
+        getScriptsFromUrl($g_aScripts, $g_sScriptsURL)
         For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
             Local $aScript = $g_aScripts[$i]
             If FileExists($g_sProfilePath & "\" & $aScript[0]) = True Then
@@ -530,6 +535,7 @@ Func getScriptsFromUrl(ByRef $aScripts, $sUrl)
 
             Local $aSplitValueDescription = StringSplit($aRawConfig[1], "|", $STR_NOCOUNT)
             ;_ArrayDisplay($aSplitValueDescription) ;Debug the values
+            If UBound($aSplitValueDescription, $UBOUND_ROWS) <> 4 Then ContinueLoop
 
             $aFormatedConfig[1] = $aSplitValueDescription[0]
             $aFormatedConfig[2] = $aSplitValueDescription[1]

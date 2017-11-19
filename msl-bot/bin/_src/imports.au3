@@ -39,6 +39,7 @@
 #include "scripts/Farm_Rare.au3"
 #include "scripts/Farm_Astromon.au3"
 #include "scripts/Farm_Gem.au3"
+#include "scripts/Farm_Guardian.au3"
 
 #include "scripts/sub/_Helper.au3"
 #include "scripts/sub/navigate.au3"
