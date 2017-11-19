@@ -1,6 +1,6 @@
 ## Monster Super League AutoIT Bot
 
-### Not yet available.
+### Setup instructions will be made soon. Refer to v2 instructions for now. If you require assistance, please join the discord server: https://discord.gg/UQGRnwf
 
 ### License
 
