@@ -41,3 +41,4 @@ manage-grade4:440, 389
 manage-sell-selected:670, 396
 manage-sell-confirm:382, 327
 play-again:529, 284
+battle-end-exit:400, 260
