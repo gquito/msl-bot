@@ -116,11 +116,8 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                                 ;Tries ADB send keyevent escape
                                 If TimerDiff($t_vTimerInit) > 10000 Then
                                     If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
-                                        adbCommand("shell input keyevent ESCAPE")
-                                        adbCommand("shell input keyevent ESCAPE")
-                                        adbCommand("shell input keyevent ESCAPE")
-
                                         If getLocation() <> "unknown" Then ContinueLoop(2)
+                                        adbCommand("shell input keyevent ESCAPE")
                                     EndIf
                                 EndIf
                              EndIf

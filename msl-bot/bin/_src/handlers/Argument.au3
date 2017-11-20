@@ -58,6 +58,8 @@ EndFunc
 	Return: Array => [[arg1, value1], [arg2, value2], [arg3, value3]]
 #ce
 Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
+	If $sArgs = -1 Then Return -1
+
 	Local $iArgSize = 0
 	Local $aArgs[$iArgSize][2] ;Final formated argument array.
 

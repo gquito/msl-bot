@@ -2,7 +2,7 @@
 #include "../imports.au3"
 
 Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
-    Local Const $aLocations = ["defeat", "battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "pause", "battle-gem-full", "map-gem-full", "unknown"]
+    Local Const $aLocations = ["loading", "defeat", "battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "pause", "battle-gem-full", "map-gem-full", "unknown"]
 
     ;Variables
     Local $hEstimated = Null ;Timer for estimated finish
@@ -20,19 +20,19 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
 
     If isArray($t_aData) = True Then
         Local $t_Var = Int(StringSplit(getArg($t_aData, "Runs"), "/", $STR_NOCOUNT)[0])
-        If $t_Var <> -1 Then $iRun = $t_Var
+        If $t_Var <> "-1" Then $iRun = $t_Var
 
         Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
-        If $t_Var <> -1 Then $iUsedGems = $t_Var
+        If $t_Var <> "-1" Then $iUsedGems = $t_Var
 
         Local $t_Var = Int(getArg($t_aData, "Gems_Kept"))
-        If $t_Var <> -1 Then $iGemsKept = $t_Var
+        If $t_Var <> "-1" Then $iGemsKept = $t_Var
 
         Local $t_Var = Int(getArg($t_aData, "Eggs"))
-        If $t_Var <> -1 Then $iEggs = $t_Var
+        If $t_Var <> "-1" Then $iEggs = $t_Var
 
         Local $t_Var = Int(getArg($t_aData, "Sell_Profit"))
-        If $t_Var <> -1 Then $iSellProfit = $t_Var
+        If $t_Var <> "-1" Then $iSellProfit = $t_Var
     EndIf
 
     ; Main script loop

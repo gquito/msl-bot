@@ -11,7 +11,7 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
 
     If isArray($t_aData) = True Then
         Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
-        If $t_Var <> -1 Then $iUsedGems = $t_Var
+        If $t_Var <> "-1" Then $iUsedGems = $t_Var
     EndIf
 
     ; Main script loop

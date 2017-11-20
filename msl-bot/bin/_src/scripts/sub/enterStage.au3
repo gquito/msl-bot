@@ -118,8 +118,8 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 
 			Case "map-battle"
 				;Making sure autofill astrochips are on.
-				If clickUntil("737, 306", "isLocation", "unknown") = True Then ;Autofill toggle
-					If clickUntil("400, 323", "isLocation", "map-battle") = False Then ContinueLoop ;Autofill Astrochips button
+				If clickWhile("737, 306", "isLocation", "map-battle", 10, 500) = True Then ;Autofill toggle
+					If clickUntil("400, 323", "isLocation", "map-battle", 10, 500) = False Then ContinueLoop ;Autofill Astrochips button
 				EndIf
 
 				;Applying autobattle mode.

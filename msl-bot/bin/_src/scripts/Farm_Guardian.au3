@@ -2,7 +2,7 @@
 #include "../imports.au3"
 
 Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
-    Local Const $aLocations = ["village", "map", "battle-boss", "unknown", "battle", "battle-auto", "pause", "battle-end-exp", "battle-sell", "battle-end", "guardian-dungeons", "refill", "map-battle", "battle-gem-full", "map-gem-full", "defeat"]
+    Local Const $aLocations = ["loading", "village", "map", "battle-boss", "unknown", "battle", "battle-auto", "pause", "battle-end-exp", "battle-sell", "battle-end", "guardian-dungeons", "refill", "map-battle", "battle-gem-full", "map-gem-full", "defeat"]
     $g_bPerformGuardian = False
 
     ;Variables
@@ -68,6 +68,7 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
 
             Case "battle-end-exp", "battle-sell"
                 clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 20, 500)
+
             Case "refill"
                 ;Refill function handles starting the quickrestart and or the start battle from map-battle. Also handles the error messages
                 If $iUsedGems+30 <= $iGems Then
@@ -91,7 +92,7 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
 				clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "battle-auto,battle,unknown")
 
 				;Exit early if cannot go into battle. Usually means full gems or full inventory
-				If waitLocation("battle-auto,battle,unknown,refill", 30) = False Then
+				If waitLocation("battle-auto,battle,refill", 30) = False Then
 					addLog($g_aLog, "Could not enter into battle.", $LOG_ERROR)
                     If $bLoop = "Enabled" Then
                         navigate("village")
@@ -99,6 +100,8 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
                     Else
                         ExitLoop
                     EndIf
+                Else
+                    $hUnknownTimer = Null
 				EndIf
 
 			Case "guardian-dungeons"

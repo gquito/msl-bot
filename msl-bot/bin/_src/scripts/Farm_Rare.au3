@@ -2,7 +2,7 @@
 #include "../imports.au3"
 
 Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
-    Local Const $aLocations = ["battle", "battle-auto", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
+    Local Const $aLocations = ["loading", "battle", "battle-auto", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
     
     ;Variables
     $aCapture = StringSplit($aCapture, ",", $STR_NOCOUNT)
@@ -30,16 +30,16 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
 
     If isArray($t_aData) = True Then
         Local $t_Var = Int(StringSplit(getArg($t_aData, "Runs"), "/", $STR_NOCOUNT)[0])
-        If $t_Var <> -1 Then $iRun = $t_Var
+        If $t_Var <> "-1" Then $iRun = $t_Var
 
         Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
-        If $t_Var <> -1 Then $iUsedGems = $t_Var
+        If $t_Var <> "-1" Then $iUsedGems = $t_Var
     
         Local $t_Var = formatArgs(StringStripWS(getArg($t_aData, "Caught"), $STR_STRIPALL), ";", ":")
-        If $t_Var <> -1 Then $aCaught = $t_Var
+        If $t_Var <> "-1" Then $aCaught = $t_Var
 
         Local $t_Var = formatArgs(StringStripWS(getArg($t_aData, "Missed"), $STR_STRIPALL), ";", ":")
-        If $t_Var <> -1 Then $aMissed = $t_Var
+        If $t_Var <> "-1" Then $aMissed = $t_Var
     EndIf
 
     ; Main script loop
