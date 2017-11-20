@@ -138,10 +138,10 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                 If getLocation() = "battle-end" Then 
                     $bBossSelected = False
                     If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
-                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "unknown,battle-auto,battle,map-battle") Then 
+                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "loading,battle-auto,battle,map-battle", 30, 500) Then 
                         If waitLocation("map-battle", 5) = True Then
                             ;Happens when coming from defeat
-                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "unknown,refill,battle,battle-auto", 5, 500) = True Then $iRun += 1
+                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "loading,refill,battle,battle-auto", 30, 500) = True Then $iRun += 1
                         Else
                             $iRun += 1
                         EndIf
@@ -183,9 +183,7 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                     $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
                     $hEstimated = TimerInit()
 
-                    If waitLocation("battle,battle-auto", 45) = True Then
-                        addLog($g_aLog, "In battle.")
-                    EndIf
+                    waitLocation("battle,battle-auto,loading", 45)
                 Else
                     ContinueLoop
                 EndIf

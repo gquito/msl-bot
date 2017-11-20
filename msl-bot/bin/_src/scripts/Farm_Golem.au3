@@ -177,10 +177,10 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
                 If getLocation() = "battle-end" Then 
                     $bBossSelected = False
                     If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
-                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "unknown,battle-auto,battle,map-battle") Then 
+                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "loading,battle-auto,battle,map-battle", 30, 500) = True Then 
                         If waitLocation("map-battle", 5) = True Then
                             ;Happens when coming from defeat
-                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "unknown,refill,battle,battle-auto", 5, 500) = True Then $iRun += 1
+                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "loading,refill,battle,battle-auto", 30, 500) = True Then $iRun += 1
                         Else
                             $iRun += 1
                         EndIf
@@ -212,10 +212,8 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
                         addLog($g_aLog, "Could not enter golem B" & $iLevel & ".", $LOG_NORMAL)
                     Else
                         ;Enter into battle
-                        If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "unknown,refill,battle,battle-auto", 5, 500) = True Then $iRun += 1
-                        If waitLocation("battle,battle-auto", 45) = True Then
-                            addLog($g_aLog, "In battle.")
-                            
+                        If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "loading,refill,battle,battle-auto", 30, 500) = True Then $iRun += 1
+                        If waitLocation("battle,battle-auto,loading", 45) = True Then
                             $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
                             $hEstimated = TimerInit()
                         EndIf

@@ -155,7 +155,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                             Until getLocation() = "map-battle" 
 
                             If getLocation($g_aLocations, False) = "map-battle" Then
-                                If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "battle-auto,battle,refill,unknown", 10, 200) = True Then
+                                If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "battle-auto,battle,refill,loading", 10, 200) = True Then
                                     $iRun += 1
                                     $iAstrochips = 3
                                     $iSkipRound = -1
@@ -184,10 +184,10 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 If getLocation() = "battle-end" Then 
                     $bBossSelected = False
                     If ($iCaught >= $iCount) Then ExitLoop
-                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "unknown,battle-auto,battle,map-battle") Then 
+                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "loading,battle-auto,battle,map-battle") Then 
                         If waitLocation("map-battle", 5) = True Then
                             ;Happens when coming from defeat
-                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "unknown,refill,battle,battle-auto", 5, 500) = True Then $iRun += 1
+                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "loading,refill,battle,battle-auto", 5, 500) = True Then $iRun += 1
                         Else
                             $iRun += 1
                         EndIf

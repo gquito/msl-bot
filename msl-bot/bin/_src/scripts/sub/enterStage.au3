@@ -138,9 +138,9 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 				clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "battle-auto,battle,unknown")
 
 				;Return early if cannot go into battle. Usually means full gems or full inventory
-				If isLocation("battle-auto,battle,unknown", False) = "" Then
+				If isLocation("battle-auto,battle,unknown,loading", False) = "" Then
 					If _Sleep(2000) Then Return False
-					If isLocation("battle-auto,battle,unknown", False) = "" Then
+					If isLocation("battle-auto,battle,unknown,loading", False) = "" Then
 						addLog($g_aLog, "Could not enter battle.", $LOG_ERROR)
 						Return False
 					Else

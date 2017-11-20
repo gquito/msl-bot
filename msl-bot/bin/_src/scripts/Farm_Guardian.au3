@@ -60,7 +60,7 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
                     navigate("map")
                 Else
                     clickPoint(getArg($g_aPoints, "battle-end-exit")) ;Exit
-                    waitLocation("guardian-dungeons", 10)
+                    waitLocation("guardian-dungeons", 60)
                 EndIf
 
 			Case "battle"
@@ -92,7 +92,7 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
 				clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "battle-auto,battle,unknown")
 
 				;Exit early if cannot go into battle. Usually means full gems or full inventory
-				If waitLocation("battle-auto,battle,refill", 30) = False Then
+				If waitLocation("battle-auto,battle,refill,loading", 30) = False Then
 					addLog($g_aLog, "Could not enter into battle.", $LOG_ERROR)
                     If $bLoop = "Enabled" Then
                         navigate("village")
