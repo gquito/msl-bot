@@ -70,7 +70,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 ## Common Issues
 ### Window/Control Handle not found.
-  - This issue can be fixed by correctly setting the Bot config. Refer to *Changing Bot Config, Step 1* of **How to use bot** section.
+  - This issue can be fixed by correctly setting the Bot config. Refer to [*Changing Bot Config*](https://github.com/GkevinOD/msl-bot#changing-bot-config), Step 1 of **How to use bot** section.
 
 ![Window/Control handle error](https://i.imgur.com/m21F7iP.png)
 
@@ -87,6 +87,19 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
   - This error will usually provide a list of all available devices. Chances are one of the device is the Nox emulator. If device is not listed, restart nox.
   
 ![Nox device](https://i.imgur.com/zUg57e5.png)
+
+## Setting up multiple emulators
+**Step 1**: Create a new profile by editing the `Profile Name` setting in \_Config.
+
+**Step 2**: Change the ADB Device field to the device name connected to the second emulator.
+
+  - To find the list of devices, open Debug Input (`Ctrl+D`) and enter `MsgBox(0, "", adbCommand("devices"))`.
+  
+  - If no new device shows up, then restart Nox.
+  
+![Device List](https://i.imgur.com/8V4X5qK.png)
+  
+**Step 3**: Run a script.
 
 ## License
 
