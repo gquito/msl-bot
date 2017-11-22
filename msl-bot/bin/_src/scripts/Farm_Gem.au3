@@ -22,12 +22,6 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
     While $iFarmedGems < $iGemsToFarm
         If ($bHourly = "Enabled") And ($g_bPerformHourly = True) Then doHourly()
 
-        ;Guardian dungeon will be done at the start of the script and every 30 minutes
-        If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-            $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
-            $iUsedGems += Int(getArg($g_vExtended, "Refill"))
-        EndIf
-
         If _Sleep(10) Then ExitLoop(2)
         displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
 

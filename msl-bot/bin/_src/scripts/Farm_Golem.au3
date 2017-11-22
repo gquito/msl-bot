@@ -81,77 +81,75 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
         If $sLocation <> "" And $sLocation <> "unknown" Then $hUnknownTimer = Null
 
         Switch $sLocation
-            Case "battle-end-exp", "battle-sell", "battle-sell-item"
-                ;Clicks 2nd position just in case. Stop
-                clickUntil("229,234", "isLocation", "battle-sell,battle-sell-item", 30, 500)
-
-                ;Going into battle-sell-item location.
-                Local $t_sLoc = getLocation($g_aLocations, False)
-                If $t_sLoc = "battle-sell" Then
-                    Local $aGem = findColor("400,236", "-250,1", 0xFDF876, 10, -1)
-                    If isArray($aGem) = False Then $aGem = findColor("400,252", "-250,1", 0xF769B9, 10, -1) ;egg pixel
-                    
-                    If isArray($aGem) = True Then
-                        clickUntil($aGem, "isLocation", "battle-sell-item")
-                        $t_sLoc = "battle-sell-item"
-                    Else
-                        clickUntil("229,234", "isLocation", "battle-sell-item", 30, 500)
-                    EndIf
+            Case "battle-end-exp"
+                If clickUntil("229,234", "isLocation", "battle-sell-item", 30, 200) = True Then ContinueCase
+            Case "battle-sell"
+                If getLocation($g_aLocations, False) = "battle-sell-item" Then ContinueCase 
+                Local $aGem = findColor("400,236", "-250,1", 0xFDF876, 10, -1)
+                If isArray($aGem) = False Then $aGem = findColor("400,252", "-250,1", 0xF769B9, 10, -1) ;egg pixel
+                
+                If isArray($aGem) = True Then
+                    clickUntil($aGem, "isLocation", "battle-sell-item")
+                    ContinueCase
+                Else
+                    clickUntil("229,234", "isLocation", "battle-sell-item", 30, 500)
+                EndIf
+            Case "battle-sell-item"
+                If isPixel(getArg($g_aPixels, "battle-sell-item-gold"), 10) = True Then
+                    ;Tries to avoid gold bonus
+                    clickPoint(getArg($g_aPoints, "battle-sell-item-okay"), 1, 0)
+                    ContinueLoop
                 EndIf
 
-                If $t_sLoc = "battle-sell-item" Then
-                    If isPixel(getArg($g_aPixels, "battle-sell-item-gold"), 10) = True Then
-                        ;Tries to avoid gold bonus
-                        clickPoint(getArg($g_aPoints, "battle-sell-item-okay"), 1, 0)
-                        ContinueLoop
-                    EndIf
-
-                    ;Actual filtering
-                    Local $aGem = getGemData()
-                    If ($aGem[0] <> "EGG") And ($aGem[1] = "-") Then
-                        addLog($g_aLog, "Could not identify gem/egg.", $LOG_ERROR)
-                        If clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200) = False Then
-                            clickWhile(getArg($g_aPoints, "battle-sell-item-okay"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
-                        EndIf
-                    ElseIf $aGem[0] = "EGG" Then
-                        $iEggs += 1
-                        addLog($g_aLog, "Found an egg.", $LOG_NORMAL)
+                ;Actual filtering
+                Local $aGem = getGemData()
+                If ($aGem[0] <> "EGG") And ($aGem[1] = "-") Then
+                    addLog($g_aLog, "Could not identify gem/egg.", $LOG_ERROR)
+                    If clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200) = False Then
                         clickWhile(getArg($g_aPoints, "battle-sell-item-okay"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
-                    Else 
-                        ;Actual gem
-                        Local $sStatus = "" ;Status whether gem is sold or kept, for log.
-                        If filterGem($aGem) = False Then
-                            ;Selling gem
-                            $sStatus = "Sold"
-                            $iSellProfit += Int($aGem[5])
-
-                            If clickWhile(getArg($g_aPoints, "battle-sell-item-sell"), "isLocation", "battle-sell-item", 10, 200) = False Then
-                                $sStatus = "Unknown" ;If could not sell because got stuck in battle-sell-item
-                                Local $t_hTimer = TimerInit()
-                                While (isLocation("batte-end") = "") And ($t_hTimer < 5000)
-                                    clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
-                                    If _Sleep(100) Then ExitLoop
-                                WEnd
-                            EndIf
-                        Else 
-                            ;Keeping gem
-                            $sStatus = "Kept"
-                            $iGemsKept += 1
-
-                            clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
-                        EndIf
-
-                        ;Display info and setting data
-                        addLog($g_aLog, $sStatus & ": " & stringGem($aGem), $LOG_NORMAL)
-                        clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 20, 200)
                     EndIf
-                EndIf
+                ElseIf $aGem[0] = "EGG" Then
+                    $iEggs += 1
+                    addLog($g_aLog, "Found an egg.", $LOG_NORMAL)
+                    clickWhile(getArg($g_aPoints, "battle-sell-item-okay"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
+                Else 
+                    ;Actual gem
+                    Local $sStatus = "" ;Status whether gem is sold or kept, for log.
+                    If filterGem($aGem) = False Then
+                        ;Selling gem
+                        $sStatus = "Sold"
+                        $iSellProfit += Int($aGem[5])
 
+                        If clickWhile(getArg($g_aPoints, "battle-sell-item-sell"), "isLocation", "battle-sell-item", 10, 200) = False Then
+                            $sStatus = "Unknown" ;If could not sell because got stuck in battle-sell-item
+                            Local $t_hTimer = TimerInit()
+                            While (isLocation("batte-end") = "") And ($t_hTimer < 5000)
+                                clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
+                                If _Sleep(100) Then ExitLoop
+                            WEnd
+                        EndIf
+                    Else 
+                        ;Keeping gem
+                        $sStatus = "Kept"
+                        $iGemsKept += 1
+
+                        clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
+                    EndIf
+
+                    ;Display info and setting data
+                    addLog($g_aLog, $sStatus & ": " & stringGem($aGem), $LOG_NORMAL)
+                    clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 20, 200)
+                EndIf
             Case "refill"
                 ;Refill function handles starting the quickrestart and or the start battle from map-battle. Also handles the error messages
                 If $iUsedGems+30 <= $iGems Then
                     If doRefill() = True Then
                         $iUsedGems+=30
+                        $iRun += 1
+
+                        $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
+                        $hEstimated = TimerInit()
+
                         addLog($g_aLog, "Refill " & $iUsedGems & "/" & $iGems, $LOG_NORMAL)
                     Else
                         ExitLoop
@@ -169,7 +167,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
 
                 ;Guardian dungeon will be done at the start of the script and every 30 minutes
                 If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, $aDataPost, $aData)
                     $iUsedGems += Int(getArg($g_vExtended, "Refill"))
                 EndIf
 
@@ -177,17 +175,11 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
                 If getLocation() = "battle-end" Then 
                     $bBossSelected = False
                     If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
-                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "loading,battle-auto,battle,map-battle", 30, 500) = True Then 
-                        If waitLocation("map-battle", 5) = True Then
-                            ;Happens when coming from defeat
-                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "loading,refill,battle,battle-auto", 30, 500) = True Then $iRun += 1
-                        Else
-                            $iRun += 1
-                        EndIf
+                    If enterBattle() = True Then 
+                        $iRun += 1
+                        $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
+                        $hEstimated = TimerInit()
                     EndIf
-
-                    $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
-                    $hEstimated = TimerInit()
                 Else
                     navigate("map", False, False)
                 EndIf
@@ -197,7 +189,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
             Case "map"
                 ;Guardian dungeon will be done at the start of the script and every 30 minutes
                 If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, $aDataPost, $aData)
                     $iUsedGems += Int(getArg($g_vExtended, "Refill"))
                 EndIf
 
@@ -212,10 +204,12 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
                         addLog($g_aLog, "Could not enter golem B" & $iLevel & ".", $LOG_NORMAL)
                     Else
                         ;Enter into battle
-                        If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "loading,refill,battle,battle-auto", 30, 500) = True Then $iRun += 1
-                        If waitLocation("battle,battle-auto,loading", 45) = True Then
+                        If enterBattle() = True Then 
+                            $iRun += 1
                             $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
                             $hEstimated = TimerInit()
+                        Else
+                            ContinueLoop
                         EndIf
                     EndIf
                 Else

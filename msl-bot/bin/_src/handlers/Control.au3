@@ -31,6 +31,7 @@ EndFunc
 Func clickDrag($aPoints, $iSwipeMode = $g_iSwipeMode)
     If $iSwipeMode = $SWIPE_KEYMAP Then
         ;Pre-set-up keymap
+        ControlSend($g_hWindow, "", "", "{" & StringUpper($aPoints[4]) & "}")
     ElseIf $iSwipeMode = $SWIPE_ADB Then
         ;Adb swipe mode
         If isArray($aPoints) = False Then

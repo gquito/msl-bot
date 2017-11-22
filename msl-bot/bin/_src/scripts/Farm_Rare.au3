@@ -92,7 +92,12 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
         If _Sleep(500) Then ExitLoop
 
         Local $sLocation = isLocation($aLocations, False)
-        If $sLocation <> "" And $sLocation <> "unknown" Then $hUnknownTimer = Null
+        Switch $sLocation
+            Case "", "unknown"
+                $hUnknownTimer = Null
+            Case "battle-end", "map", "map-battle", "refill"
+                $iAstrochips = 3
+        EndSwitch
 
         Switch $sLocation
             Case "battle"
@@ -130,7 +135,7 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
 
                 ;Guardian dungeon will be done at the start of the script and every 30 minutes
                 If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, $aDataPost, $aData)
                     $iUsedGems += Int(getArg($g_vExtended, "Refill"))
                 EndIf
 
@@ -138,18 +143,14 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                 If getLocation() = "battle-end" Then 
                     $bBossSelected = False
                     If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
-                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "loading,battle-auto,battle,map-battle", 30, 500) Then 
-                        If waitLocation("map-battle", 5) = True Then
-                            ;Happens when coming from defeat
-                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "loading,refill,battle,battle-auto", 30, 500) = True Then $iRun += 1
-                        Else
-                            $iRun += 1
-                        EndIf
-                    EndIf
+                    If enterBattle() = True Then 
+                        $iRun += 1
 
-                    $iAstrochips = 3
-                    $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
-                    $hEstimated = TimerInit()
+                        $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
+                        $hEstimated = TimerInit()
+                    Else
+                        ContinueLoop
+                    EndIf
                 Else
                     navigate("map", False, False)
                 EndIf
@@ -169,7 +170,7 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
             Case "map"
                 ;Guardian dungeon will be done at the start of the script and every 30 minutes
                 If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, $aDataPost, $aData)
                     $iUsedGems += Int(getArg($g_vExtended, "Refill"))
                 EndIf
 
@@ -179,11 +180,9 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                 ;Navigate to stage
                 If enterStage($sMap, $sDifficulty, $sStage) = True Then
                     $iRun += 1
-                    $iAstrochips = 3
+
                     $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
                     $hEstimated = TimerInit()
-
-                    waitLocation("battle,battle-auto,loading", 45)
                 Else
                     ContinueLoop
                 EndIf
@@ -198,7 +197,7 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                 clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 30, 200)
             Case "astromon-full"
                 addLog($g_aLog, "Astromon bag is full.", $LOG_ERROR)
-                navigate("village")
+                navigate("village", True)
                 ExitLoop
             Case "battle-gem-full", "map-gem-full"
                 addLog($g_aLog, "Gem box is full, selling gems.")

@@ -73,9 +73,16 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
         If _Sleep(500) Then ExitLoop
 
         Local $sLocation = isLocation($aLocations, False)
-        If $sLocation <> "" And $sLocation <> "unknown" Then $hUnknownTimer = Null
         $aRound = getRound()
         If isArray($aRound) = True Then $iCurRound = $aRound[0]
+
+        Switch $sLocation
+            Case "", "unknown"
+                $hUnknownTimer = Null
+            Case "battle-end", "map", "map-battle", "refill"
+                $iAstrochips = 3
+                $iSkipRound = -1
+        EndSwitch
 
         Switch $sLocation
             Case "catch-mode"
@@ -154,14 +161,11 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                                 clickPoint(getArg($g_aPoints, "play-again"), 1, 0, Null)
                             Until getLocation() = "map-battle" 
 
-                            If getLocation($g_aLocations, False) = "map-battle" Then
-                                If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "battle-auto,battle,refill,loading", 10, 200) = True Then
-                                    $iRun += 1
-                                    $iAstrochips = 3
-                                    $iSkipRound = -1
-                                EndIf
+                            If enterBattle() = True Then
+                                $iRun += 1
+                            Else
+                                ContinueLoop
                             EndIf
-
                         EndIf
                     EndIf
                     
@@ -176,7 +180,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
 
                 ;Guardian dungeon will be done at the start of the script and every 30 minutes
                 If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, $aDataPost, $aData)
                     $iUsedGems += Int(getArg($g_vExtended, "Refill"))
                 EndIf
 
@@ -184,17 +188,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 If getLocation() = "battle-end" Then 
                     $bBossSelected = False
                     If ($iCaught >= $iCount) Then ExitLoop
-                    If clickUntil(getArg($g_aPoints, "quick-restart"), "isLocation", "loading,battle-auto,battle,map-battle") Then 
-                        If waitLocation("map-battle", 5) = True Then
-                            ;Happens when coming from defeat
-                            If clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "loading,refill,battle,battle-auto", 5, 500) = True Then $iRun += 1
-                        Else
-                            $iRun += 1
-                        EndIf
-                    EndIf
-
-                    $iAstrochips = 3
-                    $iSkipRound = -1
+                    If enterBattle() = True Then $iRun += 1
                 Else
                     navigate("map", False, False)
                 EndIf
@@ -202,6 +196,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 ;Refill function handles starting the quickrestart and or the start battle from map-battle. Also handles the error messages
                 If $iUsedGems+30 <= $iGems Then
                     If doRefill() = True Then
+                        $iRun += 1
                         $iUsedGems+=30
                         addLog($g_aLog, "Refill " & $iUsedGems & "/" & $iGems, $LOG_NORMAL)
                     Else
@@ -216,7 +211,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             Case "map"
                 ;Guardian dungeon will be done at the start of the script and every 30 minutes
                 If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, Null, $aData)
+                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, $aDataPost, $aData)
                     $iUsedGems += Int(getArg($g_vExtended, "Refill"))
                 EndIf
 
@@ -224,18 +219,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 If ($iCaught >= $iCount) Then ExitLoop
 
                 ;Navigate to stage
-                If enterStage($sMap, $sDifficulty, $sStage) = True Then
-                    $iRun += 1
-                    $iAstrochips = 3
-                    $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iCaught)*(($iCount+1)-$iCaught)
-                    $hEstimated = TimerInit()
-
-                    If waitLocation("battle,battle-auto", 45) = True Then
-                        addLog($g_aLog, "In battle.")
-                    EndIf
-                Else
-                    ContinueLoop
-                EndIf
+                If enterStage($sMap, $sDifficulty, $sStage) = True Then $iRun += 1
             Case "pause"
                 clickPoint(getArg($g_aPoints, "battle-continue"))
             Case "defeat"

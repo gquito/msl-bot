@@ -266,26 +266,31 @@ Func findLevel($iLevel)
 		Else
 			;usually gold, exp, fruit, or boss
 			Local $sLevel = StringLower($iLevel)
-			If $sLevel <> "boss" Then
-				Return findImage("level-" & $sLevel, 100, 0, 681, 229, 125, 250) ;tolerance 100; rectangle at (681,229) dim. 125x250
-			ElseIf $sLevel <> "any" Then
-				;Checks second position if there is boss 
-				Local $t_hColor = 0x3A2923
-				Local $t_aPoint = [535, 469]
-				Do
-					Local $aBoss = findColor($t_aPoint, "1," & 229-$t_aPoint[1], $t_hColor, 20, 1, -1)
-					If isArray($aBoss) = False Then Return False
+			Switch $sLevel
+				Case "exp", "fruit", "gold"
+					LocaL $t_aPoint = findImage("level-" & $sLevel, 100, 0, 681, 229, 125, 250) ;tolerance 100; rectangle at (681,229) dim. 125x250
+					If isArray($t_aPoint) = True Then $t_aPoint[0] = 725
 
-					If (isPixel($t_aPoint[0] & "," & $t_aPoint[1]-7 & "," & 0x673A2C, 30) = False) And (isPixel($t_aPoint[0] & "," & $t_aPoint[1]-30 & "," & $t_hColor, 20) = True) Then
-						Local $aResult = [725, $t_aPoint[1]-30]
-						Return $aResult
-					Else
-						$t_aPoint[1] = findColor($t_aPoint[0] & "," & $t_aPoint[1], "1,-78", 0x673A2C, 30, 1, -1)[1]-13
-					EndIf
-				Until $t_aPoint[1] <= 229
-			Else
-				
-			EndIf
+					Return $t_aPoint 
+				Case "boss"
+					;Checks second position if there is boss 
+					Local $t_hColor = 0x3A2923
+					Local $t_aPoint = [535, 469]
+					Do
+						Local $aBoss = findColor($t_aPoint, "1," & 229-$t_aPoint[1], $t_hColor, 20, 1, -1)
+						If isArray($aBoss) = False Then Return False
+
+						If (isPixel($t_aPoint[0] & "," & $t_aPoint[1]-7 & "," & 0x673A2C, 30) = False) And (isPixel($t_aPoint[0] & "," & $t_aPoint[1]-30 & "," & $t_hColor, 20) = True) Then
+							Local $aResult = [725, $t_aPoint[1]-30]
+							Return $aResult
+						Else
+							$t_aPoint[1] = findColor($t_aPoint[0] & "," & $t_aPoint[1], "1,-78", 0x673A2C, 30, 1, -1)[1]-13
+						EndIf
+					Until $t_aPoint[1] <= 229
+				Case Else
+					CaptureRegion()
+					Return findColor("744,270", "1,230", 0xFED328, 20, 1, 1)
+			EndSwitch
 		EndIf
 	EndIf
 
@@ -322,4 +327,36 @@ Func findGuardian($sMode)
 	If isArray($aResult) Then $aResult[0] = $iX
 
 	Return $aResult
+EndFunc
+
+#cs 
+	Function: Tries to enter battle from battle-end and or map-battle locations.
+	Return: True if successful, false if something happened.
+#ce
+Func enterBattle()
+	Local $sLocation = getLocation()
+	Switch $sLocation
+		Case "battle-end"
+			If clickWhile(getArg($g_aPoints, "quick-restart"), "isLocation", "battle-end", 10, 100) = True Then
+				Switch waitLocation("battle-auto,battle,refill,map-battle,map-gem-full,battle-gem-full,map-astromon-full,battle-astromon-full", 120, False)
+					Case "battle-auto", "battle"
+						Return True
+					Case "map-battle"
+						Return enterBattle()
+					Case Else
+						Return False
+				EndSwitch	
+			Else
+				Return False
+			EndIf
+		Case "map-battle"
+			If clickWhile(getArg($g_aPoints, "map-battle-play"), "islocation", "map-battle", 10, 100) = True Then
+				Switch waitLocation("loading,battle-auto,battle,refill,map-gem-full,battle-gem-full,map-astromon-full,battle-astromon-full", 120, False)
+					Case "battle", "battle-auto", "loading"
+						Return True
+					Case Else
+						Return False
+				EndSwitch
+			EndIf
+	EndSwitch
 EndFunc

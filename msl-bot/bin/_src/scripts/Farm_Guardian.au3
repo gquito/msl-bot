@@ -3,7 +3,6 @@
 
 Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
     Local Const $aLocations = ["loading", "village", "map", "battle-boss", "unknown", "battle", "battle-auto", "pause", "battle-end-exp", "battle-sell", "battle-end", "guardian-dungeons", "refill", "map-battle", "battle-gem-full", "map-gem-full", "defeat"]
-    $g_bPerformGuardian = False
 
     ;Variables
     Local $iGuardians = 0 ;Number of guardians attacked.
@@ -14,6 +13,9 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
     If isArray($t_aData) = True Then
         Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
         If $t_Var <> -1 Then $iUsedGems = $t_Var
+
+        Local $t_Var = Int(StringSplit(getArg($t_aData, "Guardians"), "/", $STR_NOCOUNT)[0])
+        If $t_Var <> -1 Then $iGuardians = $t_Var
     EndIf
 
     ; Main script loop
@@ -89,21 +91,10 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
                 EndIf
         
 			Case "map-battle"
-				clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "battle-auto,battle,unknown")
-
-				;Exit early if cannot go into battle. Usually means full gems or full inventory
-				If waitLocation("battle-auto,battle,refill,loading", 30) = False Then
-					addLog($g_aLog, "Could not enter into battle.", $LOG_ERROR)
-                    If $bLoop = "Enabled" Then
-                        navigate("village")
-                        ContinueLoop
-                    Else
-                        ExitLoop
-                    EndIf
-                Else
-                    $hUnknownTimer = Null
-				EndIf
-
+				If enterBattle() = False Then
+                    addLog($g_aLog, "Could not enter battle.", $LOG_ERROR)
+                    ExitLoop
+                EndIf
 			Case "guardian-dungeons"
 				;Finding available astromon within 10 seconds
 				Local $aPoint = findGuardian($sMode);Point of an available astromon
@@ -197,5 +188,6 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
     Local $t_vExtended[1][2] = [["Refill", $iUsedGems]]
     $g_vExtended = $t_vExtended
 
+    $g_bPerformGuardian = False
     Return $aData
 EndFunc

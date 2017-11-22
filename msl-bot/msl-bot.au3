@@ -1,4 +1,4 @@
-Global $aVersion = [3, 6, 2] ;Major, Minor, Build
+Global $aVersion = [3, 6, 3] ;Major, Minor, Build
 
 #pragma compile(Out, msl-bot.exe)
 #pragma compile(Icon, bin\_src\msl-bot.ico)
@@ -7,8 +7,8 @@ Global $aVersion = [3, 6, 2] ;Major, Minor, Build
 #pragma compile(ProductName, Monster Super League Bot)
 #pragma compile(FileDescription, Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot)
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 3.6.2)
-#pragma compile(ProductVersion, 3.6.2)
+#pragma compile(FileVersion, 3.6.3)
+#pragma compile(ProductVersion, 3.6.3)
 #pragma compile(OriginalFilename, msl-bot.exe)
 
 #include-once
@@ -32,12 +32,19 @@ Func Initialize()
     getScriptsFromUrl($g_aScripts, $g_sScriptsURL)
 
     ;User configs
-    Local $aFolders = _FileListToArray(@ScriptDir & "\profiles\", "*", $FLTA_FOLDERS)
-    If isArray($aFolders) = True And $aFolders[0] > 0 Then
-        ;Found existing profile..
-        $g_sProfilePath = @ScriptDir & "\profiles\" & $aFolders[1] & "\"
-        getConfigsFromFile($g_aScripts, "_Config", @ScriptDir & "\profiles\" & $aFolders[1] & "\")
+    Local $t_sProfile = "Default"
+    If ($CmdLine[0] > 0) And (FileExists(@ScriptDir & "\profiles\" & $CmdLine[1] & "\") = True) Then
+        $t_sProfile = $CmdLine[1]
+    Else
+        Local $aFolders = _FileListToArray(@ScriptDir & "\profiles\", "*", $FLTA_FOLDERS)
+        If isArray($aFolders) = True And $aFolders[0] > 0 Then
+            $t_sProfile = $aFolders[1]
+        EndIf
     EndIf
+
+    ;Found existing profile..
+    $g_sProfilePath = @ScriptDir & "\profiles\" & $t_sProfile & "\"
+    getConfigsFromFile($g_aScripts, "_Config", @ScriptDir & "\profiles\" & $t_sProfile & "\")
 
     For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
         Local $aScript = $g_aScripts[$i]

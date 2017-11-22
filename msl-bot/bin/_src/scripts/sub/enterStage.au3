@@ -135,21 +135,12 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 
 				;Starting battle
 				addLog($g_aLog, "-Entering battle.", $LOG_NORMAL)
-				clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "battle-auto,battle,unknown")
-
-				;Return early if cannot go into battle. Usually means full gems or full inventory
-				If isLocation("battle-auto,battle,unknown,loading", False) = "" Then
-					If _Sleep(2000) Then Return False
-					If isLocation("battle-auto,battle,unknown,loading", False) = "" Then
-						addLog($g_aLog, "Could not enter battle.", $LOG_ERROR)
-						Return False
-					Else
-						addLog($g_aLog, "Finished entering stage.", $LOG_NORMAL)
-						Return True
-					EndIf
-				Else
+				If enterBattle() = True Then
 					addLog($g_aLog, "Finished entering stage.", $LOG_NORMAL)
 					Return True
+				Else
+					addLog($g_aLog, "Failed to enter stage.", $LOG_ERROR)
+					Return False
 				EndIf
 			Case "unknown"
 				closeWindow()

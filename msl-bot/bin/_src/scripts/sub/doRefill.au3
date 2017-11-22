@@ -22,20 +22,7 @@ Func doRefill()
                     navigate("map")
                 EndIf
 
-                ;handles if in map-battle
-                If getLocation($g_aLocations, False) = "map-battle" Then
-                    clickUntil(getArg($g_aPoints, "map-battle-play"), "isLocation", "unknown,battle,battle-auto", 5, 500)
-                    If waitLocation("battle,battle-auto", 30) = True Then
-                        addLog($g_aLog, "In battle.")
-                    EndIf
-                Else
-                    If getLocation($g_aLocations, False) = "battle-end" Then 
-                        clickUntil(getArg($g_aPoints, "battle-quick-restart"), "isLocation", "unknown,battle,battle-auto", 5, 500)
-                    Else
-                        navigate("map", True)
-                    EndIf
-                EndIf
-
+                enterBattle()
                 Return True
             Case "buy-gold", "buy-gem"
                 addLog($g_aLog, "Not enough gems for refill.", $LOG_ERROR)
