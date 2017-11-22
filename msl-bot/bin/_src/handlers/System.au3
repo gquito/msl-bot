@@ -76,14 +76,13 @@ Func _Debug()
     For $i = 0 To UBound($aLines, $UBOUND_ROWS)-1
         If $aLines[$i] = "" Then ContinueLoop
         Local $sResult = Execute($aLines[$i])
-        If $sResult = "" Then $sResult = "N/A"
+        If String($sResult) = "" Then $sResult = "N/A"
 
         If isArray($sResult) Then
             _ArrayDisplay($sResult)
             addLog($g_aLog, "{Array} <= " & $aLines[$i], $LOG_NORMAL)
         Else
-            If $sResult = False Then $sResult = "False"
-            addLog($g_aLog, $sResult & " <= " & $aLines[$i], $LOG_NORMAL)
+            addLog($g_aLog, String($sResult) & " <= " & $aLines[$i], $LOG_NORMAL)
         EndIf
         
     Next

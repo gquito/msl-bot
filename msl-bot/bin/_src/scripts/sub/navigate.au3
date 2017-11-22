@@ -75,8 +75,11 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                 While $t_sCurrLocation <> "battle-end"
                     If TimerDiff($t_iTimerInit) >= 120000 Then Return False ;2 Minutes, prevents infinite loop.
 
-                    clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
-                    clickPoint(getArg($g_aPoints, "battle-sell-item-okay"))
+                    If $t_sCurrLocation = "battle-sell-item" Then
+                        clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
+                        clickPoint(getArg($g_aPoints, "battle-sell-item-okay"))
+                    EndIf
+
                     clickPoint(getArg($g_aPoints, "tap"))
                     If _Sleep(1000) Then Return False
 
@@ -100,6 +103,11 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
 
                         Local $t_vTimerInit = TimerInit() 
                         While getLocation() <> "village"
+                            If getLocation($g_aLocations, False) = "hourly-reward" Then 
+                                clickWhile(getArg($g_aPoints, "get-reward"), "isLocation", "hourly-reward")
+                                ContinueLoop(2)
+                            EndIf
+
                             If getLocation($g_aLocations, False) = "battle-end" Then ContinueLoop(2)
                             If TimerDiff($t_vTimerInit) > 30000 Then Return False ;30 seconds
                                 

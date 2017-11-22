@@ -360,3 +360,20 @@ Func enterBattle()
 			EndIf
 	EndSwitch
 EndFunc
+
+
+#cs 
+	Function: Retrieves village position and angle.
+	Return: Village position from 0-5. 0-2 for first ship, 3-4 for second, and 5-6 for third.
+#ce
+Func getVillagePos()
+	CaptureRegion()
+
+	;Traverse through idShip checking the pixel sets.
+	For $i = 0 To UBound($g_aVillagePos)-1
+		If isPixel($g_aVillagePos[$i], 20) Then Return $i
+	Next
+
+	;Return -1 if ship not found.
+	Return -1
+EndFunc
