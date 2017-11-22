@@ -233,7 +233,7 @@ Func Stop()
 
 ;Calls to stop scripts
     $g_bRunning = False
-    WinSetTitle($hParent, "", $g_sAppTitle)
+    WinSetTitle($hParent, "", $g_sAppTitle & UpdateStatus())
 EndFunc
 
 Func Pause()
