@@ -161,9 +161,10 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                                 clickPoint(getArg($g_aPoints, "play-again"), 1, 0, Null)
                             Until getLocation() = "map-battle" 
 
-                            If enterBattle() = True Then
+                            If enterBattle() = True Then 
                                 $iRun += 1
-                            Else
+                                $iSkipRound = -1
+                                $iAstrochips = 3
                                 ContinueLoop
                             EndIf
                         EndIf
