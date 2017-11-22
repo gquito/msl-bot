@@ -39,10 +39,6 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
             If $nNotifycode = $BN_CLICKED Then
                 Start()
             EndIf
-        Case $hBtn_Stop
-            If $nNotifyCode = $BN_CLICKED Then
-                Stop()
-            EndIf
         Case $hBtn_Pause
             If $nNotifyCode = $BN_CLICKED Then
                 Pause()

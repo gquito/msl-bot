@@ -371,7 +371,7 @@ Func getVillagePos()
 
 	;Traverse through idShip checking the pixel sets.
 	For $i = 0 To UBound($g_aVillagePos)-1
-		If isPixel($g_aVillagePos[$i], 20) Then Return $i
+		If isPixelOR($g_aVillagePos[$i], 20) = True Then Return $i
 	Next
 
 	;Return -1 if ship not found.

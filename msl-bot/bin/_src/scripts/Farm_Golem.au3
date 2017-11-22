@@ -112,6 +112,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
                     $iEggs += 1
                     addLog($g_aLog, "Found an egg.", $LOG_NORMAL)
                     clickWhile(getArg($g_aPoints, "battle-sell-item-okay"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
+                    clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 20, 200)
                 Else 
                     ;Actual gem
                     Local $sStatus = "" ;Status whether gem is sold or kept, for log.

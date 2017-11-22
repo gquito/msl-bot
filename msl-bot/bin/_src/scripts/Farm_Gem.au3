@@ -199,16 +199,13 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             closeWindow()
             addLog($g_aLog, "Successfully evolved to evo3.", $LOG_NORMAL)
             CaptureRegion()
+            
+            addLog($g_aLog, "Cleaning up.", $LOG_NORMAL)
 
-            Local $aNew = findColor("15, 108", "70,30", 0xCD231F, 30)
-            If isArray($aNew) = True Then
-                addLog($g_aLog, "Cleaning up.", $LOG_NORMAL)
-
-                clickPoint($aNew, 3, 100)
-                clickUntil("776,110", "isLocation", "monsters", 5, 100)
-                If clickWhile("648, 459", "isLocation", "monsters,monsters-evolution", 10, 100) = True Then
-                    clickPoint("311, 331", 20, 200)
-                EndIf
+            clickPoint("51,152", 3, 100) ;Clicks king slime
+            clickUntil("776,110", "isLocation", "monsters", 5, 100)
+            If clickWhile("648, 459", "isLocation", "monsters,monsters-evolution", 10, 100) = True Then
+                clickPoint("311, 331", 20, 200)
             EndIf
             
             $iFarmedGems += 100
