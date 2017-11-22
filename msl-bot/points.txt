@@ -43,3 +43,4 @@ manage-sell-confirm:382, 327
 play-again:529, 284
 battle-end-exit:400, 260
 dungeons-guardian:170, 372
+get-reward:399, 333
