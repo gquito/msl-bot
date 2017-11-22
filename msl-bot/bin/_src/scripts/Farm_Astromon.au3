@@ -146,7 +146,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                         EndIf
                     WEnd
 
-                    If ($iCaught >= $iCount) Then ExitLoop
+                    If ($iCaught >= $iCount) Then ContinueCase ;Goes into exit case sequence 
                     If ($bFinishRound = "Disabled") And ($iAstrochips = 0) Then
                         addLog($g_aLog, "Surrendering and restarting.", $LOG_NORMAL)
                         If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
@@ -174,6 +174,15 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                     
                 EndIf
                 clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 5, 1000)
+            Case "EXIT SEQUENCE"
+                If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
+                    adbCommand("shell input keyevent ESCAPE")
+                Else
+                    waitLocation("battle-auto,battle,battle-end-exp", 30)
+                EndIf
+
+                navigate("battle-end", True, False)
+                ExitLoop
             Case "battle-end"
                 ;if the quests notification with red pixel shows up
                 If ($bQuests = "Enabled") And (isPixel(getArg($g_aPixels, "battle-end-quest")) = True) Then collectQuest()
