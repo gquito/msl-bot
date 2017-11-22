@@ -94,9 +94,11 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
         Local $sLocation = isLocation($aLocations, False)
         Switch $sLocation
             Case "", "unknown"
-                $hUnknownTimer = Null
             Case "battle-end", "map", "map-battle", "refill"
+                $hUnknownTimer = Null
                 $iAstrochips = 3
+            Case Else
+                $hUnknownTimer = Null
         EndSwitch
 
         Switch $sLocation
@@ -234,7 +236,9 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                     $bBossSelected = True
                 EndIf
 
-                If (isArray($aRound) = False) And ($sLocation = "unknown") then 
+                If (isArray($aRound) = False) And ($sLocation = "unknown") then
+                    clickPoint(getArg($g_aPoints, "tap"))
+                    If getLocation() <> "unknown" Then ContinueLoop
                     ContinueCase
                 Else
                     $hUnknownTimer = Null

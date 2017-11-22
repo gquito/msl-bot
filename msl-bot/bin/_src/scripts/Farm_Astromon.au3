@@ -78,10 +78,12 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
 
         Switch $sLocation
             Case "", "unknown"
-                $hUnknownTimer = Null
             Case "battle-end", "map", "map-battle", "refill"
+                $hUnknownTimer = Null
                 $iAstrochips = 3
                 $iSkipRound = -1
+            Case Else
+                $hUnknownTimer = Null
         EndSwitch
 
         Switch $sLocation
@@ -282,6 +284,8 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 EndIf
 
                 If (isArray($aRound) = False) And ($sLocation = "unknown") then 
+                    clickPoint(getArg($g_aPoints, "tap"))
+                    If getLocation() <> "unknown" Then ContinueLoop
                     ContinueCase
                 Else
                     $hUnknownTimer = Null
