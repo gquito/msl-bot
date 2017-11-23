@@ -268,7 +268,7 @@ Func findLevel($iLevel)
 			Local $sLevel = StringLower($iLevel)
 			Switch $sLevel
 				Case "exp", "fruit", "gold"
-					LocaL $t_aPoint = findImage("level-" & $sLevel, 100, 0, 681, 229, 125, 250) ;tolerance 100; rectangle at (681,229) dim. 125x250
+					LocaL $t_aPoint = findImage("level-" & $sLevel, 100, 0, 681, 229, 90, 250) ;tolerance 100; rectangle at (681,229) dim. 125x250
 					If isArray($t_aPoint) = True Then $t_aPoint[0] = 725
 
 					Return $t_aPoint 

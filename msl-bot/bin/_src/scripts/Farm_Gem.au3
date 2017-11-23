@@ -68,7 +68,7 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 ExitLoop(2)
             EndIf
 
-            clickPoint($aSlime, 10, 100, Null) ;Clicks slime
+            clickPoint($aSlime, 5, 100, Null) ;Clicks slime
             If clickUntil("604,392", "isLocation", "monsters-evolution", 10, 200, Null) = True Then ;Click Evolve
                 If _Sleep(10) Then ExitLoop(2)
                 If isPixel("585,182,0x7D624D", 20) = True Then ;The third empty slot pixel
@@ -80,16 +80,18 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                         EndIf
                         ;click the astromons
                         If getLocation() = "monsters-evolution" Then
-                            clickPoint(351+($x*65) & ",330", 1, 0, Null)
-                            CaptureRegion()
-
                             If isPixel("585,182,0x7D624D", 10) = False Then ExitLoop
-
                             closeWindow()
-                        Else 
-                            clickPoint("494,312", 1, 0, Null)
+
+                            clickPoint(351+($x*65) & ",330", 1, 0, Null)
+                        EndIf
+
+                        If getLocation() <> "monsters-evolution" Then 
+                            clickPoint("542, 313", 1, 0, Null) ;Clicks cancel
+                            $x -= 1
                         EndIf
                     Next
+                    If _Sleep(10) Then ExitLoop(2)
 
                     CaptureRegion()
                     If isPixel("585,182,0x7D624D", 10) = True Then
@@ -101,6 +103,7 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                     EndIf
                 EndIf
 
+                If _Sleep(10) Then ExitLoop(2)
                 ;Awakening/evolving
                 Local $t_hTimer = TimerInit()
                 While getLocation() = "monsters-evolution"
@@ -125,6 +128,7 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 WEnd
                 $iNeedEvo2 -=1
                 If $iNeedEvo2 <> 0 Then
+                    If _Sleep(10) Then ExitLoop(2)
                     collectQuest()
                     Local $t_iCount = 0
                     While navigate("monsters", True) = False
@@ -141,6 +145,7 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             EndIf
         WEnd
 
+        If _Sleep(10) Then ExitLoop(2)
         addLog($g_aLog, "Evolving to evo3.", $LOG_NORMAL)
         Local $aSlime = findImage("evolve-" & StringLower($sAstromon) & "x", 100, 0, 12, 105, 280, 340)
         clickPoint($aSlime, 10, 100, Null) ;Clicks slime

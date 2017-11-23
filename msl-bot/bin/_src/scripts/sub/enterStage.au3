@@ -104,12 +104,21 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 					WEnd
 
 					addLog($g_aLog, "-Entering stage level.", $LOG_NORMAL)
-					If clickWhile($aStage, "isLocation", "map-stage") = True Then
-						If getLocation($g_aLocations, False) = "map-battle" Then 
-							ContinueCase
-						Else
-							If clickUntil("489, 310", "isLocation", "map-battle", 10, 200) = False Then ContinueLoop
+					Local $t_hTimer = TimerInit()
+					While getLocation() <> "map-battle"
+						If TimerDiff($t_hTimer) > 5000 Then ContinueLoop(2)
+						clickPoint($aStage)
+
+						If _Sleep(500) Then Return False
+					WEnd
+
+					If getLocation($g_aLocations, False) <> "map-battle" Then
+						If navigate("map", False, False) = False Then
+							addLog($g_aLog, "Could not enter stage level.", $LOG_NORMAL)
+							Return False
 						EndIf
+					Else
+						ContinueCase
 					EndIf
 				Else
 					;Happens when accidentally clicked a map during scroll sequence
