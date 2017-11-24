@@ -338,7 +338,7 @@ Func enterBattle()
 	Switch $sLocation
 		Case "battle-end"
 			If clickWhile(getArg($g_aPoints, "quick-restart"), "isLocation", "battle-end", 10, 100) = True Then
-				Switch waitLocation("battle-auto,battle,refill,map-battle,map-gem-full,battle-gem-full,map-astromon-full,battle-astromon-full", 120, False)
+				Switch waitLocation("battle-auto,battle,refill,map-battle,map-gem-full,battle-gem-full,map-astromon-full,astromon-full", 120, False)
 					Case "battle-auto", "battle"
 						Return True
 					Case "map-battle"
@@ -351,7 +351,7 @@ Func enterBattle()
 			EndIf
 		Case "map-battle"
 			If clickWhile(getArg($g_aPoints, "map-battle-play"), "islocation", "map-battle", 10, 100) = True Then
-				Switch waitLocation("loading,battle-auto,battle,refill,map-gem-full,battle-gem-full,map-astromon-full,battle-astromon-full", 120, False)
+				Switch waitLocation("loading,battle-auto,battle,refill,map-gem-full,battle-gem-full,map-astromon-full,astromon-full", 120, False)
 					Case "battle", "battle-auto", "loading"
 						Return True
 					Case Else

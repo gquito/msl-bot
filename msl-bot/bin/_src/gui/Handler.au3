@@ -257,6 +257,7 @@ Func Stop()
 
 ;Resets variables
     FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+    $g_hTimerLocation = Null
     $g_hScriptTimer = Null
     $g_aScriptArgs = Null
     $g_sScript = ""
