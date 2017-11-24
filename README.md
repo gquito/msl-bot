@@ -18,7 +18,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 [How to use bot](https://github.com/GkevinOD/msl-bot#how-to-use-bot) <br>
 [Common Issues](https://github.com/GkevinOD/msl-bot#common-issues) <br>
 [Setting up multiple emulators](https://github.com/GkevinOD/msl-bot#setting-up-multiple-emulators) <br>
-[Troubleshooting](https://github.com/GkevinOD/msl-bot#troubleshooting)
+[Troubleshooting](https://github.com/GkevinOD/msl-bot#troubleshooting) <br>
 [Reporting an issue](https://github.com/GkevinOD/msl-bot#reporting-an-issue)
 
 ## How to use bot
