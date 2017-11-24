@@ -16,6 +16,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 ### Table of Contents
 
 [How to use bot](https://github.com/GkevinOD/msl-bot#how-to-use-bot) <br>
+[Manually updating](https://github.com/GkevinOD/msl-bot#manually-updating) <br>
 [Common Issues](https://github.com/GkevinOD/msl-bot#common-issues) <br>
 [Setting up multiple emulators](https://github.com/GkevinOD/msl-bot#setting-up-multiple-emulators) <br>
 [Troubleshooting](https://github.com/GkevinOD/msl-bot#troubleshooting) <br>
@@ -75,6 +76,21 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 **Step 2**: Run desired script. Descriptions of each script is available on the bot app.
 
   - For any errors, refer to the *Common Issues*.
+
+<br>
+
+## Manually updating
+**Step 1**: Download the latest version from the same [link](https://github.com/GkevinOD/msl-bot/archive/v3.0.zip).
+
+**Step 2**: Open the ZIP file and extract the contents into the old version.
+
+![Drag files](https://i.imgur.com/Ui9kDFf.png)
+
+**Step 3**: When the Replace or Skip Files prompt appear, select the option to replace.
+  
+  Your existing configs will be saved.
+  
+![Replace All](https://i.imgur.com/K3gVPeF.png)
 
 <br>
 
