@@ -244,7 +244,8 @@ Func evolve($sAstromon, $iNeedEvo2 = 4)
             clickPoint("311, 331", 20, 200)
         EndIf
         
+        collectQuest()
+        
         Return "success"
     EndIf
-    collectQuest()
 EndFunc
