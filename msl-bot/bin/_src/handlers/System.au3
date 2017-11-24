@@ -29,15 +29,27 @@ Func _Sleep($iDuration)
 
         If ($g_bRunning = True) And ($g_hScriptTimer <> Null) Then
             WinSetTitle($hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", "") & " - " & getTimeString(TimerDiff($g_hScriptTimer)/1000))
+            
+            ;AntiStuck sequence
+            If ($g_hTimerLocation <> Null) And TimerDiff($g_hTimerLocation) > 60000*10 Then ;10 minute anti-stuck
+                $g_hTimerLocation = Null
+                addLog($g_aLog, "*AntiStuck: Stuck for 10 minutes, restarting nox.", $LOG_ERROR)
+                RestartNox()
+            EndIf
         EndIf
         
         displayLog($g_aLog, $hLV_Log)
         While $g_bPaused = True
+            $g_hTimerLocation = Null
             displayLog($g_aLog, $hLV_Log)
             GUI_HANDLE()
         WEnd
 
-        If $g_bRunning = False Then Return True 
+        If $g_bRunning = False Then 
+            $g_hTimerLocation = Null
+            Return True
+        EndIf
+
         GUI_HANDLE()
     WEnd
     Return False
@@ -76,9 +88,9 @@ Func _Debug()
     For $i = 0 To UBound($aLines, $UBOUND_ROWS)-1
         If $aLines[$i] = "" Then ContinueLoop
         Local $sResult = Execute($aLines[$i])
-        If String($sResult) = "" Then $sResult = "N/A"
+        If (isArray($sResult) = False) And (String($sResult) = "") Then $sResult = "N/A"
 
-        If isArray($sResult) Then
+        If isArray($sResult) = True Then
             _ArrayDisplay($sResult)
             addLog($g_aLog, "{Array} <= " & $aLines[$i], $LOG_NORMAL)
         Else

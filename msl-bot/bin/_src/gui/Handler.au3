@@ -148,10 +148,27 @@ Func Start()
     GUICtrlSetData($idPB_Progress, 0)
     UpdateSettings()
 
+    _GUICtrlTab_ClickTab($hTb_Main, 1)
+
     ;Pre Conditions
     If $g_hWindow = 0 Or $g_hControl = 0 Then
-        MsgBox($MB_ICONERROR+$MB_OK, "Window/Control handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
-        Return -1
+        If ($g_hWindow <> 0) And ($g_hControl = 0) Then
+            Local $iPID = WinGetProcess($g_hWindow)
+            Local $sPath = _WinAPI_GetProcessFileName($iPID)
+                    
+            If StringInStr($sPath, "Nox") = True Then
+                addLog($g_aLog, "Control Handle not found.", $LOG_NORMAL)
+                addLog($g_aLog, "Attempting to use default for Nox.", $LOG_NORMAL)
+                
+                $g_hControl = ControlGetHandle($g_hWindow, "", "[CLASS:subWin; INSTANCE:1]")
+                If $g_hControl = 0 Then ControlGetHandle($g_hWindow, "", "[CLASS:AnglePlayer_0; INSTANCE:1]")
+                If $g_hControl = 0 Then 
+                    MsgBox($MB_ICONERROR+$MB_OK, "Window/Control handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
+                    Return -1
+                EndIf
+            EndIf
+
+        EndIf
     EndIf
 
     If ($g_iBackgroundMode = $BKGD_ADB) Or ($g_iMouseMode = $MOUSE_ADB) Or ($g_iSwipeMode = $SWIPE_ADB) Then
@@ -161,8 +178,16 @@ Func Start()
         EndIf
 
         If StringInStr(adbCommand("get-state"), "error") = True Then
-            MsgBox($MB_ICONERROR+$MB_OK, "Adb device does not exist.", "Device is not connected or does not exist: " & $g_sAdbDevice & @CRLF & @CRLF & adbCommand("devices"))
-            Return -1
+            addLog($g_aLog, "Attempting to connect to ADB Device: " & $g_sAdbDevice, $LOG_NORMAL)
+            adbCommand("connect " & $g_sAdbDevice)
+
+            If StringInStr(adbCommand("get-state"), "error") = True Then 
+                MsgBox($MB_ICONERROR+$MB_OK, "Adb device does not exist.", "Device is not connected or does not exist: " & $g_sAdbDevice & @CRLF & @CRLF & adbCommand("devices"))
+                addLog($g_aLog, "Failted to connect to device: " & $g_sAdbDevice, $LOG_ERROR)
+                Return -1
+            Else
+                addLog($g_aLog, "Successfully connected to device: " & $g_sAdbDevice, $LOG_NORMAL)
+            EndIf
         EndIf
     EndIf
 
@@ -199,8 +224,25 @@ Func Start()
                 ControlDisable("", "", $hBtn_Start)
                 ControlEnable("", "", $hBtn_Stop)
                 ControlEnable("", "", $hBtn_Pause)
+                
+                #cs
+                If $g_hWindow <> 0 And $g_hControl <> 0 Then
+                    Local $t_aDimensions = ControlGetPos("", "", $g_hControl)
+                    If ($t_aDimensions[2] <> $g_aControlSize[0]) Or ($t_aDimensions[3] <> $g_aControlSize[1]) Then
+                        Local $iPID = WinGetProcess($g_hWindow)
+                        Local $sPath = _WinAPI_GetProcessFileName($iPID)
+                        
+                        If StringInStr($sPath, "Nox") = True Then
+                            Local $iResult = MsgBox($MB_ICONWARNING+$MB_YESNO, "Emulator size is incorrect.", "The bot has detected that your emulator has the incorrect resolution: " & $t_aDimensions[2] & "x" & $t_aDimensions[3] & "." & _
+                            @CRLF & "This may cause the bot to not work properly." & @CRLF & @CRLF & "Would you like the bot to restart Nox with the corrected resolution?", 20)
+                            
+                            If $iResult = $IDYES Then RestartNox($iPID)
+                        EndIf
 
-                _GUICtrlTab_ClickTab($hTb_Main, 1)
+                    EndIf
+                EndIf
+                #ce
+
                 Return
             EndIf
         Next
@@ -244,6 +286,46 @@ Func Pause()
         _GUICtrlButton_SetText($hBtn_Pause, "Pause")
         ControlEnable("", "", $hBtn_Stop)
     EndIf
+EndFunc
+
+Func RestartNox($iPID = WinGetProcess($g_hWindow), $bDebug = False)
+    Local $sPath = _WinAPI_GetProcessFileName($iPID)
+    Local $aPosition = WinGetPos($g_hWindow)
+    Local $t_sCommandLine = StringStripWS(_WinAPI_GetProcessCommandLine($iPID), $STR_STRIPALL)
+    Local $aCommandLine = formatArgs(StringMid($t_sCommandLine, StringInStr($t_sCommandLine, "-")+1), "-", ":")
+    Local $sClone = getArg($aCommandLine, "clone")
+
+    If ($sClone <> -1) And (StringInStr($t_sCommandLine, "-clone") = True) Then
+        $sClone = " -clone:" & $sClone
+    Else
+        $sClone = " -clone:Nox"
+    EndIf
+
+    Run($sPath & $sClone & " -quit")
+    While ProcessExists($iPID) <> 0
+        addLog($g_aLog, "*Closing currect Nox process.", $LOG_NORMAL)
+        If _Sleep(1000) Then Return
+    WEnd
+
+    Run($sPath & $sClone & " -resolution:800x552 -dpi:160 -package:com.ftt.msleague_gl -lang:en")
+
+    $g_hWindow = 0
+    While $g_hWindow = 0
+        addLog($g_aLog, "*Opening Nox and waiting for handles.", $LOG_NORMAL)
+        If _Sleep(1000) Then Return
+
+        $g_hWindow = WinGetHandle($g_sWindowTitle)
+        If $g_hWindow <> 0 Then WinMove($g_hWindow, "", $aPosition[0], $aPosition[1])
+    WEnd
+
+    While getLocation() <> "tap-to-start"
+        If $bDebug Then CaptureRegion("Debug")
+        $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
+        addLog($g_aLog, "*Waiting for MSL to load.", $LOG_NORMAL)
+        If _Sleep(1000) Then Return
+    WEnd
+
+    navigate("map")
 EndFunc
 
 ;Some helper functions for handling controls----
@@ -709,7 +791,7 @@ EndFunc
 
 ;saveSettings for main GUI
 Func _saveSettings()
-    Local $sScriptName
+    Local $sScriptName ;Holds current script name
     _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $sScriptName)
     saveSettings($g_aScripts, $sScriptName, $hLV_ScriptConfig)
 EndFunc
@@ -767,7 +849,7 @@ Func UpdateSettings()
     EndIf
 
     $g_hWindow = WinGetHandle($g_sWindowTitle)
-    $g_hControl = ControlGetHandle($g_hWindow, "", $t_sControlInstance)
+    $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
 EndFunc
 
 ;Helper functions

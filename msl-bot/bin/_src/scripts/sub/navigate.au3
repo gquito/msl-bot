@@ -85,6 +85,16 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
 
                     $t_sCurrLocation = getLocation()
                 WEnd
+            Case "tap-to-start"
+                clickPoint("394,469", 3, 50)
+                If _Sleep(2000) Then Return False
+                ContinueLoop
+
+            Case "event-list"
+                clickPoint("776,20", 3, 50)
+                If _Sleep(2000) Then Return False
+                ContinueLoop
+                
         EndSwitch
 
         ;Handles normal locations

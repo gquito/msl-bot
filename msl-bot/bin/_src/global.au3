@@ -116,6 +116,8 @@
     Global Const $g_aSwipeUp =      [434, 406, 434, 317, "up"]
     Global Const $g_aSwipeRight =   [200, 550, 600, 550, "right"]
 
+    Global $g_sLocation = "" ;Global current location. Used for antiStuck
+    Global $g_hTimerLocation = Null ;Global timer for location. Used for antiStuck
     Global $g_bPerformHourly = False ;Status to do hourly or not.
     Global $g_bPerformGuardian = True ;Status to do guardian or not.
     Global $g_aScripts = [] ;Script data [[script, description, [[config, value, description], [..., ..., ...]]], ...]

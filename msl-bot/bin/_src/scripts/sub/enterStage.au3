@@ -110,6 +110,11 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp", $bAuto = False)
 						clickPoint($aStage)
 
 						If _Sleep(500) Then Return False
+
+						While getLocation() = "autobattle-prompt"
+							If TimerDiff($t_hTimer) > 5000 Then ContinueLoop(3)
+							clickPoint("494,330")
+						WEnd
 					WEnd
 
 					If getLocation($g_aLocations, False) <> "map-battle" Then

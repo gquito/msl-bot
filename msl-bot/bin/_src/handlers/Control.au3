@@ -260,8 +260,12 @@ Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth
         
     ElseIf $iBackgroundMode = $BKGD_ADB Then
         adbCommand("shell screencap " & $g_sEmuSharedFolder[0] & "\" & $g_sWindowTitle & ".png")
-		$hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+		Local $t_hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+
+        $hBitmap = _GDIPlus_BitmapCloneArea($t_hBitmap, $iX, $iY, $iWidth, $iHeight)
         $hHBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap)
+
+        _GDIPlus_BitmapDispose($t_hBitmap)
     EndIf
 EndFunc
 

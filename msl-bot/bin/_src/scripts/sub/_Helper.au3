@@ -323,7 +323,7 @@ Func findGuardian($sMode)
 	EndSwitch
 
 	captureRegion()
-	Local $aResult = findImage($sImagePath, 100, 0, 550, 250, 60, 250)
+	Local $aResult = findImage($sImagePath, 150, 0, 550, 250, 60, 250)
 	If isArray($aResult) Then $aResult[0] = $iX
 
 	Return $aResult
