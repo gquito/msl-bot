@@ -13,6 +13,14 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
   - Slime farming and gem/gold conversion.
   - And more.
 
+### Table of Contents
+
+[How to use bot](https://github.com/GkevinOD/msl-bot#how-to-use-bot) <br>
+[Common Issues](https://github.com/GkevinOD/msl-bot#common-issues) <br>
+[Setting up multiple emulators](https://github.com/GkevinOD/msl-bot#setting-up-multiple-emulators) <br>
+[Troubleshooting](https://github.com/GkevinOD/msl-bot#troubleshooting)
+[Reporting an issue](https://github.com/GkevinOD/msl-bot#reporting-an-issue)
+
 ## How to use bot
 ### Requirements:
 * Windows 7/8/8.1/10.
@@ -68,6 +76,8 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
   - For any errors, refer to the *Common Issues*.
 
+<br>
+
 ## Common Issues
 ### Window/Control Handle not found.
   - This issue can be fixed by correctly setting the Bot config. Refer to [*Changing Bot Config*](https://github.com/GkevinOD/msl-bot#changing-bot-config), Step 1 of **How to use bot** section.
@@ -88,6 +98,10 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
   
 ![Nox device](https://i.imgur.com/zUg57e5.png)
 
+<br>
+<br>
+<br>
+
 ## Setting up multiple emulators
 **Step 1**: Create a new profile by editing the `Profile Name` setting in \_Config.
 
@@ -100,6 +114,40 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 ![Device List](https://i.imgur.com/8V4X5qK.png)
   
 **Step 3**: Run a script.
+
+<br>
+
+## Troubleshooting
+### Script looping in airship or doing nothing.
+#### Before troubleshooting for this problem:
+  - Open Debug Input `Ctrl+D` and enter `getLocation()` in airship and the map.
+  - If the locations say 'unknown' on the log, proceed with the following troubleshooting.
+  - If the location is `village` in the airship and `map` in the map, your problem is different.
+
+---
+**Using the RestartNox() function**: 
+
+  - If you have the Nox emulator, you can open Debug Input `Ctrl+D` and enter `RestartNox()`. <br>
+  - This function will close and open the Nox process with correct resolution, dpi, and language set. <br>
+  - After restarting, try running a script. <br>
+  - If the issue still occurs, continue with other methods.
+  
+**Using other Capture Mode**:
+
+  - If `WinAPI` does not work for you, try switching to `ADB` or `None` capture mode.
+  - If none of the modes work for you, ask help in Discord or create an issue report on Github.
+  
+<br>
+
+## Reporting an issue
+Issue report can be made on Github or Discord.
+
+#### Include the following:
+  - Nox version. Ex. version 6.0.0.0
+  - Bot app version. Ex. version 3.8.0
+  - Script that you used. Ex. Farm Rare
+  - Description of the problem.
+  - A screenshot if possible.
 
 ## License
 
