@@ -1,3 +1,0 @@
-latest-version=v2.2.4.1,2020401,2.2
-description=v2.2.4.1 Update log:|- Added additional step in enterStage algorithm to prevent having Auto Astrochips turned off.
-directory=https://github.com/GkevinOD/msl-bot/archive/v2.0.zip
