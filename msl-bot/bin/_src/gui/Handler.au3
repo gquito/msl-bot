@@ -224,24 +224,6 @@ Func Start()
                 ControlDisable("", "", $hBtn_Start)
                 ControlEnable("", "", $hBtn_Stop)
                 ControlEnable("", "", $hBtn_Pause)
-                
-                #cs
-                If $g_hWindow <> 0 And $g_hControl <> 0 Then
-                    Local $t_aDimensions = ControlGetPos("", "", $g_hControl)
-                    If ($t_aDimensions[2] <> $g_aControlSize[0]) Or ($t_aDimensions[3] <> $g_aControlSize[1]) Then
-                        Local $iPID = WinGetProcess($g_hWindow)
-                        Local $sPath = _WinAPI_GetProcessFileName($iPID)
-                        
-                        If StringInStr($sPath, "Nox") = True Then
-                            Local $iResult = MsgBox($MB_ICONWARNING+$MB_YESNO, "Emulator size is incorrect.", "The bot has detected that your emulator has the incorrect resolution: " & $t_aDimensions[2] & "x" & $t_aDimensions[3] & "." & _
-                            @CRLF & "This may cause the bot to not work properly." & @CRLF & @CRLF & "Would you like the bot to restart Nox with the corrected resolution?", 20)
-                            
-                            If $iResult = $IDYES Then RestartNox($iPID)
-                        EndIf
-
-                    EndIf
-                EndIf
-                #ce
 
                 Return
             EndIf

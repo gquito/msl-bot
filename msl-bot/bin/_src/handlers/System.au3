@@ -31,7 +31,7 @@ Func _Sleep($iDuration)
             WinSetTitle($hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", "") & " - " & getTimeString(TimerDiff($g_hScriptTimer)/1000))
             
             ;AntiStuck sequence
-            If ($g_hTimerLocation <> Null) And TimerDiff($g_hTimerLocation) > 60000*10 Then ;10 minute anti-stuck
+            If ($g_hTimerLocation <> Null) And (TimerDiff($g_hTimerLocation) > (60000*10)) Then ;10 minute anti-stuck
                 $g_hTimerLocation = Null
                 addLog($g_aLog, "*AntiStuck: Stuck for 10 minutes, restarting nox.", $LOG_ERROR)
                 RestartNox()

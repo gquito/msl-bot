@@ -24,7 +24,9 @@ EndFunc
 	Extended: Location pixel data.
 #ce
 Func getLocation($aLocations = $g_aLocations, $bUpdate = True)
-	Local $sOldLocation = $g_aLocations
+	If $g_hTimerLocation = Null Then $g_hTimerLocation = TimerInit()
+	Local $sOldLocation = $g_sLocation
+
 	If $bUpdate = True Then captureRegion() ;Updates global bitmap
 
 	;Going through location data and using isPixelAND() function to check each location.
@@ -36,12 +38,15 @@ Func getLocation($aLocations = $g_aLocations, $bUpdate = True)
 
 	Local $t_sLocation = "" ;Temporary location to double check location.
 	For $i = 0 To $iSize-1
-		If $aLocations[$i][0] = "" Or StringMid($aLocations[$i][0], 0, 1) = ";" Then ContinueLoop
+		If ($aLocations[$i][0] = "") Or (StringMid($aLocations[$i][0], 0, 1) = ";") Then ContinueLoop
 
 		If isPixelOR($aLocations[$i][1], 20) = True Then
 			If $bUpdate = False Then 
+				Global $g_vDebug = [$aLocations[$i][0], $aLocations[$i][1]]
+
 				$g_sLocation = $aLocations[$i][0]
 				If $g_sLocation <> $sOldLocation Then $g_hTimerLocation = TimerInit()
+
 				Return $aLocations[$i][0] ;no double check if update is false.
 			EndIf
 
@@ -51,16 +56,20 @@ Func getLocation($aLocations = $g_aLocations, $bUpdate = True)
 
 			If isPixelOR($aLocations[$i][1], 20) = True Then
 				Global $g_vDebug = [$aLocations[$i][0], $aLocations[$i][1]]
+
 				$g_sLocation = $aLocations[$i][0]
 				If $g_sLocation <> $sOldLocation Then $g_hTimerLocation = TimerInit()
+
 				Return $aLocations[$i][0] ;Returns confirmed location.
 			EndIf
 		EndIf
 	Next
 
-	Global $g_vDebug = ""
+	$g_vDebug = ""
+
 	$g_sLocation = "unknown"
 	If $g_sLocation <> $sOldLocation Then $g_hTimerLocation = TimerInit()
+
 	Return "unknown" ;If no location from database is found.
 EndFunc
 

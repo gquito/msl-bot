@@ -112,8 +112,25 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
             MouseClick("left", $aNewPoint[0], $aNewPoint[1], 1, 0)
         ElseIf $iMouseMode = $MOUSE_CONTROL Then
             ;clicks using fake mouse.
-            Local $t_aOffset = ControlGetPos($hWindow, "", $hControl)
-            ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0]+$t_aOffset[0], $aNewPoint[1]+$t_aOffset[1]) ;For simulated clicks
+            Local $t_aOffset = ControlGetPos("", "", $hControl)
+            If isArray($t_aOffset) = True Then
+                If ($t_aOffset[0] = 0) And ($t_aOffset[1] = 0) Then
+                    If ($t_aOffset[2] <> $g_aControlSize[0]) Or ($t_aOffset[3] <> $g_aControlSize[1]) Then
+                        ;Using default Nox offsets
+                        Local $iPID = WinGetProcess($g_hWindow)
+                        Local $sPath = _WinAPI_GetProcessFileName($iPID)
+                        If StringInStr($sPath, "Nox") = True Then
+                            $t_aOffset[0] = 2
+                            $t_aOffset[1] = 30
+                        EndIf
+                    EndIf
+                EndIf 
+
+                $aNewPoint[0]+=$t_aOffset[0]
+                $aNewPoint[1]+=$t_aOffset[1]
+            EndIf
+
+            ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0], $aNewPoint[1]) ;For simulated clicks
         ElseIf $iMouseMode = $MOUSE_ADB Then
             ;clicks using adb commands
             adbCommand("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
