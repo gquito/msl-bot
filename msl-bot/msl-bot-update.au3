@@ -102,6 +102,7 @@ Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle 
 	$g_bUpdating = False
 	WinSetTitle($hWindow, "", "MSL Bot Updater: Complete")
 	_Sleep(30000, 30, $hWindow)
+	_Exit()
 EndFunc
 
 ;---Functions---
