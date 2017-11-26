@@ -32,6 +32,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 ---
 ### Before you start:
+* When running the bot app through .au3, Run Script (x86) by right clicking on the file.
 * Set your Windows Display Scaling to 100%. 
 * Enable Windows Aero Mode (Windows 7).
 
