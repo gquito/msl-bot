@@ -18,9 +18,11 @@ EndIf
 ;Main Update function
 Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle = Null)
 	If $hParentHandle <> Null Then
+		MsgBox(0, "", $hParentHandle)
 		$hParentHandle = _StringToHex($hParentHandle)
-		MsgBox($hParentHandle)
+		MsgBox(0, "", $hParentHandle)
 		$sParentPath = _WinAPI_GetProcessFileName(WinGetProcess($hParentHandle)) & _WinAPI_GetProcessCommandLine(WinGetProcess($hParentHandle))
+		MsgBox(0, "", $sParentPath)
 		ProcessClose(WinGetProcess($hParentHandle))
 	EndIf
 
