@@ -1,6 +1,5 @@
 #include <GUIListView.au3>
 #RequireAdmin
-Opt("GUIResizeMode", 1)
 
 ;Global Variables
 Global $g_bUpdating = True ;updating status
