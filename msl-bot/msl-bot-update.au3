@@ -20,6 +20,7 @@ Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle 
 	If $hParentHandle <> Null Then
 		$hParentHandle = Hwnd($hParentHandle)
 		$sParentPath = _WinAPI_GetProcessFileName(WinGetProcess($hParentHandle)) & _WinAPI_GetProcessCommandLine(WinGetProcess($hParentHandle))
+		MsgBox(0, "", $sParentPath)
 		ProcessClose(WinGetProcess($hParentHandle))
 	EndIf
 
