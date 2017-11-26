@@ -15,6 +15,8 @@ EndIf
 
 ;Main Update function
 Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle = Null)
+	If $hParentHandle <> Null Then ProcessClose(WinGetProcess($hParentHandle))
+
 	If Execute($sRemoteFileListURL) <> "" Then $sRemoteFileListURL = Execute($sRemoteFileListURL)
 	If Execute($sRemoteDirURL) <> "" Then $sRemoteDirURL = Execute($sRemoteDirURL)
 	If Execute($sLocalDirPath) <> "" Then $sLocalDirPath = Execute($sLocalDirPath)
