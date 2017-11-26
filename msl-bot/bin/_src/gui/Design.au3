@@ -3,7 +3,8 @@
 
 Func CreateGUI()
     Local Const $GUI_FONTSIZE = 11
-    Global $hParent = GUICreate($g_sAppTitle & UpdateStatus(), 400, 380, -9999, -9999)
+    Global $hParent = GUICreate($g_sAppTitle, 400, 380, -9999, -9999)
+    WinSetTitle($hParent, "", $g_sAppTitle & UpdateStatus())
     GUISetBkColor(0xFFFFFF)
     GUISetFont(8.5)
     GUISetState(@SW_SHOW, $hParent)
@@ -105,9 +106,32 @@ Func UpdateStatus()
         $t_aVersion = StringSplit($t_sRaw3, ",", $STR_NOCOUNT)
     EndIf
 
-    If (UBound($t_aVersion) <> 3) Or ($t_aVersion[0] <> $aVersion[0]) Or ($t_aVersion[1] <> $aVersion[1]) Or ($t_aVersion[2] <> $aVersion[2]) Then
+    If (UBound($t_aVersion) <> 3) Or ($t_aVersion[0] > $aVersion[0]) Or ($t_aVersion[1] > $aVersion[1]) Or (($t_aVersion[1] = $aVersion[1]) And ($t_aVersion[2] > $aVersion[2])) Then
+        If @Compiled = False Then
+            If MsgBox($MB_ICONINFORMATION+$MB_YESNO, "MSL Bot Update", "MSL Bot version " & $t_aVersion[0] & "." & $t_aVersion[1] & "." & $t_aVersion[2] _
+            & " is available. Would you like to update now?") = $IDYES Then Update()
+        Else
+            MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL Bot Update", "MSL Bot version " & $t_aVersion[0] & "." & $t_aVersion[1] & "." & $t_aVersion[2] _
+            & " is available. Updater is only available with the uncompiled version (msl-bot.au3).")
+        EndIf
+        
         $sUpdate = " (Out-of-date)"
     EndIf
 
     Return $sUpdate
+EndFunc
+
+Func Update()
+    Local $hFile = InetGet("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/msl-bot-update.au3", @ScriptDir & "\msl-bot-update.au3", 0, $INET_DOWNLOADBACKGROUND)
+    While InetGetInfo($hFile, $INET_DOWNLOADCOMPLETE) = False
+        Sleep(100)
+    WEnd
+
+    If InetGetInfo($hFile, $INET_DOWNLOADSUCCESS) = True Then
+        MsgBox($MB_ICONINFORMATION, "MSL Bot Update", "Auto update will begin shortly.", 5)
+        InetClose($hFile)
+        RunWait('"' & @AutoItExe & '" /AutoIt3ExecuteScript "' & @ScriptDir & '\msl-bot-update.au3" -hwnd ' & String($hParent) & " -ldir @ScriptDir -list https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/update-files.txt -rdir https://raw.githubusercontent.com/GkevinOD/msl-bot/v3.0/msl-bot/ -sd" & '"')
+    Else
+        MsgBox($MB_ICONERROR, "MSL Bot Update", "Could not download update file.")
+    EndIf
 EndFunc

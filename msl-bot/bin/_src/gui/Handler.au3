@@ -16,6 +16,7 @@ Func GUI_HANDLE()
     Local $iCode = GUIGetMsg()
     Switch $iCode
         Case $hDM_Debug
+            If $g_hEditConfig <> Null Then _endEdit()
             Debug()
         Case $idBtn_Stop
             Stop()
@@ -37,6 +38,7 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
     Switch $hCtrl
         Case $hBtn_Start
             If $nNotifycode = $BN_CLICKED Then
+                If $g_hEditConfig <> Null Then _endEdit()
                 Start()
             EndIf
         Case $hBtn_Pause
@@ -45,6 +47,7 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
             EndIf
         Case $hCmb_Scripts
             If $nNotifyCode = $CBN_SELCHANGE Then
+                If $g_hEditConfig <> Null Then _endEdit()
                 ChangeScript()
             EndIf
     EndSwitch
@@ -66,7 +69,7 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
             Switch $iCode
                 Case $LVN_ITEMCHANGED, $NM_CLICK
                     ;handles edit updates 
-                    If $g_hEditConfig <> Null Then handleEdit($g_hEditConfig, $g_iEditConfig, $hLV_ScriptConfig)
+                    If $g_hEditConfig <> Null Then endEdit()
 
                     ;Switches config description label
                     $tScriptConfigInfo = DLLStructCreate($tagNMITEMACTIVATE, $lparam)
@@ -392,10 +395,11 @@ Func createEdit(ByRef $hEdit, ByRef $iIndex, $hListView, $bNumber = False)
     Local $aSize = _GUICtrlListView_GetSubItemRect($hListView, $iIndex, 1)
 
     Local $aDim = [$aSize[0], $aSize[1], $aSize[2]-$aSize[0], $aSize[3]-$aSize[1]]
-    Local $iStyle = $WS_VISIBLE+$ES_WANTRETURN+$ES_CENTER
+    Local $iStyle = $WS_VISIBLE+$ES_AUTOHSCROLL
     If $bNumber = True Then $iStyle+=$ES_NUMBER
 
     $hEdit = _GUICtrlEdit_Create($hLV_ScriptConfig, $sText, $aDim[0], $aDim[1], $aDim[2], $aDim[3], $iStyle)
+    _GUICtrlEdit_SetLimitText($hEdit, 99999)
     
     _GUICtrlEdit_SetSel($hEdit, 0, -1)
     _WinAPI_SetFocus($hEdit)
@@ -406,6 +410,11 @@ EndFunc
 ;When enter is pressed acts as unfocus and runs the handle edit
 Func endEdit()
     handleEdit($g_hEditConfig, $g_iEditConfig, $hLV_ScriptConfig)
+    HotKeySet("{ENTER}")
+EndFunc
+
+Func _endEdit()
+    _GUICtrlEdit_Destroy($g_hEditConfig)
     HotKeySet("{ENTER}")
 EndFunc
 
