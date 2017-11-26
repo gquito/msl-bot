@@ -1,8 +1,10 @@
 #include <GUIListView.au3>
+#include <WinAPIProc.au3>
 #RequireAdmin
 
 ;Global Variables
 Global $g_bUpdating = True ;updating status
+Global $sParentPath = Null
 
 ;Checking for all command line parameters before successfully running
 Local Const $aRequired = ["hwnd", "list", "rdir", "ldir"]
@@ -14,7 +16,10 @@ EndIf
 
 ;Main Update function
 Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle = Null)
-	If $hParentHandle <> Null Then ProcessClose(WinGetProcess($hParentHandle))
+	If $hParentHandle <> Null Then 
+		$sParentPath = _WinAPI_GetProcessFileName(WinGetProcess($hParentHandle)) & _WinAPI_GetProcessCommandLine(WinGetProcess($hParentHandle))
+		ProcessClose(WinGetProcess($hParentHandle))
+	EndIf
 
 	If Execute($sRemoteFileListURL) <> "" Then $sRemoteFileListURL = Execute($sRemoteFileListURL)
 	If Execute($sRemoteDirURL) <> "" Then $sRemoteDirURL = Execute($sRemoteDirURL)
@@ -102,7 +107,8 @@ EndFunc
 Func _Exit()
 	Local $aParameters = ["sd"]
 	If _checkCMDLine($CMDLine, $aParameters) = True Then FileDelete(@ScriptFullPath) ;self-destruct
-
+	Run($sParentPath)
+	
 	Exit
 EndFunc
 
