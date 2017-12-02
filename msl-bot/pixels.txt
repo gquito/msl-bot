@@ -10,3 +10,4 @@ curr-round-4:780,538,0xE4D657|776,542,0xE8DA58|780,545,0xE4D557
 battle-end-quest:342,365,0xE70B34
 battle-sell-item-gold:410,191,0xF7EC4F
 evolve-slime:418,332,0x361515|457,353,0xFDFDD0|459,342,0x36150D
+not-fully-awakened:585,182,0x7D624D
