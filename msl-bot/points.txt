@@ -46,3 +46,4 @@ dungeons-guardian:170, 372
 get-reward:399, 333
 monsters-evolution:547, 394
 monsters-evolution-x:774, 112
+awaken-locked-cancel:495, 313
