@@ -1,13 +1,13 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
+Func Farm_Gem($iGemsToFarm, $sCatch, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
     ;Variables
     Local $aFarmAstromonData = Null
     Local $iFarmedGems = 0 ;Number of gems farmed since script has started.
     Local $iUsedGems = 0 ;Number of gems used since script has started.
-    Local $iNeedCatch = 16 ;Number of astromon to catch
-    Local $iNeedEvo2 = 4 ;Number of evo2 needed for an evo3
+    Local $iNeedCatch = 0 ;Number of astromon to catch
+    Local $iError = 0 ;Counts number of error occuring in evolving process before completely stopping script.
 
     If isArray($t_aData) = True Then
         Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
@@ -22,11 +22,12 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
     While $iFarmedGems < $iGemsToFarm
         If ($bHourly = "Enabled") And ($g_bPerformHourly = True) Then doHourly()
 
-        If _Sleep(10) Then ExitLoop(2)
+        If _Sleep(10) Then ExitLoop
         displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
 
+        ;Handles catching process
         While $iNeedCatch > 0
-            Local $t_aResults = Farm_Astromon($iNeedCatch, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems-$iUsedGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $aDataPost, $aData)
+            Local $t_aResults = Farm_Astromon($iNeedCatch, $sCatch, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $aDataPost, $aData)
             $aDataPost = $t_aResults
             If _Sleep(10) Then ExitLoop(2)
             Switch $g_vExtended
@@ -47,20 +48,22 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
         WEnd
 
-        $sResult = evolve($sAstromon, $iNeedEvo2)
-        $iNeedEvo2 = $g_vExtended
-        Switch $sResult
-            Case "not-enough-astromon"
-                $iNeedCatch += 4
-            Case "not-enough-astromon-evo2"
-                $iNeedEvo2 += 1
-                $iNeedCatch += 4
-            Case "success"
-                $iFarmedGems += 100
-                $iNeedEvo2 += 4
-                $iNeedCatch = $iNeedEvo2*4
-            Case Else
-                ExitLoop
+        ;Handles evolving process
+        $vResult = evolve($sAstromon, True)
+        Switch $vResult
+            Case -1, -2, -3, -4, -6 ;Normal errors.
+                addLog($g_aLog, "Could not evolve, error code: " & $vResult, $LOG_ERROR)
+                $iError += 1
+                If $iError > 5 Then 
+                    addLog($g_aLog, "Too many errors has occurred.", $LOG_ERROR)
+                    Return -1
+                EndIf
+            Case -5 ;No currency.
+                addLog($g_aLog, "Not enough gold to procceed.", $LOG_ERROR)
+                Return -1
+            Case Else ;Success
+                If $vResult = 0 Then $iFarmedGems += 100
+                $iNeedCatch = Int($vResult)
         EndSwitch
 
         setArg($aData, "Gems_Farmed", $iFarmedGems & "/" & $iGemsToFarm)
@@ -72,166 +75,4 @@ Func Farm_Gem($iGemsToFarm, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
     $g_vExtended = $t_vExtended
 
     Return $aData
-EndFunc
-
-;Evolve sequence
-Func evolve($sAstromon, $iNeedEvo2 = 4)
-    $g_vExtended = $iNeedEvo2
-
-    Local $t_iCount = 0
-    While navigate("monsters", True) = False
-        If _Sleep(10) Then Return False
-        $t_iCount += 1
-        If $t_iCount > 5 Then 
-            addLog($g_aLog, "Could not navigate to monsters.", $LOG_ERROR)
-            Return False
-        EndIf
-    WEnd
-
-    While $iNeedEvo2 > 0
-        If _Sleep(10) Then Return False
-        addLog($g_aLog, "Evolving astromon x" & 5-$iNeedEvo2 & ".", $LOG_NORMAL)
-
-        Local $aAstromon = findImage("evolve-" & StringLower($sAstromon), 100, 0, 12, 105, 280, 340)
-        If isArray($aAstromon) = False Then
-            addLog($g_aLog, "Could not detect an astromon.", $LOG_ERROR)
-            Return False
-        EndIf
-
-        clickPoint($aAstromon, 5, 100, Null) ;Clicks astromon
-        If clickUntil("604,392", "isLocation", "monsters-evolution", 10, 200, Null) = True Then ;Click Evolve
-            If _Sleep(10) Then Return False
-            ;Merging astromons
-            Local $t_sResult = _evolve_Merge()
-            If $t_sResult <> True Then Return $t_sResult
-
-            If _Sleep(10) Then Return False
-            ;Awakening/evolving
-            If _evolve_AwakenEvolve() = False Then Return False
-
-            $iNeedEvo2 -=1
-            $g_vExtended = $iNeedEvo2
-
-            If $iNeedEvo2 <> 0 Then
-                If _Sleep(10) Then Return False
-                collectQuest()
-                Local $t_iCount = 0
-                While navigate("monsters", True) = False
-                    If _Sleep(10) Then Return False
-                    $t_iCount += 1
-                    If $t_iCount > 5 Then 
-                        addLog($g_aLog, "Could not navigate to monsters.", $LOG_ERROR)
-                        Return False
-                    EndIf
-                WEnd
-            Else
-                Local $t_hTimer = TimerInit()
-                While (getLocation() <> "monsters")
-                    If _Sleep(10) Then Return False
-                    If TimerDiff($t_hTimer) > 5000 Then ExitLoop
-                    closeWindow()
-                    clickPoint("773,113", 1, 0, Null)
-                WEnd
-            EndIf
-        EndIf
-    WEnd
-
-    If _Sleep(10) Then Return False
-    addLog($g_aLog, "Evolving to evo3.", $LOG_NORMAL)
-    Local $aAstromon = findImage("evolve-" & StringLower($sAstromon) & "x", 100, 0, 12, 105, 280, 340)
-    clickPoint($aAstromon, 10, 100, Null) ;Clicks astromon
-    If clickUntil("604,392", "isLocation", "monsters-evolution", 10, 200, Null) = True Then ;Click Evolve
-        If _Sleep(10) Then Return False
-        ;Merging astromons
-        Local $t_sResult = _evolve_Merge()
-        If $t_sResult <> True Then Return $t_sResult
-
-        If _Sleep(10) Then Return False
-        ;Awakening/evolving
-        If _evolve_AwakenEvolve() = False Then Return False
-
-        closeWindow()
-        addLog($g_aLog, "Successfully evolved to evo3.", $LOG_NORMAL)
-        CaptureRegion()
-        
-        ;For extra evo2 leftovers
-        If isArray(findImage("evolve-" & StringLower($sAstromon) & "x", 100, 0, 12, 105, 280, 340)) = True Then
-            $g_vExtended = -1
-        EndIf
-
-        ;Releasing evo3
-        addLog($g_aLog, "Cleaning up.", $LOG_NORMAL)
-
-        clickPoint("51,152", 3, 100) ;Clicks evo3 astromon
-        clickUntil("776,110", "isLocation", "monsters", 5, 100)
-        If clickWhile("649, 513", "isLocation", "monsters,monsters-evolution", 10, 100) = True Then
-            clickPoint("311, 331", 20, 200)
-        EndIf
-        
-        collectQuest()
-        Return "success"
-    EndIf
-EndFunc
-
-Func _evolve_AwakenEvolve($bLog = True)
-    If _Sleep(10) Then Return False
-
-    Local $t_hTimer = TimerInit()
-    While getLocation() = "monsters-evolution"
-        If _Sleep(10) Then Return False
-        If TimerDiff($t_hTimer) > 60000 Then
-            If $bLog Then addLog($g_aLog, "Something went wrong with the evolving process.", $LOG_ERROR)
-            Return False
-        EndIf
-
-        If isPixel("425,394,0xF5E448", 10) = True Then ;The awaken pixel
-            If clickUntil("425,395", "isLocation", "monsters-awaken", 10, 100) = True Then
-                clickPoint("303,312", 10, 200) ;awaken/evolve confirm
-            EndIf
-        Else
-            If isPixel("657,395,0xEBC83D", 10) = True Then
-                If clickUntil("656,394", "isLocation", "monsters-evolve", 10, 100) = True Then
-                    If clickUntil("303,312", "isLocation", "unknown", 10, 200) Then ;awaken/evolve confirm
-                        clickUntil(getArg($g_aPoints, "tap"), "isLocation", "monsters-astromon", 10, 500)
-                    EndIf 
-                EndIf
-            EndIf
-        EndIf
-    WEnd
-
-    Return True
-EndFunc
-
-Func _evolve_Merge($bLog = True)
-    If isPixel("585,182,0x7D624D", 20) = True Then ;The third empty slot pixel
-        Local $t_hTimer = TimerInit()
-        For $x = 0 To 6
-            If _Sleep(10) Then Return False
-            If TimerDiff($t_hTimer) > 60000 Then
-                If $bLog Then addLog($g_aLog, "Something went wrong with the awakening process.", $LOG_ERROR)
-                Return False
-            EndIf
-            ;click the astromons
-            If getLocation() = "monsters-evolution" Then
-                If isPixel("585,182,0x7D624D", 10) = False Then ExitLoop
-                closeWindow()
-
-                clickPoint(351+($x*65) & ",330", 1, 0, Null)
-            EndIf
-
-            If getLocation() <> "monsters-evolution" Then 
-                clickPoint("542, 313", 1, 0, Null) ;Clicks cancel
-                $x -= 1
-            EndIf
-        Next
-
-        CaptureRegion()
-        If isPixel("585,182,0x7D624D", 10) = True Then
-            ;Incomplete astromon.
-            If $bLog Then addLog($g_aLog, "Not enough astromons.", $LOG_NORMAL)
-            Return "not-enough-astromon"
-        EndIf
-    EndIf
-
-    Return True
 EndFunc

@@ -18,16 +18,6 @@ Func doHourly()
 			Return False
 		EndIf
 
-		Local $aPoints = getArg($g_aNezzPos, "village-pos" & $iPos)
-        If $aPoints <> -1 Then
-            addLog($g_aLog, "Attempting to click nezz.", $LOG_NORMAL)
-            For $aPoint In StringSplit($aPoints, "|", $STR_NOCOUNT)
-                clickPoint($aPoint, 2, 100)
-                navigate("village", False, False)
-            Next
-        EndIf
-        If _Sleep(10) Then Return False
-
 	    navigate("village")
 
 		addLog($g_aLog, "Collecting hourly trees.", $LOG_NORMAL)
@@ -44,6 +34,18 @@ Func doHourly()
             
             navigate("village", False, False)
 		Next
+
+        navigate("village", False, False)
+        If _Sleep(10) Then Return False
+
+        Local $aNezzLoc = getArg($g_aNezzPos, "village-pos" & $iPos)
+        If $aNezzLoc <> -1 Then
+            addLog($g_aLog, "Attempting to click nezz.", $LOG_NORMAL)
+            For $aNezz In StringSplit($aNezzLoc, "|", $STR_NOCOUNT)
+                clickPoint($aNezz, 2, 100)
+                navigate("village", False, False)
+            Next
+        EndIf
 	EndIf
 
     $g_bPerformHourly = False

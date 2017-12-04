@@ -305,25 +305,39 @@ EndFunc
 #ce
 Func findGuardian($sMode)
 	CaptureRegion()
-	If isArray(findColor("386,470", "1,-220", 0xCC0F12, 10, 1, -1)) = False Then Return -2
+	If isArray(findColor("386,470", "1,-220", 0xCC0F12, 10, 1, -1)) = False Then Return -1
 
 	If FileExists(@ScriptDir & "/bin/images/misc/") = False Then DirCreate(@ScriptDir & "/bin/images/misc")
 	Local Const $sImagePath = "misc-guardian"
 	Local Const $iX = 650
 
+	Local $t_hTimer = TimerInit()
+	While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = True
+		If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
+		FileDelete(@ScriptDir & "/bin/images/misc/misc-guardian.bmp")
+	WEnd
+	
 	$sMode = StringLower($sMode)
 	Switch $sMode
 		Case "left"
-			captureRegion("bin/images/misc/misc-guardian", 336, 188, 30, 30)
+			Local $t_hTimer = TimerInit()
+			While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = False
+				If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
+				captureRegion("bin/images/misc/misc-guardian", 336, 203, 20, 5)
+			WEnd
 		Case "right"
-			captureRegion("bin/images/misc/misc-guardian", 396, 188, 30, 30)
+			Local $t_hTimer = TimerInit()
+			While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = False
+				If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
+				captureRegion("bin/images/misc/misc-guardian", 396, 203, 20, 5)
+			WEnd
 		Case Else
 			captureRegion()
 			Return findColor("678,470", "1,-220", 0xFCD128, 10, 1, -1)
 	EndSwitch
 
 	captureRegion()
-	Local $aResult = findImage($sImagePath, 150, 0, 550, 250, 60, 250)
+	Local $aResult = findImage($sImagePath, 100, 0, 550, 250, 60, 250)
 	If isArray($aResult) Then $aResult[0] = $iX
 
 	Return $aResult

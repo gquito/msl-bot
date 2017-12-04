@@ -49,3 +49,4 @@
 #include "scripts/sub/doRefill.au3"
 #include "scripts/sub/enterStage.au3"
 #include "scripts/sub/catch.au3"
+#include "scripts/sub/evolve.au3"

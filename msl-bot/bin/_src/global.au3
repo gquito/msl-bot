@@ -48,7 +48,7 @@
 
 ;MSL variables/constants
     Global Const $g_sNezzPosURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/nezz-locations.txt"
-    Global Const $g_sScriptsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scriptsv2.txt"
+    Global Const $g_sScriptsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scriptsv3.txt"
     Global Const $g_sPointsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt"
     Global Const $g_sPixelsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt"
     Global Const $g_sLocationsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt"
@@ -109,7 +109,7 @@
                                     "44,389,0x323F32|633,425,0xCBD0C2|267,127,0x7C55C4/133,316,0x11110A|481,348,0x84773D|551,47,0x4A5855/691,105,0x1E8645|373,455,0x425B4D|690,325,0x2B2815", _
                                     "232,348,0x363630|390,147,0x434F3D|710,388,0x134B66/565,238,0x6D6D56|94,211,0x9E418B|359,104,0x146961/648,344,0x443A23|540,95,0x5F7479|182,468,0x363333"]
 
-    Global Const $g_aVillageTrees = ["296,115|486,67|683,107|685,289", "182,390|173,94|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100", "165,272|288,99|437,123|706,53|606,235", "157,210|327,48|528,401|225,241|540,138"]
+    Global Const $g_aVillageTrees = ["296,115|486,67|683,107|685,289", "182,390|157,71|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100", "165,272|288,99|437,123|706,53|606,235", "157,210|327,48|528,401|225,241|540,138"]
 
     Global Const $g_aSwipeLeft =    [600, 550, 200, 550, "left"]
     Global Const $g_aSwipeDown =    [434, 317, 434, 406, "down"]

@@ -70,7 +70,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
         displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
         ;--------------------------------------------------------------------
 
-        If _Sleep(500) Then ExitLoop
+        If _Sleep(100) Then ExitLoop
 
         Local $sLocation = isLocation($aLocations, False)
         $aRound = getRound()
@@ -270,7 +270,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             Case "unknown", "battle-auto"
                 If isArray($aRound) And ($bFinalRound = "Disabled") Then
                     If ($iAstrochips > 0) And ($iSkipRound <> $iCurRound) Then
-                        waitLocation("unknown,battle-auto,battle", 3)
+                        waitLocation("unknown,battle,battle-auto", 3)
                         If navigate("catch-mode") = True Then ContinueLoop
                     EndIf
                 Else
