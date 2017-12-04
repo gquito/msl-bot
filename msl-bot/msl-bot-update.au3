@@ -46,7 +46,12 @@ Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle 
 		For $sFile In $aFiles
 			$sFile = StringReplace($sFile, "/", "\")
 			If StringLeft($sFile, 1) <> "!" Then
-				If FileExists($sLocalDirPath & $sFile) = True Then ContinueLoop
+				If StringLeft($sFile, 1) = "-" Then
+					FileDelete($sLocalDirPath & $sFile)
+					ContinueLoop
+				Else
+					If FileExists($sLocalDirPath & $sFile) = True Then ContinueLoop
+				EndIf
 			Else
 				$sFile = StringMid($sFile, 2)
 			EndIf
