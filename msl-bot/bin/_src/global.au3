@@ -26,7 +26,7 @@
 ;Config variables
     Global $g_sImageSearchPath = @TempDir & "\ImageSearchDLL.dll" ;ImageSearchDLL default path
     Global $g_sImagesPath = @ScriptDir & "\bin\images\" ;Path to images
-    Global $g_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile 
+    Global $g_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
     Global $g_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox
     Global $g_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
     Global $g_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
@@ -36,7 +36,7 @@
     Global $g_sWindowTitle = "NoxPlayer" ;Emulator window title.
     Global $g_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
 
-    Global $d_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile 
+    Global $d_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
     Global $d_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox
     Global $d_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
     Global $d_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
@@ -100,7 +100,7 @@
                                 ["Dungeons", "map-dungeons", 0, 0],                     ["Pagos Coast", "map-dungeons", 686, -143], _
                                 ["Sky Falls", "map-sky-falls", 0, 0],                   ["Slumbering City", "map-sky-falls", 27, -193], _
                                 ["Glacial Plains", "map-sky-falls", 338, -124],         ["Aurora Plateau", "map-sky-falls", 446, -306]]
-    
+
     Global Const $g_aVillagePos = [ "54,469,0x482E1F|306,449,0x54451E|616,422,0x3F3720/367,455,0x65552B|628,96,0x3D4340|282,23,0x485F72/738,394,0x705C36|13,413,0x6D4E38|74,382,0xBC9166", _
                                     "64,488,0x393623|264,51,0x4D656F|18,414,0xB4AA74/192,465,0x52622E|261,47,0x597077|566,92,0x259558/54,98,0x6C7E8A|787,360,0x234923|297,545,0x2D3029", _
                                     "32,449,0x26221A|81,430,0x944E41|715,409,0x3B2F1D/111,537,0x4F4526|87,124,0x71716F|259,349,0x177831/71,382,0x26221A|646,445,0x524E2B|775,105,0x716F58", _
@@ -109,7 +109,7 @@
                                     "44,389,0x323F32|633,425,0xCBD0C2|267,127,0x7C55C4/133,316,0x11110A|481,348,0x84773D|551,47,0x4A5855/691,105,0x1E8645|373,455,0x425B4D|690,325,0x2B2815", _
                                     "232,348,0x363630|390,147,0x434F3D|710,388,0x134B66/565,238,0x6D6D56|94,211,0x9E418B|359,104,0x146961/648,344,0x443A23|540,95,0x5F7479|182,468,0x363333"]
 
-    Global Const $g_aVillageTrees = ["296,115|486,67|683,107|685,289", "182,390|157,71|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100", "165,272|288,99|437,123|706,53|606,235", "157,210|327,48|528,401|225,241|540,138"]
+    Global Const $g_aVillageTrees = ["296,115|486,67|683,107|685,289", "182,390|153,69|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100", "165,272|288,99|437,123|706,53|606,235", "157,210|327,48|528,401|225,241|540,138"]
 
     Global Const $g_aSwipeLeft =    [600, 550, 200, 550, "left"]
     Global Const $g_aSwipeDown =    [434, 317, 434, 406, "down"]

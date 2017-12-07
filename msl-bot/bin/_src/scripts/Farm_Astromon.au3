@@ -7,7 +7,6 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
     ;Variables
     If $bFinalRound = "Enabled" Then $bFinishRound = "Enabled"
 
-    $aCapture &= "," & $sAstromon
     $aCapture = StringSplit($aCapture, ",", $STR_NOCOUNT)
     Local $iSize = UBound($aCapture)-1
     Local $aCaught[$iSize][2]; Data for caught and missed astromons
@@ -28,7 +27,6 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
     Local $iUsedGems = 0 ;Number of gems used since script has started.
     Local $bBossSelected = False ;Resets every new round
     Local $aRound = [0, 0] ;Rounds
-    Local $iCurRound = 1 ;Current round
     Local $iSkipRound = -1 ;Skips if the round is this.
     $g_vExtended = "success"
 
@@ -74,7 +72,10 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
 
         Local $sLocation = isLocation($aLocations, False)
         $aRound = getRound()
-        If isArray($aRound) = True Then $iCurRound = $aRound[0]
+        If isArray($aRound) = False Then
+            Local $t_aRound = [0, -1]
+            $aRound = $t_aRound
+        EndIf
 
         Switch $sLocation
             Case "", "unknown"
@@ -88,92 +89,107 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
 
         Switch $sLocation
             Case "catch-mode"
-                If $iSkipRound <> $iCurRound Then 
-                    ContinueCase
-                EndIf
-                addLog($g_aLog, "No more astromons found, skipping round.", $LOG_NORMAL)
-                clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
+                ContinueCase
             Case "battle"
-                If $bFinalRound = "Enabled" Then
-                    If isArray($aRound) And ($aRound[0] <> $aRound[1]) Then
-                        $iSkipRound = $iCurRound
-                    EndIf
-                EndIf
+                While ($iAstrochips > 0) And ($iCaught < $iCount)
+                    If _Sleep(10) Then ExitLoop(2)
 
-                If ($iSkipRound <> $iCurRound) Then
-                    While ($iAstrochips > 0) And ($iCaught < $iCount)
-                        If _Sleep(10) Then ExitLoop(2)
-                        Local $t_hTimer = TimerInit()
-                        If getLocation($g_aLocations, False) <> "catch-mode" Then
-                            While isLocation("battle,battle-auto") = False 
-                                If TimerDiff($t_hTimer) > 10000 Then ExitLoop(2)
-                                If _Sleep(100) Then ExitLoop(3)
-                            WEnd
-                            If navigate("catch-mode", False, True) = False Then
-                                $iAstrochips = 0
-                                ExitLoop
-                            EndIf
-                        EndIf
+                    Local $t_hTimer = TimerInit()
+                    While getLocation() <> "catch-mode"
+                        If TimerDiff($t_hTimer) > 10000 Then ExitLoop
 
-                        Local $sResult = catch($aCapture, $iAstrochips, True)
-                        If $sResult = -1 Then
-                            addLog($g_aLog, "Astromon bag full.", $LOG_ERROR)
-                            $g_vExtended = "Error"
-                            ExitLoop(2)
-                        EndIf
-                        If $sResult <> "" Then
-                            ;Found and catch status
-                            If StringLeft($sResult, 1) <> "!" Then
-                                ;Successfully caught
-                                If $sResult = $sAstromon Then
-                                    $iCaught += 1
-                                    setArg($aData, "Astromon_Caught", $iCaught & "/" & $iCount)
-                                Else
-                                    setArg($aCaught, StringLeft($sResult, 2), Int(getArg($aCaught, StringLeft($sResult, 2))+1))
-                                EndIf
-                            Else
-                                ;Not caught
-                                If $sResult <> $sAstromon Then
-                                    setArg($aMissed, StringLeft(StringMid($sResult, 2), 2), Int(getArg($aMissed, StringLeft(StringMid($sResult, 2), 2))+1))
-                                EndIf
-                            EndIf
-                            displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
-                        Else
-                            ;Nothing found.
-                            $iSkipRound = $iCurRound
-                            clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
-                            ContinueLoop(2)
-                        EndIf
+                        addLog($g_aLog, "Navigating to catch mode.", $LOG_NORMAL)
+                        If navigate("catch-mode", False, False) = True Then ExitLoop
                     WEnd
 
-                    If ($iCaught >= $iCount) Then ContinueCase ;Goes into exit case sequence 
-                    If ($bFinishRound = "Disabled") And ($iAstrochips = 0) Then
-                        addLog($g_aLog, "Surrendering and restarting.", $LOG_NORMAL)
-                        If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
-                            adbCommand("shell input keyevent ESCAPE")
+                    If getLocation() <> "catch-mode" Then
+                        addLog($g_aLog, "Failed to navigate to catch mode.", $LOG_ERROR)
+                        $iSkipround = $aRound[0]
+                        ExitLoop
+                    Else
+                        addLog($g_aLog, "Finished navigating.", $LOG_ERROR)
+                    EndIf
+
+                    ;beginning searching
+                    addLog($g_aLog, "Searching for astromons.", $LOG_NORMAL)
+                    Local $sResult = catch($aCapture, $iAstrochips, False)
+                    If $sResult = -1 Then
+                        addLog($g_aLog, "Astromon bag full.", $LOG_ERROR)
+                        $g_vExtended = "error"
+                        ExitLoop(2)
+                    EndIf
+
+                    If $sResult <> "" Then
+                        ;Found and catch status
+                        If StringLeft($sResult, 1) <> "!" Then
+                            ;Successfully caught
+                            addLog($g_aLog, "Caught a(n) " & $sResult & ".", $LOG_NORMAL)
+                            setArg($aCaught, StringLeft($sResult, 2), Int(getArg($aCaught, StringLeft($sResult, 2))+1))
                         Else
-                            waitLocation("battle-auto,battle,battle-end-exp", 30)
+                            ;Not caught
+                            addLog($g_aLog, "Failed to catch a(n) " & StringMid($sResult, 2) & ".", $LOG_NORMAL)
+                            setArg($aMissed, StringLeft(StringMid($sResult, 2), 2), Int(getArg($aMissed, StringLeft(StringMid($sResult, 2), 2))+1))
                         EndIf
 
-                        If navigate("battle-end", True, False) = True Then
-                            Local $t_hTimer = TimerInit()
-                            Do
-                                If _Sleep(500) Then ExitLoop(2)
-                                If TimerDiff($t_hTimer) > 30000 Then ExitLoop
-                                clickPoint(getArg($g_aPoints, "play-again"), 1, 0, Null)
-                            Until getLocation() = "map-battle" 
+                        displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
+                    EndIf
 
-                            If enterBattle() = True Then 
-                                $iRun += 1
-                                $iSkipRound = -1
-                                $iAstrochips = 3
-                                ContinueLoop
-                            EndIf
+                    If ($bFinalRound = "Enabled") And ($aRound[0] <> $aRound[1]) Then ExitLoop
+                    $sResult = catch($sAstromon, $iAstrochips, False)
+                    If $sResult = -1 Then
+                        addLog($g_aLog, "Astromon bag full.", $LOG_ERROR)
+                        $g_vExtended = "error"
+                        ExitLoop(2)
+                    EndIf
+
+                    If $sResult <> "" Then
+                        ;Found and catch status
+                        If StringLeft($sResult, 1) <> "!" Then
+                            $iCaught += 1
+                            addLog($g_aLog, "Caught a(n) " & $sResult & ".", $LOG_NORMAL)
+                            setArg($aData, "Astromon_Caught", $iCaught & "/" & $iCount)
+                        Else
+                            addLog($g_aLog, "Failed to catch a(n) " & StringMid($sResult, 2) & ".", $LOG_NORMAL)
+                        EndIf
+
+                        displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
+                    Else
+                        ;None found
+                        ExitLoop
+                    EndIf
+                WEnd
+
+                If ($iCaught >= $iCount) Then ContinueCase ;Goes into exit case sequence 
+                If ($bFinishRound = "Disabled") And ($iAstrochips = 0) Then
+                    addLog($g_aLog, "Surrendering and restarting.", $LOG_NORMAL)
+                    If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
+                        adbCommand("shell input keyevent ESCAPE")
+                    Else
+                        waitLocation("battle-auto,battle,battle-end-exp", 30)
+                    EndIf
+
+                    If navigate("battle-end", True, False) = True Then
+                        Local $t_hTimer = TimerInit()
+                        Do
+                            If _Sleep(500) Then ExitLoop(2)
+                            If TimerDiff($t_hTimer) > 30000 Then ExitLoop
+                            clickPoint(getArg($g_aPoints, "play-again"), 1, 0, Null)
+                        Until getLocation() = "map-battle" 
+
+                        If enterBattle() = True Then 
+                            $iRun += 1
+                            $iSkipRound = -1
+                            $iAstrochips = 3
+                            ContinueLoop
                         EndIf
                     EndIf
-                    
                 EndIf
-                clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 5, 1000)
+
+                $iSkipRound = $aRound[0]
+                addLog($g_aLog, "No astromons found, skipping round.", $LOG_NORMAL)
+
+                If getLocation() = "catch-mode" then clickUntil(getArg($g_aPoints, "catch-mode-cancel"), "isLocation", "battle", 3, 500)
+                clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 500)
             Case "EXIT SEQUENCE"
                 If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
                     adbCommand("shell input keyevent ESCAPE")
@@ -268,15 +284,14 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             Case "battle-boss"
                 If $bBossSelected = False Then ContinueCase
             Case "unknown", "battle-auto"
-                If isArray($aRound) And ($bFinalRound = "Disabled") Then
-                    If ($iAstrochips > 0) And ($iSkipRound <> $iCurRound) Then
-                        waitLocation("unknown,battle,battle-auto", 3)
-                        If navigate("catch-mode") = True Then ContinueLoop
-                    EndIf
-                Else
-                    If isArray($aRound) And ($iSkipRound <> $iCurRound) And ($aRound[0] = $aRound[1]) Then
-                        waitLocation("unknown,battle-auto,battle", 3)
-                        If ($iAstrochips > 0)  And (navigate("catch-mode") = True) Then ContinueLoop
+                If $iAstrochips > 0 Then
+                    If $bFinalRound = "Enabled" Then
+                        If ($aRound[0] = $aRound[1]) And ($iSkipRound <> $aRound[0]) Then 
+                            waitLocation("unknown", 3)
+                            navigate("catch-mode")
+                        EndIf
+                    Else
+                        If $iSkipRound <> $aRound[0] Then navigate("catch-mode")
                     EndIf
                 EndIf
 

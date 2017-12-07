@@ -28,13 +28,13 @@ Func evolve($sAstromon, $bForceEvolve = False)
 
     ;Navigate for 3 attempts
     For $i = 1 To 3
-        If navigate("monsters") = True Then
+        If navigate("monsters", True) = True Then
             ExitLoop
         EndIf
     Next
 
     ;exit early if could not navigate
-    If getLocation($g_aLocations, False) <> "monsters" Then Return -1
+    If getLocation() <> "monsters" Then Return -1
 
     ;Scan the 20 astromons in the current view.
     addLog($g_aLog, "Counting current astromons.", $LOG_NORMAL)
@@ -98,7 +98,7 @@ Func evolve($sAstromon, $bForceEvolve = False)
             $iNeedEvo2 = Int($iEvo1 / 4)
             If $iNeedEvo2 = 0 Then
                 Return 16-$iRaw
-            EndIF
+            EndIf
         Else
             Return 16-$iRaw
         EndIf

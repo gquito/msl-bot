@@ -296,27 +296,26 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
 
             Case "catch-mode"
                 Local $t_hTimer = TimerInit()
-                Local $aRound = getRound()
-                
                 While TimerDiff($t_hTimer) < 20000
-                    Switch $t_sCurrLocation
+                    Switch getLocation()
                         Case "battle-auto"
-                            Local $t_aRound = getRound()
-                            If isArray($aRound) And isArray($t_aRound) Then
-                                If $aRound[0] <> $t_aRound[0] Then ContinueCase
-                            EndIf
-
-                            If isPixelOR("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = False Then
-                                If isPixel("730,268,0xFED61D", 30) = False Then
+                            If isPixelOR("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = False Then ; Health indicator that astromons are not attacking
+                                If isPixel("730,268,0xFED61D", 30) = False Then ;Color of catch button
                                     clickPoint(getArg($g_aPoints, "battle-catch"))
                                     If _Sleep(100) Then Return False
                                     CaptureRegion()
                                 EndIf
 
-                                If isPixel("730,268,0xFED61D", 30) = True Then
-                                    waitLocation("catch-mode", 20)
-                                    $t_sCurrLocation = getLocation($g_aLocations, False)
-                                    ContinueLoop
+                                If isPixel("730,268,0xFED61D", 30) = True Then ;Color of catch button if it was clicked. Color orangish
+                                    If waitLocation("unknown", 5) = "unknown" Then
+                                        Switch waitLocation("catch-mode,battle,battle-auto", 5)
+                                            Case "catch-mode"
+                                                Return True
+                                            Case "battle", "battle-auto"
+                                                clickPoint(getArg($g_aPoints, "battle-catch"))
+                                                ContinueLoop
+                                        EndSwitch
+                                    EndIf
                                 Else
                                     clickPoint(getArg($g_aPoints, "battle-auto"))
                                 EndIf
@@ -340,11 +339,10 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                             Return False
                     EndSwitch
 
-                    If _Sleep(10) Then Return False
-                    $t_sCurrLocation = getLocation()
+                    If _Sleep(50) Then Return False
                 WEnd
-                Return False
 
+                Return False
             Case "monsters"
                 If $t_sCurrLocation <> "village" Then
                     If $bLog Then addLog($g_aLog, "-Navigating to village.", $LOG_NORMAL)

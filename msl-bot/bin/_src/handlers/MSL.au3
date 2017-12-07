@@ -89,7 +89,7 @@ Func waitLocation($vLocations, $iSeconds, $bReturnBool = True)
 			Return $t_vResult
 		EndIf
 
-		If _Sleep(1000) Then Return False
+		If _Sleep(200) Then Return False
 	WEnd
 
 	;Not found within timeframe

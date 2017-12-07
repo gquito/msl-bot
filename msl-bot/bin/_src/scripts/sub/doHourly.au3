@@ -7,9 +7,9 @@ Func doHourly()
 		Local $iPos = -1; The village position
 
 		;Tries to close some GUI in-game that blocks the hourly rewards.
-		clickPoint("74,333", 2, 100)
-		clickPoint("744,72", 2, 100)
-        clickPoint("779,108", 2, 100)
+		clickPoint("74,333", 2, 100, Null)
+		clickPoint("744,72", 2, 100, Null)
+        clickPoint("779,108", 2, 100, Null)
 
         navigate("village", False, False)
 		$iPos = getVillagePos()
@@ -28,7 +28,7 @@ Func doHourly()
             Local $t_hTimer = TimerInit()
             While (getLocation() <> "hourly-reward") And (TimerDiff($t_hTimer) < 5000)
                 If _Sleep(100) Then Return False
-                clickPoint($aPoints[$i], 3, 100)
+                clickPoint($aPoints[$i], 3, 100, Null)
                 navigate("village", False, False)
             WEnd
             
@@ -42,7 +42,7 @@ Func doHourly()
         If $aNezzLoc <> -1 Then
             addLog($g_aLog, "Attempting to click nezz.", $LOG_NORMAL)
             For $aNezz In StringSplit($aNezzLoc, "|", $STR_NOCOUNT)
-                clickPoint($aNezz, 2, 100)
+                clickPoint($aNezz, 2, 100, Null)
                 navigate("village", False, False)
             Next
         EndIf

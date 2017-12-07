@@ -112,3 +112,8 @@ Func catch($aImages, ByRef $iAstrochips, $bLog = True)
         Return ""
     EndIf
 EndFunc
+
+Func _catch($aImages, $bLog = True)
+    Local $iAstrochips = 3
+    Return catch($aImages, $iAstrochips, $bLog)
+EndFunc
