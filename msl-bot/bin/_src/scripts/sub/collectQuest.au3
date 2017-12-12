@@ -19,8 +19,8 @@ Func collectQuest()
 			If $aTab[0] < 400 Then ;capture, challenges
 				clickPoint("729,190")
 			Else ;monthly, weekly, daily
-				clickPoint("717,247")
-				clickPoint("731,194") ;the top get reward
+				clickPoint("570,190")
+				clickPoint("712,444") ;the top get reward
 			EndIf
 
 			If _Sleep(500) Then Return -1

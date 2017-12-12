@@ -93,22 +93,7 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             Case "battle"
                 While ($iAstrochips > 0) And ($iCaught < $iCount)
                     If _Sleep(10) Then ExitLoop(2)
-
-                    Local $t_hTimer = TimerInit()
-                    While getLocation() <> "catch-mode"
-                        If TimerDiff($t_hTimer) > 10000 Then ExitLoop
-
-                        addLog($g_aLog, "Navigating to catch mode.", $LOG_NORMAL)
-                        If navigate("catch-mode", False, False) = True Then ExitLoop
-                    WEnd
-
-                    If getLocation() <> "catch-mode" Then
-                        addLog($g_aLog, "Failed to navigate to catch mode.", $LOG_ERROR)
-                        $iSkipround = $aRound[0]
-                        ExitLoop
-                    Else
-                        addLog($g_aLog, "Finished navigating.", $LOG_ERROR)
-                    EndIf
+                    If navigate("catch-mode", False, True) = False Then ContinueLoop(2)
 
                     ;beginning searching
                     addLog($g_aLog, "Searching for astromons.", $LOG_NORMAL)
@@ -186,7 +171,6 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 EndIf
 
                 $iSkipRound = $aRound[0]
-                addLog($g_aLog, "No astromons found, skipping round.", $LOG_NORMAL)
 
                 If getLocation() = "catch-mode" then clickUntil(getArg($g_aPoints, "catch-mode-cancel"), "isLocation", "battle", 3, 500)
                 clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 500)
@@ -284,11 +268,11 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             Case "battle-boss"
                 If $bBossSelected = False Then ContinueCase
             Case "unknown", "battle-auto"
-                If $iAstrochips > 0 Then
+                If ($iAstrochips > 0) and ($sLocation = "battle-auto") Then
                     If $bFinalRound = "Enabled" Then
                         If ($aRound[0] = $aRound[1]) And ($iSkipRound <> $aRound[0]) Then 
-                            waitLocation("unknown", 3)
                             navigate("catch-mode")
+                            ContinueLoop
                         EndIf
                     Else
                         If $iSkipRound <> $aRound[0] Then navigate("catch-mode")
