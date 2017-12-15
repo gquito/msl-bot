@@ -58,12 +58,6 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
 
                         $t_sCurrLocation = getLocation()
                     WEnd
-
-                    ;When location is battle-end, only available with force surrender on.
-                    If $sLocation = "battle-end" Then 
-                        If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                        Return True
-                    EndIf
                 Else   
                     ;Only catch-mode will need to be in one of the locations above.
                     If $sLocation <> "catch-mode" Then Return False 
@@ -94,8 +88,12 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                 clickPoint("776,20", 3, 50)
                 If _Sleep(2000) Then Return False
                 ContinueLoop
-                
         EndSwitch
+
+        If ($sLocation = "battle-end") And (getLocation() = "battle-end") Then
+            If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
+            Return True
+        EndIf
 
         ;Handles normal locations
         Switch $sLocation

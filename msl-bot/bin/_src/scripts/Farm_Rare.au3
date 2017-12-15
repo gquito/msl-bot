@@ -2,7 +2,7 @@
 #include "../imports.au3"
 
 Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
-    Local Const $aLocations = ["loading", "battle", "battle-auto", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
+    Local Const $aLocations = ["lost-connection", "loading", "battle", "battle-auto", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
     
     ;Variables
     $aCapture = StringSplit($aCapture, ",", $STR_NOCOUNT)
@@ -47,7 +47,10 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
     
     addLog($g_aLog, "```Farm Rare script has started.")
 
-    If isLocation($aLocations, False) = "" Then navigate("map")
+    Switch isLocation($aLocations, False)
+        Case "battle", "battle-auto", "battle-end-exp", "battle-end", "battle-sell", "battle-sell-item", "pause", ""
+            navigate("map", True)
+    EndSwitch
     While ($iRuns = 0) Or ($iRun < $iRuns+1)
         ;Settings data-----------------------------------------------------
         If $iRuns <> 0 Then
@@ -220,6 +223,17 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                 Else
                     addLog($g_aLog, "Could not navigate to manage.", $LOG_ERROR)
                 EndIf
+            Case "lost-connection"
+                Local $t_hTimer = TimerInit()
+                While waitLocation("lost-connection", 20, True) = True
+                    If _Sleep(3000) Then ExitLoop(2)
+                    If TimerDiff($t_hTimer) > 300000 Then ;5 minutes
+                        RestartNox()
+                        ExitLoop
+                    Endif
+
+                    clickPoint(getArg($g_aPoints, "lost-connection-retry"))
+                WEnd
             Case "battle-boss"
                 If $bBossSelected = False Then ContinueCase
             Case "unknown", "battle-auto"

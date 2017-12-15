@@ -2,7 +2,7 @@
 #include "../imports.au3"
 
 Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
-    Local Const $aLocations = ["loading", "defeat", "battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "pause", "battle-gem-full", "map-gem-full", "unknown"]
+    Local Const $aLocations = ["lost-connection", "loading", "defeat", "battle", "battle-boss", "battle-auto", "battle-end", "battle-sell", "battle-end-exp", "battle-sell-item", "map", "refill", "pause", "battle-gem-full", "map-gem-full", "unknown"]
 
     ;Variables
     Local $hEstimated = Null ;Timer for estimated finish
@@ -39,8 +39,11 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
     Local $aData[8][2] = [["Runs", ""], ["Win_Rate", ""], ["Average_Time", ""], ["Estimated_Finish", ""], ["Refill", "" & $iGems], ["Gems_Kept", ""], ["Eggs", ""], ["Sell_Profit", ""]]
     
     addLog($g_aLog, "```Farm Golem script has started.")
-    
-    If isLocation($aLocations, False) = "" Then navigate("map")
+    Switch isLocation($aLocations, False)
+        Case "battle", "battle-auto", "battle-end-exp", "battle-end", "battle-sell", "battle-sell-item", "pause", ""
+            navigate("map", True)
+    EndSwitch
+
     While ($iRuns = 0) Or ($iRun < $iRuns+1)
         ;Settings data-----------------------------------------------------
         If $iRuns <> 0 Then
@@ -82,7 +85,7 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
 
         Switch $sLocation
             Case "battle-end-exp"
-                If clickUntil("229,234", "isLocation", "battle-sell-item", 30, 200) = True Then ContinueCase
+                If clickUntil("229,234", "isLocation", "battle-sell-item", 30, 500) = True Then ContinueCase
             Case "battle-sell"
                 If getLocation($g_aLocations, False) = "battle-sell-item" Then ContinueCase 
                 Local $aGem = findColor("400,236", "-250,1", 0xFDF876, 10, -1)
@@ -224,10 +227,26 @@ Func Farm_Golem($iRuns, $iLevel, $sFilter, $iGems, $sGuardianMode, $bBoss, $bQue
                     addLog($g_aLog, "You have been defeated.", $LOG_NORMAL)
                 EndIf
 
+                If waitLocation("battle-end-exp,battle-sell,battle-sell-item", 30) = True Then
+                    navigate("battle-end", True)
+                EndIf
+
             Case "battle-gem-full", "map-gem-full"
                 addLog($g_aLog, "Gem inventory is full.", $LOG_ERROR)
                 navigate("village")
                 ExitLoop
+
+            Case "lost-connection"
+                Local $t_hTimer = TimerInit()
+                While waitLocation("lost-connection", 20, True) = True
+                    If _Sleep(3000) Then ExitLoop(2)
+                    If TimerDiff($t_hTimer) > 300000 Then ;5 minutes
+                        RestartNox()
+                        ExitLoop
+                    Endif
+
+                    clickPoint(getArg($g_aPoints, "lost-connection-retry"))
+                WEnd
 
             Case "battle-boss"
                 If $bBossSelected = False Then ContinueCase

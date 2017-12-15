@@ -275,6 +275,8 @@ Func Pause()
 EndFunc
 
 Func RestartNox($iPID = WinGetProcess($g_hWindow), $bDebug = False)
+    $g_hTimerLocation = Null
+
     Local $sPath = _WinAPI_GetProcessFileName($iPID)
     Local $aPosition = WinGetPos($g_hWindow)
     Local $t_sCommandLine = StringStripWS(_WinAPI_GetProcessCommandLine($iPID), $STR_STRIPALL)
@@ -288,7 +290,14 @@ Func RestartNox($iPID = WinGetProcess($g_hWindow), $bDebug = False)
     EndIf
 
     Run($sPath & $sClone & " -quit")
+    Local $t_hTimer = TimerInit()
     While ProcessExists($iPID) <> 0
+        If TimerDiff($t_hTimer) > 120000 Then ;Force end process after 2 minutes
+            If ProcessClose($iPID) <> 1 Then
+                addLog($g_aLog, "*Could not close current Nox process.", $LOG_ERROR)
+                Stop()
+            EndIf
+        EndIf
         addLog($g_aLog, "*Closing currect Nox process.", $LOG_NORMAL)
         If _Sleep(1000) Then Return
     WEnd
@@ -304,10 +313,12 @@ Func RestartNox($iPID = WinGetProcess($g_hWindow), $bDebug = False)
         If $g_hWindow <> 0 Then WinMove($g_hWindow, "", $aPosition[0], $aPosition[1])
     WEnd
 
-    While getLocation() <> "tap-to-start"
+    While (getLocation() <> "tap-to-start") And (getLocation($g_aLocations, False) <> "event-list") And (getLocation($g_aLocations, False) <> "event") And (getLocation($g_aLocations, False) <> "start-screen")
         If $bDebug Then CaptureRegion("Debug")
         $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
         addLog($g_aLog, "*Waiting for MSL to load.", $LOG_NORMAL)
+
+        clickPoint("394,469", 3, 50)
         If _Sleep(1000) Then Return
     WEnd
 

@@ -24,8 +24,8 @@ Func Farm_Guardian($sMode, $iGems, $bLoop, $bBoss, $bQuests, $bHourly, $t_aData 
 
     addLog($g_aLog, "```Farm Guardian script has started.")
     Switch isLocation($aLocations, False)
-        Case "battle-end", "battle-end-exp", "battle-sell", ""
-            navigate("map")
+        Case "battle", "battle-auto", "battle-end-exp", "battle-end", "battle-sell", "battle-sell-item", "pause", ""
+            navigate("map", True)
     EndSwitch
 
     While True

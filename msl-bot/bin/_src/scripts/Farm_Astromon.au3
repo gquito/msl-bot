@@ -2,7 +2,7 @@
 #include "../imports.au3"
 
 Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
-    Local Const $aLocations = ["loading", "battle", "battle-auto", "astromon-full", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
+    Local Const $aLocations = ["lost-connection", "loading", "battle", "battle-auto", "astromon-full", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
     
     ;Variables
     If $bFinalRound = "Enabled" Then $bFinishRound = "Enabled"
@@ -49,7 +49,10 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
 
     addLog($g_aLog, "```Farm Astromon script has started.")
 
-    If isLocation($aLocations, False) = "" Then navigate("map")
+    Switch isLocation($aLocations, False)
+        Case "battle", "battle-auto", "battle-end-exp", "battle-end", "battle-sell", "battle-sell-item", "pause", ""
+            navigate("map", True)
+    EndSwitch
     While $iCaught < $iCount
         ;Settings data-----------------------------------------------------
         setArg($aData, "Runs", $iRun)
@@ -93,7 +96,15 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
             Case "battle"
                 While ($iAstrochips > 0) And ($iCaught < $iCount)
                     If _Sleep(10) Then ExitLoop(2)
-                    If navigate("catch-mode", False, True) = False Then ContinueLoop(2)
+                    If navigate("catch-mode", False, True) = False Then 
+                        Switch hasAstrochips()
+                            Case 0 ;No astrchips
+                                $iAstrochips = 0
+                                ExitLoop
+                        EndSwitch
+                        
+                        ContinueLoop(2)
+                    EndIf
 
                     ;beginning searching
                     addLog($g_aLog, "Searching for astromons.", $LOG_NORMAL)
@@ -265,6 +276,17 @@ Func Farm_Astromon($iCount, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDi
                 Else
                     addLog($g_aLog, "Could not navigate to manage.", $LOG_ERROR)
                 EndIf
+            Case "lost-connection"
+                Local $t_hTimer = TimerInit()
+                While waitLocation("lost-connection", 20, True) = True
+                    If _Sleep(3000) Then ExitLoop(2)
+                    If TimerDiff($t_hTimer) > 300000 Then ;5 minutes
+                        RestartNox()
+                        ExitLoop
+                    Endif
+
+                    clickPoint(getArg($g_aPoints, "lost-connection-retry"))
+                WEnd
             Case "battle-boss"
                 If $bBossSelected = False Then ContinueCase
             Case "unknown", "battle-auto"

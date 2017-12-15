@@ -297,6 +297,54 @@ Func findLevel($iLevel)
 	Return False
 EndFunc
 
+#comments-start
+	#cs
+		Function: Finds an available guardian dungeon based on the current guardian dungeons.
+		Parameters:
+			$sMode: "left", "right", "both" - Handles the left/right side on the two visible guardian dungeon.
+		Return: Points of the energy of the guardian dungeon.
+	#ce
+	Func findGuardian($sMode)
+		CaptureRegion()
+		If isArray(findColor("386,470", "1,-220", 0xCC0F12, 10, 1, -1)) = False Then Return -1
+
+		If FileExists(@ScriptDir & "/bin/images/misc/") = False Then DirCreate(@ScriptDir & "/bin/images/misc")
+		Local Const $sImagePath = "misc-guardian"
+		Local Const $iX = 650
+
+		Local $t_hTimer = TimerInit()
+		While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = True
+			If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
+			FileDelete(@ScriptDir & "/bin/images/misc/misc-guardian.bmp")
+		WEnd
+		
+		$sMode = StringStripWS(StringLower($sMode), $STR_STRIPALL)
+		Switch $sMode
+			Case "left"
+				Local $t_hTimer = TimerInit()
+				While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = False
+					If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
+					captureRegion("bin/images/misc/misc-guardian", 336, 203, 20, 5)
+				WEnd
+			Case "right"
+				Local $t_hTimer = TimerInit()
+				While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = False
+					If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
+					captureRegion("bin/images/misc/misc-guardian", 396, 203, 20, 5)
+				WEnd
+			Case Else
+				captureRegion()
+				Return findColor("678,470", "1,-220", 0xFCD128, 10, 1, -1)
+		EndSwitch
+
+		captureRegion()
+		Local $aResult = findImage($sImagePath, 80, 0, 550, 250, 60, 250)
+		If isArray($aResult) Then $aResult[0] = $iX
+
+		Return $aResult
+	EndFunc
+#comments-end
+
 #cs
 	Function: Finds an available guardian dungeon based on the current guardian dungeons.
 	Parameters:
@@ -304,33 +352,15 @@ EndFunc
 	Return: Points of the energy of the guardian dungeon.
 #ce
 Func findGuardian($sMode)
-	CaptureRegion()
+	captureRegion()
 	If isArray(findColor("386,470", "1,-220", 0xCC0F12, 10, 1, -1)) = False Then Return -1
 
-	If FileExists(@ScriptDir & "/bin/images/misc/") = False Then DirCreate(@ScriptDir & "/bin/images/misc")
-	Local Const $sImagePath = "misc-guardian"
+	$sMode = StringLower(StringStripWS($sMode, $STR_STRIPALL))
+	Local $sImagePath = "misc-guardian-" & $sMode
 	Local Const $iX = 650
 
-	Local $t_hTimer = TimerInit()
-	While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = True
-		If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
-		FileDelete(@ScriptDir & "/bin/images/misc/misc-guardian.bmp")
-	WEnd
-	
-	$sMode = StringLower($sMode)
 	Switch $sMode
-		Case "left"
-			Local $t_hTimer = TimerInit()
-			While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = False
-				If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
-				captureRegion("bin/images/misc/misc-guardian", 336, 203, 20, 5)
-			WEnd
-		Case "right"
-			Local $t_hTimer = TimerInit()
-			While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = False
-				If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
-				captureRegion("bin/images/misc/misc-guardian", 396, 203, 20, 5)
-			WEnd
+		Case "left", "right"
 		Case Else
 			captureRegion()
 			Return findColor("678,470", "1,-220", 0xFCD128, 10, 1, -1)
@@ -390,4 +420,25 @@ Func getVillagePos()
 
 	;Return -1 if ship not found.
 	Return -1
+EndFunc
+
+#cs 
+	Function: Checks if there are still astrochips left, only works if in 'battle' location.
+	Returns Codes:
+	   -2: Unknown
+	   -1: Not in battle 
+		0: No astrocips
+		1: Has astrochips
+#ce
+Func hasAstrochips()
+	If getLocation() <> "battle" Then Return -1
+	If isPixelOR("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = True Then
+		If isPixel("743,279,0x53100C|746,266,0xBD3229") Then
+			Return 0
+		Else
+			Return 1
+		EndIf
+	EndIf
+
+	Return -2
 EndFunc
