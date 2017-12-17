@@ -43,6 +43,8 @@ manage-sell-confirm:382, 327
 play-again:529, 284
 battle-end-exit:400, 260
 dungeons-guardian:170, 372
+dungeons-starstone:108, 175
+dungeons-elemental:107, 243
 get-reward:399, 333
 monsters-evolution:547, 394
 monsters-evolution-x:774, 112
