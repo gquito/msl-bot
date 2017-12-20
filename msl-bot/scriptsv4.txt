@@ -68,8 +68,8 @@
 		description: "Mode of sending swipes to emulator. ADB: Sends command to emulator ADB, does not affect overall average speed. Keymap: Sends keystrokes to emulator to invoke pre-setup keymap, requires keymap setup. Real: Uses actual mouse to perform a swipe.",
 		default: "ADB",
 		data: "ADB,Keymap,Real"
-	],
-],
+	]
+]
 
 ["_Filter":
 	[description: "Gem filtering system. A function will be called with a gem data passed in and will output whether the gem meets the criteria or not."],
@@ -156,8 +156,8 @@
 		description: "Number of substats that are included meet the criteria.",
 		default: "1,2,3,4",
 		data: "1,2,3,4"
-	],
-],
+	]
+]
 
 
 ["Farm_Rare":
@@ -237,7 +237,7 @@
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
-],
+]
 
 
 ["Farm_Golem":
@@ -403,7 +403,7 @@
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
-],
+]
 
 ["Farm_Astromon":
 	[description: "Farms a specified amount of astromon in story mode."],
@@ -503,7 +503,7 @@
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
-],
+]
 
 ["Farm_Guardian":
 	[description: "Attacks specific guardian dungeons until no more is found."],
@@ -542,3 +542,7 @@
 		data: "Enabled,Disabled"
 	]
 ]
+
+
+
+
