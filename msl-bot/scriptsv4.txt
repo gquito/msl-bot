@@ -1,4 +1,4 @@
-["_Config":
+[_Config:
 	[description: "These settings are responsible for how the bot interacts with the android emulator. Settings will be saved in the profiles folder once changes has been detected."],
 	
 	[text:
@@ -71,7 +71,7 @@
 	]
 ]
 
-["_Filter":
+[_Filter:
 	[description: "Gem filtering system. A function will be called with a gem data passed in and will output whether the gem meets the criteria or not."],
 	
 	[combo:
@@ -160,7 +160,7 @@
 ]
 
 
-["Farm_Rare":
+[Farm_Rare:
 	[description: "Attacks a story map and catches rare astromons. Can be used for leveling monsters or farming for materials. You must set your astromons before starting the script."],
 	
 	[text:
@@ -240,7 +240,7 @@
 ]
 
 
-["Farm_Golem":
+[Farm_Golem:
 	[description: "Attacks golem boss and filters gems. This script is usually for earning gold or getting good gems. Recommended stage for gold is the fastest dungeon you can do. You must set your astromons before starting the script."],
 	
 	[text:
@@ -299,7 +299,7 @@
 
 
 
-["Farm_Gem":
+[Farm_Gem:
 	[description: "Convert gold into gems though 'slime' farming. Script will catch 16 astromons and evolve them to get 100 gems that by spending 330k gold."],
 	
 	[text:
@@ -405,7 +405,7 @@
 	]
 ]
 
-["Farm_Astromon":
+[Farm_Astromon:
 	[description: "Farms a specified amount of astromon in story mode."],
 	
 	[text:
@@ -505,7 +505,7 @@
 	]
 ]
 
-["Farm_Guardian":
+[Farm_Guardian:
 	[description: "Attacks specific guardian dungeons until no more is found."],
 	
 	[combo:
