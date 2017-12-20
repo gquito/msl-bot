@@ -207,7 +207,7 @@
 	[text:
 		name: "Usable Astrogems",
 		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
-		default: "300",
+		default: "300"
 	]
 	
 	[combo:
@@ -265,7 +265,7 @@
 	[text:
 		name: "Usable Astrogems",
 		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
-		default: "300",
+		default: "300"
 	]
 	
 	[combo:
@@ -373,7 +373,7 @@
 	[text:
 		name: "Usable Astrogems",
 		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
-		default: "300",
+		default: "300"
 	]
 	
 	[combo:
@@ -473,7 +473,7 @@
 	[text:
 		name: "Usable Astrogems",
 		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
-		default: "300",
+		default: "300"
 	]
 	
 	[combo:
@@ -518,7 +518,7 @@
 	[text:
 		name: "Usable Astrogems",
 		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
-		default: "300",
+		default: "300"
 	]
 	
 	[combo:
