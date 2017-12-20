@@ -543,6 +543,65 @@
 	]
 ]
 
-
-
-
+[Farm Starstone:
+	[description: "Script will go to normal starstone or elemental dungeon to farm a number of stones. Script will keep farming until all quality stones have been farmed."]
+	
+	[combo:
+		name: "Stone Element",
+		description: "Element of stone you wish to farm. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
+		default: "Any",
+		data: "Any,Water,Fire,Wood,Light,Dark"
+	]
+	
+	[text:
+		name: "High Stones",
+		description: "Number of highstones to farm.",
+		default: "50"
+	]
+	
+	[text:
+		name: "Mid Stones",
+		description: "Number of midstones to farm.",
+		default: "0"
+	]
+	
+	[text:
+		name: "Low Stones",
+		description: "Number of lowstones to farm.",
+		default: "0"
+	]
+	
+	[text:
+		name: "Usable Astrogems",
+		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+		default: "300"
+	]
+	
+	[combo:
+		name: "Guardian Mode",
+		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons. Script will check every 30 minutes.",
+		default: "Both",
+		data: "Left,Right,Both,Disabled"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Collect Quests",
+		description: "When a quest has been completed, the script will go to village after the round and collect the quest, then goes back to farming.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Hourly Script",
+		description: "Script for hourly sequence which include: Guardian Dungeons, Collecting Trees, Buying Items, Doing PvP, and additional specified scripts. These settings can be found in _Config script.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+]
