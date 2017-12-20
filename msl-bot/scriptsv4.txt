@@ -14,7 +14,7 @@
 	]
 	
 	[text:
-		name: "ADB Pevice",
+		name: "ADB Device",
 		description: "Default for first nox emulator: 127.0.0.1:62001. Refer to guide to see how to find device.",
 		default: "127.0.0.1:62001"
 	]
@@ -277,6 +277,8 @@
 	
 	[combo:
 		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 	
@@ -383,6 +385,8 @@
 	
 	[combo:
 		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 	
@@ -413,7 +417,7 @@
 	[text:
 		name: "Catch Image",
 		description: "The normal astromon to farm. Images of catch-[astromon].bmp must exist. Map must contain the astromon or else this script will act like Farm Rare, but slower.",
-		default: "one-star",
+		default: "one-star"
 	]
 	
 	[combo:
@@ -480,6 +484,8 @@
 	
 	[combo:
 		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 	
@@ -500,7 +506,7 @@
 
 [Farm_Guardian:
 	[description: "Attacks specific guardian dungeons until no more is found."]
-	
+
 	[combo:
 		name: "Mode",
 		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons.",
@@ -513,9 +519,18 @@
 		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
 		default: "300"
 	]
+
+	[combo:
+		name: "Loop",
+		description: "If loop is enabled, script will keep going to the village and back to check for new guardian dungeons until script is stopped.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
 	
 	[combo:
 		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 	
