@@ -556,7 +556,7 @@
 	[combo:
 		name: "Dungeon Level",
 		description: "Must have up to B9 unlocked for the script to correctly choose dungeon level.",
-		default: "10"
+		default: "10",
 		data: "7,8,9,10"
 	]
 	
