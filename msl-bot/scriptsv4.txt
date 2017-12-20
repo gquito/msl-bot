@@ -543,8 +543,22 @@
 	]
 ]
 
-[Farm Starstone:
+[Farm_Starstone:
 	[description: "Script will go to normal starstone or elemental dungeon to farm a number of stones. Script will keep farming until all quality stones have been farmed."]
+	
+	[combo:
+		name: "Dungeon Type",
+		description: "Dungeon to farm in. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
+		default: "Normal",
+		data: "Normal,Elemental"
+	]
+	
+	[combo:
+		name: "Dungeon Level",
+		description: "Must have up to B9 unlocked for the script to correctly choose dungeon level.",
+		default: "10"
+		data: "7,8,9,10"
+	]
 	
 	[combo:
 		name: "Stone Element",
