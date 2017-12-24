@@ -75,7 +75,7 @@
 	[description: "Settings for hourly tasks. These settings are shared among all the scripts and can be turned on or off in a setting called 'Hourly Scripts' which is a boolean setting."]
 	
 	[combo:
-		name: "Collect Rewards",
+		name: "Collect Hiddens",
 		description: "Collect hourly hidden rewards, commonly known as trees.",
 		default: "Enabled",
 		data: "Enabled,Disabled"
