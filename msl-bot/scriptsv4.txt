@@ -71,6 +71,24 @@
 	]
 ]
 
+[_Hourly:
+	[description: "Settings for hourly tasks. These settings are shared among all the scripts and can be turned on or off in a setting called 'Hourly Scripts' which is a boolean setting."]
+	
+	[combo:
+		name: "Collect Rewards",
+		description: "Collect hourly hidden rewards, commonly known as trees.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Click Nezz",
+		description: "Attempts to click positions where nezz usually spawns. This system is not perfect, but is able to click on nezz most of the time. Note: newer ships might not have nezz positions.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+]
+
 [_Filter:
 	[description: "Gem filtering system. A function will be called with a gem data passed in and will output whether the gem meets the criteria or not."]
 	
