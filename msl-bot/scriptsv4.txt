@@ -402,13 +402,6 @@
 	]
 	
 	[combo:
-		name: "Target Boss",
-		description: "During the final round, you can choose to target boss for efficiency.",
-		default: "Enabled",
-		data: "Enabled,Disabled"
-	]
-	
-	[combo:
 		name: "Collect Quests",
 		description: "When a quest has been completed, the script will go to village after the round and collect the quest, then goes back to farming.",
 		default: "Enabled",
