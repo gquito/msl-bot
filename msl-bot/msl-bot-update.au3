@@ -71,7 +71,13 @@ Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle 
 				If InetGetInfo($hFile, 4) <> 0 Then
 					;Error occured
 					InetClose($hFile)
-
+					
+					If FileExists($sLocalDirPath & $sFile) = True Then
+						If FileRead($sLocalDirPath & $sFile) = "" Then
+							_GUICtrlListView_SetItemText($hListView, 0, "Empty", 1)
+							ContinueLoop(2)
+						EndIf
+					EndIf
 					If $iTries <= 3 Then
 						$iTries += 1
 						_GUICtrlListView_SetItemText($hListView, 0, "Error, trying again (" & $iTries & ").", 1)
