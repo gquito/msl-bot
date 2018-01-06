@@ -22,7 +22,7 @@
 	]
 	
 	[combo:
-		name: "Log clicks",
+		name: "Log Clicks",
 		description: "Whether to log clicks made by any functions.",
 		default: "Enabled",
 		data: "Enabled,Disabled"
