@@ -35,12 +35,14 @@ Func _Sleep($iDuration)
             Data_Display()
 
             ;AntiStuck sequence
-            If ($g_hTimerLocation <> Null) And (TimerDiff($g_hTimerLocation) > (60000*10)) Then ;10 minute anti-stuck
-                $g_hTimerLocation = Null
-                Log_Level_Add("_Sleep")
-                Log_Add("AntiStuck: Stuck for 10 minutes, restarting nox.", $LOG_ERROR)
-                RestartNox()
-                Log_Level_Remove()
+            If $g_iRestartTime <> 0 Then
+                If ($g_hTimerLocation <> Null) And (TimerDiff($g_hTimerLocation) > (60000*$g_iRestartTime)) Then ;10 minute anti-stuck
+                    $g_hTimerLocation = Null
+                    Log_Level_Add("_Sleep")
+                    Log_Add("AntiStuck: Stuck for 10 minutes, restarting nox.", $LOG_ERROR)
+                    RestartNox()
+                    Log_Level_Remove()
+                EndIf
             EndIf
         EndIf
         

@@ -24,7 +24,6 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
     Data_Add($Catch_Image, $DATA_RATIO, "0/" & $Number_To_Farm)
     Data_Add("Runs", $DATA_NUMBER, "0")
     Data_Add("Win Rate", $DATA_PERCENT, "Victory/Runs")
-    Data_Add("Average Time", $DATA_TIMEAVG, "Script Time/Runs")
 
     Data_Add("Caught", $DATA_LIST, $sList, True)
     Data_Add("Missed", $DATA_LIST, $sList, True)
@@ -41,11 +40,10 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
     Data_Order_Insert($Catch_Image, 1)
     Data_Order_Insert("Runs", 2)
     Data_Order_Insert("Win Rate", 3)
-    Data_Order_Insert("Average Time", 4)
-    Data_Order_Insert("Caught", 5)
-    Data_Order_Insert("Missed", 6)
-    Data_Order_Insert("Refill", 7)
-    If $Guardian_Mode <> "Disabled" Then Data_Order_Insert("Guardians", 8)
+    Data_Order_Insert("Caught", 4)
+    Data_Order_Insert("Missed", 5)
+    Data_Order_Insert("Refill", 6)
+    If $Guardian_Mode <> "Disabled" Then Data_Order_Insert("Guardians", 7)
 
     Data_Display_Update()
     ;pre process
@@ -65,7 +63,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
         $sLocation = isLocation($aLocations, False)
         #Region Common functions
             If $Collect_Quests = "Enabled" Then Common_Quests($sLocation)
-            If $Guardian_Mode <> "Disabled" Then Common_Guardian($sLocation, $Guardian_Mode, $Usable_Astrogems, $Target_Boss, $Collect_Quests, $Hourly_Script)
+            If $Guardian_Mode <> "Disabled" Then Common_Guardian($sLocation, $Guardian_Mode, $Usable_Astrogems, "Enabled", $Collect_Quests, $Hourly_Script)
             If $Hourly_Script = "Enabled" Then Common_Hourly($sLocation)
             Common_Stuck($sLocation)
         #EndRegion

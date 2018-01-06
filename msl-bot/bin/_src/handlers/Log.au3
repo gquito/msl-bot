@@ -10,6 +10,7 @@ Global $g_aLog[0][6] ;Stores the log structure
 Global $g_sLogFilter = "Information,Error,Process"
 Global $g_aLOG_Function[1] = [0] ;Current function and level
 Global $g_iLOG_Processed = 0 ;Number of log items processed for display
+Global $g_bLogEnabled = True ;Allows for Log_Add if enabled
 
 #cs ----Log structure
     [
@@ -35,6 +36,8 @@ Global $g_iLOG_Processed = 0 ;Number of log items processed for display
 #ce
 
 Func Log_Add($sText, $sType = $LOG_PROCESS, $iTimeStamp = NowTimeStamp(), $sFunction = $g_aLOG_Function[$g_aLOG_Function[0]], $iLevel = $g_aLOG_Function[0])
+    If $g_bLogEnabled = False Then Return 0
+    
     Local $iSize = UBound($g_aLog)
     ReDim $g_aLog[$iSize+1][6]
     $g_aLog[$iSize][0] = $iTimeStamp
@@ -122,8 +125,10 @@ Func Log_Save(ByRef $aLog, $sProfileName = getArg(formatArgs(getScriptData($g_aS
             $sLine &= formatWidth($aLog[$i][4], 20, $ALIGN_RIGHT) & " "
             $sLine &= '"' & $aLog[$i][1] & '"'
 
-            FileWriteLine($hFile, $sLine)
             $aLog[$i][0] = "." & $aLog[$i][0]
+
+            If ($g_bSaveDebug = False) And ($aLog[$i][2] = "Debug") Then ContinueLoop
+            FileWriteLine($hFile, $sLine)
         EndIf
     Next
 

@@ -47,7 +47,7 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
     #cs 
         Script will run golem dungeons and filter out the gems
     #ce
-    While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") >= 1)
+    While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") < 1)
         If _Sleep(100) Then ExitLoop
 
         $sLocation = isLocation($aLocations, False)
@@ -140,7 +140,7 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
                 EndIf
 
             Case "battle-end"
-                If Not((Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") >= 1)) Then ExitLoop
+                If (Data_Get("Runs", True)[1] <> 0) And (Data_Get_Ratio("Runs") >= 1) Then ExitLoop
                 Data_Set("Status", "Quick restart.")
 
                 If enterBattle() Then 
@@ -155,7 +155,7 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
                 clickPoint(getArg($g_aPoints, "battle-auto"))
 
             Case "map"
-                If Not((Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") >= 1)) Then ExitLoop
+                If (Data_Get("Runs", True)[1] <> 0) And (Data_Get_Ratio("Runs") >= 1) Then ExitLoop
 
                 Log_Add("Going into battle.")
                 Data_Set("Status", "Navigating to dungeons.")

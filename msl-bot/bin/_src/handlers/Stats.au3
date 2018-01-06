@@ -145,8 +145,14 @@ Func Data_Get($sName, $bRaw = False)
 
                 Case $DATA_TIMEAVG
                     Local $vResult = $aSub[2]
-                    If (Data_Get($vResult[1]) = "0") Or (isArray(Data_Get($vResult[1], True)) = False) Then Return getTimeString(0)
-                    Return getTimeString(TimerDiff(Data_Get($vResult[0], True))/Data_Get($vResult[1], True)[0]/1000)
+
+                    Local $iSeconds = TimerDiff(Data_Get($vResult[0], True))/1000
+                    Local $iDenom = Data_Get($vResult[1], True)
+
+                    If isArray($iDenom) = True Then $iDenom = $iDenom[0]
+                    
+                    If $iSeconds = 0 Or $iDenom = 0 Then Return getTimeString(0)
+                    Return getTimeString($iSeconds/$iDenom)
 
                 Case $DATA_LIST
                     Local $vResult = $aSub[2]

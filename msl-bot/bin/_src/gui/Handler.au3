@@ -1039,6 +1039,24 @@ Func UpdateSettings()
     $g_iBackgroundMode = Execute("$BKGD_" & StringUpper(getArg($aConfig, "Capture_Mode")))
     $g_iMouseMode = Execute("$MOUSE_" & StringUpper(getArg($aConfig, "Mouse_Mode")))
     $g_iSwipeMode = Execute("$SWIPE_" & StringUpper(getArg($aConfig, "Swipe_Mode")))
+    Switch getArg($aConfig, "Restart Time")
+        Case "Never"
+            $g_iRestartTime = 0
+        Case "10 Minutes"
+            $g_iRestartTime = 10
+        Case "20 Minutes"
+            $g_iRestartTime = 20
+        Case "30 Minutes"
+            $g_iRestartTime = 30
+        Case "40 Minutes"
+            $g_iRestartTime = 40
+        Case "50 Minutes"
+            $g_iRestartTime = 50
+        Case "60 Minutes"
+            $g_iRestartTime = 60
+    EndSwitch
+    $g_bSaveDebug = (getArg($aConfig, "Save Debug Log") = "Enabled")
+    $g_bLogClicks = (getArg($aConfig, "Log Clicks") = "Enabled")
 
     ;handles default settings
     If StringLeft($t_sAdbPath, 1) <> "~" Then 

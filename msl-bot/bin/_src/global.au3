@@ -24,6 +24,7 @@
 ;Config variables
     Global $g_sImageSearchPath = @TempDir & "\ImageSearchDLL.dll" ;ImageSearchDLL default path
     Global $g_sImagesPath = @ScriptDir & "\bin\images\" ;Path to images
+
     Global $g_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
     Global $g_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox
     Global $g_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
@@ -33,6 +34,9 @@
     Global $g_iSwipeMode = $SWIPE_ADB ;Type of swipe control
     Global $g_sWindowTitle = "NoxPlayer" ;Emulator window title.
     Global $g_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
+    Global $g_iRestartTime = 10 ;Number of minutes until bot app decides to restart from stuck location.
+    Global $g_bSaveDebug = False ;Write debug type log to log file.
+    Global $g_bLogClicks = True ;Log clicks.
 
     Global $d_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
     Global $d_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox

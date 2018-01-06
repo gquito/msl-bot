@@ -37,7 +37,7 @@ Func CreateGUI()
             If StringIsSpace($sScript) = False Then _ArrayAdd($aScriptList, $sScript)
         Next
     Else
-        $aScriptList = $g_sScriptList
+        $aScriptList = $g_aScriptList
     EndIf
     
     For $sScript In $aScriptList
