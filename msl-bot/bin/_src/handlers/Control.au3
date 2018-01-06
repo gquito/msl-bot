@@ -67,82 +67,96 @@ EndFunc
         $hControl: Control handle to send clicks for.
 #ce
 Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClicks, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
+    Log_Level_Add("clickPoint")
     Local $aPoint[2] ;Point array
+    Local $bOutput = False
 
     ;Fixing format to [x, y]
-    If isArray($vPoint) = False Then
-        If $vPoint = "" Or $vPoint = -1 Then
-            $g_sErrorMessage = "clickPoint() => Invalid points."
-            Return -1
-        EndIf
-
-        Local $t_aPoint = StringSplit($vPoint, ",", $STR_NOCOUNT)
-        $aPoint[0] = StringStripWS($t_aPoint[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
-        $aPoint[1] = StringStripWS($t_aPoint[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
-    Else
-        If UBound($vPoint) < 2 Then 
-            $g_sErrorMessage = "clickPoint() => Invalid points."
-            Return -1
-        EndIf
-        
-        $aPoint[0] = $vPoint[0]
-        $aPoint[1] = $vPoint[1]
-    EndIf
-
-    ;Processing clicks
-    Local Const $RDM_RETURN_INT = 1
-    For $i = 0 To $iAmount-1
-        Local $aNewPoint = [$aPoint[0], $aPoint[1]]
-
-        ;Random variation setup
-        If isArray($vRandom) = True Then
-            $aNewPoint[0] += Random($vRandom[0], $vRandom[1], $RDM_RETURN_INT)
-            $aNewPoint[1] += Random($vRandom[0], $vRandom[1], $RDM_RETURN_INT)
-        EndIf
-
-        ;Actual clicks
-        If $iMouseMode = $MOUSE_REAL Then
-            ;clicks using real mouse.
-            WinActivate($hWindow)
-
-            Local $t_aDesktopPoint = WinGetPos($hControl)
-            $aNewPoint[0] += $t_aDesktopPoint[0]
-            $aNewPoint[1] += $t_aDesktopPoint[1]
-
-            MouseClick("left", $aNewPoint[0], $aNewPoint[1], 1, 0)
-        ElseIf $iMouseMode = $MOUSE_CONTROL Then
-            ;clicks using fake mouse.
-            Local $t_aOffset = ControlGetPos("", "", $hControl)
-            If isArray($t_aOffset) = True Then
-                If ($t_aOffset[0] = 0) And ($t_aOffset[1] = 0) Then
-                    If ($t_aOffset[2] <> $g_aControlSize[0]) Or ($t_aOffset[3] <> $g_aControlSize[1]) Then
-                        ;Using default Nox offsets
-                        Local $iPID = WinGetProcess($g_hWindow)
-                        Local $sPath = _WinAPI_GetProcessFileName($iPID)
-                        If StringInStr($sPath, "Nox") = True Then
-                            $t_aOffset[0] = 2
-                            $t_aOffset[1] = 30
-                        EndIf
-                    EndIf
-                EndIf 
-
-                $aNewPoint[0]+=$t_aOffset[0]
-                $aNewPoint[1]+=$t_aOffset[1]
+    While True
+        If isArray($vPoint) = False Then
+            If $vPoint = "" Or $vPoint = -1 Then
+                Log_Add("Invalid points: " & $vPoint, $LOG_ERROR)
+                $g_sErrorMessage = "clickPoint() => Invalid points."
+                ExitLoop
             EndIf
 
-            ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0], $aNewPoint[1]) ;For simulated clicks
-        ElseIf $iMouseMode = $MOUSE_ADB Then
-            ;clicks using adb commands
-            adbCommand("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
+            Local $t_aPoint = StringSplit($vPoint, ",", $STR_NOCOUNT)
+            $aPoint[0] = StringStripWS($t_aPoint[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+            $aPoint[1] = StringStripWS($t_aPoint[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
         Else
-            $g_sErrorMessage = "clickPoint() => Invalid mouse mode: " & $iMouseMode
-            Return -1
+            If UBound($vPoint) < 2 Then 
+                Log_Add("Invalid points: " & _ArrayToString($vPoint), $LOG_ERROR)
+                $g_sErrorMessage = "clickPoint() => Invalid points."
+                ExitLoop
+            EndIf
+            
+            $aPoint[0] = $vPoint[0]
+            $aPoint[1] = $vPoint[1]
         EndIf
 
-        If _Sleep($iInterval) Then Return -2
-    Next
+        ;Processing clicks
+        Local Const $RDM_RETURN_INT = 1
+        For $i = 0 To $iAmount-1
+            Local $aNewPoint = [$aPoint[0], $aPoint[1]]
 
-    Return 0
+            ;Random variation setup
+            If isArray($vRandom) = True Then
+                $aNewPoint[0] += Random($vRandom[0], $vRandom[1], $RDM_RETURN_INT)
+                $aNewPoint[1] += Random($vRandom[0], $vRandom[1], $RDM_RETURN_INT)
+            EndIf
+
+            ;Actual clicks
+            If $iMouseMode = $MOUSE_REAL Then
+                ;clicks using real mouse.
+                WinActivate($hWindow)
+
+                Local $t_aDesktopPoint = WinGetPos($hControl)
+                $aNewPoint[0] += $t_aDesktopPoint[0]
+                $aNewPoint[1] += $t_aDesktopPoint[1]
+
+                Log_Add("Click point: " & _ArrayToString($aNewPoint), $LOG_DEBUG)
+                MouseClick("left", $aNewPoint[0], $aNewPoint[1], 1, 0)
+            ElseIf $iMouseMode = $MOUSE_CONTROL Then
+                ;clicks using fake mouse.
+                Local $t_aOffset = ControlGetPos("", "", $hControl)
+                If isArray($t_aOffset) = True Then
+                    If ($t_aOffset[0] = 0) And ($t_aOffset[1] = 0) Then
+                        If ($t_aOffset[2] <> $g_aControlSize[0]) Or ($t_aOffset[3] <> $g_aControlSize[1]) Then
+                            ;Using default Nox offsets
+                            Local $iPID = WinGetProcess($g_hWindow)
+                            Local $sPath = _WinAPI_GetProcessFileName($iPID)
+                            If StringInStr($sPath, "Nox") = True Then
+                                $t_aOffset[0] = 2
+                                $t_aOffset[1] = 30
+                            EndIf
+                        EndIf
+                    EndIf 
+
+                    $aNewPoint[0]+=$t_aOffset[0]
+                    $aNewPoint[1]+=$t_aOffset[1]
+                EndIf
+
+                Log_Add("Click point: " & _ArrayToString($aNewPoint), $LOG_DEBUG)
+                ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0], $aNewPoint[1]) ;For simulated clicks
+            ElseIf $iMouseMode = $MOUSE_ADB Then
+                ;clicks using adb commands
+                Log_Add("Click point: " & _ArrayToString($aNewPoint), $LOG_DEBUG)
+                adbCommand("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
+            Else
+                Log_Add("Invalid mouse mode: " & $iMouseMode, $LOG_ERROR)
+                $g_sErrorMessage = "clickPoint() => Invalid mouse mode: " & $iMouseMode
+                ExitLoop(2)
+            EndIf
+
+            If _Sleep($iInterval) Then ExitLoop(2)
+        Next
+
+        $bOutput = True
+        ExitLoop
+    WEnd
+    
+    Log_Level_Remove()
+    Return $bOutput
 EndFunc
 
 #cs
@@ -160,26 +174,39 @@ EndFunc
     Return: True if condition was met and false if maximum clicks exceeds.
 #ce
 Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
-	Local $aArg[0] ;Function arguments
+	Log_Level_Add("clickUntil")
 
-    ;Fix format to array: [arg1, arg2, ...]
-    If isArray($vArg) = False And $vArg <> Null Then
-        $aArg = StringSplit($vArg, ",", $STR_NOCOUNT)
-    Else   
-        $aArg = $vArg
-    EndIf
+    Local $bOutput = False
+    While True
+        Local $aArg[0] ;Function arguments
 
-    For $i = 0 To $iAmount-1
-		Local $t_vTimerStart = TimerInit()
-		While TimerDiff($t_vTimerStart) < $iInterval
-			If _Sleep(100) Then Return -2
-			If Call($sBooleanFunction, $aArg) = True Then Return True
-		WEnd
+        ;Fix format to array: [arg1, arg2, ...]
+        If isArray($vArg) = False And $vArg <> Null Then
+            $aArg = StringSplit($vArg, ",", $STR_NOCOUNT)
+        Else   
+            $aArg = $vArg
+        EndIf
 
-		If clickPoint($aPoint, 1, 0, $vRandom, $iMouseMode, $hWindow, $hControl) = -2 Then Return -2
-	Next
-    
-	Return False
+        Log_Add("Clicking until => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg), $LOG_DEBUG)
+        For $i = 0 To $iAmount-1
+            Local $t_vTimerStart = TimerInit()
+            While TimerDiff($t_vTimerStart) < $iInterval
+                If _Sleep(100) Then ExitLoop(2)
+                If Call($sBooleanFunction, $aArg) = True Then 
+                    $bOutput = True
+                    ExitLoop(2)
+                EndIf
+            WEnd
+
+            clickPoint($aPoint, 1, 0, $vRandom, $iMouseMode, $hWindow, $hControl)
+        Next
+        
+        ExitLoop
+    WEnd
+
+    Log_Add("Clicking until result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+	Return $bOutput
 EndFunc
 
 #cs
@@ -197,24 +224,39 @@ EndFunc
     Return: True if condition is not met and false if maximum clicks exceeds.
 #ce
 Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
-	Local $aArg[0] ;Function arguments
+	Log_Level_Add("clickWhile")
 
-    ;Fix format to array: [arg1, arg2, ...]
-    If isArray($vArg) = False And $vArg <> Null Then
-        $aArg = StringSplit($vArg, ",", $STR_NOCOUNT)
-    EndIf
+    Local $bOutput = False
+    While True
+        Local $aArg[0] ;Function arguments
 
-    For $i = 0 To $iAmount-1
-		Local $t_vTimerStart = TimerInit()
-		While TimerDiff($t_vTimerStart) < $iInterval
-            If _Sleep(100) Then Return -2
-			If Call($sBooleanFunction, $aArg) = False Then Return True
-		WEnd
+        ;Fix format to array: [arg1, arg2, ...]
+        If isArray($vArg) = False And $vArg <> Null Then
+            $aArg = StringSplit($vArg, ",", $STR_NOCOUNT)
+        Else   
+            $aArg = $vArg
+        EndIf
 
-        If clickPoint($aPoint, 1, 0, $vRandom, $iMouseMode, $hWindow, $hControl) = -2 Then Return -2
-	Next
+        Log_Add("Clicking while => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg), $LOG_DEBUG)
+        For $i = 0 To $iAmount-1
+            Local $t_vTimerStart = TimerInit()
+            While TimerDiff($t_vTimerStart) < $iInterval
+                If _Sleep(100) Then ExitLoop(2)
+                If Call($sBooleanFunction, $aArg) = False Then 
+                    $bOutput = True
+                    ExitLoop(2)
+                EndIf
+            WEnd
 
-    Return False ;If condition is still true
+            clickPoint($aPoint, 1, 0, $vRandom, $iMouseMode, $hWindow, $hControl)
+        Next
+        
+        ExitLoop
+    WEnd
+
+    Log_Add("Clicking while result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+	Return $bOutput
 EndFunc
 
 #cs 

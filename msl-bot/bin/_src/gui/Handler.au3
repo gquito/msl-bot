@@ -13,20 +13,126 @@ Func GUIMain()
 EndFunc
 
 Func GUI_HANDLE()
-    Local $iCode = GUIGetMsg()
-    Switch $iCode
-        Case $hDM_Debug
-            If $g_hEditConfig <> Null Then _endEdit()
-            Debug()
-        Case $idBtn_Stop
-            Stop()
-        Case $GUI_EVENT_CLOSE, $hDM_ForceQuit
-            GUISetState(@SW_HIDE, $hParent)
-            CloseApp()
-        Case Else
-            ;Handles the combo config contextmenu
-            handleCombo($iCode, $hLV_ScriptConfig)
+    Local $iCode = GUIGetMsg(1)
+    Switch $iCode[1]
+        Case $hParent
+            Switch $iCode[0]
+                Case $idCkb_Information, $idCkb_Error, $idCkb_Process, $idCkb_Debug
+                    Local $sFilter = ""
+                    If BitAND(GUICtrlRead($idCkb_Information), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Information,"
+                    If BitAND(GUICtrlRead($idCkb_Error), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Error,"
+                    If BitAND(GUICtrlRead($idCkb_Process), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Process,"
+                    If BitAND(GUICtrlRead($idCkb_Debug), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Debug,"
+
+                    $g_sLogFilter = $sFilter
+                    Log_Display_Reset()
+                Case $idBtn_Detach
+                    _GUICtrlListView_Destroy($hLV_Log)
+                    GUICtrlDelete($idBtn_Detach)
+                    GUICtrlDelete($idCkb_Information)
+                    GUICtrlDelete($idCkb_Error)
+                    GUICtrlDelete($idCkb_Process)
+                    GUICtrlDelete($idCkb_Debug)
+
+                    ControlMove("", "", $hLV_Stat, 20, 86, 357, 280)
+                    CreateLogWindow()
+
+                Case $hDM_Debug
+                    If $g_hEditConfig <> Null Then _endEdit()
+                    Debug()
+                Case $idBtn_Stop
+                    Stop()
+                Case $GUI_EVENT_CLOSE, $hDM_ForceQuit
+                    GUISetState(@SW_HIDE, $hParent)
+                    CloseApp()
+                Case Else
+                    ;Handles the combo config contextmenu
+                    handleCombo($iCode[0], $hLV_ScriptConfig)
+            EndSwitch
+        Case $hLogWindow
+            Switch $iCode[0]
+                Case $GUI_EVENT_CLOSE
+                    GUISwitch($hParent)
+                    _GUICtrlTab_ClickTab($hTb_Main, 1)
+
+                    ControlMove("", "", $hLV_Stat, 20, 86, 357, 160)
+
+                    $idBtn_Detach = GUICtrlCreateButton("Detach", 308, 246, 60, 23)
+
+                    $idCkb_Information = GUICtrlCreateCheckbox("Info", 34, 246, 60, 23)
+                    GUICtrlSetState(-1, $GUI_CHECKED)
+                    $idCkb_Error = GUICtrlCreateCheckbox("Error", 94, 246, 60, 23)
+                    GUICtrlSetState(-1, $GUI_CHECKED)
+                    $idCkb_Process = GUICtrlCreateCheckbox("Process", 154, 246, 60, 23)
+                    GUICtrlSetState(-1, $GUI_CHECKED)
+                    $idCkb_Debug = GUICtrlCreateCheckbox("Debug", 224, 246, 60, 23)
+                    GUICtrlSetState(-1, $GUI_UNCHECKED)
+
+                    $hLV_Log = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 270, 360, 100, $LVS_REPORT+$LVS_NOSORTHEADER))
+                    _GUICtrlListView_SetExtendedListViewStyle($hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+                    _GUICtrlListView_AddColumn($hLV_Log, "Time", 76, 0)
+                    _GUICtrlListView_AddColumn($hLV_Log, "Text", 300, 0)
+                    _GUICtrlListView_AddColumn($hLV_Log, "Type", 100, 0)
+                    _GUICtrlListView_AddColumn($hLV_Log, "Function", 100, 0)
+                    _GUICtrlListView_AddColumn($hLV_Log, "Location", 100, 0)
+                    _GUICtrlListView_AddColumn($hLV_Log, "Level", 100, 0)
+                    _GUICtrlListView_JustifyColumn($hLV_Log, 0, 0)
+                    _GUICtrlListView_JustifyColumn($hLV_Log, 1, 0)
+
+                    _GUICtrlTab_ClickTab($hTb_Main, 0)
+                    _GUICtrlTab_ClickTab($hTb_Main, 1)
+                    GUIDelete($hLogWindow)
+
+                    $g_sLogFilter = "Information,Process,Error"
+                    Log_Display_Reset()
+                Case $idCkb_Information, $idCkb_Error, $idCkb_Process, $idCkb_Debug
+                    Local $sFilter = ""
+                    If BitAND(GUICtrlRead($idCkb_Information), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Information,"
+                    If BitAND(GUICtrlRead($idCkb_Error), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Error,"
+                    If BitAND(GUICtrlRead($idCkb_Process), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Process,"
+                    If BitAND(GUICtrlRead($idCkb_Debug), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Debug,"
+
+                    $g_sLogFilter = $sFilter
+                    Log_Display_Reset()
+            EndSwitch
     EndSwitch
+EndFunc
+
+Func CreateLogWindow()
+    Local $aPos = WinGetPos($g_sAppTitle)
+
+    Global $hLogWindow = GUICreate($g_sAppTitle & " Log Window", $aPos[2], $aPos[3], $aPos[0]+20, $aPos[1], $WS_SIZEBOX+$WS_MAXIMIZEBOX+$WS_MINIMIZEBOX, -1)
+    GUISetState(@SW_SHOW, $hLogWindow)
+
+    $idCkb_Information = GUICtrlCreateCheckbox("Info", 10, 4, 60, 23)
+    GUICtrlSetState(-1, $GUI_CHECKED)
+    $idCkb_Error = GUICtrlCreateCheckbox("Error", 70, 4, 60, 23)
+    GUICtrlSetState(-1, $GUI_CHECKED)
+    $idCkb_Process = GUICtrlCreateCheckbox("Process", 130, 4, 60, 23)
+    GUICtrlSetState(-1, $GUI_CHECKED)
+    $idCkb_Debug = GUICtrlCreateCheckbox("Debug", 200, 4, 60, 23)
+    GUICtrlSetState(-1, $GUI_UNCHECKED)
+
+    $idLV_Log = GUICtrlCreateListView("", 3, 30, $aPos[2]-7, $aPos[3]-58, $LVS_REPORT+$LVS_NOSORTHEADER)
+    $hLV_Log = GUICtrlGetHandle($idLV_Log)
+    _GUICtrlListView_SetExtendedListViewStyle($hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+    _GUICtrlListView_AddColumn($hLV_Log, "Time", 76, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Text", 312, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Type", 100, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Function", 100, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Location", 100, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Level", 100, 0)
+    _GUICtrlListView_JustifyColumn($hLV_Log, 0, 0)
+    _GUICtrlListView_JustifyColumn($hLV_Log, 1, 0)
+
+    GUICtrlSetResizing($idLV_Log, $GUI_DOCKTOP+$GUI_DOCKBOTTOM+$GUI_DOCKLEFT+$GUI_DOCKRIGHT)
+    GUICtrlSetResizing($idCkb_Information, $GUI_DOCKALL)
+    GUICtrlSetResizing($idCkb_Error, $GUI_DOCKALL)
+    GUICtrlSetResizing($idCkb_Process, $GUI_DOCKALL)
+    GUICtrlSetResizing($idCkb_Debug, $GUI_DOCKALL)
+
+    $g_sLogFilter = "Information,Process,Error"
+    Log_Display_Reset()
 EndFunc
 
 Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
@@ -92,20 +198,20 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
 
                     ;Handles edits for settings
                     Switch $sType
-                        Case "Combo"
+                        Case "combo"
                             ;Creating context menu from items specified by the combo type.
                             Local $t_aItems = StringSplit($sTypeValues, ",", $STR_NOCOUNT)
                             createComboMenu($g_aComboMenu, $t_aItems)  
 
                             ;Displays a context menu to choose an item from.
                             ShowMenu($hParent, $g_aComboMenu[0])
-                        Case "Text"
+                        Case "text"
                             ;Shows edit in the position.
                             createEdit($g_hEditConfig, $g_iEditConfig, $hLV_ScriptConfig)
-                        Case "List"
+                        Case "list"
                             createListEditor($hParent, $hLV_ScriptConfig, $iIndex)
-                        Case "Setting"
-                            Local $sText = _GUICtrlListView_GetItemText($hLV_ScriptConfig, $iIndex, 4)
+                        Case "setting"
+                            Local $sText = _GUICtrlListView_GetItemText($hLV_ScriptConfig, $iIndex, 1)
                             Local $iScriptIndex = _GUICtrlComboBox_FindString($hCmb_Scripts, $sText)
                             If $iScriptIndex <> -1 Then 
                                 _GUICtrlComboBox_SetCurSel($hCmb_Scripts, $iScriptIndex)
@@ -140,101 +246,134 @@ Func ChangeScript()
 EndFunc
 
 Func CloseApp()
+    Log_Save($g_aLog)
     FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
     _GDIPlus_Shutdown()
     Exit
 EndFunc
 
 Func Start()
+    Log_Level_Add("PREPROCESS")
+    Log_Add("Initializing scripts and checking preconditions.", $LOG_DEBUG)
+
 ;Initializing variables
+    Data_Clear()
+    Data_Order_Clear()
+
     $g_hScriptTimer = TimerInit()
     GUICtrlSetData($idPB_Progress, 0)
     UpdateSettings()
 
-    _GUICtrlTab_ClickTab($hTb_Main, 1)
-
     ;Pre Conditions
-    If $g_hWindow = 0 Or $g_hControl = 0 Then
-        If ($g_hWindow <> 0) And ($g_hControl = 0) Then
-            Local $iPID = WinGetProcess($g_hWindow)
-            Local $sPath = _WinAPI_GetProcessFileName($iPID)
+    Local $bOutput = False
+    While True
+        If $g_hWindow = 0 Or $g_hControl = 0 Then
+            If $g_hWindow = 0 Then 
+                Log_Add("Window handle not found.", $LOG_ERROR)
+                MsgBox($MB_ICONERROR+$MB_OK, "Window handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
+                ExitLoop
+            EndIf
+
+            If $g_hControl = 0 Then
+                Local $iPID = WinGetProcess($g_hWindow)
+                Local $sPath = _WinAPI_GetProcessFileName($iPID)
+                        
+                If StringInStr($sPath, "Nox") = True Then
+                    Log_Add("Control Handle not found.", $LOG_ERROR)
+                    Log_Add("Attempting to use default for Nox.")
                     
-            If StringInStr($sPath, "Nox") = True Then
-                addLog($g_aLog, "Control Handle not found.", $LOG_NORMAL)
-                addLog($g_aLog, "Attempting to use default for Nox.", $LOG_NORMAL)
-                
-                $g_hControl = ControlGetHandle($g_hWindow, "", "[CLASS:subWin; INSTANCE:1]")
-                If $g_hControl = 0 Then ControlGetHandle($g_hWindow, "", "[CLASS:AnglePlayer_0; INSTANCE:1]")
-                If $g_hControl = 0 Then 
-                    MsgBox($MB_ICONERROR+$MB_OK, "Window/Control handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
-                    Return -1
+                    $g_hControl = ControlGetHandle($g_hWindow, "", "[CLASS:subWin; INSTANCE:1]")
+                    If $g_hControl = 0 Then $g_hControl = ControlGetHandle($g_hWindow, "", "[CLASS:AnglePlayer_0; INSTANCE:1]")
+                    If $g_hControl = 0 Then 
+                        MsgBox($MB_ICONERROR+$MB_OK, "Control handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
+                        ExitLoop
+                    EndIf
+                EndIf
+
+            EndIf
+        EndIf
+
+        If ($g_iBackgroundMode = $BKGD_ADB) Or ($g_iMouseMode = $MOUSE_ADB) Or ($g_iSwipeMode = $SWIPE_ADB) Then
+            If FileExists($g_sAdbPath) = False Then
+                MsgBox($MB_ICONERROR+$MB_OK, "Nox path does not exist.", "Path to adb.exe does not exist: " & $g_sAdbPath)
+                ExitLoop
+            EndIf
+
+            If StringInStr(adbCommand("get-state"), "error") = True Then
+                Log_Add("Attempting to connect to ADB Device: " & $g_sAdbDevice)
+                adbCommand("connect " & $g_sAdbDevice)
+
+                If StringInStr(adbCommand("get-state"), "error") = True Then 
+                    MsgBox($MB_ICONERROR+$MB_OK, "Adb device does not exist.", "Device is not connected or does not exist: " & $g_sAdbDevice & @CRLF & @CRLF & adbCommand("devices"))
+                    Log_Add("Failed to connect to device: " & $g_sAdbDevice, $LOG_ERROR)
+                    ExitLoop
+                Else
+                    Log_Add("Successfully connected to device: " & $g_sAdbDevice)
                 EndIf
             EndIf
-
-        EndIf
-    EndIf
-
-    If ($g_iBackgroundMode = $BKGD_ADB) Or ($g_iMouseMode = $MOUSE_ADB) Or ($g_iSwipeMode = $SWIPE_ADB) Then
-        If FileExists($g_sAdbPath) = False Then
-            MsgBox($MB_ICONERROR+$MB_OK, "Nox path does not exist.", "Path to adb.exe does not exist: " & $g_sAdbPath)
-            Return -1
         EndIf
 
-        If StringInStr(adbCommand("get-state"), "error") = True Then
-            addLog($g_aLog, "Attempting to connect to ADB Device: " & $g_sAdbDevice, $LOG_NORMAL)
-            adbCommand("connect " & $g_sAdbDevice)
-
-            If StringInStr(adbCommand("get-state"), "error") = True Then 
-                MsgBox($MB_ICONERROR+$MB_OK, "Adb device does not exist.", "Device is not connected or does not exist: " & $g_sAdbDevice & @CRLF & @CRLF & adbCommand("devices"))
-                addLog($g_aLog, "Failted to connect to device: " & $g_sAdbDevice, $LOG_ERROR)
-                Return -1
-            Else
-                addLog($g_aLog, "Successfully connected to device: " & $g_sAdbDevice, $LOG_NORMAL)
-            EndIf
+        If ($g_iMouseMode = $MOUSE_REAL) Or ($g_iSwipeMode = $SWIPE_REAL) Then
+            MsgBox($MB_ICONWARNING+$MB_OK, "Script is using real mouse.", "Mouse cursor will be moved automatically. To stop the script, press ESCAPE key.")
+            HotKeySet("{ESC}", "Stop")
         EndIf
-    EndIf
 
-    If ($g_iMouseMode = $MOUSE_REAL) Or ($g_iSwipeMode = $SWIPE_REAL) Then
-        MsgBox($MB_ICONWARNING+$MB_OK, "Script is using real mouse.", "Mouse cursor will be moved automatically. To stop the script, press ESCAPE key.")
-        HotKeySet("{ESC}", "Stop")
-    EndIf
+    ;Processing
+        If $g_sScript = "" Then
+            _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $g_sScript)
 
-;Processing
-    If $g_sScript = "" Then
-        _GUICtrlComboBox_GetLBText($hCmb_Scripts, _GUICtrlComboBox_GetCurSel($hCmb_Scripts), $g_sScript)
+            Local $t_aScriptArgs[_GUICtrlListView_GetItemCount($hLV_ScriptConfig)+1] ;Contains script args
+            $t_aScriptArgs[0] = "CallArgArray"
+            For $i = 1 To UBound($t_aScriptArgs, $UBOUND_ROWS)-1
+                ;Retrieves the values column for each setting
+                $t_aScriptArgs[$i] = _GUICtrlListView_GetItemText($hLV_ScriptConfig, $i-1, 1) 
+            Next
 
-        Local $t_aScriptArgs[_GUICtrlListView_GetItemCount($hLV_ScriptConfig)+1] ;Contains script args
-        $t_aScriptArgs[0] = "CallArgArray"
-        For $i = 1 To UBound($t_aScriptArgs, $UBOUND_ROWS)-1
-            ;Retrieves the values column for each setting
-            $t_aScriptArgs[$i] = _GUICtrlListView_GetItemText($hLV_ScriptConfig, $i-1, 1) 
-        Next
-
-        $g_aScriptArgs = $t_aScriptArgs
-    EndIf
+            $g_aScriptArgs = $t_aScriptArgs
+        EndIf
     
-;Changing bot state and checking pixels
-    $g_bRunning = True
-    CaptureRegion()
-    If isPixel("100,457,0x1FA9CE|200,457,0x24ABBD|300,457,0x29AEA8|400,457,0x2FB091", 10) = False Then
-        For $i = 0 To $g_aControlSize[0] Step 100
-            Local $hColor = getColor($i, $g_aControlSize[1]/2)
-            If ($hColor <> "0x000000") Or ($hColor <> "0xFFFFFF") Then 
-            ;Pass all conditions -> Setting control states
-                GUICtrlSetData($idLbl_RunningScript, "Running Script: " & $g_sScript)
-                ControlDisable("", "", $hCmb_Scripts)
-                ControlDisable("", "", $hLV_ScriptConfig)
-                ControlDisable("", "", $hBtn_Start)
-                ControlEnable("", "", $hBtn_Stop)
-                ControlEnable("", "", $hBtn_Pause)
-
-                Return
-            EndIf
-        Next
+        $bOutput = True
+        ExitLoop
+    WEnd
+    
+    If $bOutput = False Then
+        Log_Level_Remove()
+        Return $bOutput
     EndIf
-;Screen is black:
-    MsgBox($MB_ICONERROR+$MB_OK, "Could not capture correctly.", "Unable to correctly capture screen. Try changing 'Capture Mode' or Nox 'Graphics Rendering Mode.'")
-    Stop()
+
+    While True
+        ;Changing bot state and checking pixels
+        $g_bRunning = True
+        CaptureRegion()
+        If isPixel("100,457,0x1FA9CE|200,457,0x24ABBD|300,457,0x29AEA8|400,457,0x2FB091", 10) = False Then
+            For $i = 0 To $g_aControlSize[0] Step 100
+                Local $hColor = getColor($i, $g_aControlSize[1]/2)
+                If ($hColor <> "0x000000") Or ($hColor <> "0xFFFFFF") Then 
+                ;Pass all conditions -> Setting control states
+                    GUICtrlSetData($idLbl_RunningScript, "Running Script: " & $g_sScript)
+                    ControlDisable("", "", $hCmb_Scripts)
+                    ControlDisable("", "", $hLV_ScriptConfig)
+                    ControlDisable("", "", $hBtn_Start)
+                    ControlEnable("", "", $hBtn_Stop)
+                    ControlEnable("", "", $hBtn_Pause)
+
+                    ExitLoop(2)
+                EndIf
+            Next
+        EndIf
+
+        ;Screen is black:
+        MsgBox($MB_ICONERROR+$MB_OK, "Could not capture correctly.", "Unable to correctly capture screen. Try changing 'Capture Mode' or Nox 'Graphics Rendering Mode.'")
+        Stop()
+
+        $bOutput = False
+        ExitLoop
+    WEnd
+
+    Log_Add("Start result: " & $bOutput & ".", $LOG_DEBUG)
+    Log_Level_Remove()
+    If $bOutput = True Then _GUICtrlTab_ClickTab($hTb_Main, 1)
+    Return $bOutput
 EndFunc
 
 Func Stop()
@@ -275,54 +414,76 @@ Func Pause()
 EndFunc
 
 Func RestartNox($iPID = WinGetProcess($g_hWindow), $bDebug = False)
-    $g_hTimerLocation = Null
+    Log_Level_Add("RestartNox")
+    Log_Add("Restarting Nox process.")
+    $bOutput = False
 
-    Local $sPath = _WinAPI_GetProcessFileName($iPID)
-    Local $aPosition = WinGetPos($g_hWindow)
-    Local $t_sCommandLine = StringStripWS(_WinAPI_GetProcessCommandLine($iPID), $STR_STRIPALL)
-    Local $aCommandLine = formatArgs(StringMid($t_sCommandLine, StringInStr($t_sCommandLine, "-")+1), "-", ":")
-    Local $sClone = getArg($aCommandLine, "clone")
+    While True
+        $g_hTimerLocation = Null
 
-    If ($sClone <> -1) And (StringInStr($t_sCommandLine, "-clone") = True) Then
-        $sClone = " -clone:" & $sClone
-    Else
-        $sClone = " -clone:Nox"
-    EndIf
+        Local $sPath = _WinAPI_GetProcessFileName($iPID)
+        Local $aPosition = WinGetPos($g_hWindow)
+        Local $t_sCommandLine = StringStripWS(_WinAPI_GetProcessCommandLine($iPID), $STR_STRIPALL)
+        Local $aCommandLine = formatArgs(StringMid($t_sCommandLine, StringInStr($t_sCommandLine, "-")+1), "-", ":")
+        Local $sClone = getArg($aCommandLine, "clone")
 
-    Run($sPath & $sClone & " -quit")
-    Local $t_hTimer = TimerInit()
-    While ProcessExists($iPID) <> 0
-        If TimerDiff($t_hTimer) > 120000 Then ;Force end process after 2 minutes
-            If ProcessClose($iPID) <> 1 Then
-                addLog($g_aLog, "*Could not close current Nox process.", $LOG_ERROR)
-                Stop()
-            EndIf
+        If ($sClone <> -1) And (StringInStr($t_sCommandLine, "-clone") = True) Then
+            $sClone = " -clone:" & $sClone
+        Else
+            $sClone = " -clone:Nox"
         EndIf
-        addLog($g_aLog, "*Closing currect Nox process.", $LOG_NORMAL)
-        If _Sleep(1000) Then Return
+
+        Run($sPath & $sClone & " -quit")
+        Local $t_hTimer = TimerInit()
+        
+        Log_Add("Closing current Nox process.")
+        While ProcessExists($iPID) <> 0
+            If TimerDiff($t_hTimer) > 120000 Then ;Force end process after 2 minutes
+                If ProcessClose($iPID) <> 1 Then
+                    Log_Add("Could not close current Nox process.", $LOG_ERROR)
+                    Stop()
+                EndIf
+            EndIf
+            If _Sleep(1000) Then ExitLoop(2)
+        WEnd
+
+        Log_Add("Starting new Nox process.")
+        Run($sPath & $sClone & " -resolution:800x552 -dpi:160 -package:com.ftt.msleague_gl -lang:en")
+        Log_Add("Waiting for Nox window handles.")
+
+        $g_hWindow = 0
+        While $g_hWindow = 0
+            If _Sleep(1000) Then Return
+
+            $g_hWindow = WinGetHandle($g_sWindowTitle)
+            If $g_hWindow <> 0 Then WinMove($g_hWindow, "", $aPosition[0], $aPosition[1])
+        WEnd
+
+        Log_Add("Waiting for Monster Super League start menu.")
+        Local $t_hTimer = TimerInit()
+        While (getLocation() <> "tap-to-start") And (getLocation($g_aLocations, False) <> "event-list") And (getLocation($g_aLocations, False) <> "event") And (getLocation($g_aLocations, False) <> "start-screen")
+            $g_hTimerLocation = Null
+            
+            If TimerDiff($t_hTimer) > 600000 Then 
+                Log_Add("Unable to detect start menu.", $LOG_ERROR)
+                ExitLoop
+            EndIf
+            If _Sleep(5000) Then ExitLoop
+
+            $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
+
+            If $bDebug Then CaptureRegion("Debug")
+            clickPoint("394,469")
+        WEnd
+
+        navigate("map")
+        $bOutput = True
+        ExitLoop
     WEnd
 
-    Run($sPath & $sClone & " -resolution:800x552 -dpi:160 -package:com.ftt.msleague_gl -lang:en")
-
-    $g_hWindow = 0
-    While $g_hWindow = 0
-        addLog($g_aLog, "*Opening Nox and waiting for handles.", $LOG_NORMAL)
-        If _Sleep(1000) Then Return
-
-        $g_hWindow = WinGetHandle($g_sWindowTitle)
-        If $g_hWindow <> 0 Then WinMove($g_hWindow, "", $aPosition[0], $aPosition[1])
-    WEnd
-
-    While (getLocation() <> "tap-to-start") And (getLocation($g_aLocations, False) <> "event-list") And (getLocation($g_aLocations, False) <> "event") And (getLocation($g_aLocations, False) <> "start-screen")
-        If $bDebug Then CaptureRegion("Debug")
-        $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
-        addLog($g_aLog, "*Waiting for MSL to load.", $LOG_NORMAL)
-
-        clickPoint("394,469", 3, 50)
-        If _Sleep(1000) Then Return
-    WEnd
-
-    navigate("map")
+    Log_Add("Restarting nox result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $bOutput
 EndFunc
 
 ;Some helper functions for handling controls----
@@ -368,7 +529,7 @@ Func handleEdit(ByRef $hEdit, ByRef $iIndex, $hListView)
     If _GUICtrlListView_GetItemText($hListView, $iIndex) = "Profile Name" Then
         $g_sProfilePath = @ScriptDir & "\profiles\" & $sNew & "\"
 
-        getScriptsFromUrl($g_aScripts, $g_sScriptsURL)
+        setScripts($g_aScripts, $g_sScriptsURL)
         For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
             Local $aScript = $g_aScripts[$i]
             If FileExists($g_sProfilePath & "\" & $aScript[0]) = True Then
@@ -585,53 +746,118 @@ EndFunc
     Functions for changing control data and display
 #ce ##########################################
 
-;[[script, description, [[config, value, description], [..., ..., ...]]], ...]
-Func getScriptsFromUrl(ByRef $aScripts, $sUrl)
-    ;https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scripts.txt
-    Local $aRawScripts = getArgsFromURL($sUrl, ">", ":") ;[[script, 'description:"",config:"value|description"']]
-    Local $iNumScripts = UBound($aRawScripts, $UBOUND_ROWS)
+;Script data [[script, description, [[config, value, description], [..., ..., ...]]], ...]
+Func setScripts(ByRef $aScripts, $sPath)
+    Local $sData ;Contains unparsed data
+    If FileExists($sPath) = True Then
+        $sData = FileRead($sPath)
+    Else
+        $sData = BinaryToString(InetRead($sPath, $INET_FORCERELOAD))
+    EndIf
 
-    Local $t_aScripts[0] ;Temporarily stores script data
+    Local $c = StringSplit($sData, "", $STR_NOCOUNT)
 
-    For $i = 0 To $iNumScripts-1
-        Local $aRawScript = [$aRawScripts[$i][0], $aRawScripts[$i][1]] ;[script, 'description:"",config:"value|description"']
-        Local $aScript[3] ;stores a single script [script, description, []]
-        
-        $aScript[0] = $aRawScript[0]
-        If $aScript[0] = "" Then ContinueLoop
+    Local $t_aScripts = $g_aScripts ;Temporarily stores script data
+    Local $t_aScript[3] ;Stores single script
 
-        ;getting description and then configs
-        Local $aRawConfigList = formatArgs(StringReplace($aRawScript[1], "'", '"'), ",", ":") ;[[description, ""], [config, "value|description"]]
-        Local $iRawConfigListSize = UBound($aRawConfigList, $UBOUND_ROWS)
+    Local $t_aConfig[5] 
+    Local $t_aConfigs[0] 
 
-        Local $aScriptDescription = [$aRawConfigList[0][0], $aRawConfigList[0][1]] ;[description, ""]
-        $aScript[1] = $aScriptDescription[1]
+    Local $bScript = False
+    For $i = -1 To UBound($c)-1
+        If nextValidChar($c, $i) = -1 Then ExitLoop
+        If $bScript = False Then
+            If $c[$i] = "[" Then
+                nextValidChar($c, $i)
+                $t_aScript[0] = getNextField($c, $i)
+                $bScript = True
+            EndIf
+        Else
+            Switch $c[$i]
+                Case "[" ;field
+                    nextValidChar($c, $i)
+                    Local $cur_sField = getNextField($c, $i)
+                    Switch $cur_sField
+                        Case "description"
+                            $t_aScript[1] = getNextString($c, $i)
+                        Case "text", "combo", "setting", "list"
+                            $t_aConfig[3] = $cur_sField
+                            While $c[$i] <> "]"
+                                nextValidChar($c, $i)
+                                Local $sField = getNextField($c, $i)
+                                Switch $sField
+                                    Case "name"
+                                        $t_aConfig[0] = StringReplace(getNextString($c, $i), " ", "_")
+                                    Case "description"
+                                        $t_aConfig[2] = getNextString($c, $i)
+                                    Case "default"
+                                        $t_aConfig[1] = getNextString($c, $i)
+                                    Case "data"
+                                        $t_aConfig[4] = getNextString($c, $i)
+                                    Case Else
+                                        MsgBox(0, "", "Unknown field: " & $sField)
+                                        Return -1
+                                EndSwitch
+                            WEnd
 
-        Local $aConfigList[$iRawConfigListSize-1] ;stores all config in format [config, value, description]
-        For $j = 1 To $iRawConfigListSize-1 ;skips the script description
-            Local $aRawConfig = [$aRawConfigList[$j][0], $aRawConfigList[$j][1]] ; [config, "value|description"]
-            Local $aFormatedConfig[5] ;Stores [config, value, description, type, hidden value]
+                            If $c[$i] = "]" Then
+                                ReDim $t_aConfigs[UBound($t_aConfigs)+1]
+                                $t_aConfigs[UBound($t_aConfigs)-1] = $t_aConfig
+                            EndIf
+                    EndSwitch
+                Case "]"
+                    $t_aScript[2] = $t_aConfigs
+                    Local $t_aNewConfig[0]
+                    $t_aConfigs = $t_aNewConfig
 
-            $aFormatedConfig[0] = $aRawConfig[0]
+                    If getScriptIndex($t_aScripts, $t_aScript[0]) = -1 Then
+                        ReDim $t_aScripts[UBound($t_aScripts)+1]
+                        $t_aScripts[UBound($t_aScripts)-1] = $t_aScript
+                    EndIf
+                    
+                    $bScript = False
+            EndSwitch
 
-            Local $aSplitValueDescription = StringSplit($aRawConfig[1], "|", $STR_NOCOUNT)
-            ;_ArrayDisplay($aSplitValueDescription) ;Debug the values
-            If UBound($aSplitValueDescription, $UBOUND_ROWS) <> 4 Then ContinueLoop
-
-            $aFormatedConfig[1] = $aSplitValueDescription[0]
-            $aFormatedConfig[2] = $aSplitValueDescription[1]
-            $aFormatedConfig[3] = $aSplitValueDescription[2]
-            $aFormatedConfig[4] = $aSplitValueDescription[3]
-
-            $aConfigList[$j-1] = $aFormatedConfig
-        Next
-
-        $aScript[2] = $aConfigList
-        ReDim $t_aScripts[$i+1]
-        $t_aScripts[$i] = $aScript
+        EndIf
     Next
 
     $aScripts = $t_aScripts
+EndFunc
+
+Func getNextString($aChar, ByRef $iIndex)
+    Local $sText = ""
+    While $aChar[$iIndex] <> '"'
+        nextValidChar($aChar, $iIndex)
+    WEnd
+
+    nextValidChar($aChar, $iIndex)
+    While $aChar[$iIndex] <> '"'
+        $sText &= $aChar[$iIndex]
+        $iIndex += 1
+    WEnd
+
+    nextValidChar($aChar, $iIndex)
+    Return $sText
+EndFunc
+
+Func getNextField($aChar, ByRef $iIndex)
+    Local $sText = ""
+
+    While $aChar[$iIndex] <> ':'
+        If StringIsSpace($aChar[$iIndex]) = False Then $sText &= $aChar[$iIndex]
+        $iIndex += 1
+    WEnd
+
+    Return $sText
+EndFunc
+
+Func nextValidChar($aChar, ByRef $iIndex)
+    $iIndex += 1
+    While ($iIndex < UBound($aChar)) And StringIsSpace($aChar[$iIndex])
+        $iIndex += 1
+    WEnd
+
+    If $iIndex >= UBound($aChar) Then Return -1
 EndFunc
 
 ;Replaces values in script list with values saved in profile
@@ -652,7 +878,7 @@ Func getConfigsFromFile(ByRef $aScripts, $sScript, $sProfilePath = $g_sProfilePa
     For $i = 0 To UBound($t_aConfigs)-1 
         Local $t_aConfig = $t_aConfigs[$i] 
         Local $sValue = getArg($t_aRawConfig, $t_aConfig[0])
-        If $svalue <> -1 Then $t_aConfig[1] = $sValue
+        If $sValue <> -1 Then $t_aConfig[1] = $sValue
 
         ;save new config value
         $t_aConfigs[$i] = $t_aConfig

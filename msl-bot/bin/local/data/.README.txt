@@ -1,0 +1,45 @@
+Pixel set note: The '|' character acts as an AND operator. The '/' character acts as an OR operator. This can be used in locations.txt and pixels.txt.
+For example: 18,25,0xF1C444|31,24,0xF3C645/794,539,0xEBDC59|790,544,0xEBDC59
+*Using the function isPixelOR()
+- There are two parts to look at which are 18,25,0xF1C444|31,24,0xF3C645 and 794,539,0xEBDC59|790,544,0xEBDC59.
+- If either parts are true then the whole thing is true. If all parts are false then the result is false.
+- In 18,25,0xF1C444|31,24,0xF3C645, all parts of this set must be true for it to pass.
+- These can be combined to form basic boolean logic.
+=========================
+
+locations.txt:
+-Note: setLocation(LOCATION, [DATA]) can write existing or new locations.
+	- setLocation(EXISITINGLOCATION) will get the pixels based on existing point data.
+	- setLocation(NEWLOCATION, "x,y|x,y") will create an entirely new location.
+If the same local and remote location exists, then the local location will be appended using an OR operator.
+Check the pixel set note above.
+~~
+example-location:100,200,0x000000|123,321,0xFFFFFF
+example2:500,200,0x32AB35|100,100,0x123456
+~~
+
+nezz-locations.txt:
+-Note: There are 5 village angles in total which include all ships. Use function: getVillagePos() to get location.
+~~
+village-pos0:446,36|536,408|398,152
+village-pos1:360,159|26,78
+village-pos2:71,338|187,197
+village-pos3:460,443|679,54|460,148
+village-pos4:144,71|629,351|76,234
+~~
+
+pixels.txt:
+-Note: Existing local points will be used instead of the remote points.
+~~
+points1:321,123
+point2:123,321
+other-point3:10,234
+~~
+
+pixels.txt:
+-Note: Existing local pixels will be used instead of the remote pixels. Check the pixel set note above.
+~~
+pixel1:92,543,0x0D0D0C|793,538,0xF1E25C|794,543,0xF2E25C
+pixel2:719,88,0xEAD5BD/724,89,0xEBD7C0/774,90,0xE9D4BA
+pixel3:794,539,0xEBDC59|790,544,0xEBDC59|793,543,0x0E0E0C/92,543,0x0D0D0C|793,538,0xF1E25C|794,543,0xF2E25C
+~~

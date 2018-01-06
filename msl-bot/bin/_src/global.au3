@@ -5,7 +5,6 @@
     Global Const $BKGD_NONE = 0, $BKGD_WINAPI = 1, $BKGD_ADB = 2
     Global Const $MOUSE_REAL = 0, $MOUSE_CONTROL = 1, $MOUSE_ADB = 2
     Global Const $SWIPE_KEYMAP = 0, $SWIPE_ADB = 1, $SWIPE_REAL = 2
-    Global Const $LOG_NORMAL = 0, $LOG_DEBUG = 1, $LOG_ERROR = 2
 
 ;Application variables
     Global $g_sAppTitle = "MSL Bot v" & $aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] ;Bot app title
@@ -21,7 +20,6 @@
     Global $g_hBitmap = Null ;GDIPlus bitmap handle.
     Global $g_hWindow = Null ;Handle for emulator window
     Global $g_hControl = Null ;Handle for control window
-    Global $g_aLog[0][3] ;Keeps track of [log, time, type]
 
 ;Config variables
     Global $g_sImageSearchPath = @TempDir & "\ImageSearchDLL.dll" ;ImageSearchDLL default path
@@ -47,11 +45,19 @@
     Global $d_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
 
 ;MSL variables/constants
+    Global Const $g_aScriptList = ["_Config", "_Hourly", "_Filter", "Farm Rare", "Farm Golem", "Farm Gem", "Farm Astromon", "Farm Guardian", "Farm Starstone"]
+
+    Global Const $g_sScriptsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scriptsv4.txt"
     Global Const $g_sNezzPosURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/nezz-locations.txt"
-    Global Const $g_sScriptsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scriptsv3.txt"
     Global Const $g_sPointsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt"
     Global Const $g_sPixelsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt"
     Global Const $g_sLocationsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt"
+
+    Global Const $g_sScriptsLocal = @ScriptDir & "\bin\local\custom.txt"
+    Global Const $g_sNezzPosLocal = @ScriptDir & "\bin\local\data\nezz-locations.txt"
+    Global Const $g_sPointsLocal = @ScriptDir & "\bin\local\data\points.txt"
+    Global Const $g_sPixelsLocal = @ScriptDir & "\bin\local\data\pixels.txt"
+    Global Const $g_sLocationsLocal = @ScriptDir & "\bin\local\data\locations.txt"
 
     Global Const $g_aGemRanks = ["RUIN", "INTUITION", "CONVICTION,PROTECTION,VALOR,VITALITY,TENACITY,FORTITUDE,HEALING,FEROCITY", "LIFE"]
     Global Const $g_aGemGrade6Price = [[39600,37799,36000,34199], [24750,23624,22500,21374], [19800,18899,18000,17099]]
@@ -120,11 +126,11 @@
     Global $g_hTimerLocation = Null ;Global timer for location. Used for antiStuck
     Global $g_bPerformHourly = False ;Status to do hourly or not.
     Global $g_bPerformGuardian = True ;Status to do guardian or not.
-    Global $g_aScripts = [] ;Script data [[script, description, [[config, value, description], [..., ..., ...]]], ...]
-    Global $g_aLocations = [] ;Data locations [[location, value], ...]
-    Global $g_aPixels = [] ;Individual pixel data [[name, pixel], ...]
-    Global $g_aPoints = [] ;Significant Points in game [[name, point], ...]
-    Global $g_aNezzPos = [] ;Nezz click positions for different village angles
+    Global $g_aScripts[0] ;Script data [[script, description, [[config, value, description], [..., ..., ...]]], ...]
+    Global $g_aLocations[0] ;Data locations [[location, value], ...]
+    Global $g_aPixels[0] ;Individual pixel data [[name, pixel], ...]
+    Global $g_aPoints[0] ;Significant Points in game [[name, point], ...]
+    Global $g_aNezzPos[0] ;Nezz click positions for different village angles
 
 
 ;GUI variables

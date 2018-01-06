@@ -4,6 +4,7 @@
 Func CreateGUI()
     Local Const $GUI_FONTSIZE = 11
     Global $hParent = GUICreate($g_sAppTitle, 400, 380, -9999, -9999)
+    Global $hLogWindow ;Will contain log window
     WinSetTitle($hParent, "", $g_sAppTitle & UpdateStatus())
     GUISetBkColor(0xFFFFFF)
     GUISetFont(8.5)
@@ -29,13 +30,19 @@ Func CreateGUI()
     GUISetFont(8.5)
 
     Global $hCmb_Scripts = GUICtrlGetHandle(GUICtrlCreateCombo("_Config", 146, 30, 150, -1, $CBS_DROPDOWNLIST))
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "_Hourly")
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "_Filter")
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Rare")
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Golem")
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Gem")
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Astromon")
-    _GUICtrlComboBox_AddString($hCmb_Scripts, "Farm Guardian")
+    Local $aScriptList[0] ;Will contain script list
+    If FileExists(@ScriptDir & "\bin\local\scriptlist.txt") = True Then
+        Local $t_aScriptList = StringSplit(FileRead(@ScriptDir & "\bin\local\scriptlist.txt"), @CRLF, $STR_NOCOUNT)
+        For $sScript In $t_aScriptList
+            If StringIsSpace($sScript) = False Then _ArrayAdd($aScriptList, $sScript)
+        Next
+    Else
+        $aScriptList = $g_sScriptList
+    EndIf
+    
+    For $sScript In $aScriptList
+        _GUICtrlComboBox_AddString($hCmb_Scripts, $sScript)
+    Next
 
     Global $hBtn_Start = GUICtrlGetHandle(GUICtrlCreateButton("Start", 298, 29, 50, 23))
     ControlDisable("", "", $hBtn_Start)
@@ -71,15 +78,30 @@ Func CreateGUI()
     ControlDisable("", "", $hBtn_Pause)
     ControlDisable("", "", $hBtn_Stop)
 
-    Global $hLV_Stat = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 86, 360, 180, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
+    Global $hLV_Stat = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 86, 357, 160, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
     _GUICtrlListView_SetExtendedListViewStyle($hLV_Stat, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
     _GUICtrlListView_AddColumn($hLV_Stat, "Stat", 116, 0)
     _GUICtrlListView_AddColumn($hLV_Stat, "Value", 240, 0)
 
-    Global $hLV_Log = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 270, 360, 100, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
+    Global $idBtn_Detach = GUICtrlCreateButton("Detach", 308, 246, 60, 23)
+
+    Global $idCkb_Information = GUICtrlCreateCheckbox("Info", 34, 246, 60, 23)
+    GUICtrlSetState(-1, $GUI_CHECKED)
+    Global $idCkb_Error = GUICtrlCreateCheckbox("Error", 94, 246, 60, 23)
+    GUICtrlSetState(-1, $GUI_CHECKED)
+    Global $idCkb_Process = GUICtrlCreateCheckbox("Process", 154, 246, 60, 23)
+    GUICtrlSetState(-1, $GUI_CHECKED)
+    Global $idCkb_Debug = GUICtrlCreateCheckbox("Debug", 224, 246, 60, 23)
+    GUICtrlSetState(-1, $GUI_UNCHECKED)
+
+    Global $hLV_Log = GUICtrlGetHandle(GUICtrlCreateListView("", 20, 270, 360, 100, $LVS_REPORT+$LVS_NOSORTHEADER))
     _GUICtrlListView_SetExtendedListViewStyle($hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
     _GUICtrlListView_AddColumn($hLV_Log, "Time", 76, 0)
-    _GUICtrlListView_AddColumn($hLV_Log, "Log", 1000, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Text", 300, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Type", 100, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Function", 100, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Location", 100, 0)
+    _GUICtrlListView_AddColumn($hLV_Log, "Level", 100, 0)
     _GUICtrlListView_JustifyColumn($hLV_Log, 0, 0)
     _GUICtrlListView_JustifyColumn($hLV_Log, 1, 0)
 

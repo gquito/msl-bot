@@ -127,7 +127,6 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 			ReDim $aArgs[$iArgSize][2]
 
 			Local $aArg = $sArgs[$i]
-
 			$aArgs[$iArgSize-1][0] = $aArg[0]
 			$aArgs[$iArgSize-1][1] = $aArg[1]
 		Next
@@ -174,4 +173,29 @@ Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
 	$sData = StringReplace($sData, @LF, $sArgSeparator)
 
 	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
+EndFunc
+
+#cs 
+	Function: Merges two sets of arguments
+	Parameters:
+		$aFrom: Argument that will be merged to $aTo
+		$aTo: Main argument that will be merged.
+		$cAppend: Character to separate two values. A blank string will overwrite data.
+#ce
+Func mergeArgFromTo($aFrom, ByRef $aTo, $cAppend = '')
+	For $i = 0 To UBound($aFrom)-1
+		Local $sArgValue = $aFrom[$i][1]
+		Local $sToArg = getArg($aTo, $aFrom[$i][0])
+		If $sToArg <> -1 Then
+			If $cAppend = '' Then
+				setArg($aTo, $aFrom[$i][0], $sArgValue)
+			Else
+				setArg($aTo, $aFrom[$i][0], $sToArg & $cAppend & $sArgValue)
+			EndIf
+		Else
+			ReDim $aTo[UBound($aTo)+1][2]
+			$aTo[UBound($aTo)-1][0] = $aFrom[$i][0]
+			$aTo[UBound($aTo)-1][1] = $aFrom[$i][1]
+		EndIf
+	Next
 EndFunc

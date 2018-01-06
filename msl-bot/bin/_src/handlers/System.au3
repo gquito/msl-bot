@@ -16,6 +16,8 @@ Func _Sleep($iDuration)
                 If $bScheduled = False Then 
                     $g_bPerformHourly = True
                     $g_bPerformGuardian = True
+
+                    Log_Save($g_aLog, getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Profile_Name"), (UBound($g_aLog) > 1000))
                 EndIf
 
                 $bScheduled = True
@@ -26,22 +28,24 @@ Func _Sleep($iDuration)
             Case Else
                 $bScheduled = False
         EndSwitch
-
         If ($g_bRunning = True) And ($g_hScriptTimer <> Null) Then
             WinSetTitle($hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", "") & " - " & getTimeString(TimerDiff($g_hScriptTimer)/1000))
-            
+
+            ;Data update sequence
+            Data_Display()
+
             ;AntiStuck sequence
             If ($g_hTimerLocation <> Null) And (TimerDiff($g_hTimerLocation) > (60000*10)) Then ;10 minute anti-stuck
                 $g_hTimerLocation = Null
-                addLog($g_aLog, "*AntiStuck: Stuck for 10 minutes, restarting nox.", $LOG_ERROR)
+                Log_Level_Add("_Sleep")
+                Log_Add("AntiStuck: Stuck for 10 minutes, restarting nox.", $LOG_ERROR)
                 RestartNox()
+                Log_Level_Remove()
             EndIf
         EndIf
         
-        displayLog($g_aLog, $hLV_Log)
         While $g_bPaused = True
             $g_hTimerLocation = Null
-            displayLog($g_aLog, $hLV_Log)
             GUI_HANDLE()
         WEnd
 
@@ -80,10 +84,12 @@ Func Debug()
 EndFunc
 
 Func _Debug()
-    ;Prompting for code
-    Local $aLines = StringSplit(InputBox("Debug Input", "Enter an expression: " & @CRLF & "- Lines of expressions can be separated by '|' character.", default, default, default, 150), "|", $STR_NOCOUNT)
+    Log_Level_Add("_Debug")
+    Log_Add("Debug Input has started.")
 
-    addLog($g_aLog, "```Debug script has started.", $LOG_NORMAL)
+    ;Prompting for code
+    Local $aLines = StringSplit(InputBox("Debug Input", "Enter an expression: " & @CRLF & "- Lines of expressions can be separated by '~' delimeter.", default, default, default, 150), "~", $STR_NOCOUNT)
+
     ;Process each line of code
     For $i = 0 To UBound($aLines, $UBOUND_ROWS)-1
         If $aLines[$i] = "" Then ContinueLoop
@@ -92,14 +98,14 @@ Func _Debug()
 
         If isArray($sResult) = True Then
             _ArrayDisplay($sResult)
-            addLog($g_aLog, "{Array} <= " & $aLines[$i], $LOG_NORMAL)
+            Log_Add("{Array} <= " & $aLines[$i], $LOG_INFORMATION)
         Else
-            addLog($g_aLog, String($sResult) & " <= " & $aLines[$i], $LOG_NORMAL)
+            Log_Add(String($sResult) & " <= " & $aLines[$i], $LOG_INFORMATION)
         EndIf
         
     Next
 
-    ;Exit
-    addLog($g_aLog, "Debug script has stopped.```")
+    Log_Add("Debug Input has stopped.")
+    Log_Level_Remove()
     Stop()
 EndFunc

@@ -1,4 +1,4 @@
-Global $aVersion = [3, 9, 4] ;Major, Minor, Build
+Global $aVersion = [3, 10, 0] ;Major, Minor, Build
 
 #pragma compile(Out, msl-bot.exe)
 #pragma compile(Icon, bin\_src\msl-bot.ico)
@@ -7,8 +7,8 @@ Global $aVersion = [3, 9, 4] ;Major, Minor, Build
 #pragma compile(ProductName, Monster Super League Bot)
 #pragma compile(FileDescription, Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot)
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 3.9.4)
-#pragma compile(ProductVersion, 3.9.4)
+#pragma compile(FileVersion, 3.10.0)
+#pragma compile(ProductVersion, 3.10.0)
 #pragma compile(OriginalFilename, msl-bot.exe)
 
 #include-once
@@ -32,7 +32,13 @@ Func Initialize()
     $g_aPixels = getArgsFromURL($g_sPixelsURL, ">", ":")
     $g_aPoints = getArgsFromURL($g_sPointsURL, ">", ":")
 
-    getScriptsFromUrl($g_aScripts, $g_sScriptsURL)
+    mergeArgFromTo(getArgsFromFile($g_sLocationsLocal, ">", ":"), $g_aLocations, "/")
+    mergeArgFromTo(getArgsFromFile($g_sNezzPosLocal, ">", ":"), $g_aNezzPos)
+    mergeArgFromTo(getArgsFromFile($g_sPixelsLocal, ">", ":"), $g_aPixels)
+    mergeArgFromTo(getArgsFromFile($g_sPointsLocal, ">", ":"), $g_aPoints)
+
+    setScripts($g_aScripts, $g_sScriptsLocal) ;Sets local scripts first, existing scripts will not be overwritten
+    setScripts($g_aScripts, $g_sScriptsURL)
 
     ;User configs
     Local $t_sProfile = "Default"

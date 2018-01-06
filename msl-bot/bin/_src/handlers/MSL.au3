@@ -134,6 +134,65 @@ Func isLocation($vLocations, $bReturnBool = True)
 	Return ""
 EndFunc
 
+#cs 
+	Function: Creates a local location data.
+	Parameters:
+		$sLocation: New or exisiting location.
+		$aData: If location does not exist, will create location based on array of points. Format: "123,321|564,456|..." or ["123, 321", "321, 123", "...,..."]
+	Returns: 
+		- On successful, true
+		- On failure, false
+#ce
+Func setLocation($sLocation, $aData = Null)
+	Local $aLocation = getArg($g_aLocations, $sLocation)
+	Local $aPoints[0][2] ;Will store points to find colors for.
+	
+	If $aLocation = -1 Then
+		;Creates new location.
+		If isArray($aData) = False Then 
+			$aData = StringSplit($aData, "|", $STR_NOCOUNT)
+		EndIf
+
+		For $sData In $aData
+			Local $aPoint = StringSplit($sData, ",", $STR_NOCOUNT)
+
+			ReDim $aPoints[UBound($aPoints)+1][2]
+			$aPoints[UBound($aPoints)-1][0] = $aPoint[0]
+			$aPoints[UBound($aPoints)-1][1] = $aPoint[1]
+		Next
+	Else
+		;Creates local version of the location. This location will be prioritized versus the remote location.
+		Local $sPixelSet = $aLocation
+		If StringInStr($sPixelSet, "/") = True Then
+			$sPixelSet = StringSplit($sPixelSet, "/", $STR_NOCOUNT)[0]
+		EndIf
+
+		Local $aPixels = StringSplit($sPixelSet, "|", $STR_NOCOUNT)
+		ReDim $aPoints[UBound($aPixels)][2]
+		For $i = 0 To UBound($aPixels)-1
+			Local $aPixel = StringSplit($aPixels[$i], ",", $STR_NOCOUNT)
+
+			$aPoints[$i][0] = $aPixel[0]
+			$aPoints[$i][1] = $aPixel[1]
+		Next
+	EndIf
+
+	CaptureRegion()
+
+	Local $sNewPixels = "" ;Will store new pixel set
+	For $i = 0 To UBound($aPoints)-1
+		$sNewPixels &= "|" & $aPoints[$i][0] & "," & $aPoints[$i][1] & "," & getColor($aPoints[$i][0], $aPoints[$i][1])
+	Next
+	$sNewPixels = StringMid($sNewPixels, 2)
+
+	Local $hFile = FileOpen($g_sLocationsLocal, $FO_APPEND+$FO_CREATEPATH)
+	Local $bOutput = (FileWriteLine($hFile, $sLocation & ":" & $sNewPixels) = 1)
+	FileClose($hFile)
+
+	Log_Add("You must restart for the new location to take effect.", $LOG_INFORMATION)
+	Return $bOutput
+EndFunc
+
 #cs
 	Function: Retrieves which round the battle is currently.
 	Parameters:

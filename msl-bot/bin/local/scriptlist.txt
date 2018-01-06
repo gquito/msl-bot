@@ -1,0 +1,8 @@
+_Hourly
+_Filter
+Farm Rare
+Farm Golem
+Farm Gem
+Farm Astromon
+Farm Guardian
+Farm Starstone

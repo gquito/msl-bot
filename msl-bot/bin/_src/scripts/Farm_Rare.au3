@@ -1,126 +1,90 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
-    Local Const $aLocations = ["lost-connection", "loading", "battle", "battle-auto", "map-gem-full", "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", "defeat", "unknown", "battle-boss"]
-    
-    ;Variables
-    $aCapture = StringSplit($aCapture, ",", $STR_NOCOUNT)
-    Local $iSize = UBound($aCapture)
-    Local $aCaught[$iSize][2]; Data for caught and missed astromons
-    Local $aMissed[$iSize][2]; Missed data
-    For $i = 0 To $iSize-1
-        $aCaught[$i][0] = StringLeft($aCapture[$i], 2)
-        $aMissed[$i][0] = StringLeft($aCapture[$i], 2)
+Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Target_Boss, $Collect_Quests, $Hourly_Script)
+    Log_Level_Add("Farm_Rare")
+    Log_Add("Farm Rare has started.")
 
-        $aCaught[$i][1] = 0
-        $aMissed[$i][1] = 0
+    ;Declaring variables and data
+    Local Const $aLocations = _ 
+    ["lost-connection", "loading", "battle", "battle-auto", "map-gem-full", "battle-gem-full", _
+     "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", _ 
+     "defeat", "unknown", "battle-boss", "astromon-full"]
+
+    Local $aList = StringSplit($Capture, ",", $STR_NOCOUNT)
+    Local $sList = ""
+    For $sCur In $aList
+        $sList &= "," & StringLeft($sCur, 2) & ":0"
     Next
-
-    Local $hEstimated = Null ;Timer for estimated finish
-    Local $iCurEstimated = Null ;Current estimated in milliseconds
-    Local $iLongestEstimated = Null ;Current longest estimated
-
-    Local $iRun = 0 ;Current run
-    Local $iAstrochips = 3 ;Current number of available astrochips
-    Local $hUnknownTimer = Null ;Timer for when the location is not known.
-    Local $iDefeat = 0 ;Number of defeats
-    Local $iUsedGems = 0 ;Number of gems used since script has started.
-    Local $bBossSelected = False ;Resets every new round
-
-    If isArray($t_aData) = True Then
-        Local $t_Var = Int(StringSplit(getArg($t_aData, "Runs"), "/", $STR_NOCOUNT)[0])
-        If $t_Var <> "-1" Then $iRun = $t_Var
-
-        Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
-        If $t_Var <> "-1" Then $iUsedGems = $t_Var
+    $sList = StringMid($sList, 2)
     
-        Local $t_Var = formatArgs(StringStripWS(getArg($t_aData, "Caught"), $STR_STRIPALL), ";", ":")
-        If $t_Var <> "-1" Then $aCaught = $t_Var
+    Data_Add("Status", $DATA_TEXT, "")
+    Data_Add("Runs", $DATA_RATIO, "0/" & $Runs)
+    Data_Add("Win Rate", $DATA_PERCENT, "Victory/Runs")
+    Data_Add("Average Time", $DATA_TIMEAVG, "Script Time/Runs")
 
-        Local $t_Var = formatArgs(StringStripWS(getArg($t_aData, "Missed"), $STR_STRIPALL), ";", ":")
-        If $t_Var <> "-1" Then $aMissed = $t_Var
-    EndIf
-
-    ; Main script loop
-    Local $aData[7][2] = [["Runs", ""], ["Win_Rate", ""], ["Average_Time", ""], ["Estimated_Finish", ""], ["Refill", ""], ["Caught", ""], ["Missed", ""]]
+    Data_Add("Caught", $DATA_LIST, $sList, True)
+    Data_Add("Missed", $DATA_LIST, $sList, True)
+    Data_Add("Refill", $DATA_RATIO, "0/" & $Usable_Astrogems, True)
+    Data_Add("Guardians", $DATA_NUMBER, "0", True)
     
-    addLog($g_aLog, "```Farm Rare script has started.")
+    Data_Add("Script Time", $DATA_TIME, TimerInit())
+    Data_Add("Victory", $DATA_NUMBER, "0")
+    Data_Add("Astrochips", $DATA_NUMBER, "3")
 
+    ;Adding to display order
+    Data_Order_Insert("Status", 0)
+    Data_Order_Insert("Runs", 1)
+    Data_Order_Insert("Win Rate", 2)
+    Data_Order_Insert("Average Time", 3)
+    Data_Order_Insert("Caught", 4)
+    Data_Order_Insert("Missed", 5)
+    Data_Order_Insert("Refill", 6)
+    If $Guardian_Mode <> "Disabled" Then Data_Order_Insert("Guardians", 7)
+
+    Data_Display_Update()
+    ;pre process
     Switch isLocation($aLocations, False)
         Case "battle", "battle-auto", "battle-end-exp", "battle-end", "battle-sell", "battle-sell-item", "pause", ""
+            Data_Set("Status", "Navigating to map.")
             navigate("map", True)
     EndSwitch
-    While ($iRuns = 0) Or ($iRun < $iRuns+1)
-        ;Settings data-----------------------------------------------------
-        If $iRuns <> 0 Then
-            setArg($aData, "Runs", $iRun & "/" & $iRuns)
-        Else   
-            setArg($aData, "Runs", $iRun)
-        EndIf
 
-        ;Handles time finish estimation and progressbar
-        If $iRuns <> 0 Then GUICtrlSetData($idPB_Progress, ($iRun/$iRuns)*100)
-        Local $iEstimated = ($iCurEstimated - TimerDiff($hEstimated))/1000 ;Estimated time left in seconds
-        Local $iDenom = ($iCurEstimated/1000)
-        If $iLongestEstimated < $iDenom Or $iLongestEstimated = 0 Or $iLongestEstimated = Null Then $iLongestEstimated = $iDenom
-        If ($iRun <> 0) And ($iRuns <> 0) And ($iEstimated >= 0) Then 
-            If $iRun > 2 Then 
-                setArg($aData, "Estimated_Finish", getTimeString($iEstimated))
-            Else
-                setArg($aData, "Estimated_Finish", "Need more data.")
-            EndIf
-        Else
-            If $iRuns = 0 Then
-                setArg($aData, "Estimated_Finish", "Not available.")
-            EndIf
-        EndIf
+    ;Script process 
+    #cs 
+        Script will run story mode and capture rare astromons.
+    #ce
+    While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") < 1)
+        If _Sleep(100) Then ExitLoop
 
-        If $iRun <> 0 Then setArg($aData, "Win_Rate", StringFormat("%.2f", (($iRun-$iDefeat)/$iRun*100)) & "%")
-        If $iRun <> 0 Then setArg($aData, "Average_Time", getTimeString(TimerDiff($g_hScriptTimer)/$iRun/1000))
-        setArg($aData, "Refill", $iUsedGems & "/" & $iGems)
+        $sLocation = isLocation($aLocations, False)
+        #Region Common functions
+            If $Target_Boss = "Enabled" Then Common_Boss($sLocation)
+            If $Collect_Quests = "Enabled" Then Common_Quests($sLocation)
+            If $Guardian_Mode <> "Disabled" Then Common_Guardian($sLocation, $Guardian_Mode, $Usable_Astrogems, $Target_Boss, $Collect_Quests, $Hourly_Script)
+            If $Hourly_Script = "Enabled" Then Common_Hourly($sLocation)
+            Common_Stuck($sLocation)
+        #EndRegion
 
-        Local $sCaught = ""
-        Local $sMissed = ""
-        For $i = 0 To $iSize-1
-            $sCaught &= "; " & $aCaught[$i][0] & ": " & $aCaught[$i][1] 
-            $sMissed &= "; " & $aMissed[$i][0] & ": " & $aMissed[$i][1]
-        Next
-        setArg($aData, "Caught", StringMid($sCaught, 2))
-        setArg($aData, "Missed", StringMid($sMissed, 2))
-
-        displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
-        ;--------------------------------------------------------------------
-
-        If _Sleep(500) Then ExitLoop
-
-        Local $sLocation = isLocation($aLocations, False)
-        Switch $sLocation
-            Case "", "unknown"
-            Case "battle-end", "map", "map-battle", "refill"
-                $hUnknownTimer = Null
-                $iAstrochips = 3
-            Case Else
-                $hUnknownTimer = Null
-        EndSwitch
-
+        If _Sleep(10) Then ExitLoop
         Switch $sLocation
             Case "battle"
-                While $iAstrochips > 0 ;Loop for checking for more than 1 rare
+                While Data_Get("Astrochips") > 0 ;Loop for checking for more than 1 rare
                     If _Sleep(10) Then ExitLoop(2)
-                    If navigate("catch-mode", False, False) = False Then ExitLoop
+                    If navigate("catch-mode", False) = False Then ExitLoop
+                    
+                    Local $iAstrochips = Data_Get("Astrochips")
+                    Local $sResult = catch($Capture, $iAstrochips)
+                    Data_Set("Astrochips", $iAstrochips)
 
-                    Local $sResult = catch($aCapture, $iAstrochips, False)
                     If $sResult <> "" Then
                         ;Found and catch status
                         If StringLeft($sResult, 1) <> "!" Then
                             ;Successfully caught
-                            addLog($g_aLog, "-Caught a(n) " & $sResult & ".", $LOG_NORMAL)
-                            setArg($aCaught, StringLeft($sResult, 2), Int(getArg($aCaught, StringLeft($sResult, 2))+1))
+                            Data_Increment("Caught", 1, StringLeft($sResult, 2))
                         Else
                             ;Not caught
-                            addLog($g_aLog, "-Failed to catch " & StringMid($sResult, 2) & ".", $LOG_NORMAL)
-                            setArg($aMissed, StringLeft(StringMid($sResult, 2), 2), Int(getArg($aMissed, StringLeft(StringMid($sResult, 2), 2))+1))
+                            Data_Increment("Missed", 1, StringLeft(StringMid($sResult, 2), 2))
                         EndIf
                     Else
                         ;Nothing found.
@@ -128,152 +92,75 @@ Func Farm_Rare($iRuns, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGe
                         ExitLoop
                     EndIf
                 WEnd
+
+                Log_Add("Turning auto battle on.")
                 clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 5, 1000)
             Case "catch-mode"
                 clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
+
             Case "battle-end"
-                ;if the quests notification with red pixel shows up
-                If ($bQuests = "Enabled") And (isPixel(getArg($g_aPixels, "battle-end-quest")) = True) Then collectQuest()
+                If (Data_Get("Runs", True)[1] <> 0) And (Data_Get_Ratio("Runs") >= 1) Then ExitLoop
+                Data_Set("Status", "Quick restart.")
 
-                ;Hourly will only be done in specific times. Refer to the function.
-                If ($bHourly = "Enabled") And ($g_bPerformHourly = True) Then doHourly()
-
-                ;Guardian dungeon will be done at the start of the script and every 30 minutes
-                If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, $aDataPost, $aData)
-                    $iUsedGems += Int(getArg($g_vExtended, "Refill"))
+                If enterBattle() Then 
+                    Data_Increment("Runs")
+                    Data_Increment("Victory")
                 EndIf
 
-                ;If still in battle-end location then clicks quick restarts. Usually if collectQuest or doHourly has been called then not in battle-end
-                If getLocation() = "battle-end" Then 
-                    $bBossSelected = False
-                    If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
-                    If enterBattle() = True Then 
-                        $iRun += 1
-
-                        $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
-                        $hEstimated = TimerInit()
-                    Else
-                        ContinueLoop
-                    EndIf
-                Else
-                    navigate("map", False, False)
+            Case "map"
+                If (Data_Get("Runs", True)[1] <> 0) And (Data_Get_Ratio("Runs") >= 1) Then ExitLoop
+                
+                Log_Add("Going into battle.")
+                Data_Set("Status", "Going to battle.")
+                
+                If enterStage($Map, $Difficulty, $Stage_Level) = True Then 
+                    Data_Increment("Runs")
+                    Data_Increment("Victory")
                 EndIf
+
             Case "refill"
-                ;Refill function handles starting the quickrestart and or the start battle from map-battle. Also handles the error messages
-                If $iUsedGems+30 <= $iGems Then
-                    If doRefill() = True Then
-                        $iUsedGems+=30
-                        addLog($g_aLog, "Refill " & $iUsedGems & "/" & $iGems, $LOG_NORMAL)
-                    Else
-                        ExitLoop
-                    EndIf
-                Else
-                    addLog($g_aLog, "Gems used has exceeded max gems.", $LOG_NORMAL)
+                Data_Increment("Refill", 30)
+
+                Log_Add("Refilling energy " & Data_Get("Refill"), $LOG_INFORMATION)
+                Data_Set("Status", "Refill energy.")
+
+                If (Data_Get_Ratio("Refill") > 1) Or (doRefill() = $REFILL_NOGEMS) Then
                     ExitLoop
                 EndIf
-            Case "map"
-                ;Guardian dungeon will be done at the start of the script and every 30 minutes
-                If ($sGuardianMode <> "Disabled") And ($g_bPerformGuardian = True) Then
-                    $aDataPost = Farm_Guardian($sGuardianMode, $iUsedGems-$iGems, False, True, $bQuests, $bHourly, $aDataPost, $aData)
-                    $iUsedGems += Int(getArg($g_vExtended, "Refill"))
-                EndIf
 
-                $bBossSelected = False
-                If ($iRun >= $iRuns) And ($iRuns <> 0) Then ExitLoop
-
-                ;Navigate to stage
-                If enterStage($sMap, $sDifficulty, $sStage) = True Then
-                    $iRun += 1
-
-                    $iCurEstimated = (TimerDiff($g_hScriptTimer)/$iRun)*(($iRuns+1)-$iRun)
-                    $hEstimated = TimerInit()
-                Else
-                    ContinueLoop
-                EndIf
             Case "pause"
+                Log_Add("Unpausing.")
+                Data_Set("Status", "Unpausing.")
+
                 clickPoint(getArg($g_aPoints, "battle-continue"))
+
             Case "defeat"
-                If clickUntil(getArg($g_aPoints, "battle-give-up"), "isLocation", "unknown,battle-end-exp,battle-sell,battle-sell-item,battle-end") = True Then
-                    $iDefeat += 1
-                    addLog($g_aLog, "You have been defeated.", $LOG_NORMAL)
-                EndIf
+                Data_Log("You have been defeated.")
+                Data_Set("Status", "Defeat detected, navigating to battle-end.")
+
+                Data_Increment("Victory", -1)
+                navigate("battle-end", True)
+
             Case "battle-sell", "battle-end-exp", "battle-sell-item"
-                clickUntil(getArg($g_aPoints, "tap"), "isLocation", "battle-end", 30, 200)
+                Data_Set("Status", "Going to battle-end.")
+                navigate("battle-end")
+
             Case "astromon-full"
-                addLog($g_aLog, "Astromon bag is full.", $LOG_ERROR)
-                navigate("village", True)
+                Log_Add("Astromon bag is full.", $LOG_ERROR)
+                navigate("map")
                 ExitLoop
+
             Case "battle-gem-full", "map-gem-full"
-                addLog($g_aLog, "Gem box is full, selling gems.")
-                If navigate("manage") = True Then
-                    addLog($g_aLog, "Selling grades: " & $aGemGrade & ".", $LOG_NORMAL)
-                    For $iGrade in StringSplit($aGemGrade, ",", $STR_NOCOUNT)
-                        clickPoint(getArg($g_aPoints, "manage-grade" & $iGrade), 1, 0, Null)
-                        If _Sleep(500) Then Return False
-                    Next
+                Data_Set("Status", "Selling gems.")
+                sellGems($Gems_To_Sell)
 
-                    For $i = 0 To 3 
-                        clickPoint(getArg($g_aPoints, "manage-sell-selected"), 3, 100)
-                        clickPoint(getArg($g_aPoints, "manage-sell-confirm"), 3, 100, Null)
-                    Next
+            Case "battle-auto"
+                Data_Set("Status", "In battle.")
 
-                    addLog($g_aLog, "Finished selling gems.", $LOG_NORMAL)
-                    navigate("map", False, False)
-                Else
-                    addLog($g_aLog, "Could not navigate to manage.", $LOG_ERROR)
-                EndIf
-            Case "lost-connection"
-                Local $t_hTimer = TimerInit()
-                While waitLocation("lost-connection", 20, True) = True
-                    If _Sleep(3000) Then ExitLoop(2)
-                    If TimerDiff($t_hTimer) > 300000 Then ;5 minutes
-                        RestartNox()
-                        ExitLoop
-                    Endif
-
-                    clickPoint(getArg($g_aPoints, "lost-connection-retry"))
-                WEnd
-            Case "battle-boss"
-                If $bBossSelected = False Then ContinueCase
-            Case "unknown", "battle-auto"
-                Local $aRound = getRound()
-                If ($bBoss = "Enabled") And (($sLocation = "battle-boss") Or (($bBossSelected = False) And ((isArray($aRound) = True) And ($aRound[0] = $aRound[1])))) Then
-                    If _Sleep(1000) Then ExitLoop
-
-                    Local $t_iTimerInit = TimerInit()
-                    While (isLocation("battle-auto,battle") = "") And (TimerDiff($t_iTimerInit) < 5000)
-                        If _Sleep(10) Then ExitLoop(2)
-                    WEnd
-                    clickPoint(getArg($g_aPoints, "boss"))
-
-                    $bBossSelected = True
-                EndIf
-
-                If (isArray($aRound) = False) And ($sLocation = "unknown") then
-                    clickPoint(getArg($g_aPoints, "tap"))
-                    If getLocation() <> "unknown" Then ContinueLoop
-                    ContinueCase
-                Else
-                    $hUnknownTimer = Null
-                Endif
-            Case ""
-                ;Waits 20 seconds before knowing that it is stuck in an unspecified location.
-                If _Sleep(10) Then ExitLoop
-                
-                If $hUnknownTimer = Null Then 
-                    $hUnknownTimer = TimerInit()
-                Else
-                    If TimerDiff($hUnknownTimer) > 20000 Then
-                        If navigate("map", True) = False Then
-                            addLog($g_aLog, "Something went wrong!", $LOG_ERROR)
-                        EndIf
-                        $hUnknownTimer = Null
-                    EndIf
-                EndIf
         EndSwitch
     WEnd
-    addLog($g_aLog, "Farm Rare script has stopped.```")
 
-    Return $aData
+    ;End script
+    Log_Add("Farm Rare has ended.")
+    Log_Level_Remove()
 EndFunc

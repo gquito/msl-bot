@@ -64,8 +64,9 @@ Func _getMapMarks()
 	Local $finalArr[0] ;Empty array for marks.
 
 	;Adding marks that are found in map
+	CaptureRegion()
 	For $myMark In $g_aImageMarks
-		Local $imageCoor = findImage($myMark, 100)
+		Local $imageCoor = findImage($myMark, 100, 0, Default, Default, Default, Default, False)
 
 		;If image found then it adds a mark into $finalArr
 		If isArray($imageCoor) Then
@@ -83,6 +84,7 @@ EndFunc
 	Parameters:
 		$bCapture: Save unknown gems
 	Returns: [grade, shape, type, stat, sub, price]
+		- If one of the items are missing then return -1
 #ce
 Func getGemData($bCapture = True)
 	Local $aGemData[6] = ["-", "-", "-", "-", "-", "-"] ;Stores current gem data
@@ -90,6 +92,9 @@ Func getGemData($bCapture = True)
 		Select ;grade
 			Case isPixel("399,175,0xF39C72|399,164,0xF769BA|406,144,0x261612")
 				$aGemData[0] = "EGG"
+				Return $aGemData
+			Case isPixel("399,175,0x863406|399,164,0xF7D744|406,144,0xFFFC52")
+				$aGemData[0] = "GOLD"
 				Return $aGemData
 			Case isPixel("406,144,0x261612")
 				$aGemData[0] = 1
@@ -141,12 +146,9 @@ Func getGemData($bCapture = True)
 		$aGemData[5] = getGemPrice($aGemData)
 
 		;Handles if gem is unknown
-		If ($bCapture = True) And (($aGemData[0] = "-") Or ($aGemData[1] = "-") Or ($aGemData[2] = "-") Or ($aGemData[3] = "-") Or ($aGemData[4] = "-")) Then
-			Local $iCounter = 1
-			While FileExists(@ScriptDir & $g_sProfilePath & "/unknown-gem" & $iCounter & ".bmp")
-				$iCounter += 1
-			WEnd
-			CaptureRegion($g_sProfilePath & "/unknown-gem" & $iCounter & ".bmp")
+		If (($aGemData[0] = "-") Or ($aGemData[1] = "-") Or ($aGemData[2] = "-") Or ($aGemData[3] = "-") Or ($aGemData[4] = "-")) Then
+			$g_sErrorMessage = "getGemPrice() => Something is missing: " & _ArrayToString($aGemData)
+			Return -1
 		EndIf
 	EndIf
 	Return $aGemData
@@ -162,7 +164,7 @@ Func getGemPrice($aGemData)
 	Local $iRank = 0
 
 	;Looking if rank exists in g_aGemRanks
-	For $i = 0 To UBound($g_aGemRanks)-1 
+	For $i = 0 To UBound($g_aGemRanks)-1
 		If StringInStr($g_aGemRanks[$i], $aGemData[2]) = True Then
 			$iRank = $i
 			ExitLoop
@@ -183,7 +185,7 @@ Func getGemPrice($aGemData)
 	Return Int(Execute("$g_aGemGrade" & $aGemData[0] & "Price[" & $iSub & "][" & $iRank & "]"))
 EndFunc
 
-#cs 
+#cs
 	Function: Filters gems that do not meet the criteria
 	Parameters:
 		$aGemData: Gem data. Refer to getGemData() function.
@@ -202,7 +204,7 @@ Func filterGem($aGemData, $aFilter = formatArgs(getScriptData($g_aScripts, "_Fil
 	Return True
 EndFunc
 
-#cs 
+#cs
 	Function: Puts gem data into readable string.
 	Parameters:
 		$aGemData: Gem data. Refer to function: getGemData()
@@ -218,7 +220,7 @@ Func stringGem($aGemData)
 	Case "D"
 		$sShape = "Diamond"
 	EndSwitch
-	
+
 	Local $sType = "[Type]"
 	$sType = _StringProper($aGemData[2])
 
@@ -253,13 +255,13 @@ Func findLevel($iLevel)
 	If $sLocation = "map-stage" Then
 		If StringIsDigit($iLevel) = True Then
 			If ($iLevel > 0) And ($iLevel < 19) Then
-				;Looking for level using findImage			 
+				;Looking for level using findImage
 				If $iLevel < 10 Then $iLevel = "0" & $iLevel ;Must be in format ##
 
 				Local $aPoint = findImage("level-n" & $iLevel, 100, 0, 402, 229, 50, 250) ;tolerance 100, rectangle at (402,229) dim. 50x250
 				If isArray($aPoint) = False Then Return -1
 				;Found point
-				
+
 				$aPoint[0] = 725
 				Return $aPoint
 			EndIf
@@ -271,9 +273,9 @@ Func findLevel($iLevel)
 					LocaL $t_aPoint = findImage("level-" & $sLevel, 100, 0, 681, 229, 90, 250) ;tolerance 100; rectangle at (681,229) dim. 125x250
 					If isArray($t_aPoint) = True Then $t_aPoint[0] = 725
 
-					Return $t_aPoint 
+					Return $t_aPoint
 				Case "boss"
-					;Checks second position if there is boss 
+					;Checks second position if there is boss
 					Local $t_hColor = 0x3A2923
 					Local $t_aPoint = [535, 469]
 					Do
@@ -297,54 +299,6 @@ Func findLevel($iLevel)
 	Return False
 EndFunc
 
-#comments-start
-	#cs
-		Function: Finds an available guardian dungeon based on the current guardian dungeons.
-		Parameters:
-			$sMode: "left", "right", "both" - Handles the left/right side on the two visible guardian dungeon.
-		Return: Points of the energy of the guardian dungeon.
-	#ce
-	Func findGuardian($sMode)
-		CaptureRegion()
-		If isArray(findColor("386,470", "1,-220", 0xCC0F12, 10, 1, -1)) = False Then Return -1
-
-		If FileExists(@ScriptDir & "/bin/images/misc/") = False Then DirCreate(@ScriptDir & "/bin/images/misc")
-		Local Const $sImagePath = "misc-guardian"
-		Local Const $iX = 650
-
-		Local $t_hTimer = TimerInit()
-		While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = True
-			If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
-			FileDelete(@ScriptDir & "/bin/images/misc/misc-guardian.bmp")
-		WEnd
-		
-		$sMode = StringStripWS(StringLower($sMode), $STR_STRIPALL)
-		Switch $sMode
-			Case "left"
-				Local $t_hTimer = TimerInit()
-				While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = False
-					If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
-					captureRegion("bin/images/misc/misc-guardian", 336, 203, 20, 5)
-				WEnd
-			Case "right"
-				Local $t_hTimer = TimerInit()
-				While FileExists(@ScriptDir & "/bin/images/misc/misc-guardian.bmp") = False
-					If _Sleep(10) Or (TimerDiff($t_hTimer) > 5000) Then Return -1
-					captureRegion("bin/images/misc/misc-guardian", 396, 203, 20, 5)
-				WEnd
-			Case Else
-				captureRegion()
-				Return findColor("678,470", "1,-220", 0xFCD128, 10, 1, -1)
-		EndSwitch
-
-		captureRegion()
-		Local $aResult = findImage($sImagePath, 80, 0, 550, 250, 60, 250)
-		If isArray($aResult) Then $aResult[0] = $iX
-
-		Return $aResult
-	EndFunc
-#comments-end
-
 #cs
 	Function: Finds an available guardian dungeon based on the current guardian dungeons.
 	Parameters:
@@ -362,51 +316,16 @@ Func findGuardian($sMode)
 	Switch $sMode
 		Case "left", "right"
 		Case Else
-			captureRegion()
 			Return findColor("678,470", "1,-220", 0xFCD128, 10, 1, -1)
 	EndSwitch
 
-	captureRegion()
 	Local $aResult = findImage($sImagePath, 100, 0, 550, 250, 60, 250)
 	If isArray($aResult) Then $aResult[0] = $iX
 
 	Return $aResult
 EndFunc
 
-#cs 
-	Function: Tries to enter battle from battle-end and or map-battle locations.
-	Return: True if successful, false if something happened.
-#ce
-Func enterBattle()
-	Local $sLocation = getLocation()
-	Switch $sLocation
-		Case "battle-end"
-			If clickWhile(getArg($g_aPoints, "quick-restart"), "isLocation", "battle-end", 10, 100) = True Then
-				Switch waitLocation("battle-auto,battle,refill,map-battle,map-gem-full,battle-gem-full,map-astromon-full,astromon-full", 120, False)
-					Case "battle-auto", "battle"
-						Return True
-					Case "map-battle"
-						Return enterBattle()
-					Case Else
-						Return False
-				EndSwitch	
-			Else
-				Return False
-			EndIf
-		Case "map-battle"
-			If clickWhile(getArg($g_aPoints, "map-battle-play"), "islocation", "map-battle", 10, 100) = True Then
-				Switch waitLocation("loading,battle-auto,battle,refill,map-gem-full,battle-gem-full,map-astromon-full,astromon-full", 120, False)
-					Case "battle", "battle-auto", "loading"
-						Return True
-					Case Else
-						Return False
-				EndSwitch
-			EndIf
-	EndSwitch
-EndFunc
-
-
-#cs 
+#cs
 	Function: Retrieves village position and angle.
 	Return: Village position from 0-5. 0-2 for first ship, 3-4 for second, and 5-6 for third.
 #ce
@@ -422,11 +341,11 @@ Func getVillagePos()
 	Return -1
 EndFunc
 
-#cs 
+#cs
 	Function: Checks if there are still astrochips left, only works if in 'battle' location.
 	Returns Codes:
 	   -2: Unknown
-	   -1: Not in battle 
+	   -1: Not in battle
 		0: No astrocips
 		1: Has astrochips
 #ce
@@ -441,4 +360,58 @@ Func hasAstrochips()
 	EndIf
 
 	Return -2
+EndFunc
+
+#cs
+	Function: Gets stone data.
+	Returns: Array => [ELEMENT, GRADE, QUANTITY] ex. ["fire", "high", 3]
+#ce
+Func getStone()
+	;Defining variables
+	Local $sElement = "", $sGrade = "", $iQuantity = -1
+
+	;Check if egg or gold
+	If isPixel("399,175,0xF39C72|399,164,0xF769BA|406,144,0x261612") Then
+		Local $t_aData = ["egg", "n/a", "1"]
+		Return $t_aData
+	ElseIf isPixel("399,175,0x863406|399,164,0xF7D744|406,144,0xFFFC52") Then
+		Local $t_aData = ["gold", "n/a", "n/a"]
+		Return $t_aData
+	EndIf
+
+	;Getting element and grade
+	Local $aElements = ["normal", "water", "wood", "fire", "dark", "light"]
+	Local $aGrades = ["low", "mid", "high"]
+	For $sCurElement In $aElements
+		For $sCurGrade In $aGrades
+			If isPixel(getArg($g_aPixels, "stone-" & $sCurElement & "-" & $sCurGrade), 50) Then
+				$sElement = $sCurElement
+				$sGrade = $sCurGrade
+
+				ExitLoop(2)
+			EndIf
+		Next
+	Next
+
+	If ($sElement = "") Or ($sGrade = "") Then
+		$g_ErrorMessage = "getStone() => Could not get Element or Grade"
+		Return -1
+	EndIf
+
+	;Getting quantity
+	CaptureRegion("", 440, 214, 50, 20)
+	For $i = 1 To 5
+		If isArray(findImage("misc-stone-x" & $i, 100, 0, 440, 214, 50, 20, False)) = True Then
+			$iQuantity = $i
+			ExitLoop
+		EndIf
+	Next
+
+	If ($iQuantity = -1) Then
+		$g_sErrorMessage = "getStone() => Could not get quantity."
+		Return -1
+	EndIf
+
+	Local $t_aData = [$sElement, $sGrade, $iQuantity]
+	Return $t_aData
 EndFunc

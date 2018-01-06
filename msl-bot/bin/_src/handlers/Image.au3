@@ -7,12 +7,13 @@
 	$sImage - Image name without extension.
 	$iTolerance - Tolerance of the image to look for.
 	$iDuration - How long to keep checking for
+	$bUpdate - Updates current hBitmap
  Returns:
 	On image found - Returns array
 	On image not found - Returns -1
 #ce
 
-Func findImage($sImage, $iTolerance = 30, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552)
+Func findImage($sImage, $iTolerance = 30, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552, $bUpdate = True)
 	If StringInStr($sImage, "-") Then ;image with specified folder
 		$sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage
 	EndIf
@@ -34,7 +35,7 @@ Func findImage($sImage, $iTolerance = 30, $iDuration = 100, $iLeft = 0, $iTop = 
 
 	Local $startTimer = TimerInit()
 	Do
-		captureRegion("", $iLeft, $iTop, $iWidth, $iHeight)
+		If $bUpdate = True Then captureRegion("", $iLeft, $iTop, $iWidth, $iHeight)
 		$iResult = _ImagesSearch($aImages, 1, $aPoint[0], $aPoint[1], $iTolerance)
 
 		If $iResult >= 0 Then

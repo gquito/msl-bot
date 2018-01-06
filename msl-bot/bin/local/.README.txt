@@ -1,0 +1,64 @@
+If you wish to create your own scripts or overwrite existing scripts, use custom.txt file to write the script data.
+The scriptlist.txt contains the scripts that will be read from custom.txt.
+*Note: Default scripts such as _Config, _Filter, _Hourly, Farm Rare, Farm Golem, Farm Astromon, Farm Gem, Farm Guardian, and Farm Starstone
+	are hosted remotely on the github page. You can still overwrite and modify these scripts, but you will have to make changes to the actual script
+	functions to fit the number of parameters.
+
+Custom scripts should have functions declared as the script name (Replacing spaces with underscores (_)).
+	- Example: "Farm Rare" script will have a respective function called "Farm_Rare(...)".
+Functions should have the same amount of parameters as it has fields on script data; otherwise, the script will not run.
+
+Script data structure goes as follows:
+	- Note: Any whitespace outside of a quotation block will ignored.
+		Replace any spaces in script name with underscores.
+		Any syntax errors will cause an error.
+		Cannot have quotation marks inside a quotation mark. Use apostrophe if needed.
+		All field inside a config should be followed by a quoted string.
+	- Available types: text, combo, list, setting
+		combo and list should have a data that contains a list separated by commas. Ex: "value1,value2,value3".
+	- For more examples, look at the remote data in github and functions in local files.
+
+================================================================================================================================================
+[
+	[Example_1:
+		[description: "This is the description of the entire script. 'type' should be replaced with one of the available types."]
+		
+		[type:
+			name: "Name Of Field",
+			description: "Description of 'Name Of Field'",
+			default: "Default value.",
+			data: "See comment above about combo/list."
+		]
+	]
+
+	[Example2:
+		[description: "This is an example that will work on custom.txt"]
+
+		[text:
+			name: "Text Setting",
+			description: "This can contain any data such as integers or just strings.",
+			default: "100"
+		]
+
+		[combo:
+			name: "Combo Setting",
+			description: "This will contain preset values and should have data field.",
+			default: "value1",
+			data: "value1,value2,value3"
+		]
+
+		[list:
+			name: "List Setting",
+			description: "User will be able to choose items to add/remove from list. Data contains full list.",
+			default: "value1,value2",
+			data: "value1,value2,value3"
+		]
+
+		[setting:
+			name: "Setting Setting",
+			description: "This type will take another script structure. Structure must exist in the form of another script. Like _Filter.",
+			default: "_Filter"
+		]
+	]
+]
+================================================================================================================================================

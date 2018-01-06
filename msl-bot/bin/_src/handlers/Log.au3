@@ -1,172 +1,178 @@
 #include-once
 #include "../imports.au3"
-
-#cs
-    Function: Updates current data
-    Parameters:
-        $aData: Reference to data array.
-        $aNewData: Data to apply to reference variable
+#cs 
+    Log system will be based on the function processes and their steps.
 #ce
-Func updateData(ByRef $aData, $aNewData)
-    ;Updates data array in order of new data.
-    Local $iSize = UBound($aNewData, $UBOUND_ROWS)
 
-    ReDim $aData[$iSize][2]
+Global Const $LOG_INFORMATION = "Information", $LOG_ERROR = "Error", $LOG_PROCESS = "Process", $LOG_DEBUG = "Debug"
+
+Global $g_aLog[0][6] ;Stores the log structure
+Global $g_sLogFilter = "Information,Error,Process"
+Global $g_aLOG_Function[1] = [0] ;Current function and level
+Global $g_iLOG_Processed = 0 ;Number of log items processed for display
+
+#cs ----Log structure
+    [
+        ["TimeStamp", "Text", "Type", "Function", "Location", "Level"],
+        ["TimeStamp", "Text", "Type", "Function", "Location", "Level"],
+        ["TimeStamp", "Text", "Type", "Function", "Location", "Level"],
+        ...
+    ]
+
+    - TimeStamps reference to Time.au3
+    - Text is the message.
+    - Function is where the log takes place.
+    - Location is what location the log was added in.
+    - Level is the layer of function calls. For example, if you start a script, the level is 0 and when
+        another function is called that has the logging system, the level will be 1. If another function is called
+        within the level 1 function, the function called will be level 2.
+    - Type: 
+        - Information: Normal information, usually result of a process.
+        - Error: An error in the process.
+        - Process: Steps within a process.
+        - Debug: Steps within the steps of the process, usually for developer.
+            - Debug logs are usually in functions that are called often such as getLocation()
+#ce
+
+Func Log_Add($sText, $sType = $LOG_PROCESS, $iTimeStamp = NowTimeStamp(), $sFunction = $g_aLOG_Function[$g_aLOG_Function[0]], $iLevel = $g_aLOG_Function[0])
+    Local $iSize = UBound($g_aLog)
+    ReDim $g_aLog[$iSize+1][6]
+    $g_aLog[$iSize][0] = $iTimeStamp
+    $g_aLog[$iSize][1] = $sText
+    $g_aLog[$iSize][2] = $sType
+    $g_aLog[$iSize][3] = $sFunction
+    $g_aLog[$iSize][4] = $g_sLocation
+    $g_aLog[$iSize][5] = $iLevel
+
+    Log_Display()
+EndFunc
+
+Func Log_Level_Add($sFunction)
+    Local $iSize = UBound($g_aLOG_Function)
+    ReDim $g_aLOG_Function[$iSize+1]
+    $g_aLOG_Function[0] += 1
+
+    $g_aLOG_Function[$g_aLOG_Function[0]] = $sFunction
+EndFunc
+
+Func Log_Level_Remove()
+    Local $iSize = UBound($g_aLOG_Function)
+    If $iSize > 1 Then
+        ReDim $g_aLOG_Function[$iSize-1]
+        $g_aLOG_Function[0] -= 1
+    EndIf
+EndFunc
+
+Func Log_Display($sFilter = $g_sLogFilter, $aLog = $g_aLog, $hListView = $hLV_Log)
+    Local $iSize = UBound($aLog)
+    If ($iSize - $g_iLOG_Processed) > 10 Then
+        _GUICtrlListView_BeginUpdate($hLV_Log)
+    EndIf
+
+    While $iSize > $g_iLOG_Processed
+        If (StringInStr($sFilter, $aLog[$g_iLOG_Processed][2]) = True) Or ($sFilter = $aLog[$g_iLOG_Processed][2]) Then
+            Local $sTime = $aLog[$g_iLOG_Processed][0]
+            If StringLeft($sTime, 1) = "." Then $sTime = StringMid($sTime, 2)
+            _GUICtrlListView_InsertItem($hListView, formatTime($sTime), 0)
+            
+            Local $sLevel = ""
+            Local $sDebug = ""
+            If $aLog[$g_iLOG_Processed][2] = "Debug" Then $sDebug = " \\ "
+            For $i = 2 To $aLog[$g_iLOG_Processed][5]
+                $sLevel &= ">"
+            Next
+            $sLevel &= " "
+
+            _GUICtrlListView_SetItemText($hListView, 0, $sLevel & $sDebug & $aLog[$g_iLOG_Processed][1], 1)
+            _GUICtrlListView_SetItemText($hListView, 0, $aLog[$g_iLOG_Processed][2], 2)
+            _GUICtrlListView_SetItemText($hListView, 0, $aLog[$g_iLOG_Processed][3], 3)
+            _GUICtrlListView_SetItemText($hListView, 0, $aLog[$g_iLOG_Processed][4], 4)
+            _GUICtrlListView_SetItemText($hListView, 0, $aLog[$g_iLOG_Processed][5], 5)
+        EndIf
+        $g_iLOG_Processed += 1
+    WEnd
+
+    _GUICtrlListView_EndUpdate($hLV_Log)
+EndFunc
+
+Func Log_Display_Reset($sFilter = $g_sLogFilter, $hListView = $hLV_Log)
+    $g_iLOG_Processed = 0
+    _GUICtrlListView_DeleteAllItems($hListView)
+
+    Log_Display($sFilter)
+Endfunc
+
+Func Log_Save(ByRef $aLog, $sProfileName = getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Profile_Name"), $bClear = False)
+    ;Defining variables
+    Local $iSize = UBound($aLog)
+    If $iSize = 0 Then Return 0
+    Local $sPath = StringReplace(@ScriptDir & "\profiles\" & $sProfileName & "\log\" & StringReplace(_NowDate(), "/", ".") & ".txt", "\\", "\")
+    Local $hFile = FileOpen($sPath, 9)
+    Local $sDate = _NowCalc()
+
+    FileWriteLine($hFile, @CRLF & "#### Begin Log Saved: " & _NowCalc() & " ####")
     For $i = 0 To $iSize-1
-        Local $t_aData = formatArgs($aNewData)
-        $aData[$i][0] = $t_aData[$i][0]
-        $aData[$i][1] = $t_aData[$i][1]
+        If StringLeft($aLog[$i][0], 1) <> "." Then
+            Local $sLine = ""
+
+            $sLine &= formatTime($aLog[$i][0]) & " "
+            $sLine &= formatWidth($aLog[$i][2], 11, $ALIGN_RIGHT) & " "
+            $sLine &= formatWidth($aLog[$i][3], 20, $ALIGN_RIGHT) & " "
+            $sLine &= formatWidth($aLog[$i][5], 2, $ALIGN_RIGHT) & " "
+            $sLine &= formatWidth($aLog[$i][4], 20, $ALIGN_RIGHT) & " "
+            $sLine &= '"' & $aLog[$i][1] & '"'
+
+            FileWriteLine($hFile, $sLine)
+            $aLog[$i][0] = "." & $aLog[$i][0]
+        EndIf
     Next
+
+    FileWriteLine($hFile, "#### End Log Saved: " & _NowCalc() & " ####" & @CRLF)
+    FileClose($hFile)
+
+    If $bClear = True Then
+        Log_Clear($aLog)
+    EndIf
 EndFunc
 
-#cs 
-    Function: Displays data to Listview Control.
-    Parameters:
-        $aData: Data containing [[name, value], ...]
-        $hListView: Listview Control handle.
-#ce
-Func displayData($aData, $hListView, $aDataPre = Null, $aDataPost = Null)
-    Local $iSizeDataPre = 0, $iSizeDataPost = 0, $iSizeData = UBound($aData, $UBOUND_ROWS)
-    If isArray($aDataPre) = True Then $iSizeDataPre = UBound($aDataPre, $UBOUND_ROWS)
-    If isArray($aDataPost) = True Then $iSizeDataPost = UBound($aDataPost, $UBOUND_ROWS)
-        
-    Local $iTotalSize = $iSizeDataPre+$iSizeData+$iSizeDataPost
-
-    If _GUICtrlListView_GetItemCount($hListView) <> $iTotalSize Then
-        _GUICtrlLIstView_DeleteAllItems($hListView)
+Func Log_Clear(ByRef $aLog, $bClearInfo = False)
+    Local $aEmpty[0][6]
+    If $bClearInfo = False Then
+        For $i = 0 To UBound($aLog)-1
+            If $aLog[$i][2] = "Information" Then
+                ReDim $aEmpty[UBound($aEmpty)+1][6]
+                For $x = 0 To 5
+                    $aEmpty[UBound($aEmpty)-1][$x] = $aLog[$i][$x]
+                Next
+            EndIf
+        Next
     EndIf
 
-    Local $iCounter = 0
-    For $i = 0 To $iSizeDataPre-1
-        ;Adds item if does not exist
-        If _GUICtrlListView_GetItemCount($hListView) < $iTotalSize Then
-            _GUICtrlListView_AddItem($hListView, StringReplace($aDataPre[$i][0], "_", " "))
-        EndIf
-
-        _GUICtrlListView_SetItemText($hListView, $iCounter, StringReplace($aDataPre[$i][0], "_", " "))
-        _GUICtrlListView_SetItemText($hListView, $iCounter, $aDataPre[$i][1], 1)
-        $iCounter += 1
-    Next
-
-    For $i = 0 To $iSizeData-1
-        ;Adds item if does not exist
-        If _GUICtrlListView_GetItemCount($hListView) < $iTotalSize Then
-            _GUICtrlListView_AddItem($hListView, StringReplace($aData[$i][0], "_", " "))
-        EndIf
-
-        _GUICtrlListView_SetItemText($hListView, $iCounter, StringReplace($aData[$i][0], "_", " "))
-        _GUICtrlListView_SetItemText($hListView, $iCounter, $aData[$i][1], 1)
-        $iCounter += 1
-    Next
-
-    For $i = 0 To $iSizeDataPost-1
-        ;Adds item if does not exist
-        If _GUICtrlListView_GetItemCount($hListView) < $iTotalSize Then
-            _GUICtrlListView_AddItem($hListView, StringReplace($aDataPost[$i][0], "_", " "))
-        EndIf
-
-        _GUICtrlListView_SetItemText($hListView, $iCounter, StringReplace($aDataPost[$i][0], "_", " "))
-        _GUICtrlListView_SetItemText($hListView, $iCounter, $aDataPost[$i][1], 1)
-        $iCounter += 1
-    Next
+    $aLog = $aEmpty
+    Log_Display_Reset()
 EndFunc
 
-#cs 
-    Function: Adds a log into the log array
-    Parameters:
-        $aLog: Log array stored in [##][3] array
-        $sLog: Message to put into the log
-        $iLevel: The log level. $LOG_NORMAL (0), $LOG_DEBUG (1), $LOG_ERROR (2)
-#ce
-Func addLog(ByRef $aLog, $sLog, $iLevel = $LOG_NORMAL, $bDisplay = True, $hListView = $hLV_Log, $iTimeStamp = NowTimeStamp())
-    Local $iRowSize = UBound($aLog, $UBOUND_ROWS)
-    If ($iRowSize > 0) And ($aLog[$iRowSize-1][0] = $sLog) Then Return ;Stops duplicate message
+Global Const $ALIGN_LEFT = 0, $ALIGN_RIGHT = 1
+Func formatWidth($sStr, $iWidth, $iAlign)
+    Local $sOutput = ""
+    Local $sSpace = ""
 
-    ReDim $aLog[$iRowSize+1][3]
-
-    $aLog[$iRowSize][0] = $sLog
-    $aLog[$iRowSize][1] = $iLevel
-    $aLog[$iRowSize][2] = $iTimeStamp
-
-    If $bDisplay Then displayLog($aLog, $hListView)
-EndFunc
-
-#cs 
-    Function: Displays log data into ListView control
-    Parameters:
-        $aLog: Log array stored in [##][3] array
-        $hListView: Listview control handle
-#ce
-Func displayLog($aLog, $hListView)
-    For $i = _GUICtrlListView_GetItemCount($hListView) To UBound($aLog, $UBOUND_ROWS)-1
-        _GUICtrlListView_InsertItem($hListView, formatTime($aLog[$i][2]), 0)
-        _GUICtrlListView_SetItemText($hListView, 0, $aLog[$i][0], 1)
-    Next
-EndFunc
-
-#cs 
-    Function: Retrieves timestamp of now.
-    Returns: String format=yyyymmddhhmmss
-#ce
-Func NowTimeStamp()
-    Local $sTimeStamp = ""
-
-    ;Getting time information: yyyy/mm/dd hh:mm:ss
-    Local $aRawDate = StringSplit(_NowCalc(), " ", $STR_NOCOUNT)
-    If UBound($aRawDate, $UBOUND_ROWS) <> 2 Then
-        $g_sErrorMessage = "NowTimeStamp() => Could not get date time."
-        Return -1
+    If StringLen($sStr) < $iWidth Then
+        For $i = 1 To $iWidth-StringLen($sStr)
+            $sSpace &= " "
+        Next
+    Else
+        Return $sStr
     EndIf
 
-    ;Splitting into sections 
-    Local $aDate = StringSplit($aRawDate[0], "/", $STR_NOCOUNT) ; [yyyy, mm, dd]
-    Local $aTime = StringSplit($aRawDate[1], ":", $STR_NOCOUNT) ; [hh, mm, ss]
+    Switch $iAlign
+        Case $ALIGN_LEFT
+            $sOutput = $sStr & $sSpace
+        Case $ALIGN_RIGHT
+            $sOutput = $sSpace & $sStr
+        Case Else
+            $sOutput = $sStr
+    EndSwitch
 
-    $sTimeStamp = $aDate[0] & $aDate[1] & $aDate[2] & $aTime[0] & $aTime[1] & $aTime[2]
-    Return $sTimeStamp
-EndFunc
-
-#cs 
-    Function: Formats time to readable string
-    Returns: HH:MM:SS
-#ce
-Func formatTime($sTimeStamp = NowTimeStamp())
-    Return getHour($sTimeStamp) & ":" & getMinute($sTimeStamp) & ":" & getSecond($sTimeStamp)
-EndFunc
-
-#cs 
-    Function: Retrieves hour from timestamp
-    Returns: ## hour.
-#ce
-Func getHour($sTimeStamp = NowTimeStamp())
-    Return StringMid($sTimeStamp, 9, 2)
-EndFunc
-
-#cs 
-    Function: Retrieves minute from timestamp
-    Returns: ## minute.
-#ce
-Func getMinute($sTimeStamp = NowTimeStamp())
-    Return StringMid($sTimeStamp, 11, 2)
-EndFunc
-
-#cs 
-    Function: Retrieves second from timestamp
-    Returns: ## second.
-#ce
-Func getSecond($sTimeStamp = NowTimeStamp())
-    Return StringMid($sTimeStamp, 13, 2)
-EndFunc
-
-#cs 
-    Function: Converts seconds to formated string. EX: 00 H 00 M 00 S
-    Parameters:
-        $iSeconds: Seconds.
-#ce
-Func getTimeString($iSeconds)
-	If $iSeconds >= 3600 Then
-		Return Int($iSeconds / 60 / 60) & "H " & Int(Mod($iSeconds / 60, 60)) & "M " & Int(Mod($iSeconds, 60)) & "S"
-	Else
-		Return Int($iSeconds / 60) & "M " & Int(Mod($iSeconds, 60)) & "S"
-	EndIf
+    Return $sOutput
 EndFunc

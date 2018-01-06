@@ -6,19 +6,27 @@
     Parameters:
         $sLocation: One of the locations.
         $bForceSurrender: If in battle will surrender the match
-        $bLog: Show log or not
-    Returns: Boolean if successful or not.
+    Returns: 
+        if success, true
+        if fail, false
 #ce
-Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
+Func navigate($sLocation, $bForceSurrender = False)
+    Log_Level_Add("navigate")
+    Log_Add("Navigating to " & $sLocation & ".")
+
+    Local $bOutput = False ;Error code
+
     Local $t_sCurrLocation ;Will store current location.
-    
-    If $bLog Then addLog($g_aLog, "Navigating to '" & $sLocation & "'.", $LOG_NORMAL)
     $sLocation = StringStripWS(StringLower($sLocation), $STR_STRIPALL)
 
     While $t_sCurrLocation <> $sLocation
-        If _Sleep(10) Then Return False
+        If _Sleep(10) Then ExitLoop
         $t_sCurrLocation = getLocation()
-        If $t_sCurrLocation = $sLocation Then Return True
+
+        If $t_sCurrLocation = $sLocation Then
+            $bOutput = True
+            ExitLoop
+        EndIf
 
         ;Handles force surrender 
         Switch $t_sCurrLocation
@@ -28,46 +36,44 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     Local $t_iTimerInit = TimerInit()
 
                     While $t_sCurrLocation <> "battle-end"
-                        If TimerDiff($t_iTimerInit) >= 120000 Then Return False ;2 Minutes, prevents infinite loop.
+                        If TimerDiff($t_iTimerInit) >= 120000 Then ExitLoop(2) ;2 Minutes, prevents infinite loop.
 
                         clickPoint(getArg($g_aPoints, "tap"))
-                        If _Sleep(1000) Then Return False
+                        If _Sleep(1000) Then ExitLoop(2)
 
                         $t_sCurrLocation = getLocation()
                     WEnd
                 Else
-                    Return False
+                    ExitLoop
                 EndIf
             Case "battle", "battle-auto", "catch-mode", "pause"
                 If $bForceSurrender = True Then
-                    If $bLog Then addLog($g_aLog, "-Forcing to surrender.", $LOG_NORMAL)
-
                     ;Force surrender algorithm
-                    If clickUntil(getArg($g_aPoints, "battle-pause"), "isLocation", "pause", 150, 200) = True Then
-                        clickWhile(getArg($g_aPoints, "battle-give-up"), "isLocation", "pause,unknown", 10, 200)
+                    If clickUntil(getArg($g_aPoints, "battle-pause"), "isLocation", "pause", 20, 1000) = True Then
+                        clickWhile(getArg($g_aPoints, "battle-give-up"), "isLocation", "pause,unknown", 10, 1000)
                     EndIf
 
                     ;Sets up for normal locations
                     Local $t_iTimerInit = TimerInit()
 
                     While $t_sCurrLocation <> "battle-end"
-                        If TimerDiff($t_iTimerInit) >= 120000 Then Return False ;2 Minutes, prevents infinite loop.
+                        If TimerDiff($t_iTimerInit) >= 120000 Then ExitLoop(2) ;2 Minutes, prevents infinite loop.
 
                         clickPoint(getArg($g_aPoints, "tap"))
-                        If _Sleep(100) Then Return False
+                        If _Sleep(1000) Then ExitLoop(2)
 
                         $t_sCurrLocation = getLocation()
                     WEnd
                 Else   
                     ;Only catch-mode will need to be in one of the locations above.
-                    If $sLocation <> "catch-mode" Then Return False 
+                    If $sLocation <> "catch-mode" Then ExitLoop
                 EndIf
             Case "battle-end-exp", "battle-sell", "battle-sell-item"
                 ;Sets up for normal locations
                 Local $t_iTimerInit = TimerInit()
 
                 While $t_sCurrLocation <> "battle-end"
-                    If TimerDiff($t_iTimerInit) >= 120000 Then Return False ;2 Minutes, prevents infinite loop.
+                    If TimerDiff($t_iTimerInit) >= 120000 Then ExitLoop(2) ;2 Minutes, prevents infinite loop.
 
                     If $t_sCurrLocation = "battle-sell-item" Then
                         clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
@@ -75,24 +81,24 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     EndIf
 
                     clickPoint(getArg($g_aPoints, "tap"))
-                    If _Sleep(1000) Then Return False
+                    If _Sleep(1000) Then ExitLoop(2)
 
                     $t_sCurrLocation = getLocation()
                 WEnd
             Case "tap-to-start"
-                clickPoint("394,469", 3, 50)
-                If _Sleep(2000) Then Return False
+                clickPoint("394,469", 3, 1000)
+                If _Sleep(2000) Then ExitLoop
                 ContinueLoop
 
             Case "event-list"
-                clickPoint("776,20", 3, 50)
-                If _Sleep(2000) Then Return False
+                clickPoint("776,20", 3, 1000)
+                If _Sleep(2000) Then ExitLoop
                 ContinueLoop
         EndSwitch
 
         If ($sLocation = "battle-end") And (getLocation() = "battle-end") Then
-            If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-            Return True
+            $bOutput = True
+            ExitLoop
         EndIf
 
         ;Handles normal locations
@@ -103,9 +109,8 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                         ;Goes directly from battle-end to village
                         clickUntil(getArg($g_aPoints, "battle-end-airship"), "isLocation", "unknown,village", 60, 1000) ;60 seconds of clicking.
                         
-                        Local $bResult = waitLocation("village", 60, True)
-                        If $bResult = True Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                        Return $bResult ;waits for map location for 60 seconds
+                        $bOutput = waitLocation("village", 60, True) ;waits for map location for 60 seconds
+                        ExitLoop
                     Case Else
                         ;All other locations will need either click back or esc to get to village.
 
@@ -117,7 +122,7 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                             EndIf
 
                             If getLocation($g_aLocations, False) = "battle-end" Then ContinueLoop(2)
-                            If TimerDiff($t_vTimerInit) > 30000 Then Return False ;30 seconds
+                            If TimerDiff($t_vTimerInit) > 30000 Then ExitLoop(2) ;30 seconds
                                 
                             ;Handles back or esc
                             If isPixel(getArg($g_aPixels, "back"), 20) = True Then
@@ -138,11 +143,11 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                                 EndIf
                              EndIf
 
-                            If _Sleep(500) Then Return False
+                            If _Sleep(1000) Then ExitLoop(2)
                         WEnd
 
-                        If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                        Return True
+                        $bOutput = True
+                        ExitLoop
                 EndSwitch
             Case "map"
                 Switch $t_sCurrLocation
@@ -150,15 +155,13 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                         ;Goes directly from battle-end to map
                         clickUntil(getArg($g_aPoints, "battle-end-map"), "isLocation", "unknown,map", 60, 1000) ;60 seconds of clicking.
                         
-                        Local $bResult = waitLocation("map", 60, True) 
-                        If $bResult = True Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                        Return $bResult ;waits for map location for 60 seconds
-
+                        $bOutput = waitLocation("map", 60, True) ;waits for map location for 60 seconds
+                        ExitLoop
                     Case "map-battle", "map-stage", "association", "clan", "toc"
                         Local $t_vTimerInit = TimerInit() 
                         While getLocation() <> "map"
                             If getLocation($g_aLocations, False) = "village" Then ContinueLoop(2)
-                            If TimerDiff($t_vTimerInit) > 30000 Then Return False ;30 seconds
+                            If TimerDiff($t_vTimerInit) > 30000 Then ExitLoop(2) ;30 seconds
                                 
                             ;Handles back or esc
                             If (isPixel(getArg($g_aPixels, "back"), 20) = True) And (getLocation($g_aLocations, False) <> "map-stage") Then
@@ -179,19 +182,19 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                                 EndIf
                              EndIf
 
-                            If _Sleep(500) Then Return False
+                            If _Sleep(1000) Then ExitLoop(2)
                         WEnd
 
                         If getLocation($g_aLocations, False) = "map" Then 
-                            addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                            Return True
+                            $bOutput = True
+                            ExitLoop
                         EndIf
                     Case "village"
                         ;Goes directly to map from village
                         Local $t_iTimerInit = TimerInit()
 
                         While getLocation() <> "map" 
-                            If TimerDiff($t_iTimerInit) >= 180000 Then Return False ;3 minutes
+                            If TimerDiff($t_iTimerInit) >= 180000 Then ExitLoop(2) ;3 minutes
 
                             ;Handles clan notification and bingo popups.
                             clickWhile(getArg($g_aPoints, "village-play"), "isLocation", "village", 10, 1000) ;click for 10 seconds
@@ -200,96 +203,82 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                             closeWindow()
 
                             clickPoint(getArg($g_aPoints, "tap"))
-                            If _Sleep(500) Then Return False
+                            If _Sleep(1000) Then ExitLoop(2)
                         WEnd
 
-                        If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                        Return True
+                        $bOutput = True
+                        ExitLoop
                     Case Else
-                        If _Sleep(10) Then Return False
+                        If _Sleep(10) Then ExitLoop
 
                         ;Uses navigate village algorithm to easily go to map
-                        If $bLog Then addLog($g_aLog, "-Navigating to village.")
 
-                        Local $t_bResult = navigate("village", $bForceSurrender, False)
+                        Local $t_bResult = navigate("village", $bForceSurrender)
                         If $t_bResult = False Then 
-                            If $bLog Then addLog($g_aLog, "Could not navigate to village.", $LOG_ERROR)
-                            Return False
+                            ExitLoop
                         EndIf
 
-                        If _Sleep(10) Then Return False
-                        Local $bResult = navigate("map", $bForceSurrender, False)
-                        If $bResult = True Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                        Return $bResult ;waits for map location for 60 seconds
+                        If _Sleep(10) Then ExitLoop
+                        $bOutput = navigate("map", $bForceSurrender) ;waits for map location for 60 seconds
+                        ExitLoop
                 EndSwitch
 
             Case "golem-dungeons"
                 If $t_sCurrLocation <> "map" Then
-                    If $bLog Then addLog($g_aLog, "-Navigating to 'map'.")
-                    If navigate("map", $bForceSurrender, False) = False Then
-                        If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
-                        Return False
+                    If navigate("map", $bForceSurrender) = False Then
+                        ExitLoop
                     EndIf
                 EndIf
 
                 ;Scrolling through map to find ancient dungeon place.
-                If $bLog Then addLog($g_aLog, "-Swiping to golem dungeons.", $LOG_NORMAL)
 				Local $aPoint = getMapCoor("Ancient Dungeon") ;Coordinates of found map.
 
 				Local $t_hTimer = TimerInit()
 				While isArray($aPoint) = False
-					If _Sleep(10) Then Return False
+					If _Sleep(10) Then ExitLoop(2)
 					If TimerDiff($t_hTimer) > 30000 Then 
-						addLog($g_aLog, "Could not find golems.", $LOG_ERROR)
-						Return False
+						ExitLoop(2)
 					EndIf
 
 					;If map has not been found scrolls left
 					clickDrag($g_aSwipeLeft)
 
-					If getLocation() <> "map" Then navigate("map", False, False) ;Goes back to main loop if misclick happens
+					If getLocation() <> "map" Then navigate("map", False) ;Goes back to main loop if misclick happens
 					$aPoint = getMapCoor("Ancient Dungeon")
 				WEnd
                 
 				If clickWhile($aPoint, "isLocation", "map", 10, 1000) = False Then
-					addLog($g_aLog, "Could not enter to map-stage.", $LOG_ERROR)
-					Return False
+					ExitLoop
                 Else
 					If getLocation() <> "golem-dungeons" Then
                         If getLocation($g_aLocations, False) = "map-battle" Then 
                             Local $bResult = clickUntil(getArg($g_aPoints, "back"), "isLocation", "golem-dungeons")
                             If $bResult = False Then
-                                addLog($g_aLog, "Could not enter golem dungeons.", $LOG_ERROR)
-                                Return False
+                                ExitLoop
                             Else  
-                                addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                                Return True
+                                $bOutput = True
+                                ExitLoop
                             EndIf
                         Else
-                            addLog($g_aLog, "Could not enter golem dungeons.", $LOG_ERROR)
-                            Return False
+                            ExitLoop
                         EndIf
                     Else
-                        addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                        Return True
+                        $bOutput = True
+                        ExitLoop
                     EndIf
 				EndIf
             Case "quests"
                 If $t_sCurrLocation <> "village" Then
-                    If $bLog Then addLog($g_aLog, "-Navigating to 'village'.")
-                    If navigate("village", $bForceSurrender, False) = False Then
-                        If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
-                        Return False
+                    If navigate("village", $bForceSurrender) = False Then
+                        ExitLoop
                     EndIf
                 EndIf
 
-                If $bLog Then addLog($g_aLog, "-Clicking quests.", $LOG_NORMAL)
-                If clickUntil(getArg($g_aPoints, "village-quests"), "isLocation", "quests", 10, 500) = True Then
-                    If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                    Return True
+                If clickUntil(getArg($g_aPoints, "village-quests"), "isLocation", "quests", 10, 1000) = True Then
+                    $bOutput = True
+                    ExitLoop
                 Else
-                    If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
-                    Return False
+                    ExitLoop
                 EndIf
 
             Case "catch-mode"
@@ -308,42 +297,40 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                                 clickPoint(getArg($g_aPoints, "battle-catch"))
                             EndIf
                         Case "catch-mode"
-                            If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                            Return True
+                            $bOutput = True
+                            ExitLoop(2)
                         Case "unknown"
                         Case Else
                             If waitLocation("battle,battle-auto,catch-mode,unknown", 3) <> "" Then ContinueLoop
-                            If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
-                            Return False
+                            ExitLoop(2)
                     EndSwitch
 
-                    If _Sleep(100) Then Return False
+                    If _Sleep(500) Then ExitLoop(2)
                 WEnd
 
-                Return False
+                ExitLoop
             Case "monsters"
                 If $t_sCurrLocation <> "village" Then
-                    If $bLog Then addLog($g_aLog, "-Navigating to village.", $LOG_NORMAL)
-                    If navigate("village", False, False) = False Then
-                        If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
-                        Return False
+                    If navigate("village", False) = False Then
+                        ExitLoop
                     EndIf
                 EndIf
 
                 Local $t_hTimer = TimerInit()
                 Local $bResult = False
                 While TimerDiff($t_hTimer) < 15000
-                    If _Sleep(10) Then Return False
+                    If _Sleep(500) Then ExitLoop(2)
                     clickPoint(getArg($g_aPoints, "village-monsters"))
                     If getLocation() = "monsters" Then
                         $bResult = True
                         ExitLoop
                     EndIf
                 WEnd
+
                 If $bResult = True Then
                     Local $t_hTimer = TimerInit()
                     While isPixel("133,19,0xF6C02A", 20) = False
-                        If _Sleep(10) Then Return False
+                        If _Sleep(500) Then ExitLoop(2)
                         If TimerDiff($t_hTimer) > 5000 Then ExitLoop
                         clickPoint(getArg($g_aPoints, "monsters-grid"), 1, 0, Null)
                         CaptureRegion()
@@ -351,30 +338,27 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
 
                     Local $t_hTimer = TimerInit()
                     While isPixel("266,471,0x34F09B", 20) = False
-                        If _Sleep(10) Then Return False
+                        If _Sleep(500) Then ExitLoop(2)
                         If TimerDiff($t_hTimer) > 5000 Then ExitLoop
                         clickPoint(getArg($g_aPoints, "monsters-recent"), 1, 0, Null)
                         CaptureRegion()
                     WEnd
                     
-                    If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                    Return True
+                    $bOutput = True
+                    ExitLoop
                 Else
-                    If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
                 EndIf
             Case "manage"
                 If $t_sCurrLocation <> "monsters" Then
-                    If $bLog Then addLog($g_aLog, "-Navigating to monsters.", $LOG_NORMAL)
-                    If navigate("monsters", False, False) = False Then
-                        If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
-                        Return False
+                    If navigate("monsters", False) = False Then
+                        ExitLoop
                     EndIf
                 EndIf
 
                 Local $t_hTimer = TimerInit()
                 Local $bResult = False
                 While TimerDiff($t_hTimer) < 10000
-                    If _Sleep(10) Then Return False
+                    If _Sleep(500) Then ExitLoop(2)
                     clickPoint(getArg($g_aPoints, "monsters-manage"), 1, 0, Null)
                     If getLocation() = "manage" Then
                         $bResult = True
@@ -383,13 +367,12 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                 WEnd
 
                 If $bResult = True Then
-                    If $bLog Then addLog($g_aLog, "Finished navigating.", $LOG_NORMAL)
-                    Return True
+                    $bOutput = True
+                    ExitLoop
                 Else
-                    If $bLog Then addLog($g_aLog, "Failed to navigate.", $LOG_ERROR)
-                    Return False
+                    ExitLoop
                 EndIf
-            Case "guardian-dungeons"
+            Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons"
                 If getLocation() = "map" Then
                     Local $t_hTimer = TimerInit()
                     While (isArray(getMapCoor("Phantom Forest")) = False) And (TimerDiff($t_hTimer) < 10000)
@@ -397,39 +380,71 @@ Func navigate($sLocation, $bForceSurrender = False, $bLog = True)
                     WEnd
                     clickDrag($g_aSwipeRight)
                 Else
-                    If navigate("map", $bForceSurrender, False) = False Then
-                        If $bLog Then addLog($g_aLog, "Could not enter into map.", $LOG_ERROR)
-                        Return False
+                    If navigate("map", $bForceSurrender) = False Then
+                        ExitLoop
                     EndIf
                 EndIf
 
                 CaptureRegion()
                 Local $aPoint = getMapCoor("Dungeons") ;Coordinates of found map.
                 If isArray($aPoint) = True Then
-                    If $bLog Then addLog($g_aLog, "Clicking into Dungeons.", $LOG_NORMAL)
 
-                   If clickWhile($aPoint, "isLocation", "map", 20, 200) = True  Then
-                        $bResult = clickUntil(getArg($g_aPoints, "dungeons-guardian"), "isLocation", "guardian-dungeons", 10, 500)
+                   If clickWhile($aPoint, "isLocation", "map", 10, 1000) = True Then
+                        Local $aDungeon = Null ;Will contain the points for the dungeon
+                        Switch $sLocation
+                            Case "guardian-dungeons"
+                                $aDungeon = getArg($g_aPoints, "dungeons-guardian")
+                            Case "starstone-dungeons"
+                                $aDungeon = getArg($g_aPoints, "dungeons-starstone")
+                            Case "elemental-dungeons"
+                                $aDungeon = getArg($g_aPoints, "dungeons-elemental")
+                        EndSwitch
+
+                        $bResult = clickUntil($aDungeon, "isLocation", $sLocation, 10, 1000)
                         If $bResult = True Then
-                            If $bLog Then addLog($g_aLog, "Finished Navigating.", $LOG_NORMAL)
-                            Return True
+                            $bOutput = True
+                            ExitLoop
                         Else
-                            If $bLog Then addLog($g_aLog, "Could not click into guardian-dungeons.", $LOG_ERROR)
-                            Return False
+                            ExitLoop
                         EndIf
                     EndIf
 
-                    If $bLog Then addLog($g_aLog, "Could not click into Dungeons", $LOG_ERROR)
-                    Return False
+                    ExitLoop
                 Else
-                    If $bLog Then addLog($g_aLog, "Could not find dungeons place.", $LOG_ERROR)
-                    Return False
+                    ExitLoop
                 EndIf
+            
+            Case "astroleague"
+                If getLocation() = "map" Then
+                    Local $t_hTimer = TimerInit()
+                    While (isArray(getMapCoor("Phantom Forest")) = False) And (TimerDiff($t_hTimer) < 10000)
+                        clickDrag($g_aSwipeRight)
+                    WEnd
+                    clickDrag($g_aSwipeRight)
+                Else
+                    If navigate("map", $bForceSurrender) = False Then
+                        ExitLoop
+                    EndIf
+                EndIf
+
+                CaptureRegion()
+                Local $aPoint = getMapCoor("Astromon League") ;Coordinates of found map.
+                If isArray($aPoint) = True Then
+
+                    If clickWhile($aPoint, "isLocation", "map", 10, 1000) = True Then
+                        $bOutput = waitLocation("astroleague", 20)
+                        ExitLoop
+                    EndIf
+                Else
+                    ExitLoop
+                EndIf
+
             Case Else
-                If $bLog Then addLog($g_aLog, "Cannot navigate to location: " & $sLocation)
-                Return False
+                ExitLoop
         EndSwitch
     WEnd
 
-    Return True
+    Log_Add("Navigating result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $bOutput
 EndFunc

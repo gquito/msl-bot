@@ -1,78 +1,80 @@
 #include-once
 #include "../imports.au3"
 
-Func Farm_Gem($iGemsToFarm, $sCatch, $sAstromon, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $t_aData = Null, $aDataPre = Null, $aDataPost = Null)
-    ;Variables
-    Local $aFarmAstromonData = Null
-    Local $iFarmedGems = 0 ;Number of gems farmed since script has started.
-    Local $iUsedGems = 0 ;Number of gems used since script has started.
-    Local $iNeedCatch = 0 ;Number of astromon to catch
-    Local $iError = 0 ;Counts number of error occuring in evolving process before completely stopping script.
+Func Farm_Gem($Gems_To_Farm, $Catch_Image, $Astromon, $Finish_Round, $Final_Round, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Collect_Quests, $Hourly_Script)
+    Log_Level_Add("Farm_Gem")
+    Log_Add("Farm Gem has started.")
+    
+    ;Declaring variables and data
+    Data_Add("Status", $DATA_TEXT, "")
+    Data_Add("Farmed Gems", $DATA_RATIO, "0/" & $Gems_To_Farm)
 
-    If isArray($t_aData) = True Then
-        Local $t_Var = Int(StringSplit(getArg($t_aData, "Refill"), "/", $STR_NOCOUNT)[0])
-        If $t_Var <> "-1" Then $iUsedGems = $t_Var
-    EndIf
+    Data_Add("Refill", $DATA_RATIO, "0/" & $Usable_Astrogems, True)
 
-    ; Main script loop
-    Local $aData[1][2] = [["Gems_Farmed", "0/" & $iGemsToFarm]]
+    Data_Add("Need Catch", $DATA_NUMBER, "0")
+    Data_Add("Error", $DATA_NUMBER, "0")
 
-    addLog($g_aLog, "```Farm Gem script has started.")
+    ;Adding to display order
+    Data_Order_Insert("Status", 0)
+    Data_Order_Insert("Farmed Gems", 1)
+    Data_Order_Insert("Refill", 2)
 
-    While $iFarmedGems < $iGemsToFarm
-        If ($bHourly = "Enabled") And ($g_bPerformHourly = True) Then doHourly()
+    Data_Display_Update()
 
+    ;Script Process
+    #cs 
+        Script will evolve in monsters location and catch astromons using Farm_Astormon script.
+    #ce
+    While Data_Get_Ratio("Farmed Gems") < 1
+        Local $sLocation = getLocation()
+        If $Hourly_Script = "Enabled" Then Common_Hourly($sLocation)
         If _Sleep(10) Then ExitLoop
-        displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
 
         ;Handles catching process
-        While $iNeedCatch > 0
-            Local $t_aResults = Farm_Astromon($iNeedCatch, $sCatch, $bFinishRound, $bFinalRound, $sMap, $sDifficulty, $sStage, $aCapture, $aGemGrade, $iGems, $sGuardianMode, $bBoss, $bQuests, $bHourly, $aDataPost, $aData)
-            $aDataPost = $t_aResults
+        While Data_Get("Need Catch") > 0
+            Log_Add("Going to catch " & Data_Get("Need Catch") & " astromons.", $LOG_INFORMATION)
+            Local $t_aOrder = $g_aOrder
+            Farm_Astromon(Data_Get("Need Catch"), $Catch_Image, $Finish_Round, $Final_Round, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Collect_Quests, $Hourly_Script)
             If _Sleep(10) Then ExitLoop(2)
-            Switch $g_vExtended
-                Case "bag-full"
-                    $iNeedCatch = 0
-                Case "gem-full"
-                    addLog($g_aLog, "Cannot continue to farm astromons because gem box is full.", $LOG_ERROR)
-                    ExitLoop(2)
-                Case "error"
-                    addLog($g_aLog, "Something went wrong with farming astromons.", $LOG_ERROR)
-                    ExitLoop(2)
+            $g_aOrder = $t_aOrder
+            Data_Display_Update()
+
+            $sLocation = getLocation()
+            Switch $sLocation
+                Case "astromon-full"
+                    Data_Set("Need Catch", "0")
+                Case Else
+                    If Data_Get_Ratio("Caught") < 1 Then
+                        Log_Add("Something went wrong with Farm Astromon.", $LOG_ERROR)
+                        ExitLoop(2)
+                    EndIf
             EndSwitch
 
-            $iNeedCatch -= Int(getArg($t_aResults, "Astromon_Caught"))
-            $iUsedGems += Int(StringSplit(getArg($t_aResults, "Refill"), "/", $STR_NOCOUNT)[0])
-
-            setArg($aData, "Gems_Farmed", $iFarmedGems & "/" & $iGemsToFarm)
-            displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
+            Data_Increment("Need Catch", "-" & Data_Get($Catch_Image, True)[0])
         WEnd
 
         ;Handles evolving process
-        $vResult = evolve($sAstromon, True)
+        Data_Set("Status", "Evolving astromon.")
+        $vResult = evolve($Astromon, True)
         Switch $vResult
             Case -1, -2, -3, -4, -6 ;Normal errors.
-                addLog($g_aLog, "Could not evolve, error code: " & $vResult, $LOG_ERROR)
-                $iError += 1
-                If $iError > 5 Then 
-                    addLog($g_aLog, "Too many errors has occurred.", $LOG_ERROR)
-                    Return -1
+                Log_Add("Could not evolve, error code: " & $vResult, $LOG_ERROR)
+                Data_Increment("Error", 1)
+                If Data_Get("Error") > 5 Then 
+                    Log_Add("Too many errors has occurred.", $LOG_ERROR)
+                    ExitLoop
                 EndIf
             Case -5 ;No currency.
-                addLog($g_aLog, "Not enough gold to procceed.", $LOG_ERROR)
-                Return -1
+                Log_Add("Not enough gold to procceed.", $LOG_ERROR)
+                ExitLoop
             Case Else ;Success
-                If $vResult = 0 Then $iFarmedGems += 100
-                $iNeedCatch = Int($vResult)
+                If $vResult = 0 Then Data_Increment("Farmed Gems", 100)
+                Log_Add("Farmed Gems " & Data_Get("Farmed Gems"), $LOG_INFORMATION)
+                Data_Increment("Need Catch", $vResult)
         EndSwitch
-
-        setArg($aData, "Gems_Farmed", $iFarmedGems & "/" & $iGemsToFarm)
-        displayData($aData, $hLV_Stat, $aDataPre, $aDataPost)
     WEnd
-    addLog($g_aLog, "Farm Astromon script has stopped.```")
 
-    Local $t_vExtended[1][2] = [["Refill", $iUsedGems]]
-    $g_vExtended = $t_vExtended
-
-    Return $aData
+    ;End script
+    Log_Add("Farm Astromon has ended.")
+    Log_Level_Remove()
 EndFunc
