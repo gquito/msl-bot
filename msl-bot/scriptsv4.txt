@@ -7,6 +7,27 @@
 		default: "Default"
 	]
 	
+	[combo:
+		name: "Restart Time",
+		description: "Number of minutes it takes until bot app decides to restart emulator app when stuck in one location.",
+		default: "10 Minutes",
+		data: "Never,10 Minutes, 20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
+	]
+	
+	[combo:
+		name: "Save Debug Log",
+		description: "Write debug type log to log file.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Log clicks",
+		description: "Whether to log clicks made by any functions.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
 	[text:
 		name: "ADB Path",
 		description: "Path to adb executable. Default for nox is: C:\Program Files (x86)\Nox\bin\nox_adb.exe",
