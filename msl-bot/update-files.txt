@@ -21,7 +21,7 @@
 !bin/_src/scripts/Farm_Golem.au3
 !bin/_src/scripts/Farm_Guardian.au3
 !bin/_src/scripts/Farm_Rare.au3
-!bin/_src/scripts/Farm_Starstones.au3
+!bin/_src/scripts/Farm_Starstone.au3
 !bin/_src/scripts/sub/_Helper.au3
 !bin/_src/scripts/sub/catch.au3
 !bin/_src/scripts/sub/collectQuest.au3
