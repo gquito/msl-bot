@@ -48,7 +48,7 @@
 !bin/images/misc/misc-guardian-right4.bmp
 bin/local/.README.txt
 bin/local/custom.txt
-bin/local/scriplist.txt
+!bin/local/scriptlist.txt
 bin/local/data/.README.txt
 bin/local/data/locations.txt
 bin/local/data/pixels.txt
