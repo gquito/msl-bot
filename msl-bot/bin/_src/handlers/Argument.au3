@@ -141,9 +141,15 @@ EndFunc
 		$sUrl: Url for data. Usually in a raw form of text file.
 		$sArgSeparator: The character used to separate each argument and value.
 		$sValueSeparator: The character used to separate value from identifier.
+		$sCachePath: Create cache file for remote data.
 #ce
-Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":")
+Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":", $sCachePath = "")
 	Local $sData = BinaryToString(InetRead($sUrl, $INET_FORCERELOAD))
+	If $sCachePath <> "" Then
+		Local $hFile = FileOpen($sCachePath, $FO_OVERWRITE+$FO_CREATEPATH)
+		FileWrite($hFile, $sData)
+		FileClose($hFile)
+	EndIf
 
 	If $sData = "" Then ;Error handle
 		$g_sErrorMessage = "getArgFromURL() => No information was found URL: " & $sUrl

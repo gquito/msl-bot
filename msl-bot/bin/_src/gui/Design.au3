@@ -119,6 +119,8 @@ Func CreateGUI()
 EndFunc
 
 Func UpdateStatus()
+    If _WinAPI_IsInternetConnected() = False Then Return ""
+
     Local $sUpdate = ""
     Local $t_aVersion[0] ;Will contain [Major,Minor,Build]
     Local $t_sRaw = StringSplit(BinaryToString(INetRead("https://raw.githubusercontent.com/GkevinOD/msl-bot/v3.0/msl-bot/msl-bot.au3", $INET_FORCERELOAD)), @CRLF, $STR_NOCOUNT)[0]
@@ -144,6 +146,11 @@ Func UpdateStatus()
 EndFunc
 
 Func Update()
+    If _WinAPI_IsInternetConnected() = False Then 
+        MsgBox($MB_ICONERROR+$MB_OK, "Not connected.", "Not connected to the internet.")
+        Return 0
+    EndIf
+
     Local $hFile = InetGet("https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/msl-bot-update.au3", @ScriptDir & "\msl-bot-update.au3", 0, $INET_DOWNLOADBACKGROUND)
     While InetGetInfo($hFile, $INET_DOWNLOADCOMPLETE) = False
         Sleep(100)

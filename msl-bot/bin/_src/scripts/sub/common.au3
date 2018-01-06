@@ -116,9 +116,15 @@ Func Common_Stuck(ByRef $sLocation)
                 Data_Set("Common Stuck Timer", TimerInit())
             Else
                 If TimerDiff(Data_Get("Common Stuck Timer")) > 20000 Then
-                    If navigate("map", True) = False Then
-                        $sLocation = getLocation()
-                        Log_Add("Stuck at an unspecified location.", $LOG_ERROR)
+                    $sLocation = getLocation()
+                    If $sLocation = "lost-connection" Then
+                        Log_Add("Lost connection detected, retrying.")
+                        clickWhile(getArg($g_aPoints, "lost-connection-retry"), "isLocation", "lost-connection")
+                    Else
+                        If navigate("map", True) = False Then
+                            $sLocation = getLocation()
+                            Log_Add("Stuck at an unspecified location.", $LOG_ERROR)
+                        EndIf
                     EndIf
                     If Data_Get("Common Stuck Timer") <> "Null" Then Data_Set("Common Stuck Timer", "Null")
                 EndIf

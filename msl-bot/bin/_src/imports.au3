@@ -1,6 +1,7 @@
 #include-once
 
 #include <WinAPIProc.au3>
+#include <WinAPIDiag.au3>
 #include <ScreenCapture.au3>
 #include <StringConstants.au3>
 #include <Color.au3>

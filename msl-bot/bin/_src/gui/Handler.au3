@@ -747,12 +747,17 @@ EndFunc
 #ce ##########################################
 
 ;Script data [[script, description, [[config, value, description], [..., ..., ...]]], ...]
-Func setScripts(ByRef $aScripts, $sPath)
+Func setScripts(ByRef $aScripts, $sPath, $sCachePath = "")
     Local $sData ;Contains unparsed data
     If FileExists($sPath) = True Then
         $sData = FileRead($sPath)
     Else
         $sData = BinaryToString(InetRead($sPath, $INET_FORCERELOAD))
+        If $sCachePath <> "" Then
+            Local $hFile = FileOpen($sCachePath, $FO_OVERWRITE+$FO_CREATEPATH)
+            FileWrite($hFile, $sData)
+            FileClose($hFile)
+        EndIf
     EndIf
 
     Local $c = StringSplit($sData, "", $STR_NOCOUNT)

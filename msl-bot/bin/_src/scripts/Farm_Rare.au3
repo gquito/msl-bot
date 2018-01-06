@@ -119,14 +119,15 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
                 EndIf
 
             Case "refill"
+                Data_Set("Status", "Refill energy.")
                 Data_Increment("Refill", 30)
 
-                Log_Add("Refilling energy " & Data_Get("Refill"), $LOG_INFORMATION)
-                Data_Set("Status", "Refill energy.")
-
-                If (Data_Get_Ratio("Refill") > 1) Or (doRefill() = $REFILL_NOGEMS) Then
+                If (Data_Get_Ratio("Refill") > 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
+                    Data_Increment("Refill", -30)
                     ExitLoop
                 EndIf
+
+                Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)
 
             Case "pause"
                 Log_Add("Unpausing.")
@@ -135,7 +136,7 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
                 clickPoint(getArg($g_aPoints, "battle-continue"))
 
             Case "defeat"
-                Data_Log("You have been defeated.")
+                Log_Add("You have been defeated.")
                 Data_Set("Status", "Defeat detected, navigating to battle-end.")
 
                 Data_Increment("Victory", -1)

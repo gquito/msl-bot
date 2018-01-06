@@ -1,4 +1,4 @@
-Global $aVersion = [3, 10, 1] ;Major, Minor, Build
+Global $aVersion = [3, 10, 2] ;Major, Minor, Build
 
 #pragma compile(Out, msl-bot.exe)
 #pragma compile(Icon, bin\_src\msl-bot.ico)
@@ -7,8 +7,8 @@ Global $aVersion = [3, 10, 1] ;Major, Minor, Build
 #pragma compile(ProductName, Monster Super League Bot)
 #pragma compile(FileDescription, Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot)
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 3.10.1)
-#pragma compile(ProductVersion, 3.10.1)
+#pragma compile(FileVersion, 3.10.2)
+#pragma compile(ProductVersion, 3.10.2)
 #pragma compile(OriginalFilename, msl-bot.exe)
 
 #include-once
@@ -27,18 +27,31 @@ Func Initialize()
     EndIf
 
     ; Default configs and constants
-    $g_aNezzPos = getArgsFromURL($g_sNezzPosURL, ">", ":")
-    $g_aLocations = getArgsFromURL($g_sLocationsURL, ">", ":")
-    $g_aPixels = getArgsFromURL($g_sPixelsURL, ">", ":")
-    $g_aPoints = getArgsFromURL($g_sPointsURL, ">", ":")
+    setScripts($g_aScripts, $g_sScriptsLocal) ;Sets local scripts first, existing scripts will not be overwritten
+    If _WinAPI_IsInternetConnected() = False Then 
+        MsgBox($MB_ICONWARNING+$MB_OK, "Not connected.", "Could not retrieve script data from remote location." & @CRLF & "Using local files instead.")
+        If FileExists($g_sLocationsLocalCache) = False Then
+            MsgBox($MB_ICONERROR+$MB_OK, "No cache found.", "There has not been any cache files made.")
+        EndIf
+        $g_aNezzPos = getArgsFromFile($g_sNezzPosLocalCache, ">", ":")
+        $g_aLocations = getArgsFromFile($g_sLocationsLocalCache, ">", ":")
+        $g_aPixels = getArgsFromFile($g_sPixelsLocalCache, ">", ":")
+        $g_aPoints = getArgsFromFile($g_sPointsLocalCache, ">", ":")
+
+        setScripts($g_aScripts, $g_sScriptsLocalCache)
+    Else
+        $g_aNezzPos = getArgsFromURL($g_sNezzPosURL, ">", ":", $g_sNezzPosLocalCache)
+        $g_aLocations = getArgsFromURL($g_sLocationsURL, ">", ":", $g_sLocationsLocalCache)
+        $g_aPixels = getArgsFromURL($g_sPixelsURL, ">", ":", $g_sPixelsLocalCache)
+        $g_aPoints = getArgsFromURL($g_sPointsURL, ">", ":", $g_sPointsLocalCache)
+
+        setScripts($g_aScripts, $g_sScriptsURL, $g_sScriptsLocalCache)
+    EndIf
 
     mergeArgFromTo(getArgsFromFile($g_sLocationsLocal, ">", ":"), $g_aLocations, "/")
     mergeArgFromTo(getArgsFromFile($g_sNezzPosLocal, ">", ":"), $g_aNezzPos)
     mergeArgFromTo(getArgsFromFile($g_sPixelsLocal, ">", ":"), $g_aPixels)
     mergeArgFromTo(getArgsFromFile($g_sPointsLocal, ">", ":"), $g_aPoints)
-
-    setScripts($g_aScripts, $g_sScriptsLocal) ;Sets local scripts first, existing scripts will not be overwritten
-    setScripts($g_aScripts, $g_sScriptsURL)
 
     ;User configs
     Local $t_sProfile = "Default"

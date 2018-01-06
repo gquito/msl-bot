@@ -182,8 +182,8 @@ Func evolve($sAstromon, $bForceEvolve = False)
                 Next
 
                 If $bFound = False Then ;resets positions
-                    navigate("village", False, False)
-                    navigate("monsters", False, False)
+                    navigate("village")
+                    navigate("monsters")
                 EndIf
 
                 If TimerDiff($t_hTimer) > 60000 Then
@@ -218,7 +218,7 @@ Func evolve($sAstromon, $bForceEvolve = False)
                         $iNeedEvo2 -= 1
                     Case 0 ;fail
                         $iError += 1
-                        navigate("village", False, False)
+                        navigate("village")
                     Case -1 ;no gold
                         Log_Add("Not enough gold.", $LOG_ERROR)
                         $iOutput = -5
@@ -226,7 +226,7 @@ Func evolve($sAstromon, $bForceEvolve = False)
                 EndSwitch
             Else
                 $iError += 1
-                navigate("village", False, False)
+                navigate("village")
             EndIf
 
             If _Sleep(10) Then ExitLoop(2)
@@ -284,8 +284,8 @@ Func evolve($sAstromon, $bForceEvolve = False)
                 Next
 
                 If $bFound = False Then ;resets positions
-                    navigate("village", False, False)
-                    navigate("monsters", False, False)
+                    navigate("village")
+                    navigate("monsters")
                 EndIf
 
                 If TimerDiff($t_hTimer) > 60000 Then
@@ -320,7 +320,7 @@ Func evolve($sAstromon, $bForceEvolve = False)
                         $bSuccess = True
                     Case 0 ;fail
                         $iError += 1
-                        navigate("village", False, False)
+                        navigate("village")
                     Case -1 ;no gold.
                         Log_Add("Not enough gold.", $LOG_ERROR)
                         $iOutput = 5
@@ -328,7 +328,7 @@ Func evolve($sAstromon, $bForceEvolve = False)
                 EndSwitch
             Else
                 $iError += 1
-                navigate("village", False, False)
+                navigate("village")
             EndIf
 
             If _Sleep(10) Then ExitLoop(2)

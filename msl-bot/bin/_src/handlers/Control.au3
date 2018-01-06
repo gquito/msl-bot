@@ -67,7 +67,7 @@ EndFunc
         $hControl: Control handle to send clicks for.
 #ce
 Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClicks, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
-    If $g_bLogClicks = False Then $g_bLogEnabled = False
+    $g_bLogEnabled = $g_bLogClicks
     Log_Level_Add("clickPoint")
     Local $aPoint[2] ;Point array
     Local $bOutput = False
@@ -176,7 +176,7 @@ EndFunc
     Return: True if condition was met and false if maximum clicks exceeds.
 #ce
 Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
-	If $g_bLogClicks = False Then $g_bLogEnabled = False
+	$g_bLogEnabled = $g_bLogClicks
     Log_Level_Add("clickUntil")
 
     Local $bOutput = False
@@ -207,7 +207,7 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
         ExitLoop
     WEnd
 
-    If $g_bLogClicks = False Then $g_bLogEnabled = False
+    $g_bLogEnabled = $g_bLogClicks
     Log_Add("Clicking until result: " & $bOutput, $LOG_DEBUG)
     $g_bLogEnabled = True
     Log_Level_Remove()
@@ -229,7 +229,7 @@ EndFunc
     Return: True if condition is not met and false if maximum clicks exceeds.
 #ce
 Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
-	If $g_bLogClicks = False Then $g_bLogEnabled = False
+	$g_bLogEnabled = $g_bLogClicks
     Log_Level_Add("clickWhile")
 
     Local $bOutput = False
@@ -260,7 +260,7 @@ Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
         ExitLoop
     WEnd
 
-    If $g_bLogClicks = False Then $g_bLogEnabled = False
+    $g_bLogEnabled = $g_bLogClicks
     Log_Add("Clicking while result: " & $bOutput, $LOG_DEBUG)
     $g_bLogEnabled = True
     Log_Level_Remove()

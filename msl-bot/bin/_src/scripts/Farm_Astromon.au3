@@ -81,9 +81,11 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 EndIf
 
                 ;Finish Round
-                If (($Finish_Round = "Disabled") Or ($Final_Round = "Enabled")) And Data_Get("Astrochips") = "0" Then
-                    navigate("battle-end", True)
-                    ContinueLoop
+                If ($Finish_Round = "Disabled") And (Data_Get("Astrochips") = "0") Then
+                    If $Final_Round = "Disabled" Then
+                        navigate("battle-end", True)
+                        ContinueLoop
+                    EndIf
                 EndIf
 
                 ;Final Round
@@ -133,9 +135,11 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 WEnd
 
                 ;Finish Round
-                If (($Finish_Round = "Disabled") Or ($Final_Round = "Enabled")) And Data_Get("Astrochips") = "0" Then
-                    navigate("battle-end", True)
-                    ContinueLoop
+                If ($Finish_Round = "Disabled") And (Data_Get("Astrochips") = "0") Then
+                    If $Final_Round = "Disabled" Then
+                        navigate("battle-end", True)
+                        ContinueLoop
+                    EndIf
                 EndIf
 
                 Local $aRound = getRound()
@@ -150,9 +154,11 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 Data_Set("Status", "In battle.")
 
                 ;Finish Round
-                If (($Finish_Round = "Disabled") Or ($Final_Round = "Enabled")) And Data_Get("Astrochips") = "0" Then
-                    navigate("battle-end", True)
-                    ContinueLoop
+                If ($Finish_Round = "Disabled") And (Data_Get("Astrochips") = "0") Then
+                    If $Final_Round = "Disabled" Then
+                        navigate("battle-end", True)
+                        ContinueLoop
+                    EndIf
                 EndIf
                 
                 ;Final Round
@@ -185,14 +191,15 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 EndIf
 
             Case "refill"
+                Data_Set("Status", "Refill energy.")
                 Data_Increment("Refill", 30)
 
-                Log_Add("Refilling energy " & Data_Get("Refill"), $LOG_INFORMATION)
-                Data_Set("Status", "Refill energy.")
-
-                If (Data_Get_Ratio("Refill") > 1) Or (doRefill() = $REFILL_NOGEMS) Then
+                If (Data_Get_Ratio("Refill") > 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
+                    Data_Increment("Refill", -30)
                     ExitLoop
                 EndIf
+
+                Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)
 
             Case "map"
                 If (Data_Get($Catch_Image, True)[1] <> 0) And (Data_Get_Ratio($Catch_Image) >= 1) Then ExitLoop
@@ -212,7 +219,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 clickPoint(getArg($g_aPoints, "battle-continue"))
 
             Case "defeat"
-                Data_Log("You have been defeated.")
+                Log_Add("You have been defeated.")
                 Data_Set("Status", "Defeat detected, navigating to battle-end.")
 
                 Data_Increment("Victory", -1)

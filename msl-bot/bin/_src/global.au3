@@ -57,6 +57,12 @@
     Global Const $g_sPixelsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt"
     Global Const $g_sLocationsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/locations.txt"
 
+    Global Const $g_sScriptsLocalCache = @ScriptDir & "\bin\local\cache\custom.txt"
+    Global Const $g_sNezzPosLocalCache = @ScriptDir & "\bin\local\cache\nezz-locations.txt"
+    Global Const $g_sPointsLocalCache = @ScriptDir & "\bin\local\cache\points.txt"
+    Global Const $g_sPixelsLocalCache = @ScriptDir & "\bin\local\cache\pixels.txt"
+    Global Const $g_sLocationsLocalCache = @ScriptDir & "\bin\local\cache\locations.txt"
+
     Global Const $g_sScriptsLocal = @ScriptDir & "\bin\local\custom.txt"
     Global Const $g_sNezzPosLocal = @ScriptDir & "\bin\local\data\nezz-locations.txt"
     Global Const $g_sPointsLocal = @ScriptDir & "\bin\local\data\points.txt"
