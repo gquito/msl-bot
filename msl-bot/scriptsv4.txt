@@ -11,7 +11,7 @@
 		name: "Restart Time",
 		description: "Number of minutes it takes until bot app decides to restart emulator app when stuck in one location.",
 		default: "10 Minutes",
-		data: "Never,10 Minutes, 20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
+		data: "Never,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
 	]
 	
 	[combo:
