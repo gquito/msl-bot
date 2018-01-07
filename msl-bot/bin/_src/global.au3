@@ -37,6 +37,7 @@
     Global $g_iRestartTime = 10 ;Number of minutes until bot app decides to restart from stuck location.
     Global $g_bSaveDebug = False ;Write debug type log to log file.
     Global $g_bLogClicks = True ;Log clicks.
+    Global $g_bAskForUpdates = True ;Whether to prompt for updates or not.
 
     Global $d_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
     Global $d_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox

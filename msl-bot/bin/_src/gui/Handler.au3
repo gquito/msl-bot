@@ -1032,7 +1032,13 @@ EndFunc
 
 ;updates global variables
 Func UpdateSettings()
-    Local $aConfig = formatArgs(getScriptData($g_aScripts, "_Config")[2]) ;This is the list of configs
+    Local $aScriptData = getScriptData($g_aScripts, "_Config")
+    If isArray($aScriptData) = False Then 
+        MsgBox($MB_ICONERROR+$MB_OK, "Could not update script data.", "Unable to retrieve _Config data, using default configs. Try re-downloading all the files manually.")
+        Return 0
+    EndIf
+
+    Local $aConfig = formatArgs($aScriptData[2]) ;This is the list of configs
 
     ;[script, description, [[config, value, description], [..., ..., ...]]]
     $g_sProfilePath = @ScriptDir & "\profiles\" & getArg($aConfig, "Profile_Name") & "\"
@@ -1044,7 +1050,7 @@ Func UpdateSettings()
     $g_iBackgroundMode = Execute("$BKGD_" & StringUpper(getArg($aConfig, "Capture_Mode")))
     $g_iMouseMode = Execute("$MOUSE_" & StringUpper(getArg($aConfig, "Mouse_Mode")))
     $g_iSwipeMode = Execute("$SWIPE_" & StringUpper(getArg($aConfig, "Swipe_Mode")))
-    Switch getArg($aConfig, "Restart Time")
+    Switch getArg($aConfig, "Restart_Time")
         Case "Never"
             $g_iRestartTime = 0
         Case "10 Minutes"
@@ -1060,8 +1066,9 @@ Func UpdateSettings()
         Case "60 Minutes"
             $g_iRestartTime = 60
     EndSwitch
-    $g_bSaveDebug = (getArg($aConfig, "Save Debug Log") = "Enabled")
-    $g_bLogClicks = (getArg($aConfig, "Log Clicks") = "Enabled")
+    $g_bSaveDebug = (getArg($aConfig, "Save_Debug_Log") = "Enabled")
+    $g_bLogClicks = (getArg($aConfig, "Log_Clicks") = "Enabled")
+    $g_bAskForUpdates = (getArg($aConfig, "Ask_For_Updates") = "Enabled")
 
     ;handles default settings
     If StringLeft($t_sAdbPath, 1) <> "~" Then 

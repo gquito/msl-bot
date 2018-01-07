@@ -131,12 +131,14 @@ Func UpdateStatus()
     EndIf
 
     If (UBound($t_aVersion) <> 3) Or ($t_aVersion[0] > $aVersion[0]) Or ($t_aVersion[1] > $aVersion[1]) Or (($t_aVersion[1] = $aVersion[1]) And ($t_aVersion[2] > $aVersion[2])) Then
-        If @Compiled = False Then
-            If MsgBox($MB_ICONINFORMATION+$MB_YESNO, "MSL Bot Update", "MSL Bot version " & $t_aVersion[0] & "." & $t_aVersion[1] & "." & $t_aVersion[2] _
-            & " is available. Would you like to update now?") = $IDYES Then Update()
-        Else
-            MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL Bot Update", "MSL Bot version " & $t_aVersion[0] & "." & $t_aVersion[1] & "." & $t_aVersion[2] _
-            & " is available. Updater is only available with the uncompiled version (msl-bot.au3).")
+        If $g_bAskForUpdates = True Then
+            If @Compiled = False Then
+                If MsgBox($MB_ICONINFORMATION+$MB_YESNO, "MSL Bot Update", "MSL Bot version " & $t_aVersion[0] & "." & $t_aVersion[1] & "." & $t_aVersion[2] _
+                & " is available. Would you like to update now?") = $IDYES Then Update()
+            Else
+                MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL Bot Update", "MSL Bot version " & $t_aVersion[0] & "." & $t_aVersion[1] & "." & $t_aVersion[2] _
+                & " is available. Updater is only available with the uncompiled version (msl-bot.au3).")
+            EndIf
         EndIf
         
         $sUpdate = " (Out-of-date)"

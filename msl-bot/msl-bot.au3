@@ -1,4 +1,4 @@
-Global $aVersion = [3, 10, 2] ;Major, Minor, Build
+Global $aVersion = [3, 10, 3] ;Major, Minor, Build
 
 #pragma compile(Out, msl-bot.exe)
 #pragma compile(Icon, bin\_src\msl-bot.ico)
@@ -7,8 +7,8 @@ Global $aVersion = [3, 10, 2] ;Major, Minor, Build
 #pragma compile(ProductName, Monster Super League Bot)
 #pragma compile(FileDescription, Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot)
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 3.10.2)
-#pragma compile(ProductVersion, 3.10.2)
+#pragma compile(FileVersion, 3.10.3)
+#pragma compile(ProductVersion, 3.10.3)
 #pragma compile(OriginalFilename, msl-bot.exe)
 
 #include-once

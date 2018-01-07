@@ -77,7 +77,7 @@ Func catch($aImages, ByRef $iAstrochips)
             Local $sLocation ;stores current location
             Log_Add("Checking catch status.")
             Do
-                If TimerDiff($t_hTimer2) > 1000 Then
+                If (TimerDiff($t_hTimer2) > 500) And (TimerDiff($t_hTimer) < 3000) Then
                     clickPoint(getArg($g_aPoints, "battle-continue"))
                     $t_hTimer2 = TimerInit()
                 EndIf
