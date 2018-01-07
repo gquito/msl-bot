@@ -28,6 +28,13 @@
 		data: "Enabled,Disabled"
 	]
 	
+	[combo:
+		name: "Ask For Updates",
+		description: "If enabled, app will prompt user for update when a new version is available. The prompt will show when starting a new instance of the app and when a running script has been stopped.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
 	[text:
 		name: "ADB Path",
 		description: "Path to adb executable. Default for nox is: C:\Program Files (x86)\Nox\bin\nox_adb.exe",
