@@ -1,4 +1,4 @@
-Global $aVersion = [3, 10, 3] ;Major, Minor, Build
+Global $aVersion = [3, 10, 4] ;Major, Minor, Build
 
 #pragma compile(Out, msl-bot.exe)
 #pragma compile(Icon, bin\_src\msl-bot.ico)
@@ -7,8 +7,8 @@ Global $aVersion = [3, 10, 3] ;Major, Minor, Build
 #pragma compile(ProductName, Monster Super League Bot)
 #pragma compile(FileDescription, Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot)
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 3.10.3)
-#pragma compile(ProductVersion, 3.10.3)
+#pragma compile(FileVersion, 3.10.4)
+#pragma compile(ProductVersion, 3.10.4)
 #pragma compile(OriginalFilename, msl-bot.exe)
 
 #include-once
@@ -28,7 +28,7 @@ Func Initialize()
 
     ; Default configs and constants
     setScripts($g_aScripts, $g_sScriptsLocal) ;Sets local scripts first, existing scripts will not be overwritten
-    If _WinAPI_IsInternetConnected() = False Then 
+    If _WinAPI_IsInternetConnected() = False Then
         MsgBox($MB_ICONWARNING+$MB_OK, "Not connected.", "Could not retrieve script data from remote location." & @CRLF & "Using local files instead.")
         If FileExists($g_sLocationsLocalCache) = False Then
             MsgBox($MB_ICONERROR+$MB_OK, "No cache found.", "There has not been any cache files made.")
