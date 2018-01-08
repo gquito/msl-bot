@@ -346,7 +346,7 @@
 
 
 [Farm_Gem:
-	[description: "Convert gold into gems though 'slime' farming. Script will catch 16 astromons and evolve them to get 100 gems that by spending 330k gold."]
+	[description: "Convert gold into gems though 'slime' farming. Script will catch 16 astromons and evolve them to get 100 gems that by spending 330k gold. *Make sure you lock your gleems and put them on your storage."]
 	
 	[text:
 		name: "Gems To Farm",
