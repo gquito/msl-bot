@@ -45,16 +45,21 @@ Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle 
 	#Region Process
 		For $sFile In $aFiles
 			$sFile = StringReplace($sFile, "/", "\")
-			If StringLeft($sFile, 1) <> "!" Then
-				If StringLeft($sFile, 1) = "-" Then
+			Switch StringLeft($sFile, 1)
+				Case "!"
+					$sFile = StringMid($sFile, 2)
+				Case "?"
+					If FileExists($sLocalDirPath & $sFile) = False Then
+						ContinueLoop
+					Else
+						$sFile = StringMid($sFile, 2)
+					EndIf
+				Case "-"
 					FileDelete($sLocalDirPath & $sFile)
 					ContinueLoop
-				Else
+				Case Else
 					If FileExists($sLocalDirPath & $sFile) = True Then ContinueLoop
-				EndIf
-			Else
-				$sFile = StringMid($sFile, 2)
-			EndIf
+			EndSwitch
 
 			If StringInStr($sFile, "\") = True Then
 				;Create directory for file
