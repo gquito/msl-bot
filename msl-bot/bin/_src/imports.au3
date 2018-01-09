@@ -57,3 +57,5 @@
 #include "scripts/sub/evolve.au3"
 #include "scripts/sub/enterBattle.au3"
 #include "scripts/sub/sellGems.au3"
+
+#include "../local/imports.au3"

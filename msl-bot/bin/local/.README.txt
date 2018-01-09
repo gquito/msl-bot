@@ -7,6 +7,7 @@ The scriptlist.txt contains the scripts that will be read from custom.txt.
 Custom scripts should have functions declared as the script name (Replacing spaces with underscores (_)).
 	- Example: "Farm Rare" script will have a respective function called "Farm_Rare(...)".
 Functions should have the same amount of parameters as it has fields on script data; otherwise, the script will not run.
+If a function name starts with an underscore (_) then it is not expected to have a function.
 
 Script data structure goes as follows:
 	- Note: Any whitespace outside of a quotation block will ignored.

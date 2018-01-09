@@ -1,1 +1,1 @@
-Any separate files should be imported in /bin/imports.au3
+Any separate files should be imported in /bin/imports.au3 or /local/imports.au3
