@@ -600,9 +600,9 @@
 	
 	[combo:
 		name: "Stone Element",
-		description: "Element of stone you wish to farm. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
+		description: "Element of stone you wish to farm. This will not change the dungeon type, it will only count the type of stone. This is mostly useful during the weekend dungeons when you can get three different kinds of stones and you want only a specific number of certain a element. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
 		default: "Any",
-		data: "Any,Water,Fire,Wood,Light,Dark"
+		data: "Any,Water,Fire,Wood"
 	]
 	
 	[text:
