@@ -48,12 +48,13 @@
 !bin/images/misc/misc-guardian-right4.bmp
 bin/local/.README.txt
 bin/local/custom.txt
-!bin/local/scriptlist.txt
+bin/local/scriptlist.txt
 bin/local/data/.README.txt
 bin/local/data/locations.txt
 bin/local/data/pixels.txt
 bin/local/data/nezz-locations.txt
 bin/local/data/points.txt
+bin/local/imports.au3
 bin/images/catch/catch-exotic.bmp
 bin/images/catch/catch-exotic2.bmp
 bin/images/catch/catch-exotic3.bmp
