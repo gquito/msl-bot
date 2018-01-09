@@ -1,4 +1,4 @@
-!msl-bot.exe
+?msl-bot.exe
 !msl-bot.au3
 !bin/_src/global.au3
 !bin/_src/imports.au3
