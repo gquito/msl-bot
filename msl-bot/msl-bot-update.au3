@@ -50,9 +50,9 @@ Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle 
 					$sFile = StringMid($sFile, 2)
 				Case "?"
 					If FileExists($sLocalDirPath & $sFile) = False Then
-						ContinueLoop
-					Else
 						$sFile = StringMid($sFile, 2)
+					Else
+						ContinueLoop
 					EndIf
 				Case "-"
 					FileDelete($sLocalDirPath & $sFile)
