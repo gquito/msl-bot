@@ -112,7 +112,7 @@
 	[combo:
 		name: "Click Nezz",
 		description: "Attempts to click positions where nezz usually spawns. This system is not perfect, but is able to click on nezz most of the time. Note: newer ships might not have nezz positions.",
-		default: "Enabled",
+		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
 ]
