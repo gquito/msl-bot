@@ -107,6 +107,30 @@ Func CreateGUI()
 
 ;################################################## END LOG TAB ##################################################
 
+;################################################## DONATE TAB ##################################################
+    GUICtrlCreateTabItem("Donate")
+
+    GUISetFont(10, 700)
+    Global $idLbl_Donate = GUICtrlCreateLabel("Support me at: https://paypal.me/GkevinOD/10", 0, 50, 400, -1, $SS_CENTER+$WS_BORDER)
+    GUICtrlSetCursor(-1, 0)
+    GUISetFont(8.5, 0)
+
+    GUICtrlCreateLabel("Those who donate a cumulative value of 10.00 USD will receive access to an exclusive donator version with extra features. ", 0, 80, 400, 40, $SS_CENTER)
+    GUICtrlCreateLabel("Donating this amount will grant you a role in the community discord and access to the exclusive version through the role permissions.", 25, 120, 350, 40, $SS_CENTER)
+
+    Global $idLbl_Discord = GUICtrlCreateLabel("For any questions contact me at: gkevinod@gmail.com" & @CRLF & "or private message via discord: https://discord.gg/UQGRnwf", 25, 160, 350, 40, $SS_CENTER)
+    GUICtrlSetCursor(-1, 0)
+
+    GUISetFont(10, 500)
+    GUICtrlCreateLabel("Donator Features:" & @CRLF & @CRLF & "- AutoPVP" & @CRLF & "- Complete Dailies (Coming soon)" & @CRLF & "- Complete Bingo (Coming Soon)" & @CRLF & "- Golem Guided Auto (Coming soon)" & @CRLF & "and more..", 0, 200, 400, -1, $SS_CENTER)
+    GUISetFont(8.5, 0)
+
+    GUISetFont(7, 500)
+    GUICtrlCreateLabel("Note: List may not be complete or updated.", 0, 350, 400, -1, $SS_CENTER)
+    GUISetFont(8.5, 0)
+
+;################################################## END DONATE TAB ##################################################
+
     ChangeScript()
     _GUICtrlTab_ActivateTab($hTb_Main, 0)
 

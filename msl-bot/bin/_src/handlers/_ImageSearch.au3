@@ -49,6 +49,11 @@ Func _ImageSearchArea($findImage, $resultPosition, $x1, $y1, $right, $bottom, By
     
 
 	; If error exit
+    If isArray($result) = False Then
+        MsgBox($MB_ICONERROR+$MB_OK, "MSL Bot Error", "Could not access ImageSearch DLL. You must run the script as x86.")
+        Stop()
+        Return 0
+    EndIf
 	If $result[0] = "0" Then Return 0
 
 	; Otherwise get the x,y location of the match and the size of the image to

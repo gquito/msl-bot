@@ -17,6 +17,10 @@ Func GUI_HANDLE()
     Switch $iCode[1]
         Case $hParent
             Switch $iCode[0]
+                Case $idLbl_Donate
+                    ShellExecute("https://paypal.me/GkevinOD/10")
+                Case $idLbl_Discord
+                    ShellExecute("https://discord.gg/UQGRnwf")
                 Case $idCkb_Information, $idCkb_Error, $idCkb_Process, $idCkb_Debug
                     Local $sFilter = ""
                     If BitAND(GUICtrlRead($idCkb_Information), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Information,"

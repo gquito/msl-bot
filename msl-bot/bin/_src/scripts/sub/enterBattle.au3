@@ -16,7 +16,7 @@ Func enterBattle()
 		Switch $sLocation
 			Case "battle-end"
 				If clickWhile(getArg($g_aPoints, "quick-restart"), "isLocation", "battle-end", 10, 100) = True Then
-					Switch waitLocation("battle-auto,battle,refill,map-battle,map-gem-full,battle-gem-full,map-astromon-full,astromon-full", 120, False)
+					Switch waitLocation("battle-auto,battle,refill,map-battle,map-gem-full,battle-gem-full,map-astromon-full,astromon-full,buy-gem", 120, False)
 						Case "battle-auto", "battle"
 						Case "map-battle"
 							$bOutput = enterBattle()

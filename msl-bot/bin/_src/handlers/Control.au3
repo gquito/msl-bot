@@ -190,7 +190,11 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
             $aArg = $vArg
         EndIf
 
-        Log_Add("Clicking until => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg), $LOG_DEBUG)
+        If isArray($aPoint) = False Then $aPoint = StringSplit($aPoint, ",", $STR_NOCOUNT)
+        Log_Add("Clicking until (" & _ArrayToString($aPoint) & ") => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg) & ", Randomized: " & _ArrayToString($vRandom), $LOG_DEBUG) 
+        Local $iClicks = 0
+        Local $t_bLogClicks = $g_bLogClicks
+        $g_bLogClicks = False
         For $i = 0 To $iAmount-1
             Local $t_vTimerStart = TimerInit()
             While TimerDiff($t_vTimerStart) < $iInterval
@@ -201,14 +205,16 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
                 EndIf
             WEnd
 
+            $iClicks += 1
             clickPoint($aPoint, 1, 0, $vRandom, $iMouseMode, $hWindow, $hControl)
         Next
+        $g_bLogClicks = $t_bLogClicks
         
         ExitLoop
     WEnd
 
     $g_bLogEnabled = $g_bLogClicks
-    Log_Add("Clicking until result: " & $bOutput, $LOG_DEBUG)
+    Log_Add("Clicking until result: " & $bOutput & " (# Clicks: " & $iClicks & ")", $LOG_DEBUG)
     $g_bLogEnabled = True
     Log_Level_Remove()
 	Return $bOutput
@@ -243,7 +249,11 @@ Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
             $aArg = $vArg
         EndIf
 
-        Log_Add("Clicking while => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg), $LOG_DEBUG)
+        If isArray($aPoint) = False Then $aPoint = StringSplit($aPoint, ",", $STR_NOCOUNT)
+        Log_Add("Clicking while (" & _ArrayToString($aPoint) & ") => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg) & ", Randomized: " & _ArrayToString($vRandom), $LOG_DEBUG)
+        Local $iClicks = 0
+        Local $t_bLogClicks = $g_bLogClicks
+        $g_bLogClicks = False
         For $i = 0 To $iAmount-1
             Local $t_vTimerStart = TimerInit()
             While TimerDiff($t_vTimerStart) < $iInterval
@@ -254,14 +264,16 @@ Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
                 EndIf
             WEnd
 
+            $iClicks += 1
             clickPoint($aPoint, 1, 0, $vRandom, $iMouseMode, $hWindow, $hControl)
         Next
+        $g_bLogClicks = $t_bLogClicks
         
         ExitLoop
     WEnd
 
     $g_bLogEnabled = $g_bLogClicks
-    Log_Add("Clicking while result: " & $bOutput, $LOG_DEBUG)
+    Log_Add("Clicking while result: " & $bOutput & " (# Clicks: " & $iClicks & ")", $LOG_DEBUG)
     $g_bLogEnabled = True
     Log_Level_Remove()
 	Return $bOutput

@@ -45,7 +45,7 @@ Func doHourly($aHourlyConfig = formatArgs(getScriptData($g_aScripts, "_Hourly")[
                     Local $t_hTimer = TimerInit()
                     While (getLocation() <> "hourly-reward") And (TimerDiff($t_hTimer) < 5000)
                         If _Sleep(100) Then ExitLoop(3)
-                        clickPoint($aPoints[$i], 3, 500, Null)
+                        clickPoint($aPoints[$i], 3, 200, Null)
                         If getLocation() <> "village" Then navigate("village")
                     WEnd
                     
