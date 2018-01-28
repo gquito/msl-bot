@@ -228,7 +228,7 @@ Func Data_Set($sName, $vValue)
         Switch $aSub[1]
             Case $DATA_RATIO, $DATA_PERCENT, $DATA_TIMEAVG
                 If isArray($vValue) = False Then
-                    Local $t_aValue = StringSplit(vValue, "/", $STR_NOCOUNT)
+                    Local $t_aValue = StringSplit($vValue, "/", $STR_NOCOUNT)
                     $vValue = $t_aValue
                 EndIf
             
