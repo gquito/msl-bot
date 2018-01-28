@@ -107,7 +107,18 @@ Func Common_Stuck(ByRef $sLocation)
 
     Switch $sLocation
         Case "unknown"
-            If isArray(getRound()) = False Then ContinueCase
+            If isArray(getRound()) = False Then
+                If Data_Get("Unknown Tap") = -1 Then
+                    Data_Add("Unknown Tap", $DATA_TEXT, TimerInit())
+                EndIf
+
+                If TimerDiff(Data_Get("Unknown Tap")) > 5000 Then
+                    clickPoint(getArg($g_aPoints, "tap"))
+                    Data_Set("Unknown Tap", TimerInit())
+                EndIf
+
+                ContinueCase
+            EndIf
             Data_Set("Common Stuck Timer", "Null")
         Case "", "lost-connection"
             If _Sleep(10) Then Return 0

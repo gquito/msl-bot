@@ -122,7 +122,8 @@ Func CreateGUI()
     GUICtrlSetCursor(-1, 0)
 
     GUISetFont(10, 500)
-    GUICtrlCreateLabel("Donator Features:" & @CRLF & @CRLF & "- AutoPVP" & @CRLF & "- Complete Dailies (Coming soon)" & @CRLF & "- Complete Bingo (Coming Soon)" & @CRLF & "- Golem Guided Auto (Coming soon)" & @CRLF & "and more..", 0, 200, 400, -1, $SS_CENTER)
+    Global $idLbl_List = GUICtrlCreateLabel("Donator Features:" & @CRLF & @CRLF & "- AutoPVP" & @CRLF & "- Complete Dailies" & @CRLF & "- Complete Bingo" & @CRLF & "- Golem Guided Auto" & @CRLF & "( click for complete list )", 0, 200, 400, -1, $SS_CENTER)
+    GUICtrlSetCursor(-1, 0)
     GUISetFont(8.5, 0)
 
     GUISetFont(7, 500)
@@ -130,7 +131,7 @@ Func CreateGUI()
     GUISetFont(8.5, 0)
 
 ;################################################## END DONATE TAB ##################################################
-
+    
     ChangeScript()
     _GUICtrlTab_ActivateTab($hTb_Main, 0)
 

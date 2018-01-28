@@ -93,7 +93,7 @@ Func getGemData($bCapture = True)
 			Case isPixel("399,175,0xF39C72|399,164,0xF769BA|406,144,0x261612")
 				$aGemData[0] = "EGG"
 				Return $aGemData
-			Case isPixel("399,175,0x863406|399,164,0xF7D744|406,144,0xFFFC52")
+			Case isPixel("399,175,0x9A450C|399,164,0xF5D444|406,144,0xFDF953", 20)
 				$aGemData[0] = "GOLD"
 				Return $aGemData
 			Case isPixel("406,144,0x261612")
@@ -374,7 +374,7 @@ Func getStone()
 	If isPixel("399,175,0xF39C72|399,164,0xF769BA|406,144,0x261612") Then
 		Local $t_aData = ["egg", "n/a", "1"]
 		Return $t_aData
-	ElseIf isPixel("399,175,0x863406|399,164,0xF7D744|406,144,0xFFFC52") Then
+	ElseIf isPixel("399,175,0x9A450C|399,164,0xF5D444|406,144,0xFDF953", 20) Then
 		Local $t_aData = ["gold", "n/a", "n/a"]
 		Return $t_aData
 	EndIf

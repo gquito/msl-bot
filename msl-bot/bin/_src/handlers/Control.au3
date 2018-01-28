@@ -10,15 +10,23 @@
     Returns: Output after command has been executed.
 #ce
 Func adbCommand($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+    Log_Level_Add("adbCommand")
+    Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
+
     Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
 
+    Local $hTimer = TimerInit()
     Local $sResult = ""
-    While 1
+    While True
+        If TimerDiff($hTimer) > 5000 Then ExitLoop
+        
         $sResult &= StdoutRead($iPID)
         If @error Or (ProcessExists($iPID) = False) Then ExitLoop
     WEnd
     StdioClose($iPID)
 
+    Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
+    Log_Level_Remove()
     Return $sResult
 EndFunc
 

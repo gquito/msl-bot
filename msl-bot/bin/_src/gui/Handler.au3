@@ -21,6 +21,8 @@ Func GUI_HANDLE()
                     ShellExecute("https://paypal.me/GkevinOD/10")
                 Case $idLbl_Discord
                     ShellExecute("https://discord.gg/UQGRnwf")
+                Case $idLbl_List
+                    MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL Donator Features", "Completed: " & @CRLF & "- Auto PvP, Guided Auto, Daily Quest, Complete Bingo" & @CRLF & @CRLF & "In Progress: " & @CRLF & "- Buy Items, Script Schedule, TOC, Colossal, Hatch Eggs, Special Guardians")
                 Case $idCkb_Information, $idCkb_Error, $idCkb_Process, $idCkb_Debug
                     Local $sFilter = ""
                     If BitAND(GUICtrlRead($idCkb_Information), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Information,"
