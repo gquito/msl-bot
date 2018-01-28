@@ -402,11 +402,11 @@
 		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
 	]
 	
-	[combo:
+	[list:
 		name: "Capture",
 		description: "types of rares to catch. The priority of which to catch is from left, as the highest priority, to right, as lowest priority.",
 		default: "Legendary,Exotic,Super Rare,Rare,Variant",
-		data: "Legendary,Exotic,Super Rare,rare,Variant"
+		data: "Legendary,Exotic,Super Rare,Rare,Variant"
 	]
 	
 	[list:
@@ -494,11 +494,11 @@
 		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
 	]
 	
-	[combo:
+	[list:
 		name: "Capture",
 		description: "types of rares to catch. The priority of which to catch is from left, as the highest priority, to right, as lowest priority.",
 		default: "Legendary,Exotic,Super Rare,Rare,Variant",
-		data: "Legendary,Exotic,Super Rare,rare,Variant"
+		data: "Legendary,Exotic,Super Rare,Rare,Variant"
 	]
 	
 	[list:
