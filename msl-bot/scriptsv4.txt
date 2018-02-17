@@ -29,6 +29,13 @@
 	]
 	
 	[combo:
+		name: "Update Guardians",
+		description: "Automatically update guardian dungeon if there are new dungeons available.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
 		name: "Ask For Updates",
 		description: "If enabled, app will prompt user for update when a new version is available. The prompt will show when starting a new instance of the app and when a running script has been stopped.",
 		default: "Enabled",
