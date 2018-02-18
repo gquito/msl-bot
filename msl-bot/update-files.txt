@@ -22,6 +22,7 @@
 !bin/_src/scripts/Farm_Guardian.au3
 !bin/_src/scripts/Farm_Rare.au3
 !bin/_src/scripts/Farm_Starstone.au3
+!bin/_src/scripts/_RunScript.au3
 !bin/_src/scripts/sub/_Helper.au3
 !bin/_src/scripts/sub/catch.au3
 !bin/_src/scripts/sub/collectQuest.au3
@@ -33,11 +34,13 @@
 !bin/_src/scripts/sub/common.au3
 !bin/_src/scripts/sub/enterBattle.au3
 !bin/_src/scripts/sub/sellGems.au3
+!bin/_scr/scripts/sub/updateGuardians.au3
 !bin/images/misc/misc-stone-x1.bmp
 !bin/images/misc/misc-stone-x2.bmp
 !bin/images/misc/misc-stone-x3.bmp
 !bin/images/misc/misc-stone-x4.bmp
 !bin/images/misc/misc-stone-x5.bmp
+!bin/images/misc/guardian-info.txt
 !bin/images/misc/misc-guardian-left.bmp
 !bin/images/misc/misc-guardian-left2.bmp
 !bin/images/misc/misc-guardian-left3.bmp
