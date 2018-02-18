@@ -33,12 +33,11 @@ Func Farm_Gem($Gems_To_Farm, $Catch_Image, $Astromon, $Finish_Round, $Final_Roun
         ;Handles catching process
         While Data_Get("Need Catch") > 0
             Log_Add("Going to catch " & Data_Get("Need Catch") & " astromons.", $LOG_INFORMATION)
-            Local $t_aOrder = $g_aOrder
-            Farm_Astromon(Data_Get("Need Catch"), $Catch_Image, $Finish_Round, $Final_Round, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Collect_Quests, $Hourly_Script)
-            If _Sleep(10) Then ExitLoop(2)
-            $g_aOrder = $t_aOrder
-            Data_Display_Update()
 
+            Local $aArg = [Data_Get("Need Catch"), $Catch_Image, $Finish_Round, $Final_Round, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Collect_Quests, $Hourly_Script]
+            _RunScript("Farm_Astromon", $aArg, True, "Refill," & $Catch_Image, "Farmed Gems,Refill")
+
+            If _Sleep(10) Then ExitLoop(2)
             $sLocation = getLocation()
             Switch $sLocation
                 Case "astromon-full"

@@ -14,12 +14,6 @@ Func doHourly($aHourlyConfig = formatArgs(getScriptData($g_aScripts, "_Hourly")[
 
     Local $bOutput = False
     While True
-        ;Check if all settings are disabled
-        If (getArg($aHourlyConfig, "Collect_Hiddens") = "Disabled") And (getArg($aHourlyConfig, "Click_Nezz") = "Disabled") Then
-            $bOutput = True
-            ExitLoop
-        EndIf
-
         If navigate("village") = True Then
             If _Sleep(5000) Then ExitLoop
             Local $iPos = -1; The village position
@@ -35,7 +29,7 @@ Func doHourly($aHourlyConfig = formatArgs(getScriptData($g_aScripts, "_Hourly")[
             Log_Add("Airship position detected: " & $iPos & ".", $LOG_DEBUG)
             If $iPos = -1 Then ExitLoop
             If getLocation() <> "village" Then navigate("village")
-
+;######################################################################################################
             If getArg($aHourlyConfig, "Collect_Hiddens") = "Enabled" = True Then
                 Log_Add("Collecting hidden rewards.")
                 Local $aPoints = StringSplit($g_aVillageTrees[$iPos], "|", 2) ;format: {"#,#", "#,#"..}
@@ -55,8 +49,8 @@ Func doHourly($aHourlyConfig = formatArgs(getScriptData($g_aScripts, "_Hourly")[
             
             If getLocation() <> "village" Then navigate("village")
             If _Sleep(10) Then ExitLoop
-
-            If getArg($aHourlyConfig, "Click_Nezz") = "Enabled" = True Then
+;######################################################################################################
+            If getArg($aHourlyConfig, "Click_Nezz") = "Enabled" Then
                 Local $aNezzLoc = getArg($g_aNezzPos, "village-pos" & $iPos)
                 If $aNezzLoc <> -1 Then
                     Log_Add("Attempting to click nezz.")
@@ -66,6 +60,9 @@ Func doHourly($aHourlyConfig = formatArgs(getScriptData($g_aScripts, "_Hourly")[
                     Next
                 EndIf
             EndIf
+
+            If getLocation() <> "village" Then navigate("village")
+            If _Sleep(10) Then ExitLoop
         Else
             ExitLoop
         EndIf

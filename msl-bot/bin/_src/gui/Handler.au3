@@ -22,7 +22,7 @@ Func GUI_HANDLE()
                 Case $idLbl_Discord
                     ShellExecute("https://discord.gg/UQGRnwf")
                 Case $idLbl_List
-                    MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL Donator Features", "Completed: " & @CRLF & "- Auto PvP, Guided Auto, Daily Quest, Complete Bingo" & @CRLF & @CRLF & "In Progress: " & @CRLF & "- Buy Items, Script Schedule, TOC, Colossal, Hatch Eggs, Special Guardians")
+                    MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL Donator Features", "Completed: " & @CRLF & "- Auto PvP, Guided Auto, Daily Quest, Complete Bingo, Farm Forever, TOC, Gold Dungeon" & @CRLF & @CRLF & "In Progress: " & @CRLF & "- Buy Items, Script Schedule, Colossal, Hatch Eggs, Dragons")
                 Case $idCkb_Information, $idCkb_Error, $idCkb_Process, $idCkb_Debug
                     Local $sFilter = ""
                     If BitAND(GUICtrlRead($idCkb_Information), $GUI_CHECKED) = $GUI_CHECKED Then $sFilter &= "Information,"
@@ -386,7 +386,7 @@ Func Stop()
     HotKeySet("{Esc}") ;unbinds hotkey
 
 ;Resets variables
-    FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+    If FileExists($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png") Then FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
     $g_hTimerLocation = Null
     $g_hScriptTimer = Null
     $g_aScriptArgs = Null
@@ -417,6 +417,43 @@ Func Pause()
         _GUICtrlButton_SetText($hBtn_Pause, "Pause")
         ControlEnable("", "", $hBtn_Stop)
     EndIf
+EndFunc
+
+Func RestartGame()
+    Log_Level_Add("RestartGame")
+    Log_Add("Restarting game.")
+    $bOutput = False
+
+    While True
+        Local $hTimer ;Stores timerinit
+        If StringInStr(adbCommand("get-state"), "error") Then ExitLoop
+
+        Local $bGameRunning = StringInStr(adbCommand("shell ps | grep msleague | awk '{print $9}'"), "com.ftt.msleague_gl")
+        If $bGameRunning = True Then
+            Log_Add("Game is already running, killing current process.")
+            $hTimer = TimerInit()
+            While StringInStr(adbCommand("shell ps | grep msleague | awk '{print $9}'"), "com.ftt.msleague_gl")
+                If _Sleep(2000) Or (TimerDiff($hTimer) > 120000) Then ExitLoop(2)
+                adbCommand("shell am force-stop com.ftt.msleague_gl")
+            WEnd
+        EndIf
+
+        ;Start game through ADB
+        Log_Add("Starting game and waiting for main screen.")
+        While Not(StringInStr(adbCommand("shell ps | grep msleague | awk '{print $9}'"), "com.ftt.msleague_gl"))
+            If _Sleep(2000) Or (TimerDiff($hTimer) > 120000) Then ExitLoop(2)
+            adbCommand("shell monkey -p com.ftt.msleague_gl -c android.intent.category.LAUNCHER 1")
+        WEnd
+
+        ;Waiting for start menu
+        $bOutput = waitLocation("tap-to-start", 300, True)
+        ExitLoop
+    WEnd
+
+    navigate("map")
+    Log_Add("Restart game result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $bOutput
 EndFunc
 
 Func RestartNox($iPID = WinGetProcess($g_hWindow), $bDebug = False)
@@ -453,40 +490,26 @@ Func RestartNox($iPID = WinGetProcess($g_hWindow), $bDebug = False)
             If _Sleep(1000) Then ExitLoop(2)
         WEnd
 
-        Log_Add("Starting new Nox process.")
+        Log_Add("Starting new Nox process and waiting for handles.")
         Run($sPath & $sClone & " -resolution:800x552 -dpi:160 -package:com.ftt.msleague_gl -lang:en")
-        Log_Add("Waiting for Nox window handles.")
 
         $g_hWindow = 0
-        While $g_hWindow = 0
-            If _Sleep(1000) Then Return
+        $g_hControl = 0
+        Local $hTimer = TimerInit()
+        While getLocation() <> "tap-to-start"
+            If TimerDiff($hTimer) > 300000 Or _Sleep(1000) Then ExitLoop(2)
 
             $g_hWindow = WinGetHandle($g_sWindowTitle)
+            $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
             If $g_hWindow <> 0 Then WinMove($g_hWindow, "", $aPosition[0], $aPosition[1])
         WEnd
 
-        Log_Add("Waiting for Monster Super League start menu.")
-        Local $t_hTimer = TimerInit()
-        While (getLocation() <> "tap-to-start") And (getLocation($g_aLocations, False) <> "event-list") And (getLocation($g_aLocations, False) <> "event") And (getLocation($g_aLocations, False) <> "start-screen")
-            $g_hTimerLocation = Null
-            
-            If TimerDiff($t_hTimer) > 600000 Then 
-                Log_Add("Unable to detect start menu.", $LOG_ERROR)
-                ExitLoop
-            EndIf
-            If _Sleep(5000) Then ExitLoop
-
-            $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
-
-            If $bDebug Then CaptureRegion("Debug")
-            clickPoint("394,469")
-        WEnd
-
-        navigate("map")
-        $bOutput = True
+        ;Waiting for start menu
+        $bOutput = (getLocation() = "tap-to-start")
         ExitLoop
     WEnd
 
+    navigate("map")
     Log_Add("Restarting nox result: " & $bOutput, $LOG_DEBUG)
     Log_Level_Remove()
     Return $bOutput
@@ -535,10 +558,15 @@ Func handleEdit(ByRef $hEdit, ByRef $iIndex, $hListView)
     If _GUICtrlListView_GetItemText($hListView, $iIndex) = "Profile Name" Then
         $g_sProfilePath = @ScriptDir & "\profiles\" & $sNew & "\"
 
-        setScripts($g_aScripts, $g_sScriptsURL)
+        Local $t_sScripts[0] ;Reset global script
+        $g_ascripts = $t_sScripts
+
+        setScripts($g_aScripts, $g_sScriptsLocal)
+        setScripts($g_aScripts, $g_sScriptsLocalCache)
+
         For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
             Local $aScript = $g_aScripts[$i]
-            If FileExists($g_sProfilePath & "\" & $aScript[0]) = True Then
+            If FileExists($g_sProfilePath & $aScript[0]) = True Then
                 getConfigsFromFile($g_aScripts, $aScript[0])
             EndIf
         Next
@@ -547,14 +575,23 @@ Func handleEdit(ByRef $hEdit, ByRef $iIndex, $hListView)
             getConfigsFromFile($g_aScripts, "_Config", $g_sProfilePath)
         EndIf
 
-        Local $t_aScripts = $g_aScripts[0]
+        Local $t_aScripts ;Will store _Config
+        Local $index = 0 ;Stores index of _Config
+        For $i = 0 To UBound($g_aScripts)-1
+            $t_aScripts = $g_aScripts[$i]
+            If $t_aScripts[0] = "_Config" Then
+                $index = $i
+                ExitLoop
+            EndIf
+        Next
+
         Local $t_aScript = $t_aScripts[2]
         Local $t_aConfig = $t_aScript[0]
 
         $t_aConfig[1] = $sNew
         $t_aScript[0] = $t_aConfig
         $t_aScripts[2] = $t_aScript
-        $g_aScripts[0] = $t_aScripts
+        $g_aScripts[$index] = $t_aScripts
 
         ChangeScript()
     Else
@@ -764,6 +801,9 @@ Func setScripts(ByRef $aScripts, $sPath, $sCachePath = "")
             FileWrite($hFile, $sData)
             FileClose($hFile)
         EndIf
+    EndIf
+    If $sData = "" Then
+        Return -1
     EndIf
 
     Local $c = StringSplit($sData, "", $STR_NOCOUNT)
@@ -1074,7 +1114,6 @@ Func UpdateSettings()
     EndSwitch
     $g_bSaveDebug = (getArg($aConfig, "Save_Debug_Log") = "Enabled")
     $g_bLogClicks = (getArg($aConfig, "Log_Clicks") = "Enabled")
-    $g_bAskForUpdates = (getArg($aConfig, "Ask_For_Updates") = "Enabled")
 
     ;handles default settings
     If StringLeft($t_sAdbPath, 1) <> "~" Then 

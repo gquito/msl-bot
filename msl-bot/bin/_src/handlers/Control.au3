@@ -14,20 +14,64 @@ Func adbCommand($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
     Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
 
     Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
-
-    Local $hTimer = TimerInit()
-    Local $sResult = ""
-    While True
-        If TimerDiff($hTimer) > 5000 Then ExitLoop
-        
-        $sResult &= StdoutRead($iPID)
-        If @error Or (ProcessExists($iPID) = False) Then ExitLoop
-    WEnd
+    If ProcessWaitClose($iPID, 3000) = 0 Then
+        ProcessClose($iPID)
+        $sResult = "timed out."
+    Else
+        $sResult = StdoutRead($iPID)
+    EndIf
     StdioClose($iPID)
 
-    Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
+    If $sResult <> "" Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
     Log_Level_Remove()
     Return $sResult
+EndFunc
+
+Func adbSendESC($sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+    If isDeclared("sEvent") = 0 Then
+        Static $sEvent = getEvent()
+    EndIf
+
+    Local $aTCV = ["1 158 1", "0 0 0", "1 158 0", "0 0 0"]
+    Return adbCommand("shell " & sendEvent($sEvent, $aTCV), $sAdbDevice, $sAdbPath)
+EndFunc
+
+Func getEvent($sGetEvent = adbCommand("shell getevent -p"))
+    $aEvents = StringSplit(StringStripWS($sGetEvent, $STR_STRIPSPACES), @CRLF, $STR_NOCOUNT)
+    If isArray($aEvents) Then
+        For $i = 0 To UBound($aEvents)-1
+            If StringInStr($aEvents[$i], "Android Input") Then
+                Local $aEventNum = StringSplit($aEvents[$i-1], ":", $STR_NOCOUNT)
+                If isArray($aEventNum) = True and UBound($aEventNum) > 1 Then
+                    Return StringStripWS($aEventNum[1], $STR_STRIPLEADING)
+                EndIf
+            EndIf
+        Next
+    Else
+        $g_sErrorMessage = "getEvent() => Could not get event list."
+        Return ""
+    EndIf
+
+    $g_sErrorMessage = "getEvent() => Could not retrieve event number for Android Input."
+    Return ""
+EndFunc
+
+Func sendEvent($sEvent, $aTCV)
+    Local $sFinal = ""
+    If isArray($aTCV) = False Then
+        $aTCV = StringSplit($aTCV, ",", $STR_NOCOUNT)
+    EndIf
+
+    For $i = 0 To UBound($aTCV)-1
+        Local $aRaw = StringSplit($aTCV[$i], " ", $STR_NOCOUNT)
+        Local $sType = $aRaw[0]
+        Local $sCode = $aRaw[1]
+        Local $sValue = $aRaw[2]
+
+        $sFinal &= ";sendevent " & $sEvent & " " & $sType & " " & $sCode & " " & $sValue
+    Next
+
+    Return '"' & StringMid($sFinal, 2) & '"'
 EndFunc
 
 #cs 
@@ -69,7 +113,7 @@ EndFunc
         $vPoint: Format = [x, y] or "x,y"
         $iAmount: Number of clicks to perform.
         $iInterval: Interval between clicks.
-        $vRandomized: Format = [min, max] offset in pixel.
+        $vRandom: Format = [min, max] offset in pixel.
         $bRealMouse: Whether to use real mouse or simulated mouse clicks.
         $hWindow: Window handle to send clicks for.
         $hControl: Control handle to send clicks for.
@@ -89,7 +133,7 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
                 ExitLoop
             EndIf
 
-            Local $t_aPoint = StringSplit($vPoint, ",", $STR_NOCOUNT)
+            Local $t_aPoint = StringSplit(StringStripWS($vPoint, $STR_STRIPALL), ",", $STR_NOCOUNT)
             $aPoint[0] = StringStripWS($t_aPoint[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
             $aPoint[1] = StringStripWS($t_aPoint[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
         Else
@@ -149,8 +193,13 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
                 ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0], $aNewPoint[1]) ;For simulated clicks
             ElseIf $iMouseMode = $MOUSE_ADB Then
                 ;clicks using adb commands
+                If isDeclared("sEvent") = 0 Then
+                    Static $sEvent = getEvent()
+                EndIf
                 Log_Add("Click point: " & _ArrayToString($aNewPoint), $LOG_DEBUG)
-                adbCommand("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
+
+                Local $aTCV = ["0 0 0", "1 330 1", "3 58 1", "3 53 " & $aNewPoint[0], "3 54 " & $aNewPoint[1], "0 2 0", "0 0 0", "0 2 0", "0 0 0", "1 330 0", "3 58 0", "3 53 0", "3 54 32", "0 2 0", "0 0 0"]
+                adbCommand("shell " & sendEvent($sEvent, $aTCV))
             Else
                 Log_Add("Invalid mouse mode: " & $iMouseMode, $LOG_ERROR)
                 $g_sErrorMessage = "clickPoint() => Invalid mouse mode: " & $iMouseMode
@@ -183,7 +232,7 @@ EndFunc
         $hControl: Control handle to send clicks for.
     Return: True if condition was met and false if maximum clicks exceeds.
 #ce
-Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
+Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = Null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
 	$g_bLogEnabled = $g_bLogClicks
     Log_Level_Add("clickUntil")
 
@@ -193,12 +242,18 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
 
         ;Fix format to array: [arg1, arg2, ...]
         If isArray($vArg) = False And $vArg <> Null Then
-            $aArg = StringSplit($vArg, ",", $STR_NOCOUNT)
+            If StringLeft($vArg, 1) = "$" Then
+                Local $aRaw[1];
+                $aRaw[0] = StringMid($vArg, 2)
+                $aArg = $aRaw
+            Else
+                $aArg = StringSplit($vArg, ",", $STR_NOCOUNT)
+            EndIf
         Else   
             $aArg = $vArg
         EndIf
 
-        If isArray($aPoint) = False Then $aPoint = StringSplit($aPoint, ",", $STR_NOCOUNT)
+        If isArray($aPoint) = False Then $aPoint = StringSplit(StringStripWS($aPoint, $STR_STRIPALL), ",", $STR_NOCOUNT)
         Log_Add("Clicking until (" & _ArrayToString($aPoint) & ") => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg) & ", Randomized: " & _ArrayToString($vRandom), $LOG_DEBUG) 
         Local $iClicks = 0
         Local $t_bLogClicks = $g_bLogClicks
@@ -242,7 +297,7 @@ EndFunc
         $hControl: Control handle to send clicks for.
     Return: True if condition is not met and false if maximum clicks exceeds.
 #ce
-Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
+Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $vRandom = Null, $iMouseMode = $g_iMouseMode, $hWindow = $g_hWindow, $hControl = $g_hControl)
 	$g_bLogEnabled = $g_bLogClicks
     Log_Level_Add("clickWhile")
 
@@ -257,7 +312,7 @@ Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
             $aArg = $vArg
         EndIf
 
-        If isArray($aPoint) = False Then $aPoint = StringSplit($aPoint, ",", $STR_NOCOUNT)
+        If isArray($aPoint) = False Then $aPoint = StringSplit(StringStripWS($aPoint, $STR_STRIPALL), ",", $STR_NOCOUNT)
         Log_Add("Clicking while (" & _ArrayToString($aPoint) & ") => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg) & ", Randomized: " & _ArrayToString($vRandom), $LOG_DEBUG)
         Local $iClicks = 0
         Local $t_bLogClicks = $g_bLogClicks

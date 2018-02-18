@@ -45,6 +45,7 @@
 #include "scripts/Farm_Gem.au3"
 #include "scripts/Farm_Guardian.au3"
 #include "scripts/Farm_Starstone.au3"
+#include "scripts/_RunScript.au3"
 
 #include "scripts/sub/_Helper.au3"
 #include "scripts/sub/navigate.au3"
@@ -57,5 +58,6 @@
 #include "scripts/sub/evolve.au3"
 #include "scripts/sub/enterBattle.au3"
 #include "scripts/sub/sellGems.au3"
+#include "scripts/sub/updateGuardians.au3"
 
 #include "../local/imports.au3"

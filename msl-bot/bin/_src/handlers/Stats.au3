@@ -79,6 +79,12 @@ Func Data_Add($sName, $iType, $vValue, $bMerge = False)
                         $vValue[$i][1] += getArg($vResult, $vValue[$i][0])
                     Next
             EndSwitch
+        Else
+            ;Delete and recreate if no merging to prevent wrong type.
+            Data_Remove($sName)
+            
+            Log_Level_Remove()
+            Return Data_Add($sName, $iType, $vValue)
         EndIf
 
         Data_Set($sName, $vValue)
@@ -214,10 +220,13 @@ Func Data_Set($sName, $vValue)
         $iIndex += 1
     Next
 
-    If Data_Get($sName) <> $vValue And Data_Get($sName, True) <> $vValue Then 
+    If (Data_Get($sName) <> $vValue) And (Data_Get($sName, True) <> $vValue) And (Data_Get($sName) <> -1) Then 
         Local $sValue = $vValue
         If isArray($sValue) = True Then $sValue = _ArrayToString($vValue)
         Log_Add("Setting data '" & $sName & "' To: " & $vValue, $LOG_DEBUG)
+    Else
+        Log_Level_Remove()
+        Return False
     EndIf
 
     Local $bOutput = False

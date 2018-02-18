@@ -44,12 +44,12 @@ Func catch($aImages, ByRef $iAstrochips)
         ;Found process
         While $iAstrochips > 0 
             Log_Add("Attempting to catch " & $sAstromon & " (" & 4-$iAstrochips & "/3).")
-            If _Sleep(10) Then ExitLoop(2)
+            If _Sleep(0) Then ExitLoop(2)
 
             Local $t_hTimer = TimerInit()
             While getLocation() <> "catch-mode"
                 If TimerDiff($t_hTimer) > 10000 Then ExitLoop
-                If _Sleep(10) Then ExitLoop(2)
+                If _Sleep(0) Then ExitLoop(2)
             WEnd
 
             If clickWhile($aFound, "isLocation", "catch-mode", 15, 200) = False Then
@@ -67,7 +67,8 @@ Func catch($aImages, ByRef $iAstrochips)
             $iAstrochips -= 1
             If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then ;speed catch
                 Log_Add("Double ESCAPE for quick catch.")
-                adbCommand('shell "input keyevent ESCAPE;input keyevent ESCAPE"')
+                adbSendESC()
+                adbSendESC()
             EndIf
 
             Local $t_hTimer = TimerInit()
@@ -98,7 +99,7 @@ Func catch($aImages, ByRef $iAstrochips)
                         ExitLoop(3)
                     EndIf
                 EndIf
-                If _Sleep(10) Then ExitLoop(3)
+                If _Sleep(0) Then ExitLoop(3)
 
                 CaptureRegion() ;Update
                 $sLocation = getLocation($g_aLocations, False)

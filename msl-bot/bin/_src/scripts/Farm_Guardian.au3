@@ -5,6 +5,10 @@ Func Farm_Guardian($Mode, $Usable_Astrogems, $Loop, $Target_Boss, $Collect_Quest
     Log_Level_Add("Farm_Guardian")
     Log_Add("Farm Guardian has started.")
 
+    ;Check for guardian dungeon update
+    Local $aConfig = formatArgs(getScriptData($g_aScripts, "_Config")[2])
+    If getArg($aConfig, "Update_Guardians") = "Enabled" Then updateGuardians()
+
     ;Declaring variable and data
     Local Const $aLocations = _
     ["loading", "village", "map", "battle-boss", "unknown", "battle", _

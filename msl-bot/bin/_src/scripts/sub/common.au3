@@ -12,7 +12,7 @@ Func Common_Boss(ByRef $sLocation)
 
     If Data_Get("Common Boss Targeted") = "False" Then
         Switch $sLocation
-            Case "battle-auto", "unknown"
+            Case "battle-auto", "battle", "unknown"
                 Local $aRound = getRound()
                 If isArray($aRound) = True Then
                     If $aRound[0] = $aRound[1] Then
@@ -72,13 +72,9 @@ Func Common_Guardian(ByRef $sLocation, $Mode, $Usable_Astrogems, $Target_Boss, $
     If $g_bPerformGuardian = True Then
         Switch $sLocation
             Case "battle-end", "map", "village"
-                Local $t_aOrder = $g_aOrder
-                Farm_Guardian($Mode, $Usable_Astrogems, "Disabled", $Target_Boss, $Collect_Quests, $Hourly_Script)
+                Local $aArgs = [$Mode, $Usable_Astrogems, "Disabled", $Target_Boss, $Collect_Quests, $Hourly_Script]
+                _RunScript("Farm_Guardian", $aArgs, True, "Guardians,Refill", "Guardians,Refill")
                 $g_bPerformGuardian = False
-                If _Sleep(10) Then Return 0
-                
-                $g_aOrder = $t_aOrder
-                Data_Display_Update()
         EndSwitch
     EndIf
 EndFunc
@@ -105,6 +101,12 @@ Func Common_Stuck(ByRef $sLocation)
         Data_Add("Common Stuck Timer", $DATA_TEXT, TimerInit())
     EndIf
 
+    If $sLocation = "battle-end" Or $sLocation = "map" Then
+        ;Data resets
+        Data_Set("Astrochips", "3")
+        Data_Set("Skip Round", "-1")
+    EndIf
+
     Switch $sLocation
         Case "unknown"
             If isArray(getRound()) = False Then
@@ -129,8 +131,28 @@ Func Common_Stuck(ByRef $sLocation)
                 If TimerDiff(Data_Get("Common Stuck Timer")) > 20000 Then
                     $sLocation = getLocation()
                     If $sLocation = "lost-connection" Then
-                        Log_Add("Lost connection detected, retrying.")
+                        Log_Add("Lost connection detected, retrying.", $LOG_INFORMATION)
                         clickWhile(getArg($g_aPoints, "lost-connection-retry"), "isLocation", "lost-connection")
+                    ElseIf $sLocation = "another-device" Then
+                        Log_Add("Another device detected!", $LOG_INFORMATION)
+                        Local $aConfig = formatArgs(getScriptData($g_aScripts, "_Config")[2])
+                        Local $sWait = getArg($aConfig, "Restart_Time")
+
+                        Switch $sWait
+                            Case "Never"
+                                Log_Add("Restart time set to Never, Stopping script.", $LOG_INFORMATION)
+                                Stop()
+                            Case Else
+                                Local $iMinutes = Int(StringLeft($sWait, 2))
+                                Log_Add("Restart time set to " & $iMinutes & " minutes.", $LOG_INFORMATION)
+                                
+                                Local $hTimer = TimerInit()
+                                While TimerDiff($hTimer) < ($iMinutes*60000)
+                                    Local $iSeconds = Int(($iMinutes*60) - (TimerDiff($hTimer)/1000))
+                                    Data_Set("Status", "Restarting in: " & getTimeString($iSeconds))
+                                    If _Sleep(1000) Then ExitLoop
+                                WEnd
+                        EndSwitch
                     Else
                         If navigate("map", True) = False Then
                             $sLocation = getLocation()
@@ -140,11 +162,6 @@ Func Common_Stuck(ByRef $sLocation)
                     If Data_Get("Common Stuck Timer") <> "Null" Then Data_Set("Common Stuck Timer", "Null")
                 EndIf
             EndIf
-        Case "battle-end", "map"
-            ;Data resets
-            Data_Set("Astrochips", "3")
-            Data_Set("Skip Round", "-1")
-            ContinueCase
 
         Case Else
             If Data_Get("Common Stuck Timer") <> "Null" Then Data_Set("Common Stuck Timer", "Null")

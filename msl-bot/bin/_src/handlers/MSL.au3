@@ -277,8 +277,6 @@ EndFunc
 #ce
 Func skipDialogue()
 	Local $t_iTimerInit = TimerInit()
-	Local $sLocation = getLocation()
-	
 	While getLocation() = "dialogue"
 		If TimerDiff($t_iTimerInit) >= 20000 Then Return False ;twenty seconds
 

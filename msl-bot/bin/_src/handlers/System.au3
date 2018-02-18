@@ -9,8 +9,22 @@
 #ce
 Global $bScheduled = False
 Func _Sleep($iDuration)
+    If $iDuration = 0 Then 
+        If $g_bRunning = False Then 
+            $g_hTimerLocation = Null
+            Return True
+        Else
+            Return False
+        EndIf
+    EndIf
+
     Local $vTimerInit = TimerInit()
     While TimerDiff($vTimerInit) < $iDuration
+        If $g_bRunning = False Then 
+            $g_hTimerLocation = Null
+            Return True
+        EndIf
+
         Switch getMinute()
             Case "00"
                 If $bScheduled = False Then 
@@ -23,11 +37,11 @@ Func _Sleep($iDuration)
                 $bScheduled = True
             Case "30"
                 If $bScheduled = False Then $g_bPerformGuardian = True
-                
                 $bScheduled = True
             Case Else
                 $bScheduled = False
         EndSwitch
+
         If ($g_bRunning = True) And ($g_hScriptTimer <> Null) Then
             WinSetTitle($hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", "") & " - " & getTimeString(TimerDiff($g_hScriptTimer)/1000))
 
@@ -39,8 +53,9 @@ Func _Sleep($iDuration)
                 If ($g_hTimerLocation <> Null) And (TimerDiff($g_hTimerLocation) > (60000*$g_iRestartTime)) Then ;10 minute anti-stuck
                     $g_hTimerLocation = Null
                     Log_Level_Add("_Sleep")
-                    Log_Add("AntiStuck: Stuck for 10 minutes, restarting nox.", $LOG_ERROR)
-                    RestartNox()
+                    
+                    Log_Add("AntiStuck: Stuck for " & $g_iRestartTime & " minutes, restarting game.", $LOG_ERROR)
+                    If RestartGame() = False Then RestartNox()
                     Log_Level_Remove()
                 EndIf
             EndIf
@@ -50,11 +65,6 @@ Func _Sleep($iDuration)
             $g_hTimerLocation = Null
             GUI_HANDLE()
         WEnd
-
-        If $g_bRunning = False Then 
-            $g_hTimerLocation = Null
-            Return True
-        EndIf
 
         GUI_HANDLE()
     WEnd
