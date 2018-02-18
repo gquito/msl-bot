@@ -34,7 +34,7 @@
 !bin/_src/scripts/sub/common.au3
 !bin/_src/scripts/sub/enterBattle.au3
 !bin/_src/scripts/sub/sellGems.au3
-!bin/_scr/scripts/sub/updateGuardians.au3
+!bin/_src/scripts/sub/updateGuardians.au3
 !bin/images/misc/misc-stone-x1.bmp
 !bin/images/misc/misc-stone-x2.bmp
 !bin/images/misc/misc-stone-x3.bmp
