@@ -70,6 +70,8 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 ### Changing Bot Config:
 **Step 1**: Change Emulator Title, Class and Instance according the the info provided by the AutoIt Window Info *Finder Tool*.
 
+*Note: If your title is 'Nox', you need to edit it to a different name such as NoxPlayer or Nox1. The bot will not be able to detect the instance if the title is 'Nox'.
+
 ![Title Class Instance](https://i.imgur.com/WDYfeJ3.png)
 
 ![Bot Config Emulator Settings](https://i.imgur.com/dicFkhe.png)
