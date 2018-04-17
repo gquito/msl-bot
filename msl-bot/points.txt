@@ -42,11 +42,11 @@ manage-sell-selected:670, 396
 manage-sell-confirm:382, 327
 play-again:529, 284
 battle-end-exit:400, 260
-dungeons-starstone:110, 241
-dungeons-elemental:110, 310
-dungeons-gold:110, 379
-dungeons-guardian:110, 447
-dungeons-special:110, 484
+dungeons-starstone:110, 175
+dungeons-elemental:110, 245
+dungeons-gold:110, 314
+dungeons-guardian:110, 381
+dungeons-special:110, 448
 get-reward:399, 333
 monsters-evolution:547, 394
 monsters-evolution-x:774, 112
