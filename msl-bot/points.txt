@@ -66,3 +66,5 @@ monsters-level-up:731, 139
 release:646, 456
 release-confirm:311, 331
 gold-dungeons-energy:651, 392
+astroleague-draw:729, 281
+astroleague-draw-confirm:327, 311
