@@ -63,3 +63,5 @@ friends-list:337, 126
 send-to-all:711, 171
 friends-astrogems:727, 229
 monsters-level-up:731, 139
+release:646, 456
+release-confirm:311, 331
