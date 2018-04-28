@@ -15,6 +15,13 @@
 	]
 	
 	[combo:
+		name: "Save Logs",
+		description: "Save log to file every hour.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
 		name: "Save Debug Log",
 		description: "Write debug type log to log file.",
 		default: "Disabled",
