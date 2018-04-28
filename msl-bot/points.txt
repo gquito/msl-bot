@@ -65,3 +65,4 @@ friends-astrogems:727, 229
 monsters-level-up:731, 139
 release:646, 456
 release-confirm:311, 331
+gold-dungeons-energy:651, 392
