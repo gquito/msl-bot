@@ -397,7 +397,7 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                     Else
                         ExitLoop
                     EndIf
-                Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons"
+                Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons"
                     If getLocation() = "map" Then
                         Local $t_hTimer = TimerInit()
                         While (isArray(getMapCoor("Phantom Forest")) = False) And (TimerDiff($t_hTimer) < 10000)
@@ -425,10 +425,6 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                                     $aDungeon = getArg($g_aPoints, "dungeons-starstone")
                                 Case "elemental-dungeons"
                                     $aDungeon = getArg($g_aPoints, "dungeons-elemental")
-                                Case "special-guardian-dungeons"
-                                    $aDungeon = getArg($g_aPoints, "dungeons-special")
-                                Case "gold-dungeons"
-                                    $aDungeon = getArg($g_aPoints, "dungeons-gold")
                             EndSwitch
 
                             ; Handles point offset when Lucian dungeon event is on-going.
