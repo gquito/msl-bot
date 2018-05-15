@@ -317,6 +317,8 @@ Func Start()
                     Log_Add("Successfully connected to device: " & $g_sAdbDevice)
                 EndIf
             EndIf
+
+            isAdbWorking()
         EndIf
 
         If ($g_iMouseMode = $MOUSE_REAL) Or ($g_iSwipeMode = $SWIPE_REAL) Then
@@ -419,20 +421,27 @@ Func Pause()
     EndIf
 EndFunc
 
+Func isGameRunning()
+    If isAdbWorking() = False Then Return True
+    Return StringInStr(adbCommand("shell ps | grep msleague | awk '{print $9}'"), "com.ftt.msleague_gl")
+EndFunc
+
 Func RestartGame()
     Log_Level_Add("RestartGame")
     Log_Add("Restarting game.")
     $bOutput = False
 
     While True
-        Local $hTimer ;Stores timerinit
-        If StringInStr(adbCommand("get-state"), "error") Then ExitLoop
+        Local $hTimer = TimerInit() ;Stores timerinit
+        If isAdbWorking() = False Then 
+            Log_Add("ADB Unavailable, could not restart game.", $LOG_ERROR)
+            ExitLoop
+        EndIf
 
-        Local $bGameRunning = StringInStr(adbCommand("shell ps | grep msleague | awk '{print $9}'"), "com.ftt.msleague_gl")
+        Local $bGameRunning = isGameRunning()
         If $bGameRunning = True Then
             Log_Add("Game is already running, killing current process.")
-            $hTimer = TimerInit()
-            While StringInStr(adbCommand("shell ps | grep msleague | awk '{print $9}'"), "com.ftt.msleague_gl")
+            While isGameRunning()
                 If _Sleep(2000) Or (TimerDiff($hTimer) > 120000) Then ExitLoop(2)
                 adbCommand("shell am force-stop com.ftt.msleague_gl")
             WEnd
@@ -440,7 +449,7 @@ Func RestartGame()
 
         ;Start game through ADB
         Log_Add("Starting game and waiting for main screen.")
-        While Not(StringInStr(adbCommand("shell ps | grep msleague | awk '{print $9}'"), "com.ftt.msleague_gl"))
+        While isGameRunning() = False
             If _Sleep(2000) Or (TimerDiff($hTimer) > 120000) Then ExitLoop(2)
             adbCommand("shell monkey -p com.ftt.msleague_gl -c android.intent.category.LAUNCHER 1")
         WEnd
@@ -509,7 +518,9 @@ Func RestartNox($iPID = WinGetProcess($g_hWindow), $bDebug = False)
         ExitLoop
     WEnd
 
+    isAdbWorking()
     navigate("map")
+
     Log_Add("Restarting nox result: " & $bOutput, $LOG_DEBUG)
     Log_Level_Remove()
     Return $bOutput
@@ -1057,7 +1068,7 @@ Func saveSettings(ByRef $aScripts, $sScript, $hListView, $sFilePath = $g_sProfil
         Local $sConfigData = ""
         For $i = 0 To UBound($t_aConfigs)-1
             Local $t_aConfig = $t_aConfigs[$i] ;[config, value, description]
-            $sConfigData &= @LF & $t_aConfig[0] & ':"' & $t_aConfig[1] & '"'
+            $sConfigData &= @CRLF & $t_aConfig[0] & ':"' & $t_aConfig[1] & '"'
         Next
         $sConfigData = StringMid($sConfigData, 2)
 
@@ -1090,6 +1101,7 @@ Func UpdateSettings()
     $g_sProfilePath = @ScriptDir & "\profiles\" & getArg($aConfig, "Profile_Name") & "\"
     Local $t_sAdbPath = getArg($aConfig, "ADB_Path")
     Local $t_sAdbDevice = getArg($aConfig, "ADB_Device")
+    Local $t_sAdbMethod = getArg($aConfig, "ADB_Method")
     Local $t_sEmuSharedFolder[2] = [getArg($aConfig, "ADB_Shared_Folder1"), getArg($aConfig, "ADB_Shared_Folder2")]
     Local $t_sWindowTitle = getArg($aConfig, "Emulator_Title")
     Local $t_sControlInstance = "[CLASS:" & getArg($aConfig, "Emulator_Class") & "; INSTANCE:" & getArg($aConfig, "Emulator_Instance") & "]"
@@ -1139,6 +1151,12 @@ Func UpdateSettings()
     Else 
         $g_sEmuSharedFolder[1] = $d_sEmuSharedFolder[1]
     EndIf
+
+    If Stringleft($t_sAdbMethod, 1) <> "~" Then
+        $g_sAdbMethod = $t_sAdbMethod
+    Else
+        $g_sAdbMethod = $d_sAdbMethod
+    EndIf 
 
     If StringLeft($t_sWindowTitle, 1) <> "~" Then 
         $g_sWindowTitle = $t_sWindowTitle

@@ -7,18 +7,19 @@ Func collectQuest()
 	Local $bOutput = False
 
 	While True
-		If navigate("quests", False) = True Then
+		If navigate("quests", False, 3) = True Then
 			;Locates quest notification indicating there is a quest available for collecting
+			CaptureRegion()
 			Local $aTab = findColor("747,116", "-600,1", 0xDA101B, 20, -1, 1) 
 
 			Local $hTimer = TimerInit()
 			While isArray($aTab)
-				If TimerDiff($hTimer) > 120000 Then ;2 minutes
+				If TimerDiff($hTimer) > 30000 Then 
 					Log_Add("Took too long to collect quests.", $LOG_ERROR)
 					ExitLoop(2)
 				EndIf
 
-				clickPoint($aTab, 3, 100)
+				clickPoint($aTab, 3, 50)
 				If $aTab[0] < 400 Then ;capture, challenges
 					clickPoint("729,190")
 				Else ;monthly, weekly, daily
@@ -29,7 +30,9 @@ Func collectQuest()
 				If _Sleep(500) Then ExitLoop(2)
 
 				If Not(getLocation() = "quests") Then
-					navigate("quests")
+					If closeWindow() = False Then
+						navigate("quests")
+					EndIf
 				EndIf
 
 				CaptureRegion()

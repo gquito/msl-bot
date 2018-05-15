@@ -20,9 +20,9 @@
         -6: Could not evo3.
         -7: Unknown
 #ce
-Func evolve($sAstromon, $bForceEvolve = False)
+Func evolve1($sAstromon, $bForceEvolve = False)
     Log_Level_Add("evolve")
-    Log_Add("Evolving astromon.")
+    Log_Add("Evolving astromon using algorithm 1.")
 
     Local $iOutput = -1
     While True
@@ -323,7 +323,7 @@ Func evolve($sAstromon, $bForceEvolve = False)
                         navigate("village")
                     Case -1 ;no gold.
                         Log_Add("Not enough gold.", $LOG_ERROR)
-                        $iOutput = 5
+                        $iOutput = -5
                         ExitLoop(2)
                 EndSwitch
             Else
@@ -360,9 +360,11 @@ Func evolve($sAstromon, $bForceEvolve = False)
                 CaptureRegion()
 
                 If _getEvolution() = 3 Then
-                    clickUntil("776,110", "isLocation", "monsters", 5, 100)
-                    If clickWhile("649, 513", "isLocation", "monsters,monsters-evolution", 10, 100) = True Then
-                        clickPoint("311, 331", 20, 200)
+                    If isPixel("399,129,0xE1BC87", 20) = True Then
+                        clickUntil("776,110", "isLocation", "monsters", 5, 100)
+                        If clickWhile(getArg($g_aPoints, "release"), "isLocation", "monsters,monsters-evolution", 10, 100) = True Then
+                            clickPoint(getArg($g_aPoints, "release-confirm"), 20, 200)
+                        EndIf
                     EndIf
                 EndIf
             Else
@@ -375,14 +377,317 @@ Func evolve($sAstromon, $bForceEvolve = False)
         ExitLoop
     WEnd
 
-    Log_Add("Evolving astromon result: " & $iOutput, $LOG_DEBUG)
+    Log_Add("Evolving astromon using algorithm 1 result: " & $iOutput, $LOG_DEBUG)
     Log_Level_Remove()
     Return $iOutput
 EndFunc
 
+;Function will return evolution of astromon in monsters screen.
+Func _getEvolution()
+    If isPixel("356,129,0xD9D5D0", 10) = True Then
+        Return 2
+    ElseIf isPixel("360,129,0xDDD9D4", 10) = True Then
+        Return 3
+    Else
+        Return 1
+    EndIf
+EndFunc
+
+;Function will return number of awakens in monsters-evolution screen.
+Func _getAwaken()
+    If isPixel("367,210,0x17FBF8", 10) = True Then
+        Return 3
+    ElseIf isPixel("363,210,0x14FEF8", 10) = True Then
+        Return 2
+    ElseIf isPixel("359,210,0x15FCF8", 10) = True Then
+        Return 1
+    Else
+        Return 0
+    EndIf
+EndFunc
+
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+
+
+Func evolve2()
+    Log_Level_Add("evolve")
+    Log_Add("Evolving astromon using algorithm 2.")
+
+    Local $aOut = [-1, ""]
+    While True
+        ;Defining variables
+        Local Const $aStart = [44, 149]     ; Starting position of first astromon on the grid.
+        Local Const $aDiff = [69, 75]       ; Pixel count difference between each astromon in grid.
+
+        Local $iEvo1 = 0 ; Number of Evo1 slimes.
+        Local $iEvo2 = 0 ; Numerb of Evo2 slimes.
+
+        $g_bLogEnabled = False
+        If navigate("monsters", True, 3) = False Then
+            $aOut[1] = "Could not navigate to monsters."
+            ExitLoop
+        EndIf
+        $g_bLogEnabled = True
+
+        ; If Evo2 slimes is insufficient for evo3, tries to use evo1 slimes. 
+        ; Uses 4 evo1 slimes at a time. If there are no more evo1 slimes and we still
+        ; need evo2 slimes, it will return number of evo1 slimes needed for farming.
+        alignMonsters()
+        $iEvo2 = countEvo2Slime()
+        Log_Add("Evo2 Count: " & $iEvo2)
+
+        If $iEvo2 < 4 Then
+            Log_Add("Not enough evo2 to make an evo3.")
+
+            While (4-$iEvo2) > 0
+                Log_Add("Number of evo2 needed: " & (4-$iEvo2))
+
+                $g_bLogEnabled = False
+                If navigate("monsters", True, 3) = False Then
+                    $aOut[1] = "Could not navigate to monsters."
+                    ExitLoop
+                EndIf
+                $g_bLogEnabled = True
+
+                alignMonsters()
+                $iEvo1 = countEvo1Slime()
+
+                If $iEvo1 >= 4 Then
+                    Log_Add("Evolving evo1 astromon.")
+
+                    clickPoint($aStart[0]+($aDiff[0]*$g_vExtended[0]) & "," & $aStart[1]+($aDiff[1]*$g_vExtended[1]), 3, 50, Null)
+                    clickUntil(getArg($g_aPoints, "monsters-evolution"), "isLocation", "monsters-evolution", 5, 500)
+
+                    If _awaken() = True Then
+                        Local $iMergeResult = _merge()
+                        If $iMergeResult = 1 Then       ; Success
+                            $iEvo2 += 1
+                        ElseIf $iMergeResult = 0 Then   ; Failure
+                            $g_bLogEnabled = False
+                            navigate("monsters", True, 2)
+                            $g_bLogEnabled = True
+                        Else                            ; No Gold
+                            $aOut[0] = -2
+                            $aOut[1] = "Not enough gold."
+                            ExitLoop(2)
+                        EndIf
+                    Else
+                        $g_bLogEnabled = False
+                        navigate("monsters", True, 2)
+                        $g_bLogEnabled = True
+                    EndIf
+
+                Else
+                    ; Returning number of evo1 needed
+                    $aOut[0] = 4*(4-$iEvo2) - $iEvo1
+                    Log_Add("Need " & $aOut[0] & " astromons for an evo3.")
+                    ExitLoop(2)
+                EndIf
+
+                If _Sleep(0) Then ExitLoop(2)
+                If (4-$iEvo2) > 0 Then 
+                    Log_Add("Collecting quest rewards.")
+                    $g_bLogEnabled = False
+                    collectQuest()
+                    $g_bLogEnabled = True
+                EndIf
+            WEnd
+        EndIf
+
+        ; Assuming all is well, the user should have at least 4 evo2 here.
+        ; Bot will awaken and evolve the evo2s into an evo3 and proceed to release the evo3.
+        Log_Add("Evolving astromons to evo3.")
+
+        $g_bLogEnabled = False
+        If navigate("monsters", True, 3) = False Then
+            $aOut[1] = "Could not navigate to monsters."
+            ExitLoop
+        EndIf
+        $g_bLogEnabled = True
+
+        alignMonsters()
+        $iEvo2 = countEvo2Slime()
+
+        If $iEvo2 < 4 Then
+            $aOut[1] = "Not enough evo2 astromons to make an evo3."
+            ExitLoop
+        EndIf
+
+        ; g_vExtended should have an array of a single astromon position from the countEvo2Slime() function.
+        ; Using that we can select the correct astromon to evo3.
+        clickPoint($aStart[0]+($aDiff[0]*$g_vExtended[0]) & "," & $aStart[1]+($aDiff[1]*$g_vExtended[1]), 3, 50, Null)
+        clickUntil(getArg($g_aPoints, "monsters-evolution"), "isLocation", "monsters-evolution", 5, 500)
+
+        If _awaken() = True Then
+            Local $iMergeResult = _merge()
+            If $iMergeResult = 1 Then       ; Success
+                $aOut[0] = 0
+                $aOut[1] = "Successfully evolved astromon to evo3."
+            ElseIf $iMergeResult = 0 Then   ; Failure
+                $aOut[1] = "Could not evolve astromons to evo3."
+                ExitLoop
+            Else                            ; No Gold
+                $aOut[0] = -2
+                $aOut[1] = "Not enough gold."
+                ExitLoop
+            EndIf
+        Else
+            $g_bLogEnabled = False
+            navigate("monsters", True, 2)
+            $g_bLogEnabled = True
+        EndIf
+
+        ; Assuming all is well, this section should only trigger when successfully evolved an evo3.
+        ; Release and collect quest.
+        Log_Add("Cleaning up evo3 slime.")
+        $g_bLogEnabled = False
+        navigate("monsters", True, 3)
+        $g_bLogEnabled = True
+        
+        If _getEvolution() = 3 Then
+            If isPixel("399,129,0xE1BC87", 20) = True Then
+                clickUntil("776,110", "isLocation", "monsters", 5, 100)
+                If clickWhile(getArg($g_aPoints, "release"), "isLocation", "monsters,monsters-evolution", 10, 100) = True Then
+                    clickPoint(getArg($g_aPoints, "release-confirm"), 20, 200)
+                EndIf
+            EndIf
+        EndIf
+
+        Log_Add("Collecting quest rewards.")
+        $g_bLogEnabled = False
+        collectQuest()
+        $g_bLogEnabled = True
+
+        ExitLoop
+    WEnd
+
+    Log_Add("Evolving astromon using algorithm 2 result: " & $aOut[0], $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $aOut
+EndFunc
+
+;Only available for blue/green slimes
+Func countEvo1Slime()
+    Local $aFirst = [44, 145]   ; First pixel of the slime on the first astromon slot.
+    Local $aSecond = [65, 146]  ; Second pixel of the slime on the first astromon slot.
+    Local $aThird = [44, 147]   ; Third pixel of the slime on the first astromons slot.
+
+    Local $iCount = 0           ; Number of astromons.
+    Local $cPixel = 0xEAF7F7    ; Highlight color of the eyes of the slime
+    Local $cPixel3 = 0x2E1D1D   ; A dark color under the highlights of the slime.
+
+    Local $foundAwakened = False
+
+    CaptureRegion()
+    If StringInStr(getLocation($g_aLocations, False), "monsters") = False Then Return 0
+
+    For $x = 0 To 3
+        For $y = 0 To 3
+            If isPixel($aFirst[0]+(69*$x) & "," & $aFirst[1]+(75*$y) & "," & $cPixel, 30) = True Then
+                If isPixel($aSecond[0]+(69*$x) & "," & $aSecond[1]+(75*$y) & "," & $cPixel, 30) = True Then
+                    If isPixel($aThird[0]+(69*$x) & "," & $aThird[1]+(75*$y) & "," & $cPixel3, 30) = True Then
+                        If isPixel("55,178,0x16FFFD", 30) = True Then
+                            $foundAwakened = True
+                            $iCount += 3
+                            
+                            Local $aExt = [$x, $y]
+                            $g_vExtended = $aExt 
+                        EndIf
+                        
+                        If $foundAwakened = False Then 
+                            Local $aExt = [$x, $y]
+                            $g_vExtended = $aExt   
+                        EndIf
+
+                        $iCount += 1
+                    EndIf
+                EndIf
+            EndIf
+        Next
+    Next
+
+    Return $iCount
+EndFunc
+
+Func countEvo2Slime()
+    ; Blue slime pixel positions
+    Local $aFirst = [44, 149]   ; First pixel of the slime on the first astromon slot.
+    Local $aSecond = [65, 151]  ; Second pixel of the slime on the first astromon slot.
+    Local $aThird = [44, 152]   ; Third pixel of the slime on the first astromon slot.
+
+    ; Green slime pixel positions
+    Local $aFourth = [46, 146]  ; First pixel of the slime on the first astromon slot.
+    Local $aFifth = [65, 148]   ; Second pixel of the slime on the first astromon slot.
+    Local $aSixth = [46, 149]   ; Third pixel of the slime on the first astromon slot.
+
+    Local $iCount = 0           ; Number of astromons.
+    Local $cPixel1 = 0xCBDCE8   ; Highlight for the blue slime eyes.
+    Local $cPixel4 = 0xE9E9E9   ; Highlight for the green slime eyes.
+    Local $cPixel3 = 0x463939   ; Black pixel under eyes of blue slimes.
+    Local $cPixel6 = 0x453434   ; Black pixel under eyes of green slimes.
+
+    Local $foundAwakened = False
+
+    CaptureRegion()
+    If StringInStr(getLocation($g_aLocations, False), "monsters") = False Then Return 0
+
+    For $x = 0 To 3
+        For $y = 0 To 3
+            If isPixel($aFirst[0]+(69*$x) & "," & $aFirst[1]+(75*$y) & "," & $cPixel1, 30) = True Then
+                If isPixel($aSecond[0]+(69*$x) & "," & $aSecond[1]+(75*$y) & "," & $cPixel1, 30) = True Then
+                    If isPixel($aThird[0]+(69*$x) & "," & $aThird[1]+(75*$y) & "," & $cPixel3, 30) = True Then
+                        If isPixel("55,178,0x16FFFD", 30) = True Then
+                            $foundAwakened = True
+                            $iCount += 3
+
+                            Local $aExt = [$x, $y]
+                            $g_vExtended = $aExt 
+                        EndIf
+                        
+                        If $foundAwakened = False Then 
+                            Local $aExt = [$x, $y]
+                            $g_vExtended = $aExt   
+                        EndIf
+
+
+                        $iCount += 1
+                        ContinueLoop
+                    EndIf
+                EndIf
+            EndIf
+
+            If isPixel($aFourth[0]+(69*$x) & "," & $aFourth[1]+(75*$y) & "," & $cPixel4, 30) = True Then
+                If isPixel($aFifth[0]+(69*$x) & "," & $aFifth[1]+(75*$y) & "," & $cPixel4, 30) = True Then
+                    If isPixel($aSixth[0]+(69*$x) & "," & $aSixth[1]+(75*$y) & "," & $cPixel6, 30) = True Then
+                        Local $aExt = [$x, $y]
+                        $g_vExtended = $aExt
+                        
+                        $iCount += 1
+                    EndIf
+                EndIf
+            EndIf
+        Next
+    Next
+
+    Return $iCount
+EndFunc
+
+Func alignMonsters()
+    Local $aReset = [250, 150, 250, 300]
+    clickDrag($aReset)
+    If _Sleep(500) Then Return 0
+EndFunc
+
 #cs
     Function: In monsters-evolution location, will select the three astromons to fulfill a complete evolution. Note: Will not merge astromons, just select; this is handled in _merge() function.
-    Returns: If successfully selected then returns true; otherwise, returns false.
+    Returns: If successfully selected then returns true
 #ce
 Func _awaken()
     Local $t_hTimer = TimerInit()
@@ -414,22 +719,29 @@ EndFunc
 #ce
 Func _merge()
     Local $t_hTimer = TimerInit()
+    CaptureRegion()
     While getLocation() = "monsters-evolution"
-        If _Sleep(10) Then Return False
+        If _Sleep(0) Then Return False
         If TimerDiff($t_hTimer) > 60000 Then Return False
+
         Switch getLocation($g_aLocations, False)
             Case "buy-gold", "buy-gem"
                 Return -1
         EndSwitch
 
         If isPixel("425,394,0xF5E448", 10) = True Then ;The awaken pixel
-            If clickUntil("425,395", "isLocation", "monsters-awaken", 10, 100) = True Then
-                clickPoint("303,312", 10, 200) ;awaken/evolve confirm
+            If clickUntil("425,395", "isLocation", "monsters-awaken", 10, 200, Null) = True Then
+                Local $iCount = 0
+                While (isPixel("656,393,0xFCF662", 10) = False) And ($iCount < 3)
+                    $iCount += 1
+                    clickPoint("303,312", 3, 200, Null) ;awaken/evolve confirm
+                    CaptureRegion()
+                WEnd
             EndIf
         Else
             If isPixel("657,395,0xEBC83D", 10) = True Then
-                If clickUntil("656,394", "isLocation", "monsters-evolve", 10, 100) = True Then
-                    If clickUntil("303,312", "isLocation", "unknown", 10, 200) Then ;awaken/evolve confirm
+                If clickUntil("656,394", "isLocation", "monsters-evolve", 10, 200, Null) = True Then
+                    If clickUntil("303,312", "isLocation", "unknown", 10, 200, Null) Then ;awaken/evolve confirm
                         clickUntil(getArg($g_aPoints, "tap"), "isLocation", "monsters-astromon", 20, 500)
                     EndIf 
                 EndIf
@@ -438,28 +750,4 @@ Func _merge()
     WEnd
 
     Return True
-EndFunc
-
-;Function will return evolution of astromon in monsters screen.
-Func _getEvolution()
-    If isPixel("356,129,0xD9D5D0", 10) = True Then
-        Return 2
-    ElseIf isPixel("360,129,0xDDD9D4", 10) = True Then
-        Return 3
-    Else
-        Return 1
-    EndIf
-EndFunc
-
-;Function will return number of awakens in monsters-evolution screen.
-Func _getAwaken()
-    If isPixel("367,210,0x17FBF8", 10) = True Then
-        Return 3
-    ElseIf isPixel("363,210,0x14FEF8", 10) = True Then
-        Return 2
-    ElseIf isPixel("359,210,0x15FCF8", 10) = True Then
-        Return 1
-    Else
-        Return 0
-    EndIf
 EndFunc

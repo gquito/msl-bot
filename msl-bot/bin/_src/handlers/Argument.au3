@@ -74,7 +74,7 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 				Switch $sChar
 					Case $sArgSeparator, '"'
 						$g_sErrorMessage = "formatArgs() => Invalid character in argument name."
-						Return -1
+						Return -2
 					Case $sValueSeparator
 						$bName = True
 					Case " "
@@ -112,7 +112,7 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 		
 		If $bQuoted = True Then ;No closing quote
 			$g_sErrorMessage = "formatArgs() => Quote has not been closed."
-			Return -1
+			Return -3
 		EndIf
 
 		;Adds last argument
@@ -156,7 +156,19 @@ Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":", $sCache
 		Return -1
 	EndIf
 
-	$sData = StringReplace($sData, @LF, $sArgSeparator)
+	$sData = StringReplace(StringStripCR($sData), @LF, $sArgSeparator)
+
+	While StringLeft($sData, 1) = $sArgSeparator
+		$sData = StringMid($sData, 2)
+	WEnd
+
+	While StringRight($sData, 1) = $sArgSeparator
+		$sData = StringMid($sData, 1, StringLen($sData)-1)
+	WEnd
+
+	While StringInStr($sData, $sArgSeparator & $sArgSeparator)
+		$sData = StringReplace($sData, $sArgSeparator & $sArgSeparator, $sArgSeparator)
+	WEnd
 
 	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
 EndFunc
@@ -176,8 +188,19 @@ Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
 		Return -1
 	EndIf
 
-	$sData = StringReplace($sData, @LF, $sArgSeparator)
+	$sData = StringReplace(StringStripCR($sData), @LF, $sArgSeparator)
+	While StringLeft($sData, 1) = $sArgSeparator
+		$sData = StringMid($sData, 2)
+	WEnd
 
+	While StringRight($sData, 1) = $sArgSeparator
+		$sData = StringMid($sData, 1, StringLen($sData)-1)
+	WEnd
+
+	While StringInStr($sData, $sArgSeparator & $sArgSeparator)
+		$sData = StringReplace($sData, $sArgSeparator & $sArgSeparator, $sArgSeparator)
+	WEnd
+	
 	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
 EndFunc
 

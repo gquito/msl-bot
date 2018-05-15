@@ -27,13 +27,25 @@ Func adbCommand($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
     Return $sResult
 EndFunc
 
-Func adbSendESC($sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
-    If isDeclared("sEvent") = 0 Then
-        Static $sEvent = getEvent()
-    EndIf
+Func isAdbWorking()
+    Local $bStatus = (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False)
+    Log_Add("Checking ADB status: " & $bStatus, $LOG_DEBUG)
+    $g_bAdbWorking = $bStatus
+    
+    Return $bStatus
+EndFunc
 
-    Local $aTCV = ["1 158 1", "0 0 0", "1 158 0", "0 0 0"]
-    Return adbCommand("shell " & sendEvent($sEvent, $aTCV), $sAdbDevice, $sAdbPath)
+Func adbSendESC($sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+    If $g_sAdbMethod = "input event" Then
+        Return adbCommand("shell input keyevent ESCAPE")
+    Else
+        If isDeclared("sEvent") = 0 Then
+            Static $sEvent = getEvent()
+        EndIf
+
+        Local $aTCV = ["1 158 1", "0 0 0", "1 158 0", "0 0 0"]
+        Return adbCommand("shell " & sendEvent($sEvent, $aTCV), $sAdbDevice, $sAdbPath)
+    EndIf
 EndFunc
 
 Func getEvent($sGetEvent = adbCommand("shell getevent -p"))
@@ -193,13 +205,16 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
                 ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0], $aNewPoint[1]) ;For simulated clicks
             ElseIf $iMouseMode = $MOUSE_ADB Then
                 ;clicks using adb commands
-                If isDeclared("sEvent") = 0 Then
-                    Static $sEvent = getEvent()
-                EndIf
                 Log_Add("Click point: " & _ArrayToString($aNewPoint), $LOG_DEBUG)
-
-                Local $aTCV = ["0 0 0", "1 330 1", "3 58 1", "3 53 " & $aNewPoint[0], "3 54 " & $aNewPoint[1], "0 2 0", "0 0 0", "0 2 0", "0 0 0", "1 330 0", "3 58 0", "3 53 0", "3 54 32", "0 2 0", "0 0 0"]
-                adbCommand("shell " & sendEvent($sEvent, $aTCV))
+                If $g_sAdbMethod = "input event" Then
+                    adbCommand("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
+                Else
+                    If isDeclared("sEvent") = 0 Then
+                        Static $sEvent = getEvent()
+                    EndIf
+                    Local $aTCV = ["0 0 0", "1 330 1", "3 58 1", "3 53 " & $aNewPoint[0], "3 54 " & $aNewPoint[1], "0 2 0", "0 0 0", "0 2 0", "0 0 0", "1 330 0", "3 58 0", "3 53 0", "3 54 32", "0 2 0", "0 0 0"]
+                    adbCommand("shell " & sendEvent($sEvent, $aTCV))
+                EndIf
             Else
                 Log_Add("Invalid mouse mode: " & $iMouseMode, $LOG_ERROR)
                 $g_sErrorMessage = "clickPoint() => Invalid mouse mode: " & $iMouseMode

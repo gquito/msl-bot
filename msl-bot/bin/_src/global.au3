@@ -20,6 +20,7 @@
     Global $g_hBitmap = Null ;GDIPlus bitmap handle.
     Global $g_hWindow = Null ;Handle for emulator window
     Global $g_hControl = Null ;Handle for control window
+    Global $g_bAdbWorking = False ;If ADB is available for client.
 
 ;Config variables
     Global $g_sImageSearchPath = @TempDir & "\ImageSearchDLL.dll" ;ImageSearchDLL default path
@@ -28,6 +29,7 @@
     Global $g_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
     Global $g_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox
     Global $g_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
+    Global $g_sAdbMethod = "input event" ;Method to send clicks and keypresses to the ADB.
     Global $g_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
     Global $g_iBackgroundMode = $BKGD_ADB ;Type of background
     Global $g_iMouseMode = $MOUSE_ADB ;Type of mouse control
@@ -42,6 +44,7 @@
     Global $d_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
     Global $d_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox
     Global $d_sAdbPath = "C:\Program Files (x86)\Nox\bin\nox_adb.exe" ;Android adb executable. Default for nox
+    Global $d_sAdbMethod = "input event" ;Method to send clicks and keypresses to the ADB.
     Global $d_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
     Global $d_iBackgroundMode = $BKGD_ADB ;Type of background
     Global $d_iMouseMode = $MOUSE_ADB ;Type of mouse control

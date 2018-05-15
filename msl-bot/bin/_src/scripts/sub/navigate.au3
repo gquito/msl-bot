@@ -47,7 +47,7 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                         Local $t_sLoc = ""
 
                         While $t_sLoc <> "pause" And $t_sLoc <> "battle"
-                            adbSendESC()
+                            If $g_bAdbWorking Then adbSendESC()
                             If _Sleep(50) Then ExitLoop(2)
 
                             CaptureRegion()
@@ -138,12 +138,14 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                                             clickPoint(getArg($g_aPoints, "back"))
                                         Else
                                             ;Tries ADB send keyevent escape
-                                            If TimerDiff($t_hTimer) > 10000 Then
-                                                If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
-                                                    adbSendESC()
-                                                EndIf
+                                            If (TimerDiff($t_hTimer) > 10000) And ($g_bAdbWorking = True) Then
+                                                adbSendESC()
 
                                                 If _Sleep(500) Then ExitLoop(2)
+                                                If getLocation() = "quit" Then
+                                                    closeWindow()
+                                                    ContinueLoop(2)
+                                                EndIf
                                             EndIf
 
                                             ;Usually stuck in place with an in game window and an Exit button for the window.
@@ -194,12 +196,14 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                                             clickPoint(getArg($g_aPoints, "back"))
                                         Else
                                             ;Tries ADB send keyevent escape
-                                            If TimerDiff($t_hTimer) > 10000 Then
-                                                If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then
-                                                    adbSendESC()
-                                                EndIf
+                                            If (TimerDiff($t_hTimer) > 10000) And ($g_bAdbWorking = True) Then
+                                                adbSendESC()
 
                                                 If _Sleep(500) Then ExitLoop(2)
+                                                If getLocation() = "quit" Then
+                                                    closeWindow()
+                                                    ContinueLoop(2)
+                                                EndIf
                                             EndIf
 
                                             ;Usually stuck in place with an in game window and an Exit button for the window.
@@ -332,7 +336,7 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                     EndSwitch
 
                     If $t_sCurrLocation <> "village" Then
-                        If navigate("village", False) = False Then
+                        If navigate("village", $bForceSurrender) = False Then
                             ExitLoop
                         EndIf
                     EndIf
@@ -393,7 +397,7 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                     Else
                         ExitLoop
                     EndIf
-                Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons"
+                Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons"
                     If getLocation() = "map" Then
                         Local $t_hTimer = TimerInit()
                         While (isArray(getMapCoor("Phantom Forest")) = False) And (TimerDiff($t_hTimer) < 10000)
@@ -411,6 +415,8 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                     If isArray($aPoint) = True Then
 
                     If clickWhile($aPoint, "isLocation", "map", 50, 200) = True Then
+                            clickUntil(getArg($g_aPoints, "dungeons-starstone"), "isLocation", "extra-dungeons,starstone-dungeons")
+
                             Local $aDungeon = Null ;Will contain the points for the dungeon
                             Switch $sLocation
                                 Case "guardian-dungeons"
@@ -419,7 +425,17 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                                     $aDungeon = getArg($g_aPoints, "dungeons-starstone")
                                 Case "elemental-dungeons"
                                     $aDungeon = getArg($g_aPoints, "dungeons-elemental")
+                                Case "special-guardian-dungeons"
+                                    $aDungeon = getArg($g_aPoints, "dungeons-special")
+                                Case "gold-dungeons"
+                                    $aDungeon = getArg($g_aPoints, "dungeons-gold")
                             EndSwitch
+
+                            ; Handles point offset when Lucian dungeon event is on-going.
+                            If getLocation() = "extra-dungeons" Then
+                                $aDungeon = StringSplit(StringStripWS($aDungeon, $STR_STRIPALL), ",", $STR_NOCOUNT)
+                                $aDungeon[1] += 64
+                            EndIf
 
                             $bResult = clickUntil($aDungeon, "isLocation", $sLocation, 10, 200)
                             If $bResult = True Then

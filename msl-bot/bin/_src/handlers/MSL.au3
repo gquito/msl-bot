@@ -186,11 +186,19 @@ Func setLocation($sLocation, $aData = Null)
 	$sNewPixels = StringMid($sNewPixels, 2)
 
 	Local $hFile = FileOpen($g_sLocationsLocal, $FO_APPEND+$FO_CREATEPATH)
-	Local $bOutput = (FileWriteLine($hFile, $sLocation & ":" & $sNewPixels) = 1)
+	Local $bOutput = (FileWrite($hFile, @CRLF & $sLocation & ":" & $sNewPixels) = 1)
 	FileClose($hFile)
 
-	Log_Add("You must restart for the new location to take effect.", $LOG_INFORMATION)
+	mergeArgFromTo(getArgsFromFile($g_sLocationsLocal, ">", ":"), $g_aLocations, "/")
 	Return $bOutput
+EndFunc
+
+; Calls getLocation() in .2 second intervals until debug stopped.
+Func testLocation()
+	While Not(_Sleep(200))
+		CaptureRegion()
+		Log_Add(getLocation($g_aLocations, False))
+	WEnd
 EndFunc
 
 #cs
@@ -285,4 +293,39 @@ Func skipDialogue()
 	WEnd
 
 	Return True
+EndFunc
+
+Func SetupKeymap()
+	Log_Add("Right click the keymap icon...")
+	While _IsPressed(02) = False
+		If _Sleep(10) Then Return -1
+	WEnd
+
+	;Left keymap
+	setLog("Setting up left keymap...")
+	Local $initialPos = MouseGetPos()
+
+	MouseClickDrag("Left", $initialPos[0]-224, $initialPos[1]+202, $initialPos[0]-495, $initialPos[1]+341, 10)
+	Send("{LEFT}")
+
+	;Right keymap
+	setLog("Setting up right keymap...")
+
+	MouseClickDrag("Left", $initialPos[0]-620, $initialPos[1]+306, $initialPos[0]-483, $initialPos[1]+206, 10)
+	Send("{RIGHT}")
+
+	;Up keymap
+	setLog("Setting up up keymap...")
+
+	MouseClickDrag("Left", $initialPos[0]-386, $initialPos[1]+313, $initialPos[0]-386, $initialPos[1]+241, 10)
+	Send("{UP}")
+	MouseClickDrag("Left", $initialPos[0]-386, $initialPos[1]+241, $initialPos[0]-600, $initialPos[1]+241, 10)
+
+	;Down keymap
+	setLog("Setting up down keymap...")
+
+	MouseClickDrag("Left", $initialPos[0]-386, $initialPos[1]+241, $initialPos[0]-386, $initialPos[1]+313, 10)
+	Send("{DOWN}")
+
+	Log_Add("Setup complete.")
 EndFunc

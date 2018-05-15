@@ -1,4 +1,5 @@
 _Hourly
+_General
 _Filter
 Farm Rare
 Farm Golem

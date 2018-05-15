@@ -54,23 +54,51 @@ Func Farm_Gem($Gems_To_Farm, $Catch_Image, $Astromon, $Finish_Round, $Final_Roun
 
         ;Handles evolving process
         Data_Set("Status", "Evolving astromon.")
-        $vResult = evolve($Astromon, True)
-        Switch $vResult
-            Case -1, -2, -3, -4, -6 ;Normal errors.
-                Log_Add("Could not evolve, error code: " & $vResult, $LOG_ERROR)
-                Data_Increment("Error", 1)
-                If Data_Get("Error") > 5 Then 
-                    Log_Add("Too many errors has occurred.", $LOG_ERROR)
+        Local $aGeneral = formatArgs(getScriptData($g_aScripts, "_General")[2])
+        Local $sAlgorithm = getArg($aGeneral, "Evolve_Algorithm")
+        
+        If $sAlgorithm = "Algorithm 2" And $Astromon <> "Slime" Then
+            Log_Add("Unable to use algorithm 2 because it will only work on Slimes.", $LOG_ERROR)
+            Log_Add("Switching to alogirthm 1.", $LOG_ERROR)
+
+            $sAlgorithm = "Algorithm 1"
+        EndIf
+
+        If $sAlgorithm = "Algorithm 1" Then
+            $vResult = evolve1($Astromon, True)
+            Switch $vResult
+                Case -1, -2, -3, -4, -6 ;Normal errors.
+                    Log_Add("Could not evolve, error code: " & $vResult, $LOG_ERROR)
+                    Data_Increment("Error", 1)
+                    If Data_Get("Error") > 5 Then 
+                        Log_Add("Too many errors has occurred.", $LOG_ERROR)
+                        ExitLoop
+                    EndIf
+                Case -5 ;No currency.
+                    Log_Add("Not enough gold to procceed.", $LOG_ERROR)
                     ExitLoop
-                EndIf
-            Case -5 ;No currency.
-                Log_Add("Not enough gold to procceed.", $LOG_ERROR)
-                ExitLoop
-            Case Else ;Success
-                If $vResult = 0 Then Data_Increment("Farmed Gems", 100)
+                Case Else ;Success
+                    If $vResult = 0 Then Data_Increment("Farmed Gems", 100)
+                    Log_Add("Farmed Gems " & Data_Get("Farmed Gems"), $LOG_INFORMATION)
+                    Data_Increment("Need Catch", $vResult)
+            EndSwitch
+
+        ElseIf  $sAlgorithm = "Algorithm 2" Then
+            $aResult = evolve2() ;Result: [CODE, MESSAGE]
+            If $aResult[0] = 0 Then         ; Success
+                Log_Add($aResult[1])
+                Data_Increment("Farmed Gems", 100)
                 Log_Add("Farmed Gems " & Data_Get("Farmed Gems"), $LOG_INFORMATION)
-                Data_Increment("Need Catch", $vResult)
-        EndSwitch
+
+            ElseIf $aResult[0] = -1 Then    ; Error
+                Log_Add($aResult[1])
+            ElseIf $aResult[0] = -2 Then    ; Not enough gold
+                Log_Add($aResult[1])
+                ExitLoop
+            Else                            ; Not enough astromons
+                Data_Increment("Need Catch", $aResult[0])
+            EndIf
+        EndIf
     WEnd
 
     ;End script

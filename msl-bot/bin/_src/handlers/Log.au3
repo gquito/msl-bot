@@ -106,6 +106,8 @@ Func Log_Display_Reset($sFilter = $g_sLogFilter, $hListView = $hLV_Log)
 Endfunc
 
 Func Log_Save(ByRef $aLog, $sProfileName = getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Profile_Name"), $bClear = False)
+    If getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Save_Logs") = "Disabled" Then Return False
+
     ;Defining variables
     Local $iSize = UBound($aLog)
     If $iSize = 0 Then Return 0

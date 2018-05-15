@@ -65,7 +65,7 @@ Func catch($aImages, ByRef $iAstrochips)
 
             ;In catch process
             $iAstrochips -= 1
-            If (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False) Then ;speed catch
+            If $g_bAdbWorking = True Then ;speed catch
                 Log_Add("Double ESCAPE for quick catch.")
                 adbSendESC()
                 adbSendESC()

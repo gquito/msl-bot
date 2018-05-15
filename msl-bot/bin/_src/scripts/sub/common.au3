@@ -92,6 +92,10 @@ Func Common_Hourly(ByRef $sLocation)
     EndIf
 EndFunc
 
+Func Common_Schedule(ByRef $sLocation)
+    
+EndFunc
+
 #cs 
     Function: Prevents getting stuck at an unknown/unspecified location for a script.
     Parameter: Reference to current location of the script.
@@ -157,6 +161,11 @@ Func Common_Stuck(ByRef $sLocation)
                         If navigate("map", True) = False Then
                             $sLocation = getLocation()
                             Log_Add("Stuck at an unspecified location.", $LOG_ERROR)
+
+                            If isGameRunning() = False Then
+                                Log_Add("The game is not running.", $LOG_ERROR)
+                                If RestartGame() = False Then RestartNox()
+                            EndIf
                         EndIf
                     EndIf
                     If Data_Get("Common Stuck Timer") <> "Null" Then Data_Set("Common Stuck Timer", "Null")
