@@ -226,6 +226,16 @@
 	]
 ]
 
+[_General:
+	[description: "General settings for certain algorithms."]
+
+	[combo:
+		name: "Evolve Algorithm",
+		description: "Algorithm 1 (Slower): Will check the 20 astromons on the recents monsters and find out the correct amount of astromons|||Algorithm 2 (Faster): Only works on slime.",
+		default: "Algorithm 1",
+		data: "Algorithm 1,Algorithm 2"
+	]
+]
 
 [Farm_Rare:
 	[description: "Attacks a story map and catches rare astromons. Can be used for leveling monsters or farming for materials. You must set your astromons before starting the script."]
