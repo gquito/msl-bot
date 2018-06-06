@@ -58,7 +58,7 @@ bingo-icon:79, 87
 bingo-button:600, 346
 bingo-reward:448, 331
 tab-expand:6, 247
-tab-friends:95, 145
+tab-friends:96, 204
 friends-list:337, 126
 send-to-all:711, 171
 friends-astrogems:727, 229
