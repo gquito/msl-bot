@@ -47,8 +47,9 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 ![Resolution](https://i.imgur.com/tlirVWL.png)
 
 **Step 3**: Change Graphics Rendering mode according to Windows version. Check by pressing `Win+R` and typing **winver**.
-  - Version 1709 **OpenGL**.
-  - Other versions require **DirectX**.
+  - Version 1709 require **OpenGL**.
+  - Lower versions require **DirectX**.
+  - Versions greater than 1709 could probably use both.
 
 ![Windows version 1709](https://i.imgur.com/acU6Al9.png)
 
@@ -70,7 +71,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 ### Changing Bot Config:
 **Step 1**: Change Emulator Title, Class and Instance according the the info provided by the AutoIt Window Info *Finder Tool*.
 
-*Note: The title of your Nox window should have greater than 3 characters. 'Nox' or 'MSL' will not work.
+*Note: The title of your Nox window should have greater than 3 characters. 'Nox' or 'MSL' will not work. 'NoxPlayer' or 'Nox1' works.
 
 ![Title Class Instance](https://i.imgur.com/WDYfeJ3.png)
 
