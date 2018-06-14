@@ -47,7 +47,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 ![Resolution](https://i.imgur.com/tlirVWL.png)
 
 **Step 3**: Change Graphics Rendering mode according to Windows version. Check by pressing `Win+R` and typing **winver**.
-  - Version 1709 require **OpenGL**.
+  - Version 1709 and above require **OpenGL**.
   - Other versions require **DirectX**.
 
 ![Windows version 1709](https://i.imgur.com/acU6Al9.png)
