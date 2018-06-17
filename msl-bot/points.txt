@@ -40,6 +40,7 @@ manage-grade3:402, 389
 manage-grade4:440, 389
 manage-sell-selected:670, 396
 manage-sell-confirm:382, 327
+manage-x:773, 113
 play-again:529, 284
 battle-end-exit:400, 260
 dungeons-starstone:110, 175
