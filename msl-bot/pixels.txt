@@ -34,3 +34,4 @@ stone-light-high:396,165,0xF6FFFF|403,152,0xFFF22A|396,175,0x77D4C7
 astroleague-free:739,173,0x33BBB0
 gold-dungeons-attempt:645,237,0xFFF109
 bingo-accept-all:546,336,0x0C807E
+bingo-get-rewards:424,423,0x0C817E
