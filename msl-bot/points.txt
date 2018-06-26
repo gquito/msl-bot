@@ -69,3 +69,4 @@ release-confirm:311, 331
 gold-dungeons-energy:651, 392
 astroleague-draw:729, 281
 astroleague-draw-confirm:327, 311
+astroleague-exit:307, 271
