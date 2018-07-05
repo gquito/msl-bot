@@ -8,6 +8,7 @@ battle-end-map:399, 386
 battle-end-monsters:466, 385
 dialogue-skip:756, 23
 village-play:710, 507
+golem-dungeons-top:624, 180
 golem-dungeons-b7:624, 213
 golem-dungeons-b8:624, 286
 golem-dungeons-b9:624, 361
