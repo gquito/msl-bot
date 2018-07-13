@@ -35,4 +35,4 @@ astroleague-free:739,173,0x33BBB0
 gold-dungeons-attempt:645,237,0xFFF109
 bingo-accept-all:546,336,0x0C807E
 bingo-get-rewards:424,423,0x0C817E
-map-battle-autobattle-on:751,305,0x49B5FF
+map-battle-autofill-on:751,305,0x49B5FF
