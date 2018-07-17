@@ -74,3 +74,4 @@ astroleague-exit:307, 271
 ancient-dungeon-golem:184, 219
 ancient-dungeon-colossus:175, 384
 shop-buy:648, 450
+shop-buy-confirm:411, 310
