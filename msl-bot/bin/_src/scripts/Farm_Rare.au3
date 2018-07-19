@@ -120,11 +120,13 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
 
             Case "refill"
                 Data_Set("Status", "Refill energy.")
-                Data_Increment("Refill", 30)
-
-                If (Data_Get_Ratio("Refill") > 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
-                    Data_Increment("Refill", -30)
+                If (Data_Get_Ratio("Refill") >= 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
                     ExitLoop
+                Else
+                    Data_Increment("Refill", 30)
+
+                    Data_Increment("Runs")
+                    Data_Increment("Victory")
                 EndIf
 
                 Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)

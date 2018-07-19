@@ -30,10 +30,11 @@ Func doRefill()
                 ;Checks for no gems left or success
                 Switch $sCurLocation
                 Case "refill"
+                    Stat_Increment($g_aStats, "Astrogems spent", 30)
                     If closeWindow() = False Then
                         navigate("map")
                     EndIf
-
+                    
                     enterBattle()
                 Case "buy-gold", "buy-gem"
                     Log_Add("Not enough gems for refill.", $LOG_ERROR)

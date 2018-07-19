@@ -1,19 +1,69 @@
 #include-once
 #include "../imports.au3"
 
-#cs
-	Function: Captures region and if there is saves into bmp if there is a specified file name.
-	Parameters:
-		$iMode: Change mode of capture: $MODE_BITMAP(0) uses WinAPI to create a bitmap. $MODE_ADB(1) sends screencap command and creates bitmap from file created.
-		$sFileName: File name saved to main folder.
-#ce
-Func captureRegion($sFileName = "", $iX = 0, $iY = 0, $iWidth = $g_aControlSize[0], $iHeight = $g_aControlSize[1], $iBackgroundMode = $g_iBackgroundMode)
-	getBitmapHandles($g_hHBitmap, $g_hBitmap, $iX, $iY, $iWidth, $iHeight, $iBackgroundMode)
+Func isGameRunning()
+    If isAdbWorking() = False Then Return 2
+    Return StringInStr(adbCommand("shell ps | grep msleague | awk '{print $9}'"), "com.ftt.msleague_gl")
+EndFunc
 
-	If $sFileName <> "" Then
-		$sFileName = StringReplace($sFileName, ".bmp", "")
-		saveHBitmap($sFileName)
-	EndIf
+Func RestartGame()
+    Log_Level_Add("RestartGame")
+    Log_Add("Restarting game.")
+    $bOutput = False
+
+    While True
+        Local $hTimer = TimerInit() ;Stores timerinit
+        If isAdbWorking() = False Then 
+            Log_Add("ADB Unavailable, could not restart game.", $LOG_ERROR)
+            ExitLoop
+        EndIf
+
+        Local $bGameRunning = isGameRunning()
+        If $bGameRunning = True Then
+            Log_Add("Game is already running, killing current process.")
+            While isGameRunning()
+                If _Sleep(2000) Or (TimerDiff($hTimer) > 120000) Then ExitLoop(2)
+                adbCommand("shell am force-stop com.ftt.msleague_gl")
+            WEnd
+        EndIf
+
+        ;Start game through ADB
+        Log_Add("Starting game and waiting for main screen.")
+        While isGameRunning() = False
+            If _Sleep(2000) Or (TimerDiff($hTimer) > 120000) Then ExitLoop(2)
+            adbCommand("shell monkey -p com.ftt.msleague_gl -c android.intent.category.LAUNCHER 1")
+        WEnd
+
+        ;Waiting for start menu
+        $g_hWindow = 0
+        $g_hControl = 0
+        Local $hTimer = TimerInit()
+        While getLocation() <> "tap-to-start"
+            If TimerDiff($hTimer) > 300000 Or _Sleep(5000) Then ExitLoop(2)
+            isAdbWorking()
+            resetHandles()
+        WEnd
+
+        ;Waiting for start menu
+        $bOutput = (getLocation() = "tap-to-start")
+        ExitLoop
+    WEnd
+
+    If navigate("map", True, 2) = False Then
+		resetHandles()
+        If getLocation() = "tap-to-start" Then
+            $bOutput = False
+        EndIf
+    EndIf
+    Log_Add("Restart game result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $bOutput
+EndFunc
+
+;Reset global handles: $g_hWindow, $g_hControl
+Func resetHandles()
+	$g_hWindow = WinGetHandle($g_sWindowTitle)
+	$g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
 EndFunc
 
 #cs
@@ -199,100 +249,6 @@ Func testLocation()
 		CaptureRegion()
 		Log_Add(getLocation($g_aLocations, False))
 	WEnd
-EndFunc
-
-#cs
-	Function: Retrieves which round the battle is currently.
-	Parameters:
-		$aPixels: List where the pixel rounds are.
-	Return: Current round and the number of total rounds: Array format=[current, max]
-#ce
-Func getRound($aPixels = $g_aPixels)
-	Local $iMax = 0 ;Max number of rounds
-	;Getting max number of rounds
-	For $i = 2 To 4
-		Local $t_sArgument = getArg($aPixels, "max-round-" & $i)
-		If ($t_sArgument = "") Or ($t_sArgument = -1) Then ContinueLoop
-
-		If isPixel($t_sArgument) = True Then
-			$iMax = $i
-			ExitLoop
-		EndIf
-	Next
-	If $iMax = 0 Then 
-		$g_sErrorMessage = "getRound() => Could not find max."
-		Return -1
-	EndIf
-
-	Local $iCurr = 0 ;Current round
-	;Getting current round
-	For $i = 1 To $iMax
-		Local $t_sArgument = getArg($aPixels, "curr-round-" & $i)
-		If ($t_sArgument = "") Or ($t_sArgument = -1) Then ContinueLoop
-
-		If isPixel($t_sArgument) = True Then
-			$iCurr = $i
-			ExitLoop
-		EndIf
-	Next
-	If $iCurr = 0 Then 
-		$g_sErrorMessage = "getRound() => Could not find current."
-		Return -1
-	EndIf
-
-	Local $t_aResult = [$iCurr, $iMax]
-	Return $t_aResult
-EndFunc
-
-#cs 
-	Function: Tries to close a in game window interface.
-	Parameters:
-		$sPixelName: Name for argument within a formated argument array.
-		$aPixelList: Formatted argument array.
-	Return: If window was closed successfully then return true. Else return false.
-#ce
-Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
-	Local $t_sPixels = getArg($aPixelList, $sPixelName)
-
-	If $t_sPixels = "" Or $t_sPixels = -1 Then
-		$g_sErrorMessage = "closeWindow() => No pixel found."
-		Return -1
-	EndIf
-
-	Local $aPixelSet = StringSplit($t_sPixels, "/", $STR_NOCOUNT)
-	For $i = 0 To UBound($aPixelSet)-1
-		Local $t_iTimerInit = TimerInit()
-		While isPixel($aPixelSet[$i], 10) = True
-			If TimerDiff($t_iTimerInit) >= 2000 Then Return False ;two seconds
-			;Closing until pixel is not the same.
-			Local $t_aPixel = StringSplit($aPixelSet[$i], ",", $STR_NOCOUNT)
-			
-			clickPoint($t_aPixel, 1, 0)
-
-			If _Sleep(500) Then Return False
-			CaptureRegion()
-
-			If isPixel($aPixelSet[$i], 10) = False Then Return True
-		WEnd
-	Next
-
-	Return False
-EndFunc
-
-#cs 
-	Function: Tries to close dialogue between players in game
-	Return: If dialogue has been closed successfully then return true. Else return false.
-#ce
-Func skipDialogue()
-	Local $t_iTimerInit = TimerInit()
-	While getLocation() = "dialogue"
-		If TimerDiff($t_iTimerInit) >= 20000 Then Return False ;twenty seconds
-
-		clickPoint(getArg($g_aPoints, "dialogue-skip"))
-		If _Sleep(200) Then Return False
-	WEnd
-
-	Return True
 EndFunc
 
 Func SetupKeymap()

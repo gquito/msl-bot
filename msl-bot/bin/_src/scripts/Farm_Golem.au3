@@ -23,6 +23,7 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
 
     Data_Add("Script Time", $DATA_TIME, TimerInit())
     Data_Add("Victory", $DATA_NUMBER, "0")
+    Data_Add("In Boss", $DATA_TEXT, "False")
 
     ;Adding to display order
     Data_Order_Insert("Status", 0)
@@ -44,9 +45,7 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
     EndSwitch
 
     ;Script Process
-    #cs 
-        Script will run golem dungeons and filter out the gems
-    #ce
+    ;Script will run golem dungeons and filter out the gems
     While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") < 1)
         If _Sleep(100) Then ExitLoop
 
@@ -59,14 +58,21 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
             Common_Stuck($sLocation)
         #EndRegion
 
-        If _Sleep(10) Then ExitLoop
+        ;Checking current round for boss.
+        CaptureRegion()
+        Local $aRound = getRound()
+        If isArray($aRound) = True And $aRound[0] = $aRound[1] Then
+            Data_Set("In Boss", "True")
+        EndIf
+
+        If _Sleep(0) Then ExitLoop
         Switch $sLocation
             Case "battle-end-exp", "battle-sell"
                 Log_Add("Clicking on second item position.")
                 Data_Set("Status", "Clicking Item.")
 
                 ;Clicks 2nd item
-                If clickWhile("229,234", "isLocation", "battle-end-exp,battle-sell,unknown", 30, 1000) = True Then
+                If clickWhile("229,234", "isLocation", "battle-end-exp,battle-sell,unknown", 300, 100) = True Then
                     If getLocation() = "battle-sell-item" Then ContinueCase
                 EndIf
             Case "battle-sell-item"
@@ -89,6 +95,7 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
                         Case "EGG"
                             Data_Set("Status", "Egg detected.")
                             Data_Increment("Eggs")
+                            Stat_Increment($g_aStats, "Eggs found")
 
                             Log_Add("Found an egg.", $LOG_INFORMATION)
                         Case Else
@@ -97,24 +104,26 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
                             ;Actual gem
                             Local $sStatus = "" ;Status whether gem is sold or kept, for log.
                             If filterGem($aGem) = False Then
-                                Data_Set("Status", "Selling gem.")
-                                Data_Increment("Sold Profit", Int($aGem[5]))
-
                                 $sStatus = "Sold"
                                 If clickWhile(getArg($g_aPoints, "battle-sell-item-sell"), "isLocation", "battle-sell-item", 10, 200) = False Then
                                     $sStatus = "Unknown" ;If could not sell because got stuck in battle-sell-item
                                     Local $t_hTimer = TimerInit()
-                                    While (isLocation("batte-end") = "") And ($t_hTimer < 5000)
+                                    While getLocation() <> "battle-end" And ($t_hTimer < 5000)
                                         clickPoint(getArg($g_aPoints, "battle-sell-item-cancel"))
                                         If _Sleep(100) Then ExitLoop
                                     WEnd
+                                Else
+                                    Data_Increment("Sold Profit", Int($aGem[5]))
+                                    Stat_Increment($g_aStats, "Gold profit", Int($aGem[5]))
+                                    Stat_Increment($g_aStats, "Gems sold")
+
                                 EndIf
-                            Else 
-                                Data_Set("Status", "Keeping gem.")
+                            Else
                                 Data_Increment("Gems Kept")
+                                Stat_Increment($g_aStats, "Gems kept")
 
                                 $sStatus = "Kept"
-                                clickWhile(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-sell-item,battle-sell", 10, 200)
+                                clickUntil(getArg($g_aPoints, "battle-sell-item-cancel"), "isLocation", "battle-end", 6, 400)
                             EndIf
 
                             ;Display info and setting data
@@ -127,33 +136,34 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
                 EndIf
 
                 Data_Set("Status", "Navigating to battle-end.")
-                navigate("battle-end", True)
+                navigate("battle-end", True, 3)
 
             Case "refill"
                 Data_Set("Status", "Refill energy.")
-                Data_Increment("Refill", 30)
-
-                If (Data_Get_Ratio("Refill") > 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
-                    Data_Increment("Refill", -30)
+                If (Data_Get_Ratio("Refill") >= 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
                     ExitLoop
+                Else
+                    Data_Increment("Refill", 30)
+
+                    Data_Increment("Runs")
+                    Data_Increment("Victory")
+                    Stat_Increment($g_aStats, "Golem runs")
                 EndIf
 
                 Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)
 
             Case "battle-end"
+                Data_Set("In Boss", "False")
+
                 If (Data_Get("Runs", True)[1] <> 0) And (Data_Get_Ratio("Runs") >= 1) Then ExitLoop
                 Data_Set("Status", "Quick restart.")
 
-                If enterBattle() Then 
+                If enterBattle() = True Then 
                     Data_Increment("Runs")
                     Data_Increment("Victory")
+
+                    Stat_Increment($g_aStats, "Golem runs")
                 EndIf
-
-            Case "battle"
-                Log_Add("Toggling auto battle on.")
-                Data_Set("Status", "Toggling auto battle on.")
-
-                clickPoint(getArg($g_aPoints, "battle-auto"))
 
             Case "map"
                 If (Data_Get("Runs", True)[1] <> 0) And (Data_Get_Ratio("Runs") >= 1) Then ExitLoop
@@ -163,15 +173,33 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
 
                 If navigate("golem-dungeons", True) = True Then
                     Data_Set("Status", "Selecting dungeon level.")
-                    If clickWhile(getArg($g_aPoints, "golem-dungeons-b" & $Dungeon_Level), "isLocation", "golem-dungeons", 10, 1000) = True Then
-                        Data_Set("Status", "Entering battle.")
-
-                        waitLocation("battle-end", 3)
-                        If enterBattle() Then 
-                            Data_Increment("Runs")
-                            Data_Increment("Victory")
-                        EndIf
+					Local $aPoint ;Store point to go into dungeon map-battle
+                    If $Dungeon_Level < 7 Then
+                        For $i = 0 To 7
+                            clickDrag($g_aSwipeDown)
+                            If _Sleep(50) Then ExitLoop(2)
+                        Next
+						
+						For $i = 2 To $Dungeon_Level
+							clickDrag($g_aSwipeUp)
+							_Sleep(50)
+						Next
+						
+                        $aPoint = getArg($g_aPoints, "golem-dungeons-top")
+                    Else
+                        $aPoint = getArg($g_aPoints, "golem-dungeons-b" & $Dungeon_Level)
                     EndIf
+						
+					If clickWhile($aPoint, "isLocation", "golem-dungeons", 10, 1000) = True Then
+
+						Data_Set("Status", "Entering battle.")
+						If enterBattle() Then 
+							Data_Increment("Runs")
+							Stat_Increment($g_aStats, "Golem runs")
+
+							Data_Increment("Victory")
+						EndIf
+					EndIf
                 EndIf
 
             Case "pause"
@@ -196,8 +224,8 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
                 ExitLoop
 
             Case "battle-auto"
-                Data_Set("Status", "In battle.")
-        EndSwitch
+                    Data_Set("Status", "In battle.")
+            EndSwitch
     WEnd
 
     ;End script

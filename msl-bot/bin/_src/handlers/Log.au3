@@ -1,5 +1,6 @@
 #include-once
 #include "../imports.au3"
+
 #cs 
     Log system will be based on the function processes and their steps.
 #ce
@@ -11,6 +12,8 @@ Global $g_sLogFilter = "Information,Error,Process"
 Global $g_aLOG_Function[1] = [0] ;Current function and level
 Global $g_iLOG_Processed = 0 ;Number of log items processed for display
 Global $g_bLogEnabled = True ;Allows for Log_Add if enabled
+Global $g_iLogInfoLimit = 1000 ;Limit for number of information log
+Global $g_iLogTotalLimit = 5000 ;Number of log before forcing a clear.
 
 #cs ----Log structure
     [
@@ -47,15 +50,32 @@ Func Log_Add($sText, $sType = $LOG_PROCESS, $iTimeStamp = NowTimeStamp(), $sFunc
     $g_aLog[$iSize][4] = $g_sLocation
     $g_aLog[$iSize][5] = $iLevel
 
+    If $iSize > $g_iLogTotalLimit Then Log_Save($g_aLog, getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Profile_Name"), True)
     Log_Display()
 EndFunc
 
 Func Log_Level_Add($sFunction)
     Local $iSize = UBound($g_aLOG_Function)
     ReDim $g_aLOG_Function[$iSize+1]
-    $g_aLOG_Function[0] += 1
 
+    $g_aLOG_Function[0] += 1
     $g_aLOG_Function[$g_aLOG_Function[0]] = $sFunction
+
+    If isDeclared("hLV_FunctionLevels") = True And $hLV_FunctionLevels <> Null Then
+        Local $iItemCount = _GUICtrlListView_GetItemCount($hLV_FunctionLevels)
+        $iSize = UBound($g_aLOG_Function)
+
+        If $iItemCount <> $iSize-1 Then
+            _GUICtrlListView_DeleteAllItems($hLV_FunctionLevels)
+            For $i = 1 To $iSize-1
+                _GUICtrlListView_AddItem($hLV_FunctionLevels, $i)
+                _GUICtrlListView_AddSubItem($hLV_FunctionLevels, $i-1, $g_aLOG_Function[$i], 1)
+            Next
+        Else
+            _GUICtrlListView_AddItem($hLV_FunctionLevels, $iItemCount)
+            _GUICtrlListView_AddSubItem($hLV_FunctionLevels, $iItemCount-1, $sFunction, 1)
+        EndIf
+    EndIf
 EndFunc
 
 Func Log_Level_Remove()
@@ -63,6 +83,10 @@ Func Log_Level_Remove()
     If $iSize > 1 Then
         ReDim $g_aLOG_Function[$iSize-1]
         $g_aLOG_Function[0] -= 1
+
+        If isDeclared("hLV_FunctionLevels") = True And $hLV_FunctionLevels <> Null Then
+            _GUICtrlListView_DeleteItem($hLV_FunctionLevels, _GUICtrlListView_GetItemCount($hLV_FunctionLevels)-1)
+        EndIf
     EndIf
 EndFunc
 
@@ -72,11 +96,14 @@ Func Log_Display($sFilter = $g_sLogFilter, $aLog = $g_aLog, $hListView = $hLV_Lo
         _GUICtrlListView_BeginUpdate($hLV_Log)
     EndIf
 
+    Local $iCountProcessed = 0
     While $iSize > $g_iLOG_Processed
+        If ($g_bRunning = True) And ($iCountProcessed > 100) Then ExitLoop
+
         If (StringInStr($sFilter, $aLog[$g_iLOG_Processed][2]) = True) Or ($sFilter = $aLog[$g_iLOG_Processed][2]) Then
             Local $sTime = $aLog[$g_iLOG_Processed][0]
             If StringLeft($sTime, 1) = "." Then $sTime = StringMid($sTime, 2)
-            _GUICtrlListView_InsertItem($hListView, formatTime($sTime), 0)
+            _GUICtrlListView_InsertItem($hListView, formatTime($sTime) & "      (" & _GUICtrlListView_GetItemCount($hListView)+1 & ")", 0)
             
             Local $sLevel = ""
             Local $sDebug = ""
@@ -92,7 +119,9 @@ Func Log_Display($sFilter = $g_sLogFilter, $aLog = $g_aLog, $hListView = $hLV_Lo
             _GUICtrlListView_SetItemText($hListView, 0, $aLog[$g_iLOG_Processed][4], 4)
             _GUICtrlListView_SetItemText($hListView, 0, $aLog[$g_iLOG_Processed][5], 5)
         EndIf
+
         $g_iLOG_Processed += 1
+        $iCountProcessed += 1
     WEnd
 
     _GUICtrlListView_EndUpdate($hLV_Log)
@@ -106,7 +135,13 @@ Func Log_Display_Reset($sFilter = $g_sLogFilter, $hListView = $hLV_Log)
 Endfunc
 
 Func Log_Save(ByRef $aLog, $sProfileName = getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Profile_Name"), $bClear = False)
-    If getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Save_Logs") = "Disabled" Then Return False
+    If getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Save_Logs") = "Disabled" Then 
+        If $bClear = True Then
+            Log_Clear($aLog)
+        EndIf
+
+        Return False
+    EndIf
 
     ;Defining variables
     Local $iSize = UBound($aLog)
@@ -145,6 +180,7 @@ EndFunc
 Func Log_Clear(ByRef $aLog, $bClearInfo = False)
     Local $aEmpty[0][6]
     If $bClearInfo = False Then
+        ;Limit for number of information log: 1000 ($g_iLogInfoLimit)
         For $i = 0 To UBound($aLog)-1
             If $aLog[$i][2] = "Information" Then
                 ReDim $aEmpty[UBound($aEmpty)+1][6]
@@ -153,6 +189,12 @@ Func Log_Clear(ByRef $aLog, $bClearInfo = False)
                 Next
             EndIf
         Next
+
+        If UBound($aEmpty)+1 > $g_iLogInfoLimit Then
+            Local $iEnd = (UBound($aEmpty)+1)-$g_iLogInfoLimit
+            LocaL $sRange = "0-" & $iEnd
+            _ArrayDelete($aEmpty, $sRange)
+        EndIf
     EndIf
 
     $aLog = $aEmpty
@@ -183,3 +225,4 @@ Func formatWidth($sStr, $iWidth, $iAlign)
 
     Return $sOutput
 EndFunc
+

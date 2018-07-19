@@ -2,91 +2,6 @@
 #include "../imports.au3"
 
 #cs 
-    Function: Sends command to Android Debug Bridge and returns output
-    Parameters:
-        $sCommand: Command to send
-        $sAdbDevice: If more than one device, device is needed.
-        $sAdbPath: ADB executable path.
-    Returns: Output after command has been executed.
-#ce
-Func adbCommand($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
-    Log_Level_Add("adbCommand")
-    Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
-
-    Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
-    If ProcessWaitClose($iPID, 3000) = 0 Then
-        ProcessClose($iPID)
-        $sResult = "timed out."
-    Else
-        $sResult = StdoutRead($iPID)
-    EndIf
-    StdioClose($iPID)
-
-    If $sResult <> "" Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
-    Log_Level_Remove()
-    Return $sResult
-EndFunc
-
-Func isAdbWorking()
-    Local $bStatus = (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False)
-    Log_Add("Checking ADB status: " & $bStatus, $LOG_DEBUG)
-    $g_bAdbWorking = $bStatus
-    
-    Return $bStatus
-EndFunc
-
-Func adbSendESC($sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
-    If $g_sAdbMethod = "input event" Then
-        Return adbCommand("shell input keyevent ESCAPE")
-    Else
-        If isDeclared("sEvent") = 0 Then
-            Static $sEvent = getEvent()
-        EndIf
-
-        Local $aTCV = ["1 158 1", "0 0 0", "1 158 0", "0 0 0"]
-        Return adbCommand("shell " & sendEvent($sEvent, $aTCV), $sAdbDevice, $sAdbPath)
-    EndIf
-EndFunc
-
-Func getEvent($sGetEvent = adbCommand("shell getevent -p"))
-    $aEvents = StringSplit(StringStripWS($sGetEvent, $STR_STRIPSPACES), @CRLF, $STR_NOCOUNT)
-    If isArray($aEvents) Then
-        For $i = 0 To UBound($aEvents)-1
-            If StringInStr($aEvents[$i], "Android Input") Then
-                Local $aEventNum = StringSplit($aEvents[$i-1], ":", $STR_NOCOUNT)
-                If isArray($aEventNum) = True and UBound($aEventNum) > 1 Then
-                    Return StringStripWS($aEventNum[1], $STR_STRIPLEADING)
-                EndIf
-            EndIf
-        Next
-    Else
-        $g_sErrorMessage = "getEvent() => Could not get event list."
-        Return ""
-    EndIf
-
-    $g_sErrorMessage = "getEvent() => Could not retrieve event number for Android Input."
-    Return ""
-EndFunc
-
-Func sendEvent($sEvent, $aTCV)
-    Local $sFinal = ""
-    If isArray($aTCV) = False Then
-        $aTCV = StringSplit($aTCV, ",", $STR_NOCOUNT)
-    EndIf
-
-    For $i = 0 To UBound($aTCV)-1
-        Local $aRaw = StringSplit($aTCV[$i], " ", $STR_NOCOUNT)
-        Local $sType = $aRaw[0]
-        Local $sCode = $aRaw[1]
-        Local $sValue = $aRaw[2]
-
-        $sFinal &= ";sendevent " & $sEvent & " " & $sType & " " & $sCode & " " & $sValue
-    Next
-
-    Return '"' & StringMid($sFinal, 2) & '"'
-EndFunc
-
-#cs 
     Function: Sends swipes to emulator
     Parameters:
         $aPoints: x1, y1, x2, y2
@@ -114,8 +29,11 @@ Func clickDrag($aPoints, $iSwipeMode = $g_iSwipeMode)
         ;clickdrags using real mouse.
         WinActivate($g_hWindow)
 
+        $aPoints[0] = $aPoints[0]/($g_iDesktopScaling/100)
+        $aPoints[1] = $aPoints[1]/($g_iDesktopScaling/100)
+
         Local $aOffset = WinGetPos($g_hControl)
-        MouseClickDrag("left", $aPoints[0]+$aOffset[0], $aPoints[1]+$aOffset[1], $aPoints[2]+$aOffset[0], $aPoints[3]+$aOffset[1])
+        MouseClickDrag("left", ($aPoints[0]+$aOffset[0]), ($aPoints[1]+$aOffset[1]), ($aPoints[2]+$aOffset[0]), ($aPoints[3]+$aOffset[1]))
     EndIf
 EndFunc
 
@@ -165,7 +83,7 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
             Local $aNewPoint = [$aPoint[0], $aPoint[1]]
 
             ;Random variation setup
-            If isArray($vRandom) = True Then
+            If isArray($vRandom) = True And ($g_iDesktopScaling = 100) Then
                 $aNewPoint[0] += Random($vRandom[0], $vRandom[1], $RDM_RETURN_INT)
                 $aNewPoint[1] += Random($vRandom[0], $vRandom[1], $RDM_RETURN_INT)
             EndIf
@@ -175,6 +93,9 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
                 ;clicks using real mouse.
                 WinActivate($hWindow)
 
+                $aNewPoint[0] = $aNewPoint[0]/($g_iDesktopScaling/100)
+                $aNewPoint[1] = $aNewPoint[1]/($g_iDesktopScaling/100)
+
                 Local $t_aDesktopPoint = WinGetPos($hControl)
                 $aNewPoint[0] += $t_aDesktopPoint[0]
                 $aNewPoint[1] += $t_aDesktopPoint[1]
@@ -183,26 +104,31 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
                 MouseClick("left", $aNewPoint[0], $aNewPoint[1], 1, 0)
             ElseIf $iMouseMode = $MOUSE_CONTROL Then
                 ;clicks using fake mouse.
-                Local $t_aOffset = ControlGetPos("", "", $hControl)
-                If isArray($t_aOffset) = True Then
-                    If ($t_aOffset[0] = 0) And ($t_aOffset[1] = 0) Then
-                        If ($t_aOffset[2] <> $g_aControlSize[0]) Or ($t_aOffset[3] <> $g_aControlSize[1]) Then
-                            ;Using default Nox offsets
-                            Local $iPID = WinGetProcess($g_hWindow)
-                            Local $sPath = _WinAPI_GetProcessFileName($iPID)
-                            If StringInStr($sPath, "Nox") = True Then
-                                $t_aOffset[0] = 2
-                                $t_aOffset[1] = 30
-                            EndIf
-                        EndIf
-                    EndIf 
+                If isDeclared("old_hControl") = False Then
+                    Global $old_hControl = $hControl
+                    
+                    Local $t_aOffset = ControlGetPos("", "", $hControl) ;Actual control position from window.
+                    Global $sControlID = ""
+                    If isArray($t_aOffset) = True Then
+                        $sControlID = "[X: " & $t_aOffset[0] & "; " & "Y:" & $t_aOffset[1] & "]" ;Used to correctly send click to correct control.
+                    Else
+                        $sControlID = "[CLASS:Qt5QWindowIcon; TEXT:QWidgetClassWindow]" ;Default for nox
+                    EndIf
+                Else
+                    If $old_hControl <> $hControl Then
+                        $old_hControl = $hControl
 
-                    $aNewPoint[0]+=$t_aOffset[0]
-                    $aNewPoint[1]+=$t_aOffset[1]
+                        Local $t_aOffset = ControlGetPos("", "", $hControl)
+                        If isArray($t_aOffset) = True Then
+                            $sControlID = "[X: " & $t_aOffset[0] & "; " & "Y:" & $t_aOffset[1] & "]" ;Used to correctly send click to correct control.
+                        Else
+                            $sControlID = "[CLASS:Qt5QWindowIcon; TEXT:QWidgetClassWindow]" ;Default for nox
+                        EndIf
+                    EndIf
                 EndIf
 
                 Log_Add("Click point: " & _ArrayToString($aNewPoint), $LOG_DEBUG)
-                ControlClick($hWindow, "", "", "left", 1, $aNewPoint[0], $aNewPoint[1]) ;For simulated clicks
+                ControlClick($hWindow, "", $sControlID, "left", 1, $aNewPoint[0]/($g_iDesktopScaling/100), $aNewPoint[1]/($g_iDesktopScaling/100)) ;For simulated clicks
             ElseIf $iMouseMode = $MOUSE_ADB Then
                 ;clicks using adb commands
                 Log_Add("Click point: " & _ArrayToString($aNewPoint), $LOG_DEBUG)
@@ -210,10 +136,10 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $vRandom = $g_aRandomClic
                     adbCommand("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
                 Else
                     If isDeclared("sEvent") = 0 Then
-                        Static $sEvent = getEvent()
+                        Global $g_sEvent = getEvent()
                     EndIf
                     Local $aTCV = ["0 0 0", "1 330 1", "3 58 1", "3 53 " & $aNewPoint[0], "3 54 " & $aNewPoint[1], "0 2 0", "0 0 0", "0 2 0", "0 0 0", "1 330 0", "3 58 0", "3 53 0", "3 54 32", "0 2 0", "0 0 0"]
-                    adbCommand("shell " & sendEvent($sEvent, $aTCV))
+                    adbCommand("shell " & sendEvent($g_sEvent, $aTCV))
                 EndIf
             Else
                 Log_Add("Invalid mouse mode: " & $iMouseMode, $LOG_ERROR)
@@ -374,64 +300,4 @@ Func sendKey($sKey, $hWindow = $g_hWindow, $sControlInstance = $g_sControlInstan
         $g_sErrorMessage = "sendKey() => Window handle not found."
         Return -1
     EndIf
-EndFunc
-
-#cs
-    Function: Gets handle for saved BMP
-    Parameters:
-        $hHBitmap: ByRef WinAPI bitmap handle
-        $hBitmap: ByRef GDIPlus bitmap handle
-        $iX: X Coordinate.
-        $iY: Y Coordinate.
-        $iWidth: Width of the rectangle.
-        $iHeight: Height of the rectangle.
-        $bBackground: To get bitmap from background or not background.
-        $hControl: Control to take a bitmap image from.
-    Return: Handle of bitmap in memory.
-#ce
-Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth = $g_aControlSize[0], $iHeight = $g_aControlSize[1], $iBackgroundMode = $g_iBackgroundMode, $hControl = $g_hControl)
-	_GDIPlus_BitmapDispose($hBitmap)
-    _WinAPI_DeleteObject($hHBitmap)
-
-    If $iBackgroundMode = $BKGD_WINAPI Then
-		Local $hDC_Capture = _WinAPI_GetWindowDC($hControl)
-		Local $hMemDC = _WinAPI_CreateCompatibleDC($hDC_Capture)
-		$hHBitmap = _WinAPI_CreateCompatibleBitmap($hDC_Capture, $iWidth, $iHeight)
-		Local $hObjectOld = _WinAPI_SelectObject($hMemDC, $hHBitmap)
-
-		DllCall("user32.dll", "int", "PrintWindow", "hwnd", $hControl, "handle", $hMemDC, "int", 0)
-		_WinAPI_SelectObject($hMemDC, $hHBitmap)
-		_WinAPI_BitBlt($hMemDC, 0, 0, $iWidth, $iHeight, $hDC_Capture, $iX, $iY, 0x00CC0020)
-
-        $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBitmap)
-
-		_WinAPI_DeleteDC($hMemDC)
-		_WinAPI_SelectObject($hMemDC, $hObjectOld)
-		_WinAPI_ReleaseDC($hControl, $hDC_Capture)
-    
-    Elseif $iBackgroundMode = $BKGD_NONE Then
-		Local $aWinPos = WinGetPos($hControl)
-        Local $aNewPoint = [$iX + $aWinPos[0], $iY + $aWinPos[1]]
-		$hHBitmap = _ScreenCapture_Capture("", $aNewPoint[0], $aNewPoint[1], $aNewPoint[0] + $iWidth, $aNewPoint[1] + $iHeight, False)
-        $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBitmap)
-        
-    ElseIf $iBackgroundMode = $BKGD_ADB Then
-        adbCommand("shell screencap " & $g_sEmuSharedFolder[0] & "\" & $g_sWindowTitle & ".png")
-		Local $t_hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
-
-        $hBitmap = _GDIPlus_BitmapCloneArea($t_hBitmap, $iX, $iY, $iWidth, $iHeight)
-        $hHBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap)
-
-        _GDIPlus_BitmapDispose($t_hBitmap)
-    EndIf
-EndFunc
-
-#cs
-    Function: Create image file from bitmap in memory.
-    Parameters:
-        $sName: Name of file without extension.
-        $hBitmap: GDI Plus bitmap
-#ce
-Func savehBitmap($sName, $hBitmap = $g_hBitmap)
-    _WinAPI_SaveHBITMAPToFile (@ScriptDir & "\" & $sName & ".bmp", _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap))
 EndFunc

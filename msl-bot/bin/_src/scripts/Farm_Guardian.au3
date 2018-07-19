@@ -97,11 +97,10 @@ Func Farm_Guardian($Mode, $Usable_Astrogems, $Loop, $Target_Boss, $Collect_Quest
 
             Case "refill"
                 Data_Set("Status", "Refill energy.")
-                Data_Increment("Refill", 30)
-
-                If (Data_Get_Ratio("Refill") > 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
-                    Data_Increment("Refill", -30)
+                If (Data_Get_Ratio("Refill") >= 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
                     ExitLoop
+                Else
+                    Data_Increment("Refill", 30)
                 EndIf
 
                 Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)
@@ -113,6 +112,16 @@ Func Farm_Guardian($Mode, $Usable_Astrogems, $Loop, $Target_Boss, $Collect_Quest
 				;Finding available astromon within 10 seconds
                 Log_Add("Searching for dungeons.")
                 Data_Set("Status", "Searching for dungeons.")
+
+                If isPixel(getArg($g_aPixels, "guardian-dungeons-no-found")) = True Then
+                    If Data_Get("Guardian Loop") = "Enabled" Then
+                        Data_Set("Guardian Loop", "True")
+                        navigate("village")
+                        ContinueLoop
+                    Else
+                        ExitLoop
+                    EndIf
+                EndIf
 
 				Local $aPoint = findGuardian($Mode);Point of an available astromon
 
@@ -139,6 +148,7 @@ Func Farm_Guardian($Mode, $Usable_Astrogems, $Loop, $Target_Boss, $Collect_Quest
 				If clickUntil($aPoint, "isLocation", "map-battle", 10, 500) = True Then
 					Data_Increment("Guardians")
                     Data_Increment("Local Guardians")
+                    Stat_Increment($g_aStats, "Guardian dungeons")
 
 					Log_Add("Found dungeon, attacking x" & Data_Get("Local Guardians"))
 				Else

@@ -4,14 +4,14 @@
 #cs
 	Function: Gets value of argument from an array of arguments
 	Parameters:
-		$aArgs: Array => [[arg1, value1], [arg2, value2]]
-		$sName: String => "arg1"
+	$aArgs: Array => [[arg1, value1], [arg2, value2]]
+	$sName: String => "arg1"
 	Return: Value of the found argument => "value1"
 #ce
 Func getArg($aArgs, $sName)
 	If $aArgs = -1 Then Return -1
 
-	For $i = 0 To UBound($aArgs)-1
+	For $i = 0 To UBound($aArgs) - 1
 		If UBound($aArgs) = 0 Then ;Error not valid format
 			$g_sErrorMessage = "getArg() => Invalid argument format."
 			Return -1
@@ -22,21 +22,21 @@ Func getArg($aArgs, $sName)
 
 	$g_sErrorMessage = 'getArg() => Argument not found: "' & $sName & '"'
 	Return -1
-EndFunc
+EndFunc   ;==>getArg
 
 #cs
 	Function: Sets value of argument from array of arguments
 	Parameters:
-		$aArgs: Array => [[arg1, value1], [arg2, value2]]
-		$sName: String => "arg1"
-		$sValue: New value to set arg to
+	$aArgs: Array => [[arg1, value1], [arg2, value2]]
+	$sName: String => "arg1"
+	$sValue: New value to set arg to
 	Returns:
-		True if success, false if argument found.
+	True if success, false if argument found.
 #ce
 Func setArg(ByRef $aArgs, $sName, $sValue)
 	Local $iIndex = -1 ;index of argument
-	For $i = 0 To UBound($aArgs)-1
-		If $aArgs[$i][0] = $sName Then 
+	For $i = 0 To UBound($aArgs) - 1
+		If $aArgs[$i][0] = $sName Then
 			$iIndex = $i
 			ExitLoop
 		EndIf
@@ -47,14 +47,14 @@ Func setArg(ByRef $aArgs, $sName, $sValue)
 
 	$aArgs[$iIndex][1] = $sValue
 	Return True
-EndFunc
+EndFunc   ;==>setArg
 
 #cs
 	Function: Convert string of arguments into a readable array.
 	Parameters:
-		$sArgs: String => "arg1=value1,arg2=value2, arg3=value3"
-		$sArgSeparator: The character used to separate each argument and value.
-		$sValueSeparator: The character used to separate value from identifier.
+	$sArgs: String => "arg1=value1,arg2=value2, arg3=value3"
+	$sArgSeparator: The character used to separate each argument and value.
+	$sValueSeparator: The character used to separate value from identifier.
 	Return: Array => [[arg1, value1], [arg2, value2], [arg3, value3]]
 #ce
 Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
@@ -63,7 +63,7 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 	Local $iArgSize = 0
 	Local $aArgs[$iArgSize][2] ;Final formated argument array.
 
-	If isArray($sArgs) = False Then
+	If IsArray($sArgs) = False Then
 		Local Const $iSize = StringLen($sArgs)
 
 		Local $sName = "", $sValue = ""
@@ -83,18 +83,18 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 						$sName &= $sChar
 				EndSwitch
 			Else ;Handles value
-				If $sChar = '"' Then 
-					$bQuoted = Not($bQuoted)
+				If $sChar = '"' Then
+					$bQuoted = Not ($bQuoted)
 				Else
-					If $bQuoted = False Then 
+					If $bQuoted = False Then
 						If $sChar = " " Then ContinueLoop
 						If $sChar = $sArgSeparator Then
 							;Indicates finished argument
 							$iArgSize += 1
 							ReDim $aArgs[$iArgSize][2]
 
-							$aArgs[$iArgSize-1][0] = $sName
-							$aArgs[$iArgSize-1][1] = $sValue
+							$aArgs[$iArgSize - 1][0] = $sName
+							$aArgs[$iArgSize - 1][1] = $sValue
 
 							;Reset for next argument
 							$bName = False
@@ -119,34 +119,34 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 		$iArgSize += 1
 		ReDim $aArgs[$iArgSize][2]
 
-		$aArgs[$iArgSize-1][0] = $sName
-		$aArgs[$iArgSize-1][1] = $sValue
+		$aArgs[$iArgSize - 1][0] = $sName
+		$aArgs[$iArgSize - 1][1] = $sValue
 	Else
-		For $i = 0 To UBound($sArgs)-1
+		For $i = 0 To UBound($sArgs) - 1
 			$iArgSize += 1
 			ReDim $aArgs[$iArgSize][2]
 
 			Local $aArg = $sArgs[$i]
-			$aArgs[$iArgSize-1][0] = $aArg[0]
-			$aArgs[$iArgSize-1][1] = $aArg[1]
+			$aArgs[$iArgSize - 1][0] = $aArg[0]
+			$aArgs[$iArgSize - 1][1] = $aArg[1]
 		Next
 	EndIf
 	;Formated Argument should be: [[arg1, value1], [arg2, value2], [..., ...]]
 	Return $aArgs
-EndFunc
+EndFunc   ;==>formatArgs
 
-#cs 
+#cs
 	Function: Reads data from url and formats into a readable argument list.
 	Parameters:
-		$sUrl: Url for data. Usually in a raw form of text file.
-		$sArgSeparator: The character used to separate each argument and value.
-		$sValueSeparator: The character used to separate value from identifier.
-		$sCachePath: Create cache file for remote data.
+	$sUrl: Url for data. Usually in a raw form of text file.
+	$sArgSeparator: The character used to separate each argument and value.
+	$sValueSeparator: The character used to separate value from identifier.
+	$sCachePath: Create cache file for remote data.
 #ce
 Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":", $sCachePath = "")
 	Local $sData = BinaryToString(InetRead($sUrl, $INET_FORCERELOAD))
 	If $sCachePath <> "" Then
-		Local $hFile = FileOpen($sCachePath, $FO_OVERWRITE+$FO_CREATEPATH)
+		Local $hFile = FileOpen($sCachePath, $FO_OVERWRITE + $FO_CREATEPATH)
 		FileWrite($hFile, $sData)
 		FileClose($hFile)
 	EndIf
@@ -163,7 +163,7 @@ Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":", $sCache
 	WEnd
 
 	While StringRight($sData, 1) = $sArgSeparator
-		$sData = StringMid($sData, 1, StringLen($sData)-1)
+		$sData = StringMid($sData, 1, StringLen($sData) - 1)
 	WEnd
 
 	While StringInStr($sData, $sArgSeparator & $sArgSeparator)
@@ -171,14 +171,14 @@ Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":", $sCache
 	WEnd
 
 	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
-EndFunc
+EndFunc   ;==>getArgsFromURL
 
-#cs 
+#cs
 	Function: Reads data from file and formats into a readable argument list.
 	Parameters:
-		$sPath: Path to file for for data. Usually in a raw form of text file.
-		$sArgSeparator: The character used to separate each argument and value.
-		$sValueSeparator: The character used to separate value from identifier.
+	$sPath: Path to file for for data. Usually in a raw form of text file.
+	$sArgSeparator: The character used to separate each argument and value.
+	$sValueSeparator: The character used to separate value from identifier.
 #ce
 Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
 	Local $sData = FileRead($sPath)
@@ -194,7 +194,7 @@ Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
 	WEnd
 
 	While StringRight($sData, 1) = $sArgSeparator
-		$sData = StringMid($sData, 1, StringLen($sData)-1)
+		$sData = StringMid($sData, 1, StringLen($sData) - 1)
 	WEnd
 
 	While StringInStr($sData, $sArgSeparator & $sArgSeparator)
@@ -202,17 +202,17 @@ Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
 	WEnd
 	
 	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
-EndFunc
+EndFunc   ;==>getArgsFromFile
 
-#cs 
+#cs
 	Function: Merges two sets of arguments
 	Parameters:
-		$aFrom: Argument that will be merged to $aTo
-		$aTo: Main argument that will be merged.
-		$cAppend: Character to separate two values. A blank string will overwrite data.
+	$aFrom: Argument that will be merged to $aTo
+	$aTo: Main argument that will be merged.
+	$cAppend: Character to separate two values. A blank string will overwrite data.
 #ce
 Func mergeArgFromTo($aFrom, ByRef $aTo, $cAppend = '')
-	For $i = 0 To UBound($aFrom)-1
+	For $i = 0 To UBound($aFrom) - 1
 		Local $sArgValue = $aFrom[$i][1]
 		Local $sToArg = getArg($aTo, $aFrom[$i][0])
 		If $sToArg <> -1 Then
@@ -222,9 +222,9 @@ Func mergeArgFromTo($aFrom, ByRef $aTo, $cAppend = '')
 				setArg($aTo, $aFrom[$i][0], $sToArg & $cAppend & $sArgValue)
 			EndIf
 		Else
-			ReDim $aTo[UBound($aTo)+1][2]
-			$aTo[UBound($aTo)-1][0] = $aFrom[$i][0]
-			$aTo[UBound($aTo)-1][1] = $aFrom[$i][1]
+			ReDim $aTo[UBound($aTo) + 1][2]
+			$aTo[UBound($aTo) - 1][0] = $aFrom[$i][0]
+			$aTo[UBound($aTo) - 1][1] = $aFrom[$i][1]
 		EndIf
 	Next
-EndFunc
+EndFunc   ;==>mergeArgFromTo

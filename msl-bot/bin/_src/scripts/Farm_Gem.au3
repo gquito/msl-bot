@@ -6,6 +6,10 @@ Func Farm_Gem($Gems_To_Farm, $Catch_Image, $Astromon, $Finish_Round, $Final_Roun
     Log_Add("Farm Gem has started.")
     
     ;Declaring variables and data
+    If StringLeft(StringLower($Gems_To_Farm), 1) = "g" Then
+        $Gems_To_Farm = Floor(Int(StringMid($Gems_To_Farm, 2))/330000)*100
+    EndIf
+
     Data_Add("Status", $DATA_TEXT, "")
     Data_Add("Farmed Gems", $DATA_RATIO, "0/" & $Gems_To_Farm)
 
@@ -83,11 +87,20 @@ Func Farm_Gem($Gems_To_Farm, $Catch_Image, $Astromon, $Finish_Round, $Final_Roun
                     Data_Increment("Need Catch", $vResult)
             EndSwitch
 
-        ElseIf  $sAlgorithm = "Algorithm 2" Then
-            $aResult = evolve2() ;Result: [CODE, MESSAGE]
+        Else
+            If $sAlgorithm = "Algorithm 2" Then
+                $aResult = evolve2() ;Result: [CODE, MESSAGE]
+            ElseIf $sAlgorithm = "Algorithm 3" Then
+                $aResult = evolve3() ;Result: [CODE, MESSAGE]
+            EndIf
+            
             If $aResult[0] = 0 Then         ; Success
                 Log_Add($aResult[1])
+
                 Data_Increment("Farmed Gems", 100)
+                Stat_Increment($g_aStats, "Gold spent", 330000)
+                Stat_Increment($g_aStats, "Astrogems farmed", 100)
+
                 Log_Add("Farmed Gems " & Data_Get("Farmed Gems"), $LOG_INFORMATION)
 
             ElseIf $aResult[0] = -1 Then    ; Error

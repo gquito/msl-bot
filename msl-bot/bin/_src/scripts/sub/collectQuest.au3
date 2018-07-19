@@ -14,6 +14,7 @@ Func collectQuest()
 
 			Local $hTimer = TimerInit()
 			While isArray($aTab)
+				Stat_Increment($g_aStats, "Quest collected")
 				If TimerDiff($hTimer) > 30000 Then 
 					Log_Add("Took too long to collect quests.", $LOG_ERROR)
 					ExitLoop(2)

@@ -26,6 +26,7 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
     Data_Add("Guardians", $DATA_NUMBER, "0", True)
 
     Data_Add("Victory", $DATA_NUMBER, "0")
+    Data_Add("In Boss", $DATA_TEXT, "False")
 
     ;Adding to display order
     Data_Order_Insert("Status", 0)
@@ -61,6 +62,13 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
             If $Hourly_Script = "Enabled" Then Common_Hourly($sLocation)
             Common_Stuck($sLocation)
         #EndRegion
+
+        ;Checking current round for boss.
+        CaptureRegion()
+        Local $aRound = getRound()
+        If isArray($aRound) = True And $aRound[0] = $aRound[1] Then
+            Data_Set("In Boss", "True")
+        EndIf
 
         If _Sleep(10) Then ExitLoop
         Switch $sLocation
@@ -119,6 +127,7 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
                 navigate("battle-end", True)
 
             Case "battle-end"
+                Data_Set("In Boss", "False")
                 Data_Set("Status", "Quick restart.")
 
                 If enterBattle() Then 
@@ -141,10 +150,26 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
                 Data_Set("Status", "Navigating to dungeons.")
                 If navigate($sDungeon, True) = True Then
                     Data_Set("Status", "Selecting dungeon level.")
-                    If clickWhile(getArg($g_aPoints, "golem-dungeons-b" & $Dungeon_Level), "isLocation", $sDungeon, 10, 1000) = True Then
+                    Local $aPoint ;Store point to go into dungeon map-battle
+                    If $Dungeon_Level < 7 Then
+                        For $i = 0 To 7
+                            clickDrag($g_aSwipeDown)
+                            If _Sleep(50) Then ExitLoop(2)
+                        Next
+						
+						For $i = 2 To $Dungeon_Level
+							clickDrag($g_aSwipeUp)
+							_Sleep(50)
+						Next
+						
+                        $aPoint = getArg($g_aPoints, "golem-dungeons-top")
+                    Else
+                        $aPoint = getArg($g_aPoints, "golem-dungeons-b" & $Dungeon_Level)
+                    EndIf
+
+                    If clickWhile($aPoint, "isLocation", $sDungeon, 10, 1000) = True Then
                         Data_Set("Status", "Entering battle.")
 
-                        waitLocation("battle-end", 3)
                         If enterBattle() Then 
                             Data_Increment("Runs")
                             Data_Increment("Victory")
@@ -154,30 +179,26 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
 
             Case "refill"
                 Data_Set("Status", "Refill energy.")
-                Data_Increment("Refill", 30)
-
-                If (Data_Get_Ratio("Refill") > 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
-                    Data_Increment("Refill", -30)
+                If (Data_Get_Ratio("Refill") >= 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
                     ExitLoop
+                Else
+                    Data_Increment("Refill", 30)
+
+                    Data_Increment("Runs")
+                    Data_Increment("Victory")
                 EndIf
 
                 Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)
-
-            Case "battle"
-                Log_Add("Toggling auto battle on.")
-                Data_Set("Status", "Toggling auto battle on.")
-
-                clickPoint(getArg($g_aPoints, "battle-auto"))
 
             Case "pause"
                 Log_Add("Unpausing.")
                 Data_Set("Status", "Unpausing.")
 
                 clickPoint(getArg($g_aPoints, "battle-continue"))
-
+            
             Case "battle-auto"
-                Data_Set("Status", "In battle.")
-        EndSwitch
+                    Data_Set("Status", "In battle.")
+            EndSwitch
     WEnd
 
     ;End script

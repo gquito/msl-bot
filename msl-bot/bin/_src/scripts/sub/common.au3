@@ -56,6 +56,7 @@ EndFunc
 #ce
 Func Common_Quests(ByRef $sLocation)
     If isPixel(getArg($g_aPixels, "battle-end-quest")) = True Then
+        If Data_Get("In Boss") <> -1 Then Data_Set("In Boss", "False")
         Data_Set("Status", "Collecting quests.")
         collectQuest()
         $sLocation = getLocation()
@@ -105,10 +106,36 @@ Func Common_Stuck(ByRef $sLocation)
         Data_Add("Common Stuck Timer", $DATA_TEXT, TimerInit())
     EndIf
 
-    If $sLocation = "battle-end" Or $sLocation = "map" Then
+    If $sLocation = "battle-end" Or $sLocation = "map" Or $sLocation = "village" Then
         ;Data resets
         Data_Set("Astrochips", "3")
-        Data_Set("Skip Round", "-1")
+
+        ;Handles scheduled restarts in _Config setting
+        If $g_hTimerScheduledRestart = Null Then
+            $g_hTimerScheduledRestart = TimerInit()
+        Else
+            Local $aConfig = formatArgs(getScriptData($g_aScripts, "_Config")[2])
+            Local $sRawString = getArg($aConfig, "Scheduled_Restart")
+            If $sRawString <> "Never" Then
+                Local $aMode = StringSplit($sRawString, ":", $STR_NOCOUNT) ;MODE:TIME[H]
+                If isArray($aMode) = True Then
+                    $aMode[1] = Int(StringMid($aMode[1], 1, StringLen($aMode[1])-1)) ;Takes off last character 'H' and converts to number
+                    $iMS = $aMode[1] * 60 * 60 * 1000 ;Converts hour to millisecond
+                    If TimerDiff($g_hTimerScheduledRestart) > $iMS Then
+                        Log_Add("Performing scheduled restart.", $LOG_INFORMATION)
+                        Switch $aMode[0]
+                            Case "Game"
+                                RestartGame()
+                            Case "Nox"
+                                RestartNox()
+                        EndSwitch
+                        $g_hTimerScheduledRestart = Null
+                        $sLocation = getLocation()
+                    EndIf
+                EndIf
+            EndIf
+        EndIf
+
     EndIf
 
     Switch $sLocation

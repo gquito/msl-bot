@@ -1,14 +1,14 @@
-Global $aVersion = [3, 10, 9] ;Major, Minor, Build
+Global $aVersion = [4, 0, 0] ;Major, Minor, Build
 
-#pragma compile(Out, msl-bot.exe)
+#pragma compile(Out, msl-donator.exe)
 #pragma compile(Icon, bin\_src\msl-bot.ico)
 #pragma compile(x64, false)
 #pragma compile(UPX, false)
 #pragma compile(ProductName, Monster Super League Bot)
 #pragma compile(FileDescription, Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot)
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 3.10.9)
-#pragma compile(ProductVersion, 3.10.9)
+#pragma compile(FileVersion, 4.0.0)
+#pragma compile(ProductVersion, 4.0.0)
 #pragma compile(OriginalFilename, msl-bot.exe)
 
 #include-once
@@ -21,10 +21,6 @@ Initialize()
 ;Function: Initialize GUI and data.
 Func Initialize()
     _GDIPlus_Startup()
-
-    If FileExists(@TempDir & "\ImageSearchDLL.dll") = False Then
-        _CreateTempDLL() ;Creates dll file in windows temporary directory.
-    EndIf
 
     ; Default configs and constants
     setScripts($g_aScripts, $g_sScriptsLocal) ;Sets local scripts first, existing scripts will not be overwritten
@@ -90,6 +86,7 @@ Func MSLMain()
             EndIf
         EndIf
 
+        WinSetTitle($hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", ""))
         Call(StringReplace($g_sScript, " ", "_"), $g_aScriptArgs)
         If @error = 0xDEAD And @extended = 0xBEEF Then
             MsgBox($MB_ICONERROR+$MB_OK, "Function call error", "Function for the script does not exist or does not meet parameter count: " & StringReplace($g_sScript, " ", "_"))
@@ -97,4 +94,4 @@ Func MSLMain()
 
         Stop()
     EndIf
-EndFunc
+ EndFunc

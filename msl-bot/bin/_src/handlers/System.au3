@@ -20,11 +20,16 @@ Func _Sleep($iDuration)
 
     Local $vTimerInit = TimerInit()
     While TimerDiff($vTimerInit) < $iDuration
+        If UBound($g_alog) > $g_iLOG_Processed Then
+            Log_Display()
+        EndIf
+
         If $g_bRunning = False Then 
             $g_hTimerLocation = Null
             Return True
         EndIf
 
+        ;handleSchedule()
         Switch getMinute()
             Case "00"
                 If $bScheduled = False Then 
@@ -36,6 +41,12 @@ Func _Sleep($iDuration)
 
                 $bScheduled = True
             Case "30"
+                If getHour() = "00" Then 
+                    $g_bDailiesCompleted = False
+                    $g_bBingoCompleted = False
+                    $g_bGoldDungeonCompleted = False
+                EndIf
+
                 If $bScheduled = False Then $g_bPerformGuardian = True
                 $bScheduled = True
             Case Else
@@ -43,7 +54,15 @@ Func _Sleep($iDuration)
         EndSwitch
 
         If ($g_bRunning = True) And ($g_hScriptTimer <> Null) Then
-            WinSetTitle($hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", "") & " - " & getTimeString(TimerDiff($g_hScriptTimer)/1000))
+            Local $sTime = getTimeString(TimerDiff($g_hScriptTimer)/1000)
+            If isDeclared("g_sOldTime") = True Then
+                If $sTime <> $g_sOldTime Then
+                    GUICtrlSetData($idLbl_ScriptTime, "Time: " & $sTime)
+                    $g_sOldTime = $sTime
+                EndIf
+            Else
+                Global $g_sOldTime = $sTime
+            EndIf
 
             ;Data update sequence
             Data_Display()
@@ -62,9 +81,16 @@ Func _Sleep($iDuration)
         EndIf
         
         While $g_bPaused = True
+            If $g_hTimeSpent <> "/Paused" Then 
+                _Stat_Calculated($g_aStats)
+                Stat_Save($g_aStats)
+                $g_hTimeSpent = "/Paused"
+            EndIf
+            
             $g_hTimerLocation = Null
             GUI_HANDLE()
         WEnd
+        If $g_hTimeSpent = "/Paused" Then $g_hTimeSpent = TimerInit()
 
         GUI_HANDLE()
     WEnd

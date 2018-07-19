@@ -28,7 +28,7 @@ EndFunc
     Returns: HH:MM:SS
 #ce
 Func formatTime($sTimeStamp = NowTimeStamp())
-    Return getHour($sTimeStamp) & ":" & getMinute($sTimeStamp) & ":" & getSecond($sTimeStamp)
+    Return getHour($sTimeStamp) & ":" & getMinute($sTimeStamp) & ":" & getSecond($sTimeStamp) ;& ":" & @MSEC
 EndFunc
 
 #cs 
@@ -61,7 +61,9 @@ EndFunc
         $iSeconds: Seconds.
 #ce
 Func getTimeString($iSeconds)
-	If $iSeconds >= 3600 Then
+	If $iSeconds >= 86400 Then ;a day
+        Return Int($iSeconds / 60 / 60 / 24) & "D " & Int(Mod($iSeconds / 60 / 60, 24)) & "H " & Int(Mod($iSeconds / 60, 60)) & "M " & Int(Mod($iSeconds, 60)) & "S"
+    ElseIf $iSeconds >= 3600 Then ;an hour
 		Return Int($iSeconds / 60 / 60) & "H " & Int(Mod($iSeconds / 60, 60)) & "M " & Int(Mod($iSeconds, 60)) & "S"
 	Else
 		Return Int($iSeconds / 60) & "M " & Int(Mod($iSeconds, 60)) & "S"

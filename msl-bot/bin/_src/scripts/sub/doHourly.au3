@@ -35,9 +35,10 @@ Func doHourly($aHourlyConfig = formatArgs(getScriptData($g_aScripts, "_Hourly")[
                 Local $aPoints = StringSplit($g_aVillageTrees[$iPos], "|", 2) ;format: {"#,#", "#,#"..}
                 For $i = 0 To UBound($aPoints)-2 ;collecting the rewards
                     Log_Add("Collecting hidden #" & $i+1)
+                    Stat_Increment($g_aStats, "Hidden rewards")
 
                     Local $t_hTimer = TimerInit()
-                    While (getLocation() <> "hourly-reward") And (TimerDiff($t_hTimer) < 5000)
+                    While (getLocation() <> "hourly-reward") And (TimerDiff($t_hTimer) < 7000)
                         If _Sleep(100) Then ExitLoop(3)
                         clickPoint($aPoints[$i], 3, 200, Null)
                         If getLocation() <> "village" Then navigate("village")
@@ -56,7 +57,10 @@ Func doHourly($aHourlyConfig = formatArgs(getScriptData($g_aScripts, "_Hourly")[
                     Log_Add("Attempting to click nezz.")
                     For $aNezz In StringSplit($aNezzLoc, "|", $STR_NOCOUNT)
                         clickPoint($aNezz, 1, 200, Null)
-                        If getLocation() <> "village" Then navigate("village")
+                        If getLocation() <> "village" Then 
+                            If getLocation() = "dialogue" Then Stat_Increment($g_aStats, "Nezz found")
+                            navigate("village")
+                        EndIf
                     Next
                 EndIf
             EndIf

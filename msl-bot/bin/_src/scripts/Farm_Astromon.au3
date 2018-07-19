@@ -5,11 +5,16 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
     Log_Level_Add("Farm_Astromon")
     Log_Add("Farm Astromon has started.")
     
+    ;Override Finish_Round
+    If $Final_Round = "Enabled" Then $Finish_Round = "Enabled"
+
     ;Declaring variables and data
     Local Const $aLocations = _
     ["lost-connection", "loading", "battle", "battle-auto", "astromon-full", "map-gem-full", _
      "battle-gem-full", "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", _
      "map", "refill", "defeat", "unknown", "battle-boss"]
+
+    Local $aRound ;Stores round
 
     Local $aList = StringSplit($Capture, ",", $STR_NOCOUNT)
     Local $sList = ""
@@ -34,8 +39,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
     Data_Add("Victory", $DATA_NUMBER, "0")
     Data_Add("Astrochips", $DATA_NUMBER, "3")
 
-    Data_Add("Round", $DATA_RATIO, "0/0")
-    Data_Add("Skip Round", $DATA_NUMBER, "-1")
+    Data_Add("Skip Round", $DATA_NUMBER, "0")
 
     ;Adding to display order
     Data_Order_Insert("Status", 0)
@@ -63,6 +67,11 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
         If _Sleep(100) Then ExitLoop
 
         $sLocation = isLocation($aLocations, False)
+        Switch $sLocation
+            Case "battle-end", "battle-sell", "battle-end-exp", "loading", "map-battle", "village", "refill"
+                Data_Set("Skip Round", "0")
+        EndSwitch
+
         #Region Common functions
             If $Collect_Quests = "Enabled" Then Common_Quests($sLocation)
             If $Guardian_Mode <> "Disabled" Then Common_Guardian($sLocation, $Guardian_Mode, $Usable_Astrogems, "Enabled", $Collect_Quests, $Hourly_Script)
@@ -71,65 +80,75 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
         #EndRegion
         If _Sleep(10) Then ExitLoop
 
-        CaptureRegion()
-        Local $aRound = getRound()
-        If isArray($aRound) = True Then
-            Data_Set("Round", $aRound[0] & "/" & $aRound[1])
-
-            If $Final_Round = "Enabled" Then
-                If $sLocation = "battle-auto" Then
-                    If (Data_Get_Ratio("Round") = 1) And (Data_Get("Astrochips") <> 0) And (Data_Get("Skip Round") <> $aRound[0]) Then
-                        clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle", 15, 200, Null)
-                    EndIf
-                ElseIf $sLocation = "battle" Then
-                    If Data_Get("Astrochips") <> 0 Then
-                        If (Data_Get_Ratio("Round") = 1) Then
-                            If StringInStr($Capture, "," & $Catch_Image) = False Then
-                                $Capture &= "," & $Catch_Image
-                            EndIf
-                        Else
-                            $Capture = StringReplace($Capture, "," & $Catch_Image, "")
-                        EndIf
-                    Else
-                        clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 15, 200, Null)
-                    EndIf
-                EndIf
-            Else ;#####################################################################################################################
-                If ($sLocation = "battle-auto" Or $sLocation = "battle") And (Data_Get("Astrochips") = 0) Then
-                    If $Finish_Round = "Disabled" Then
-                        Data_Set("Status", "Out of astrochips, restarting match.")
-                        navigate("battle-end", True)
-                    EndIf
-                Else
-                    If $sLocation = "battle-auto" Then
-                        If isArray($aRound) = True Then
-                            If Data_Get("Skip Round") <> $aRound[0] Then
-                                clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle", 15, 200)
-                            EndIf
-                        EndIf
-                    ElseIf $sLocation = "battle" Then
-                        If StringInStr($Capture, "," & $Catch_Image) = False Then
-                            $Capture &= "," & $Catch_Image
-                        EndIf
-                    EndIf
-                EndIf
-            EndIf
-        EndIf
-
+        $aRound = getRound()
         Switch $sLocation
-            Case "battle"
-                While (Data_Get("Astrochips") <> 0) And (Data_Get_Ratio($Catch_Image) <> 1) And (isArray($aRound) = True) And (Data_Get("Skip Round") <> $aRound[0]) ;Loop for checking for more than 1 rare
-                    Data_Set("Status", "Checking for astromons.")
-                    
-                    If _Sleep(10) Then ExitLoop(2)
+            Case "battle", "battle-auto"
+                If isArray($aRound) = False Then ContinueLoop
+
+                If $aRound[0] = $aRound[1] Then
+                    ; ==Final Round Stuff==
+                    If Data_Get("Skip Round") = $aRound[0] Or Data_Get("Astrochips") = 0  Then
+                        If $sLocation = "battle" Then clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 250)
+                        ContinueLoop
+                    EndIf
+
+                    If Data_Get("Astrochips") > 0 Then ContinueCase ;Goes to catch sequence
+                Else
+                    ; ==Non Final Round Stuff==
+                    If $Final_Round = "Enabled" Then
+                        If $sLocation = "battle" Then
+                            If Data_Get("Astrochips") > 0 Then
+                                Log_Add("Checking for rare astromons.")
+                                $Capture = StringReplace($Capture, "," & $Catch_Image, "")
+
+                                ContinueCase ;Catch sequence for rare astromons
+                            EndIf
+                            
+                            clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 250)
+                        EndIf
+                        ContinueLoop
+                    EndIf
+
+                    If $Finish_Round = "Enabled" And Data_Get("Astrochips") = 0 Then
+                        If $sLocation = "battle" Then clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 250)
+                        ContinueLoop
+                    EndIf
+
+                    If Data_Get("Skip Round") = $aRound[0] Then
+                        If $sLocation = "battle" Then clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 250)
+                        ContinueLoop
+                    EndIf
+
+                    If Data_Get("Astrochips") = 0 And $Finish_Round = "Disabled" Then
+                        ;Fast Restart
+                        Data_Set("Status", "Out of astrochips, restarting match.")
+                        navigate("battle-end", True, 2)
+                        ContinueLoop
+                    EndIf
+
+                    If Data_Get("Astrochips") > 0 Then ContinueCase ;Goes to catch sequence
+                EndIf
+
+            Case "\\CATCH SEQUENCE//"
+                While Data_Get("Astrochips") > 0 
+                    ; ===END SCRIPT SEQUENCE===
+                    If Data_Get_Ratio($Catch_Image) = 1 Then
+                        If $Finish_Round = "Enabled" Then ContinueLoop(2)
+
+                        navigate("map", True, 2)
+                        ExitLoop(2)
+                    EndIf
+                    ; =========================
+
+                    ;Try to catch astromons here
+                    If _Sleep(0) Then ExitLoop(2)
                     If navigate("catch-mode", False) = False Then ExitLoop
-                    
+
                     Local $iAstrochips = Data_Get("Astrochips")
                     Local $sResult = catch($Capture, $iAstrochips)
                     Data_Set("Astrochips", $iAstrochips)
 
                     If $sResult <> "" Then
-                        Data_Set("Status", "Catching astromon.")
                         ;Found and catch status
                         If StringLeft($sResult, 1) <> "!" Then
                             ;Successfully caught
@@ -144,31 +163,15 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                         EndIf
                     Else
                         ;Nothing found.
+                        Data_Set("Skip Round", $aRound[0])
                         clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
                         ExitLoop
                     EndIf
                 WEnd
 
-                If Data_Get("Astrochips") = 0 Then
-                    If $Finish_Round = "Disabled" Then
-                        Data_Set("Status", "Out of astrochips, restarting match.")
-                        navigate("battle-end", True)
-                    Else
-                        If isArray($aRound) = True Then
-                            Data_Set("Skip Round", $aRound[0])
-                        EndIf
-
-                        Data_Set("Status", "Turning auto battle on.")
-                        clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 5, 1000)
-                    EndIf
-
-                Else  
-                    If isArray($aRound) = True Then
-                        Data_Set("Skip Round", $aRound[0])
-                    EndIf
-                   
-                    Data_Set("Status", "Turning auto battle on.")
-                    clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 5, 1000)
+                If StringInStr($Capture, "," & $Catch_Image) = False Then
+                    clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 250)
+                    $Capture &= "," & $Catch_Image
                 EndIf
 
             Case "catch-mode"
@@ -185,11 +188,14 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
 
             Case "refill"
                 Data_Set("Status", "Refill energy.")
-                Data_Increment("Refill", 30)
-
-                If (Data_Get_Ratio("Refill") > 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
-                    Data_Increment("Refill", -30)
+                If (Data_Get_Ratio("Refill") >= 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
                     ExitLoop
+                Else
+                    Data_Increment("Refill", 30)
+
+                    Data_Increment("Runs")
+                    Data_Increment("Victory")
+                    Stat_Increment($g_aStats, "Golem runs")
                 EndIf
 
                 Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)
@@ -232,6 +238,29 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
 
         EndSwitch
     WEnd
+
+    ;Handles finish round.
+    If getLocation() <> "map" Then
+        If $Finish_Round = "Enabled" Then
+            Local $hTimer = TimerInit()
+            While isLocation("catch-mode,catch-success,battle,battle-auto,pause", True)
+                If _Sleep(200) Then ExitLoop
+                If TimerDiff($hTimer) > 120000 Then
+                    Log_Add("Battle took too long to finish.", $LOG_ERROR)
+                    navigate("map", True, 2)
+                    ExitLoop
+                EndIf
+
+                If getLocation($g_aLocations, False) = "battle" Then clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto")
+                If isLocation("battle-end-exp,battle-end,battle-sell,battle-sell-item", True) Then
+                    navigate("map", True, 2)
+                    ExitLoop
+                EndIf
+            WEnd
+        Else
+            navigate("map", True, 2)
+        EndIf
+    EndIf
 
     ;End script
     Log_Add("Farm Astromon has ended.")

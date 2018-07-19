@@ -23,7 +23,7 @@
     Global $g_bAdbWorking = False ;If ADB is available for client.
 
 ;Config variables
-    Global $g_sImageSearchPath = @TempDir & "\ImageSearchDLL.dll" ;ImageSearchDLL default path
+    Global $g_sImageSearchPath = @ScriptDir & "\bin\dll\ImageSearchLibrary.dll" ;ImageSearchDLL default path
     Global $g_sImagesPath = @ScriptDir & "\bin\images\" ;Path to images
 
     Global $g_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
@@ -40,6 +40,7 @@
     Global $g_bSaveDebug = False ;Write debug type log to log file.
     Global $g_bLogClicks = True ;Log clicks.
     Global $g_bAskForUpdates = True ;Whether to prompt for updates or not.
+    Global $g_iDesktopScaling = 100 ;Desktop scaling percentage. Recommended 100%.
 
     Global $d_sProfilePath = @ScriptDir & "\profiles\Default\" ;Path to current seleted profile
     Global $d_sAdbDevice = "127.0.0.1:62001" ;Android debug bridge device name. Default is 127.0.0.1:62001 for nox
@@ -51,11 +52,12 @@
     Global $d_iSwipeMode = $SWIPE_ADB ;Type of swipe control
     Global $d_sWindowTitle = "NoxPlayer" ;Emulator window title.
     Global $d_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
+    Global $d_iDesktopScaling = 100 ;Desktop scaling percentage. Recommended 100%.
 
 ;MSL variables/constants
     Global Const $g_aScriptList = ["_Config", "_Hourly", "_Filter", "Farm Rare", "Farm Golem", "Farm Gem", "Farm Astromon", "Farm Guardian", "Farm Starstone"]
 
-    Global Const $g_sScriptsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scriptsv4.txt"
+    Global Const $g_sScriptsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/scripts.txt"
     Global Const $g_sNezzPosURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/nezz-locations.txt"
     Global Const $g_sPointsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/points.txt"
     Global Const $g_sPixelsURL = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/pixels.txt"
@@ -102,7 +104,7 @@
                                 "RESIST:356,255,0xF5B85E|393,254,0xEAB05B|588,372,0xF5B95E/360,255,0xD59F53|397,253,0xF4B85E|413,254,0xF3B75E/356,225,0xF4B85E|380,225,0xF7BA5F|393,225,0xE2AA58/356,255,0xF4B85E|380,255,0xF7BA5F|393,255,0xE2AA58", _
                                 "CRIT DMG:350,255,0xD59F53|383,254,0xD59F53|413,256,0xC9964F/346,253,0xE6AD59|379,254,0xE6AD59|398,256,0xEBB15A"]
 
-    Global Const $g_aImageMarks = ["map-astromon-league", "map-toc", "map-golems", "map-4th-continent", "map-sky-falls"]
+    Global Const $g_aImageMarks = ["map-astromon-league", "map-dungeons", "map-toc", "map-golems", "map-sky-falls"]
     Global Const $g_aCoorMaps =[["Phantom Forest", "map-astromon-league", -492, 46],    ["Lunar Valley", "map-astromon-league", -289, -20], _
                                 ["Aria Lake", "map-astromon-league", -199, 83],         ["Mirage Ruins", "map-astromon-league", -225, 230], _
                                 ["Dungeons", "map-astromon-league", -442, 327],         ["Pagos Coast", "map-astromon-league", 244, 174], _
@@ -119,18 +121,21 @@
                                 ["Mirage Ruins", "map-dungeons", 216, -103],            ["Astromon League", "map-dungeons", 441, -305], _
                                 ["Dungeons", "map-dungeons", 0, 0],                     ["Pagos Coast", "map-dungeons", 686, -143], _
                                 ["Sky Falls", "map-sky-falls", 0, 0],                   ["Slumbering City", "map-sky-falls", 27, -193], _
-                                ["Glacial Plains", "map-sky-falls", 338, -124],         ["Aurora Plateau", "map-sky-falls", 446, -306]]
+                                ["Glacial Plains", "map-sky-falls", 338, -124],         ["Aurora Plateau", "map-sky-falls", 446, -306], _
+                                ["Ancient Dungeon", "map-toc", 492, 0]]
 
-    Global Const $g_aVillagePos = [ "54,469,0x482E1F|306,449,0x54451E|616,422,0x3F3720/367,455,0x65552B|628,96,0x3D4340|282,23,0x485F72/738,394,0x705C36|13,413,0x6D4E38|74,382,0xBC9166", _
+     Global Const $g_aVillagePos = [ "54,469,0x482E1F|306,449,0x54451E|616,422,0x3F3720/367,455,0x65552B|628,96,0x3D4340|282,23,0x485F72/738,394,0x705C36|13,413,0x6D4E38|74,382,0xBC9166", _
                                     "64,488,0x393623|264,51,0x4D656F|18,414,0xB4AA74/192,465,0x52622E|261,47,0x597077|566,92,0x259558/54,98,0x6C7E8A|787,360,0x234923|297,545,0x2D3029", _
                                     "32,449,0x26221A|81,430,0x944E41|715,409,0x3B2F1D/111,537,0x4F4526|87,124,0x71716F|259,349,0x177831/71,382,0x26221A|646,445,0x524E2B|775,105,0x716F58", _
                                     "658,402,0x604E31|229,410,0x304138|194,329,0x76C84E/623,266,0x296D6D|609,307,0x266769|619,47,0x328B9B/677,130,0x2E95A6|98,325,0x493827|126,402,0x252C25", _
                                     "655,358,0x8CD75D|724,384,0x473627|160,159,0x28999D/254,388,0x353E32|291,472,0x43483E|491,544,0x1C201B/106,159,0x6B3D3A|32,157,0x209575|779,366,0x1D1911", _
                                     "44,389,0x323F32|633,425,0xCBD0C2|267,127,0x7C55C4/133,316,0x11110A|481,348,0x84773D|551,47,0x4A5855/691,105,0x1E8645|373,455,0x425B4D|690,325,0x2B2815", _
-                                    "232,348,0x363630|390,147,0x434F3D|710,388,0x134B66/565,238,0x6D6D56|94,211,0x9E418B|359,104,0x146961/648,344,0x443A23|540,95,0x5F7479|182,468,0x363333"]
+                                    "232,348,0x363630|390,147,0x434F3D|710,388,0x134B66/565,238,0x6D6D56|94,211,0x9E418B|359,104,0x146961/648,344,0x443A23|540,95,0x5F7479|182,468,0x363333", _
+									"150,430,0x7F4863|34,334,0xD298D5|635,182,0xDB82C9/790,350,0x00FFFF|4,381,0xC1C1AF|331,163,0x02FFFF/661,62,0x44575E|573,398,0x565D46|357,360,0x444D3F", _
+									"221,87,0x44687A|41,395,0x00FFFF|476,163,0x01FFFF/104,451,0x44332E|784,401,0xC0C0AF|507,75,0x0885C7/272,374,0x444B44|755,457,0x4A4A39|8,194,0x2F3D46"]
 
-    Global Const $g_aVillageTrees = ["296,115|486,67|683,107|685,289", "182,390|153,69|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100", "146,270|283,81|390,139|440,99|732,50|606,235", "521,413|220,220|227,227|221,225|331,45|540,138"]
-
+    Global Const $g_aVillageTrees = ["296,115|486,67|683,107|685,289", "182,390|153,69|577,81|627,186", "686,123|503,113|241,160|166,402", "133,224|320,183|394,379|629,179", "290,309|470,430|684,240|524,100", "146,270|283,81|390,139|440,99|732,50|606,235", "521,413|220,220|227,227|221,225|331,45|540,138", "789,103|735,169|680,142|479,68|104,235|259,422|478,211", "80,160|278,79|425,124|328,178|574,442|730,314|577,140"]
+    
     Global Const $g_aSwipeLeft =    [600, 550, 200, 550, "left"]
     Global Const $g_aSwipeDown =    [434, 317, 434, 406, "down"]
     Global Const $g_aSwipeUp =      [434, 406, 434, 317, "up"]
@@ -138,14 +143,16 @@
 
     Global $g_sLocation = "" ;Global current location. Used for antiStuck
     Global $g_hTimerLocation = Null ;Global timer for location. Used for antiStuck
+    Global $g_hTimerScheduledRestart = Null ;Global timer for schedules restart.
     Global $g_bPerformHourly = False ;Status to do hourly or not.
     Global $g_bPerformGuardian = True ;Status to do guardian or not.
+    Global $g_hTimeSpent = Null ;Time spent. Will be reset everytime it is saved into the cumulative stats.
+    Global $g_aStats[0] ;Stores the Cumulative stats.
     Global $g_aScripts[0] ;Script data [[script, description, [[config, value, description], [..., ..., ...]]], ...]
     Global $g_aLocations[0] ;Data locations [[location, value], ...]
     Global $g_aPixels[0] ;Individual pixel data [[name, pixel], ...]
     Global $g_aPoints[0] ;Significant Points in game [[name, point], ...]
     Global $g_aNezzPos[0] ;Nezz click positions for different village angles
-
 
 ;GUI variables
     Global $hLV_Log, $hLV_Stat ;log and stats listviews

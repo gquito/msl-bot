@@ -47,6 +47,11 @@ Func getMapCoor($map)
 		Return -3
 	EndIf
 
+	;Returns early if final coordinations are in the way of the events. This prevents clicking the event and taking up time.
+	If ($finalX > 620) And ($finalY > 345) Then
+		Return -4
+	EndIf
+
 	;Output
 	Local $returnPoint = [$finalX, $finalY]
 	Return $returnPoint
@@ -64,14 +69,14 @@ Func _getMapMarks()
 	Local $finalArr[0] ;Empty array for marks.
 
 	;Adding marks that are found in map
-	CaptureRegion()
+	captureRegion()
 	For $myMark In $g_aImageMarks
-		Local $imageCoor = findImage($myMark, 100, 0, Default, Default, Default, Default, False)
+		Local $imageCoor = findImage($myMark, 85, 0, 0, 0, 800, 552, False)
 
 		;If image found then it adds a mark into $finalArr
 		If isArray($imageCoor) Then
 			Local $newMark = [$myMark, $imageCoor[0], $imageCoor[1]]
-			_ArrayAdd($finalArr, $newMark, 0, default, default, 1) ;Force as single item
+			_ArrayAdd($finalArr, $newMark, 0, "|", @CRLF, 1) ;Force as single item
 		EndIf
 	Next
 
@@ -258,7 +263,7 @@ Func findLevel($iLevel)
 				;Looking for level using findImage
 				If $iLevel < 10 Then $iLevel = "0" & $iLevel ;Must be in format ##
 
-				Local $aPoint = findImage("level-n" & $iLevel, 100, 0, 402, 229, 50, 250) ;tolerance 100, rectangle at (402,229) dim. 50x250
+				Local $aPoint = findImage("level-n" & $iLevel, 95, 0, 402, 229, 50, 250) ;tolerance 100, rectangle at (402,229) dim. 50x250
 				If isArray($aPoint) = False Then Return -1
 				;Found point
 
@@ -270,7 +275,7 @@ Func findLevel($iLevel)
 			Local $sLevel = StringLower($iLevel)
 			Switch $sLevel
 				Case "exp", "fruit", "gold"
-					LocaL $t_aPoint = findImage("level-" & $sLevel, 100, 0, 681, 229, 90, 250) ;tolerance 100; rectangle at (681,229) dim. 125x250
+					LocaL $t_aPoint = findImage("level-" & $sLevel, 90, 0, 681, 229, 90, 250) ;tolerance 100; rectangle at (681,229) dim. 125x250
 					If isArray($t_aPoint) = True Then $t_aPoint[0] = 725
 
 					Return $t_aPoint
@@ -307,20 +312,34 @@ EndFunc
 #ce
 Func findGuardian($sMode)
 	captureRegion()
-	If isArray(findColor("386,470", "1,-220", 0xCC0F12, 10, 1, -1)) = False Then Return -1
-
+	
 	$sMode = StringLower(StringStripWS($sMode, $STR_STRIPALL))
-	Local $sImagePath = "misc-guardian-" & $sMode
+	Local $sImagePath, $aResult
 	Local Const $iX = 650
-
 	Switch $sMode
 		Case "left", "right"
+			$sImagePath = "misc-guardian-" & $sMode
+			$aResult = findImage($sImagePath, 85, 0, 550, 250, 60, 250)
+			If isArray($aResult) Then 
+				$aResult[0] = $iX
+			Else
+				Return -1
+			EndIf
 		Case Else
-			Return findColor("678,470", "1,-220", 0xFCD128, 10, 1, -1)
+			$sImagePath = "misc-guardian-left"
+			$aResult = findImage($sImagePath, 85, 0, 550, 250, 60, 250)
+			If isArray($aResult) Then 
+				$aResult[0] = $iX
+			Else
+				$sImagePath = "misc-guardian-right"
+				$aResult = findImage($sImagePath, 85, 0, 550, 250, 60, 250)
+				If isArray($aResult) Then 
+					$aResult[0] = $iX
+				Else
+					Return -1
+				EndIf
+			EndIf
 	EndSwitch
-
-	Local $aResult = findImage($sImagePath, 100, 0, 550, 250, 60, 250)
-	If isArray($aResult) Then $aResult[0] = $iX
 
 	Return $aResult
 EndFunc
@@ -401,7 +420,7 @@ Func getStone()
 	;Getting quantity
 	CaptureRegion("", 440, 214, 50, 20)
 	For $i = 1 To 5
-		If isArray(findImage("misc-stone-x" & $i, 100, 0, 440, 214, 50, 20, False)) = True Then
+		If isArray(findImage("misc-stone-x" & $i, 90, 0, 440, 214, 50, 20, False)) = True Then
 			$iQuantity = $i
 			ExitLoop
 		EndIf
@@ -414,4 +433,98 @@ Func getStone()
 
 	Local $t_aData = [$sElement, $sGrade, $iQuantity]
 	Return $t_aData
+EndFunc
+
+#cs
+	Function: Retrieves which round the battle is currently.
+	Parameters:
+		$aPixels: List where the pixel rounds are.
+	Return: Current round and the number of total rounds: Array format=[current, max]
+#ce
+Func getRound($aPixels = $g_aPixels)
+	Local $iMax = 0 ;Max number of rounds
+	;Getting max number of rounds
+	For $i = 2 To 4
+		Local $t_sArgument = getArg($aPixels, "max-round-" & $i)
+		If ($t_sArgument = "") Or ($t_sArgument = -1) Then ContinueLoop
+
+		If isPixel($t_sArgument) = True Then
+			$iMax = $i
+			ExitLoop
+		EndIf
+	Next
+	If $iMax = 0 Then 
+		$g_sErrorMessage = "getRound() => Could not find max."
+		Return -1
+	EndIf
+
+	Local $iCurr = 0 ;Current round
+	;Getting current round
+	For $i = 1 To $iMax
+		Local $t_sArgument = getArg($aPixels, "curr-round-" & $i)
+		If ($t_sArgument = "") Or ($t_sArgument = -1) Then ContinueLoop
+
+		If isPixel($t_sArgument) = True Then
+			$iCurr = $i
+			ExitLoop
+		EndIf
+	Next
+	If $iCurr = 0 Then 
+		$g_sErrorMessage = "getRound() => Could not find current."
+		Return -1
+	EndIf
+
+	Local $t_aResult = [$iCurr, $iMax]
+	Return $t_aResult
+EndFunc
+
+#cs 
+	Function: Tries to close a in game window interface.
+	Parameters:
+		$sPixelName: Name for argument within a formated argument array.
+		$aPixelList: Formatted argument array.
+	Return: If window was closed successfully then return true. Else return false.
+#ce
+Func closeWindow($sPixelName = "window_exit", $aPixelList = $g_aPixels)
+	Local $t_sPixels = getArg($aPixelList, $sPixelName)
+
+	If $t_sPixels = "" Or $t_sPixels = -1 Then
+		$g_sErrorMessage = "closeWindow() => No pixel found."
+		Return -1
+	EndIf
+
+	Local $aPixelSet = StringSplit($t_sPixels, "/", $STR_NOCOUNT)
+	For $i = 0 To UBound($aPixelSet)-1
+		Local $t_iTimerInit = TimerInit()
+		While isPixel($aPixelSet[$i], 10) = True
+			If TimerDiff($t_iTimerInit) >= 2000 Then Return False ;two seconds
+			;Closing until pixel is not the same.
+			Local $t_aPixel = StringSplit($aPixelSet[$i], ",", $STR_NOCOUNT)
+			
+			clickPoint($t_aPixel, 1, 0)
+
+			If _Sleep(500) Then Return False
+			CaptureRegion()
+
+			If isPixel($aPixelSet[$i], 10) = False Then Return True
+		WEnd
+	Next
+
+	Return False
+EndFunc
+
+#cs 
+	Function: Tries to close dialogue between players in game
+	Return: If dialogue has been closed successfully then return true. Else return false.
+#ce
+Func skipDialogue()
+	Local $t_iTimerInit = TimerInit()
+	While getLocation() = "dialogue"
+		If TimerDiff($t_iTimerInit) >= 20000 Then Return False ;twenty seconds
+
+		clickPoint(getArg($g_aPoints, "dialogue-skip"))
+		If _Sleep(200) Then Return False
+	WEnd
+
+	Return True
 EndFunc

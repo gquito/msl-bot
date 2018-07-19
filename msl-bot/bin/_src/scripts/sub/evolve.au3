@@ -415,7 +415,6 @@ EndFunc
 ;************************************************************************************************************************************************************
 ;************************************************************************************************************************************************************
 
-
 Func evolve2()
     Log_Level_Add("evolve")
     Log_Add("Evolving astromon using algorithm 2.")
@@ -685,6 +684,168 @@ Func alignMonsters()
     If _Sleep(500) Then Return 0
 EndFunc
 
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+;************************************************************************************************************************************************************
+
+;uses imagesearch for slime farming.
+Func evolve3($iTolerance = 90)
+    Log_Level_Add("evolve")
+    Log_Add("Evolving astromon using algorithm 3.")
+
+    Local $aOut = [-1, ""]
+    Local $aInventoryDim[4] = [20, 100, 300, 350]
+    While True
+        ;Defining variables
+        Local $iEvo1 = 0 ; Number of Evo1 slimes.
+        Local $iEvo2 = 0 ; Numerb of Evo2 slimes.
+
+        $g_bLogEnabled = False
+        If navigate("monsters", True, 3) = False Then
+            $aOut[1] = "Could not navigate to monsters."
+            ExitLoop
+        EndIf
+        $g_bLogEnabled = True
+
+        ; If Evo2 slimes is insufficient for evo3, tries to use evo1 slimes. 
+        ; Uses 4 evo1 slimes at a time. If there are no more evo1 slimes and we still
+        ; need evo2 slimes, it will return number of evo1 slimes needed for farming.
+        $iEvo2 = UBound(findImageMultiple("manage-slimex", $iTolerance, 10, 10, 4, $aInventoryDim[0], $aInventoryDim[1], $aInventoryDim[2], $aInventoryDim[3], True, False))
+        Log_Add("Evo2 Count: " & $iEvo2)
+
+        If $iEvo2 < 4 Then
+            Log_Add("Not enough evo2 to make an evo3.")
+
+            While (4-$iEvo2) > 0
+                Log_Add("Number of evo2 needed: " & (4-$iEvo2))
+
+                $g_bLogEnabled = False
+                If navigate("monsters", True, 3) = False Then
+                    $aOut[1] = "Could not navigate to monsters."
+                    ExitLoop
+                EndIf
+                $g_bLogEnabled = True
+
+                Local $aPoints_Evo1 = findImageMultiple("manage-slime", $iTolerance, 10, 10, 16, $aInventoryDim[0], $aInventoryDim[1], $aInventoryDim[2], $aInventoryDim[3], True, False)
+                $iEvo1 = UBound($aPoints_Evo1)
+
+                If $iEvo1 >= 4 Then
+                    Log_Add("Evolving evo1 astromon.")
+
+                    clickPoint($aPoints_Evo1[0][0] & "," & $aPoints_Evo1[0][1], 3, 50, Null)
+                    clickUntil(getArg($g_aPoints, "monsters-evolution"), "isLocation", "monsters-evolution", 5, 500)
+
+                    If _awaken() = True Then
+                        Local $iMergeResult = _merge()
+                        If $iMergeResult = 1 Then       ; Success
+                            $iEvo2 += 1
+                        ElseIf $iMergeResult = 0 Then   ; Failure
+                            $g_bLogEnabled = False
+                            navigate("monsters", True, 2)
+                            $g_bLogEnabled = True
+                        Else                            ; No Gold
+                            $aOut[0] = -2
+                            $aOut[1] = "Not enough gold."
+                            ExitLoop(2)
+                        EndIf
+                    Else
+                        $g_bLogEnabled = False
+                        navigate("monsters", True, 2)
+                        $g_bLogEnabled = True
+                    EndIf
+
+                Else
+                    ; Returning number of evo1 needed
+                    $aOut[0] = 4*(4-$iEvo2) - $iEvo1
+                    Log_Add("Need " & $aOut[0] & " astromons for an evo3.")
+                    ExitLoop(2)
+                EndIf
+
+                If _Sleep(0) Then ExitLoop(2)
+                If (4-$iEvo2) > 0 Then 
+                    Log_Add("Collecting quest rewards.")
+                    $g_bLogEnabled = False
+                    collectQuest()
+                    $g_bLogEnabled = True
+                EndIf
+            WEnd
+        EndIf
+
+        ; Assuming all is well, the user should have at least 4 evo2 here.
+        ; Bot will awaken and evolve the evo2s into an evo3 and proceed to release the evo3.
+        Log_Add("Evolving astromons to evo3.")
+
+        $g_bLogEnabled = False
+        If navigate("monsters", True, 3) = False Then
+            $aOut[1] = "Could not navigate to monsters."
+            ExitLoop
+        EndIf
+        $g_bLogEnabled = True
+
+        Local $aPoints_Evo2 = findImageMultiple("manage-slimex", $iTolerance, 10, 10, 4, $aInventoryDim[0], $aInventoryDim[1], $aInventoryDim[2], $aInventoryDim[3], True, False)
+        $iEvo2 = UBound($aPoints_Evo2)
+        If $iEvo2 < 4 Then
+            $aOut[1] = "Not enough evo2 astromons to make an evo3."
+            ExitLoop
+        EndIf
+
+        clickPoint($aPoints_Evo2[0][0] & "," & $aPoints_Evo2[0][1], 3, 50, Null)
+        clickUntil(getArg($g_aPoints, "monsters-evolution"), "isLocation", "monsters-evolution", 5, 500)
+
+        If _awaken() = True Then
+            Local $iMergeResult = _merge()
+            If $iMergeResult = 1 Then       ; Success
+                $aOut[0] = 0
+                $aOut[1] = "Successfully evolved astromon to evo3."
+            ElseIf $iMergeResult = 0 Then   ; Failure
+                $aOut[1] = "Could not evolve astromons to evo3."
+                ExitLoop
+            Else                            ; No Gold
+                $aOut[0] = -2
+                $aOut[1] = "Not enough gold."
+                ExitLoop
+            EndIf
+        Else
+            $g_bLogEnabled = False
+            navigate("monsters", True, 2)
+            $g_bLogEnabled = True
+        EndIf
+
+        ; Assuming all is well, this section should only trigger when successfully evolved an evo3.
+        ; Release and collect quest.
+        Log_Add("Cleaning up evo3 slime.")
+        $g_bLogEnabled = False
+        navigate("monsters", True, 3)
+        $g_bLogEnabled = True
+        
+        If _getEvolution() = 3 Then
+            If isPixel("399,129,0xE1BC87", 20) = True Then
+                clickUntil("776,110", "isLocation", "monsters", 5, 100)
+                If clickWhile(getArg($g_aPoints, "release"), "isLocation", "monsters,monsters-evolution", 10, 100) = True Then
+                    clickPoint(getArg($g_aPoints, "release-confirm"), 20, 200)
+                EndIf
+            EndIf
+        EndIf
+
+        Log_Add("Collecting quest rewards.")
+        $g_bLogEnabled = False
+        collectQuest()
+        $g_bLogEnabled = True
+
+        ExitLoop
+    WEnd
+
+    Log_Add("Evolving astromon using algorithm 2 result: " & $aOut[0], $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $aOut
+EndFunc
+
+
 #cs
     Function: In monsters-evolution location, will select the three astromons to fulfill a complete evolution. Note: Will not merge astromons, just select; this is handled in _merge() function.
     Returns: If successfully selected then returns true
@@ -719,7 +880,6 @@ EndFunc
 #ce
 Func _merge()
     Local $t_hTimer = TimerInit()
-    CaptureRegion()
     While getLocation() = "monsters-evolution"
         If _Sleep(0) Then Return False
         If TimerDiff($t_hTimer) > 60000 Then Return False

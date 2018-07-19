@@ -10,7 +10,6 @@
 #ce
 Func catch($aImages, ByRef $iAstrochips)
     Log_Level_Add("catch")
-    Log_Add("Catching astromons.")
 
     Local $bOutput = ""
     While True 
@@ -31,7 +30,7 @@ Func catch($aImages, ByRef $iAstrochips)
         Local $iSize = UBound($aImages, $UBOUND_ROWS)
         Local $aFound = Null ;This is where the astromon position is stored if found
         For $i = 0 To $iSize-1
-            $aFound = findImage("catch-" & StringReplace(StringStripWS(StringLower($aImages[$i]), $STR_STRIPTRAILING), " ", "-"), 120, 0, 0, 263, 800, 210)
+            $aFound = findImage("catch-" & StringReplace(StringStripWS(StringLower($aImages[$i]), $STR_STRIPTRAILING), " ", "-"), 90, 0, 0, 263, 800, 210, True, False)
             $sAstromon = $aImages[$i]
             If isArray($aFound) = True Then ExitLoop
         Next
@@ -65,6 +64,7 @@ Func catch($aImages, ByRef $iAstrochips)
 
             ;In catch process
             $iAstrochips -= 1
+            Stat_Increment($g_aStats, "Astrochips used", 1)
             If $g_bAdbWorking = True Then ;speed catch
                 Log_Add("Double ESCAPE for quick catch.")
                 adbSendESC()
@@ -119,6 +119,13 @@ Func catch($aImages, ByRef $iAstrochips)
             Switch $sLocation
                 Case "catch-success"
                     Log_Add("Caught a(n) " & $sAstromon & ".", $LOG_INFORMATION)
+
+                    Switch $sAstromon
+                        Case "Legendary","Exotic","Super Rare","Rare","Variant"
+                            Stat_Increment($g_aStats, $sAstromon & " caught")
+                    EndSwitch
+                    Stat_Increment($g_aStats, "Overall caught")
+
                     $bOutput = $sAstromon
                     ExitLoop(2)
                 Case "battle-auto"
@@ -131,8 +138,9 @@ Func catch($aImages, ByRef $iAstrochips)
                 Case "pause"
                     clickWhile(getArg($g_aPoints, "battle-continue"), "isLocation", "pause")
                     $iAstrochips += 1
+                    Stat_Increment($g_aStats, "Astrochips used", -1)
 
-                    navigate("catch-mode")
+                    navigate("catch-mode", False)
             EndSwitch
         WEnd
 
