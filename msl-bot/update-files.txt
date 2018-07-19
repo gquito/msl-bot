@@ -3,7 +3,7 @@
 -bin/image/catch/catch-one-star2.bmp
 -bin/image/catch/catch-two-star2.bmp
 !msl-bot.au3
-!README.au3
+!README.txt
 !bin/dll/ImageSearchLibrary.dll
 !bin/_src/global.au3
 !bin/_src/imports.au3
