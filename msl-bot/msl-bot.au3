@@ -1,6 +1,6 @@
 Global $aVersion = [4, 0, 0] ;Major, Minor, Build
 
-#pragma compile(Out, msl-donator.exe)
+#pragma compile(Out, msl-bot.exe)
 #pragma compile(Icon, bin\_src\msl-bot.ico)
 #pragma compile(x64, false)
 #pragma compile(UPX, false)
