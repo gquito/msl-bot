@@ -223,6 +223,11 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
                 navigate("map", True)
                 ExitLoop
 
+            Case "battle"
+                Data_Set("Status", "Toggling auto battle on.")
+
+                clickPoint(getArg($g_aPoints, "battle-auto"))
+
             Case "battle-auto"
                     Data_Set("Status", "In battle.")
             EndSwitch
