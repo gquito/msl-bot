@@ -195,7 +195,11 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
                 Data_Set("Status", "Unpausing.")
 
                 clickPoint(getArg($g_aPoints, "battle-continue"))
-            
+            Case "battle"
+                Data_Set("Status", "Toggling auto battle on.")
+
+                clickPoint(getArg($g_aPoints, "battle-auto"))
+
             Case "battle-auto"
                     Data_Set("Status", "In battle.")
             EndSwitch
