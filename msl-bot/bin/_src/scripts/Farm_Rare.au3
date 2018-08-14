@@ -54,7 +54,7 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
     #cs 
         Script will run story mode and capture rare astromons.
     #ce
-    While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") < 1)
+    While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") <= 1)
         If _Sleep(100) Then ExitLoop
 
         $sLocation = isLocation($aLocations, False)

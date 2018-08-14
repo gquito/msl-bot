@@ -46,7 +46,7 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Usable_Astrogems, $Guardian
 
     ;Script Process
     ;Script will run golem dungeons and filter out the gems
-    While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") < 1)
+    While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") <= 1)
         If _Sleep(100) Then ExitLoop
 
         $sLocation = isLocation($aLocations, False)
