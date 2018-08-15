@@ -280,6 +280,21 @@ Func ScriptTest()
         _ArrayAdd($aTempLOG, "  -ADB response status: Unknown")
         $sError &= @CRLF & @CRLF & "- Could not test ADB response because ADB or Capture is not working."
     EndIf
+    
+    ;Check Resolution
+    If $bAdbWorking = True Then
+        _ArrayAdd($aTempLOG, "Checking resolution: ")
+        Local $sAdbResponse = StringStripWS(StringMid(adbCommand("shell wm size"),15),$STR_STRIPALL)
+        _ArrayAdd($aTempLOG, "  -Android Resolution: " & $sAdbResponse)
+        If ($sAdbResponse <> "800x552") Then
+            $sError &= @CRLF & "- Emulator resolution is not 800x552."
+        EndIf
+        $sAdbResponse = StringStripWS(StringMid(adbCommand("shell wm density"),18),$STR_STRIPALL)
+        _ArrayAdd($aTempLOG, "  -Android Dpi: " & $sAdbResponse)
+        If ($sAdbResponse <> "160") Then
+            $sError &= @CRLF & "- Emulator dpi is not 160."
+        EndIf
+    EndIf
 
     ;Imagesearch test
     _ArrayAdd($aTempLOG, "Checking Imagesearch:")
