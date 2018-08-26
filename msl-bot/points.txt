@@ -75,3 +75,14 @@ ancient-dungeon-golem:184, 219
 ancient-dungeon-colossus:175, 384
 shop-buy:648, 450
 shop-buy-confirm:411, 310
+monsters-grid-first:50, 150
+monsters-food-first:360, 300
+monsters-food-feed10:340, 400
+monsters-food-feed:537, 395
+manage-upgrade:256, 254
+manage-sort:687, 152
+manage-sort-recent:685, 266
+manage-sort-order:752, 148
+manage-grid-first:346, 213
+upgrade-confirm:391, 416
+upgrade-try10:177, 416
