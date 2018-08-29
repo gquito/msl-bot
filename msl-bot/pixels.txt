@@ -37,3 +37,4 @@ bingo-accept-all:546,336,0x0C807E
 bingo-get-rewards:424,423,0x0C817E
 map-battle-autofill-on:751,305,0x49B5FF
 guardian-dungeons-no-found:518,364,0xD8C1A6|433,362,0xDBC4A9
+gem-sort-asc:752,148,0x583132
