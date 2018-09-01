@@ -86,3 +86,6 @@ manage-sort-order:752, 148
 manage-grid-first:346, 213
 upgrade-confirm:391, 416
 upgrade-try10:177, 416
+Village-Missions-Popup-Close:74,333
+Village-Events-Close:744,72
+Village-Pack-Close:779,108
