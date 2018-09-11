@@ -50,7 +50,7 @@ dungeons-gold:110, 314
 dungeons-guardian:110, 381
 dungeons-special:110, 448
 get-reward:399, 333
-monsters-evolution:547, 394
+monsters-evolution:600, 390
 monsters-evolution-x:774, 112
 awaken-locked-cancel:495, 313
 lost-connection-retry:332, 322
