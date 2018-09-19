@@ -320,14 +320,14 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                     While TimerDiff($t_hTimer) < 30000
                         Switch getLocation()
                             Case "battle-auto"
-                                If isPixelOR("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = False Then
+                                If isPixel(getPixelArgs("battle-catch-available"), 10) = False Then
                                     clickPoint(getArg($g_aPoints, "battle-auto"))
                                 Else
                                     clickPoint(getArg($g_aPoints, "battle-catch"))
                                 EndIf
                             Case "battle"
                                 ;Looking for red hp pixels to that indicates if can click into catch-mode.
-                                If isPixelOR("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22", 10) = True Then
+                                If (Not(IsPixel(getArg($g_aPixels, "catch-mode-unavailable"))) And isPixel(getArg($g_aPixels, "battle-catch-available"), 10)) Then
                                     clickPoint(getArg($g_aPoints, "battle-catch"))
                                 EndIf
                             Case "catch-mode"
@@ -342,11 +342,11 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                         If _Sleep(500) Then ExitLoop(2)
 
                         CaptureRegion()
-                        If isPixel("746,267,0xBF332A") Then
+                        If (IsPixel(getArg($g_aPixels, "catch-mode-unavailable"))) Then
                             If _Sleep(5000) Then ExitLoop(2)
 
                             CaptureRegion()
-                            If isPixel("746,267,0xBF332A") Then 
+                            If (IsPixel(getArg($g_aPixels, "catch-mode-unavailable"))) Then 
                                 Data_Set("Astrochips", 0)
                                 ExitLoop(2)
                             EndIf
