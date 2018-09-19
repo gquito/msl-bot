@@ -89,3 +89,4 @@ upgrade-try10:177, 416
 Village-Missions-Popup-Close:74,333
 Village-Events-Close:744,72
 Village-Pack-Close:779,108
+pause-close:260,320
