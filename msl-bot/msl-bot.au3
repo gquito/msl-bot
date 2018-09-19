@@ -7,8 +7,8 @@ Global $aVersion = [4, 0, 3] ;Major, Minor, Build
 #pragma compile(ProductName, Monster Super League Bot)
 #pragma compile(FileDescription, Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot)
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 4.0.2)
-#pragma compile(ProductVersion, 4.0.2)
+#pragma compile(FileVersion, 4.0.3)
+#pragma compile(ProductVersion, 4.0.3)
 #pragma compile(OriginalFilename, msl-bot.exe)
 
 #include-once

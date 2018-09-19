@@ -22,7 +22,7 @@ Func collectQuest()
 
 				clickPoint($aTab, 3, 50)
 				If $aTab[0] < 400 Then ;capture, challenges
-					If(ispixel(getArg("quest-new"))) Then
+					If(ispixel(getArg($g_aPixels, "quest-new"))) Then
 						navigate("village")
 						ExitLoop
 					EndIf
