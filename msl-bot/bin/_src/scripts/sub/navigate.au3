@@ -320,7 +320,7 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                     While TimerDiff($t_hTimer) < 30000
                         Switch getLocation()
                             Case "battle-auto"
-                                If isPixel(getPixelArgs("battle-catch-available"), 10) = False Then
+                                If isPixel(getArg($g_aPixels,"battle-catch-available"), 10) = False Then
                                     clickPoint(getArg($g_aPoints, "battle-auto"))
                                 Else
                                     clickPoint(getArg($g_aPoints, "battle-catch"))
