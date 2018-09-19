@@ -22,6 +22,10 @@ Func collectQuest()
 
 				clickPoint($aTab, 3, 50)
 				If $aTab[0] < 400 Then ;capture, challenges
+					If(ispixel(getArg("quest-new"))) Then
+						navigate("village")
+						ExitLoop
+					EndIf
 					clickPoint("729,190")
 				Else ;monthly, weekly, daily
 					clickPoint("570,190")
