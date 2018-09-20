@@ -1,4 +1,4 @@
-Global $aVersion = [4, 0, 5] ;Major, Minor, Build
+Global $aVersion = [4, 0, 6] ;Major, Minor, Build
 
 #pragma compile(Out, "msl-bot.exe")
 #pragma compile(Icon, "bin\_src\msl-bot.ico")

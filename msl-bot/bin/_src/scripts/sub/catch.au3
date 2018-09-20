@@ -69,7 +69,7 @@ Func catch($aImages, ByRef $iAstrochips)
                 Log_Add("Double ESCAPE for quick catch.")
                 adbSendESC()
                 ;clickPoint continue instead of adbSendESC()
-                clickPoint(getArg($g_aPoints,"pause-continue"), 2, 50, Null)
+                clickPoint(getArg($g_aPoints,"battle-continue"), 2, 50, Null)
             EndIf
 
             Local $t_hTimer = TimerInit()
