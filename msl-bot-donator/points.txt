@@ -1,91 +1,91 @@
-back:20, 20
-tap:795, 547
-battle-pause:34, 338
-battle-give-up:446, 314
-battle-continue:324, 330
-battle-end-airship:330, 387
-battle-end-map:399, 386
-battle-end-monsters:466, 385
-dialogue-skip:756, 23
-village-play:710, 507
-golem-dungeons-top:624, 180
-golem-dungeons-b7:624, 213
-golem-dungeons-b8:624, 286
-golem-dungeons-b9:624, 361
-golem-dungeons-b10:624, 429
-map-battle-play:706, 492
-battle-auto:33, 214
-boss:402, 239
-quick-restart:455, 267
-refill:364, 423
-refill-confirm:406, 308
-battle-sell-item-cancel:293, 400
-battle-sell-item-sell:500, 400
-battle-sell-item-okay:377, 400
-village-quests:460, 502
-map-battle-autobattle:653, 422
-map-battle-autobattle-confirm:331, 318
-map-stage-mode:677, 80
-map-stage-normal:678, 111
-map-stage-hard:678, 141
-map-stage-extreme:676, 170
-battle-catch:785, 239
-catch-mode-cancel:782, 84
-village-monsters:255, 508
-monsters-grid:133, 24
-monsters-manage:741, 176
-monsters-recent:266, 471
-manage-grade1:327, 389
-manage-grade2:365, 389
-manage-grade3:402, 389
-manage-grade4:440, 389
-manage-sell-selected:670, 396
-manage-sell-confirm:382, 327
-manage-x:773, 113
-play-again:529, 284
-battle-end-exit:400, 260
-dungeons-starstone:110, 175
-dungeons-elemental:110, 245
-dungeons-gold:110, 314
-dungeons-guardian:110, 381
-dungeons-special:110, 448
-get-reward:399, 333
-monsters-evolution:600, 390
-monsters-evolution-x:774, 112
-awaken-locked-cancel:495, 313
-lost-connection-retry:332, 322
-astroleague-refresh:712, 175
-astroleague-confirm:399, 309
-bingo-icon:79, 87
-bingo-button:600, 346
-bingo-reward:448, 331
-tab-expand:6, 247
-tab-friends:96, 204
-friends-list:337, 126
-send-to-all:711, 171
-friends-astrogems:727, 229
-monsters-level-up:731, 139
-release:646, 456
-release-confirm:311, 331
-gold-dungeons-energy:651, 392
-astroleague-draw:729, 281
-astroleague-draw-confirm:327, 311
-astroleague-exit:307, 271
-ancient-dungeon-golem:184, 219
-ancient-dungeon-colossus:175, 384
-shop-buy:648, 450
-shop-buy-confirm:411, 310
-monsters-grid-first:50, 150
-monsters-food-first:360, 300
-monsters-food-feed10:340, 400
-monsters-food-feed:537, 395
-manage-upgrade:256, 254
-manage-sort:687, 152
-manage-sort-recent:685, 266
-manage-sort-order:752, 148
-manage-grid-first:346, 213
-upgrade-confirm:391, 416
-upgrade-try10:177, 416
+back:20,20
+tap:795,547
+battle-pause:34,338
+battle-give-up:446,314
+battle-continue:324,330
+battle-end-airship:330,387
+battle-end-map:399,386
+battle-end-monsters:466,385
+dialogue-skip:756,23
+village-play:710,507
+golem-dungeons-top:624,180
+golem-dungeons-b7:624,213
+golem-dungeons-b8:624,286
+golem-dungeons-b9:624,361
+golem-dungeons-b10:624,429
+map-battle-play:706,492
+battle-auto:33,214
+boss:402,239
+quick-restart:455,267
+refill:364,423
+refill-confirm:406,308
+battle-sell-item-cancel:293,400
+battle-sell-item-sell:500,400
+battle-sell-item-okay:377,400
+village-quests:460,502
+map-battle-autobattle:653,422
+map-battle-autobattle-confirm:331,318
+map-stage-mode:677,80
+map-stage-normal:678,111
+map-stage-hard:678,141
+map-stage-extreme:676,170
+battle-catch:785,239
+catch-mode-cancel:782,84
+village-monsters:255,508
+monsters-grid:133,24
+monsters-manage:741,176
+monsters-recent:266,471
+manage-grade1:327,389
+manage-grade2:365,389
+manage-grade3:402,389
+manage-grade4:440,389
+manage-sell-selected:670,396
+manage-sell-confirm:382,327
+manage-x:773,113
+play-again:529,284
+battle-end-exit:400,260
+dungeons-starstone:110,175
+dungeons-elemental:110,245
+dungeons-gold:110,314
+dungeons-guardian:110,381
+dungeons-special:110,448
+get-reward:399,333
+monsters-evolution:600,390
+monsters-evolution-x:774,112
+awaken-locked-cancel:495,313
+lost-connection-retry:332,322
+astroleague-refresh:712,175
+astroleague-confirm:399,309
+bingo-icon:79,87
+bingo-button:600,346
+bingo-reward:448,331
+tab-expand:6,247
+tab-friends:96,204
+friends-list:337,126
+send-to-all:711,171
+friends-astrogems:727,229
+monsters-level-up:731,139
+release:646,456
+release-confirm:311,331
+gold-dungeons-energy:651,392
+astroleague-draw:729,281
+astroleague-draw-confirm:327,311
+astroleague-exit:307,271
+ancient-dungeon-golem:184,219
+ancient-dungeon-colossus:175,384
+shop-buy:648,450
+shop-buy-confirm:411,310
+monsters-grid-first:50,150
+monsters-food-first:360,300
+monsters-food-feed10:340,400
+monsters-food-feed:537,395
+manage-upgrade:256,254
+manage-sort:687,152
+manage-sort-recent:685,266
+manage-sort-order:752,148
+manage-grid-first:346,213
+upgrade-confirm:391,416
+upgrade-try10:177,416
 Village-Missions-Popup-Close:74,333
 Village-Events-Close:744,72
 Village-Pack-Close:779,108
