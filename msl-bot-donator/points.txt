@@ -93,3 +93,5 @@ pause-close:260,320
 exotic-festival-tickets:730,450
 exotic-ticket-claim-close:770,340
 bingo-accept-all:597,339
+no-astrochips-refill:327,311
+astrochips-popup-refill:396,311
