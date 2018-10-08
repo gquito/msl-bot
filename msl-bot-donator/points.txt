@@ -95,3 +95,4 @@ exotic-ticket-claim-close:770,340
 bingo-accept-all:597,339
 no-astrochips-refill:327,311
 astrochips-popup-refill:396,311
+astrochips-refill:737,306
