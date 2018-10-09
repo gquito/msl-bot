@@ -90,3 +90,5 @@ Village-Missions-Popup-Close:74,333
 Village-Events-Close:744,72
 Village-Pack-Close:779,108
 pause-close:260,320
+event-list-close:776,20
+tap-to-start:394,469
