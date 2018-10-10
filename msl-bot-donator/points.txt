@@ -104,3 +104,4 @@ gem-consecutive-upgrades-plus:576,250
 gem-consecutive-upgrades-confirm:400,440
 event-list-close:776,20
 tap-to-start:394,469
+summon-popup-close:647,105
