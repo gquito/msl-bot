@@ -106,3 +106,4 @@ event-list-close:776,20
 tap-to-start:394,469
 summon-popup-close:647,105
 astroleague-offense:459,124
+map-stage-close:775,75
