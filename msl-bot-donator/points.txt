@@ -107,3 +107,12 @@ tap-to-start:394,469
 summon-popup-close:647,105
 astroleague-offense:459,124
 map-stage-close:775,75
+battle-sell-item-first:129,234
+battle-sell-item-second:229,234
+battle-sell-item-third:329,234
+battle-first-mon:249,210
+battle-first-mon-chibi:250,233
+battle-first-friendly-mon:100,515
+battle-second-friendly-mon:260,515
+battle-third-friendly-mon:441,515
+battle-fourth-friendly-mon:608,515
