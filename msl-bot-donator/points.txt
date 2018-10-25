@@ -116,3 +116,7 @@ battle-first-friendly-mon:100,515
 battle-second-friendly-mon:260,515
 battle-third-friendly-mon:441,515
 battle-fourth-friendly-mon:608,515
+app-update:379,314
+play-store-update:559,258
+play-store-open:700,260
+app-data-download:370,327
