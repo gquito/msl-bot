@@ -99,6 +99,7 @@ astrochips-refill:737,306
 village-summon:600,500
 free-1-3-summon:475,460
 free-3-5-summon:694,460
+summon-10+1:475,360
 gem-consecutive-upgrades-minus:226,250
 gem-consecutive-upgrades-plus:576,250
 gem-consecutive-upgrades-confirm:400,440
