@@ -140,3 +140,4 @@ crash-okay:474,319
 village-missions-popup-close:74,333
 village-events-close:744,72
 village-pack-close:779,108
+autobattle-prompt-close:605,120
