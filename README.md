@@ -28,12 +28,12 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 * Latest updates from your Graphics Drivers.
 * Latest version of [Nox](https://www.bignox.com/). Recommended versions: 5.0.0.1 and above.
 * AutoIT: [Download here](https://www.autoitscript.com/site/autoit/).
-* The bot app: [Download here](https://github.com/GkevinOD/msl-bot/archive/v3.0.zip).
+* The bot app: [Download here](https://github.com/GkevinOD/msl-bot/releases/download/v4.0/msl-bot-v4.0.zip).
 
 ---
 ### Before you start:
 * When running the bot app through .au3, Run Script (x86) by right clicking on the file.
-* Set your Windows Display Scaling to 100%. 
+* Set your Windows Display Scaling to 100% or set the Display Scaling option in the bot to your Windows Display Scaling Setting. 
 * Enable Windows Aero Mode (Windows 7).
 
 ---
@@ -92,7 +92,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 <br>
 
 ## Manually updating
-**Step 1**: Download the latest version from the same [link](https://github.com/GkevinOD/msl-bot/archive/v3.0.zip).
+**Step 1**: Download the latest version from the same [link](https://github.com/GkevinOD/msl-bot/releases/download/v4.0/msl-bot-v4.0.zip).
 
 **Step 2**: Open the ZIP file and extract the contents into the old version.
 
