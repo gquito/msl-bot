@@ -35,6 +35,10 @@ village-monsters:255,508
 monsters-grid:133,24
 monsters-manage:741,176
 monsters-recent:266,471
+monsters-awaken:425,395
+monsters-evolve:656,393
+monsters-awaken-confirm:303,312
+monsters-evolve-confirm:303,312
 manage-grade1:327,389
 manage-grade2:365,389
 manage-grade3:402,389
@@ -141,3 +145,5 @@ village-missions-popup-close:74,333
 village-events-close:744,72
 village-pack-close:779,108
 autobattle-prompt-close:605,120
+already-awakened-close:575,215
+refill-close:710,110
