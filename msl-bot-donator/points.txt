@@ -39,6 +39,7 @@ monsters-awaken:425,395
 monsters-evolve:656,393
 monsters-awaken-confirm:303,312
 monsters-evolve-confirm:303,312
+monsters-astromon-close:650,110
 manage-grade1:327,389
 manage-grade2:365,389
 manage-grade3:402,389
