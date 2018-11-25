@@ -267,7 +267,7 @@
 	[list:
 		name: "5*-Types",
 		description: "Types that are included meet the criteria.",
-		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon",
+		default: "Leech,Pugilist,Siphon",
 		data: "Leech,Pugilist,Siphon"
 	]
 	
@@ -295,7 +295,7 @@
 	[list:
 		name: "6*-Types",
 		description: "Types that are included meet the criteria.",
-		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon",
+		default: "Leech,Pugilist,Siphon",
 		data: "Leech,Pugilist,Siphon"
 	]
 	
