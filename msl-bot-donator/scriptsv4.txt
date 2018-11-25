@@ -152,7 +152,95 @@
 		name: "4*-Types",
 		description: "Types that are included meet the criteria.",
 		default: "",
-		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon"
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "4*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "4*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "",
+		data: "1,2,3,4"
+	]
+	
+	[combo:
+		name: "5*-Filter",
+		description: "If Filter is enabled, 5* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "5*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "5*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "P.HP,P.ATK,P.DEF,CRIT RATE",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "5*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "3,4",
+		data: "1,2,3,4"
+	]
+	
+	[combo:
+		name: "6*-Filter",
+		description: "If Filter is enabled, 6* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "6*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "6*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "P.HP,P.ATK,P.DEF,CRIT RATE",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "6*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "1,2,3,4",
+		data: "1,2,3,4"
+	]
+]
+
+[_DragonFilter:
+	[description: "Dragon Gem filtering system. A function will be called with a gem data passed in and will output whether the gem meets the criteria or not."]
+	
+	[combo:
+		name: "4*-Filter",
+		description: "If Filter is enabled, 4* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "4*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "",
+		data: "Leech,Pugilist,Siphon"
 	]
 	
 	[list:
@@ -180,7 +268,7 @@
 		name: "5*-Types",
 		description: "Types that are included meet the criteria.",
 		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon",
-		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon"
+		data: "Leech,Pugilist,Siphon"
 	]
 	
 	[list:
@@ -208,7 +296,7 @@
 		name: "6*-Types",
 		description: "Types that are included meet the criteria.",
 		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon",
-		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon"
+		data: "Leech,Pugilist,Siphon"
 	]
 	
 	[list:
