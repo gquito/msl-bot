@@ -152,7 +152,7 @@
 		name: "4*-Types",
 		description: "Types that are included meet the criteria.",
 		default: "",
-		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon"
 	]
 	
 	[list:
@@ -179,8 +179,8 @@
 	[list:
 		name: "5*-Types",
 		description: "Types that are included meet the criteria.",
-		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition",
-		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon"
 	]
 	
 	[list:
@@ -207,8 +207,8 @@
 	[list:
 		name: "6*-Types",
 		description: "Types that are included meet the criteria.",
-		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition",
-		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition,Leech,Pugilist,Siphon"
 	]
 	
 	[list:
