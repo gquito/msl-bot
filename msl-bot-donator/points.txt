@@ -150,3 +150,4 @@ already-awakened-close:575,215
 refill-close:710,110
 battle-defeat-continue:350,350
 dragon-sigils-empty-confirm:400,315
+connection-bad-retry:345,320
