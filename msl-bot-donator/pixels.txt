@@ -76,3 +76,4 @@ monsters-evolution-second:356,129,0xD9D5D0
 monsters-evolution-third:360,129,0xDDD9D4
 monsters-one-star:399,129,0xE1BC87
 friend-gifts:305,109,0xED0B3A|325,109,0xE90B3A
+autofill-toggle-off:722,290,0xD4D4D4|735,297,0xD3D3D3|725,300,0xE0E0E0|722,304,0xABABAB|747,311,0xAAA7A5|755,300,0x5D5D5D|751,307,0xF3EFEA
