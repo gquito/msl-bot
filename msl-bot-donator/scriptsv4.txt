@@ -159,6 +159,28 @@
 	]
 ]
 
+[_Delays:
+	[description: "Delay settings"]
+
+	[text:
+		name: "Swipe Delay",
+		description: "The amount of time in milliseconds that the bot waits after swiping the screen to do anything. (minimum: 300)",
+		default: "300"
+	]
+
+	[text:
+		name: "Navigation Click Delay",
+		description: "The amount of time in milliseconds that the bot waits while navigating before clicking. (minimum: 200)",
+		default: "1000"
+	]
+
+	[text:
+		name: "Target Boss Delay",
+		description: "The amount of time in milliseconds that the bot waits before clicking on the boss. Do not go higher than 200.",
+		default: "10"
+	]
+]
+
 [_General:
 	[description: "General settings for certain algorithms."]
 
