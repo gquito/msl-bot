@@ -96,13 +96,13 @@
 	[text:
 		name: "Emulator Class",
 		description: "This can be found using the AutoIt Window Info, using the Finder Tool.",
-		default: "subWin"
+		default: "Qt5QWindowIcon"
 	]
 	
 	[text:
 		name: "Emulator Instance",
 		description: "This can be found using the AutoIt Window Info, using the Finder Tool.",
-		default: "1"
+		default: "2"
 	]
 
 	[text:
