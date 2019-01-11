@@ -648,7 +648,7 @@
 		name: "Map",
 		description: "Map in story mode to farm rare astromons in.",
 		default: "Pagos Coast",
-		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau"
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
 	]
 	
 	[combo:
@@ -853,7 +853,7 @@
 		name: "Map",
 		description: "Map in story mode to farm astromons in.",
 		default: "Phantom Forest",
-		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau"
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
 	]
 	
 	[combo:
@@ -959,7 +959,7 @@
 		name: "Map",
 		description: "Map in story mode to farm astromons in.",
 		default: "Phantom Forest",
-		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau"
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
 	]
 	
 	[combo:
