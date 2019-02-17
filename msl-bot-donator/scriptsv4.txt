@@ -811,7 +811,7 @@
 		name: "Astromon",
 		description: "Astromon to evolve. Make sure to use the astromon that you are catching.",
 		default: "Slime",
-		data: "Slime,Mimic,Sparkler"
+		data: "Slime,Mimic,Sparkler,Otari"
 	]
 	
 	[combo:
