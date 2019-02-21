@@ -155,3 +155,4 @@ friend-gifts:286,128
 inbox-accept-all:640,175
 battle-astromon-full:400,300
 boutique-close:773,77
+inbox-accept-all-confirm:323,323
