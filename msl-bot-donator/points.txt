@@ -17,7 +17,7 @@ map-battle-play:706,492
 battle-auto:33,214
 boss:402,239
 quick-restart:455,267
-refill:364,423
+refill:533,423
 refill-confirm:406,308
 battle-sell-item-cancel:293,400
 battle-sell-item-sell:500,400
