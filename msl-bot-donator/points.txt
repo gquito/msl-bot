@@ -40,11 +40,11 @@ monsters-evolve:656,393
 monsters-awaken-confirm:303,312
 monsters-evolve-confirm:303,312
 monsters-astromon-close:650,110
-manage-grade1:327,389
-manage-grade2:365,389
-manage-grade3:402,389
-manage-grade4:440,389
-manage-sell-selected:670,396
+manage-grade1:327,438
+manage-grade2:365,438
+manage-grade3:402,438
+manage-grade4:440,438
+manage-sell-selected:670,438
 manage-sell-confirm:382,327
 manage-x:773,113
 play-again:529,284
