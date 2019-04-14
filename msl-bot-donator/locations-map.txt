@@ -27,8 +27,8 @@ monsters-awaken:monsters-evolution,monsters-evolve,monsters-astromon,monsters-le
 awakened-success:monsters-evolution,monsters-awaken,monsters-evolve,monsters-astromon,monsters-level-up,release-confirm
 monsters-evolve:monsters-evolution,monsters-awaken,monsters-astromon,monsters-level-up,awakened-success,release-confirm
 monsters-astromon:monsters-evolution,monsters-awaken,monsters-evolve,monsters-level-up,awakened-success,release-confirm
-monsters-level-up:monsters-evolution,monsters-awaken,monsters-evolve,awakened-success,release-confirm
-manage:monsters,monsters-evolution,gem-upgrade-not-upgrading,sell-gems-confirm
+monsters-level-up:monsters-evolution,monsters-awaken,monsters-evolve,awakened-success,release-confirm,monsters
+manage:monsters,monsters-evolution,gem-upgrade-not-upgrading,sell-gems-confirm,monsters-level-up
 sell-gems-confirm:manage
 gem-upgrade-not-upgrading:manage
 release-confirm:monsters,monsters-evolution,manage,gem-upgrade-not-upgrading
