@@ -33,7 +33,7 @@ battle-catch:785,239
 catch-mode-cancel:782,84
 village-monsters:255,508
 monsters-grid:133,24
-monsters-manage:741,176
+monsters-manage:740,200
 monsters-recent:266,471
 monsters-awaken:425,395
 monsters-evolve:656,393
