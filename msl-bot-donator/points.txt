@@ -38,6 +38,7 @@ monsters-recent:266,471
 monsters-awaken:425,395
 monsters-evolve:656,393
 monsters-awaken-confirm:303,312
+monsters-awaken-tap:783,277
 monsters-evolve-confirm:303,312
 monsters-astromon-close:650,110
 manage-grade1:327,438
