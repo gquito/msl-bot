@@ -36,7 +36,8 @@ sell-gems-confirm:manage
 gem-upgrade-not-upgrading:manage
 release-confirm:monsters,monsters-evolution,manage,gem-upgrade-not-upgrading
 bingo-complete:village,bingo
-map-battle:map-stage,extra-dungeons,starstone-dungeons,starstone-dungeons,golem-dungeons,astroleague,toc,dragon-dungeons,refill,battle,battle-auto,refill-astrochips-popup,autobattle-prompt,loading
+map-battle:map-stage,extra-dungeons,starstone-dungeons,starstone-dungeons,golem-dungeons,astroleague,toc,dragon-dungeons,refill,battle,battle-auto,refill-astrochips-popup,autobattle-prompt,loading,map-battle-autofill
+map-battle-autofill:map-battle,popup-window
 ancient-colossus-dungeon:map,golem-dungeons
 clan-titans:map,titans-monsters
 refill:map-battle,battle-end,refill-confirm,village,map
