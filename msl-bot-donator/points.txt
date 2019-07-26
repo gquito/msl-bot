@@ -1,5 +1,5 @@
 back:20,20
-tap:795,547
+tap:795,500
 battle-pause:34,338
 battle-give-up:446,314
 battle-continue:324,330
