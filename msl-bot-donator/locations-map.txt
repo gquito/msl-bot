@@ -10,7 +10,7 @@ friends:village
 quests:village
 shop:village
 bingo:village,bingo-complete
-hourly-reward:village
+hourly-reward:village,monsters,monsters-evolution,monsters-level-up
 map-stage:map,map-battle
 extra-dungeons:map,starstone-dungeons,elemental-dungeons,gold-dungeons,guardian-dungeons,special-guardian-dungeons,map-battle,dungeon-info
 starstone-dungeons:map,extra-dungeons,elemental-dungeons,gold-dungeons,guardian-dungeons,special-guardian-dungeons,map-battle,dungeon-info
@@ -24,7 +24,7 @@ clan-plaza:map,clan-titans
 toc:map,map-battle
 dragon-dungeons:map,map-battle
 friend-gifts:inbox,village
-monsters:village,manage,monsters-evolution,monsters-awaken,monsters-evolve,monsters-astromon,monsters-level-up,awakened-success,release-confirm
+monsters:village,manage,monsters-evolution,monsters-awaken,monsters-evolve,monsters-astromon,monsters-level-up,awakened-success,release-confirm,release-reward,hourly-reward
 monsters-evolution:village,manage,monsters,monsters-awaken,monsters-evolve,monsters-astromon,monsters-level-up,awakened-success,release-confirm
 monsters-awaken:monsters-evolution,monsters-evolve,monsters-astromon,monsters-level-up,awakened-success,release-confirm
 awakened-success:monsters-evolution,monsters-awaken,monsters-evolve,monsters-astromon,monsters-level-up,release-confirm
@@ -34,7 +34,8 @@ monsters-level-up:monsters-evolution,monsters-awaken,monsters-evolve,awakened-su
 manage:monsters,monsters-evolution,gem-upgrade-not-upgrading,sell-gems-confirm,monsters-level-up
 sell-gems-confirm:manage
 gem-upgrade-not-upgrading:manage
-release-confirm:monsters,monsters-evolution,manage,gem-upgrade-not-upgrading
+release-confirm:monsters,monsters-evolution,manage,gem-upgrade-not-upgrading,release-reward,hourly-reward
+release-reward:monsters,monsters-evolution,monsters-level-up
 bingo-complete:village,bingo
 map-battle:map-stage,extra-dungeons,starstone-dungeons,starstone-dungeons,golem-dungeons,astroleague,toc,dragon-dungeons,refill,battle,battle-auto,refill-astrochips-popup,autobattle-prompt,loading,map-battle-autofill,popup-window
 map-battle-autofill:map-battle,popup-window,refill-astrochips-popup
