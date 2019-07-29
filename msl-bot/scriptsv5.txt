@@ -451,7 +451,21 @@
 		data: "Slime,Mimic,Sparkler,Otari"
 	]
 	
-  [combo:
+	[combo:
+		name: "Finish Round",
+		description: "If this is enabled, the script will capture continue the round until finished; otherwise, the script will surrender once 3 astrochips has been used up. It is recommended to leave this setting on Disabled for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Final Round",
+		description: "If this is enabled, the script will only catch normal astromons on the final round. Having this setting enabled will automatically enable Finish Round. It is recommended to leave this setting on Disabled for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+  	[combo:
 		name: "Release Evo3",
 		description: "If this is enabled, the script will Release the evo3 astromon it creates.",
 		default: "Enabled",
@@ -534,6 +548,20 @@
 		name: "Catch Image",
 		description: "The normal astromon to farm. Images of catch-[astromon].bmp must exist. Map must contain the astromon or else this script will act like Farm Rare, but slower.",
 		default: "one-star"
+	]
+    
+	[combo:
+		name: "Finish Round",
+		description: "If this is enabled, the script will capture continue the round until finished; otherwise, the script will surrender once 3 astrochips has been used up. It is recommended to leave this setting on Disabled for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Final Round",
+		description: "If this is enabled, the script will only catch normal astromons on the final round. Having this setting enabled will automatically enable Finish Round. It is recommended to leave this setting on Disabled for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
 	]
     
 	[combo:
