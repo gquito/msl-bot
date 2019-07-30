@@ -195,6 +195,23 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
   - Extract the zip file into the main folder of the bot.
   - Change ADB path to new path inside the main folder.
   
+---
+### Checking capture.
+**Use the CaptureRegion function to save an image**
+
+  - Open the Debug Input by pressing Ctrl+D or through the menu.
+  - Enter `CaptureRegion("test_image")~Run("mspaint.exe " & @ScriptDir & "\test_image.bmp")`
+  - Analyze the image and make sure it is capturing correctly.
+    - There should not be Nox window handle.
+    - The entire image should be filled by the MSL game.
+    - No empty spots on the right and bottom side of the image.
+    - Should not be a black screen.
+    
+**Changing the Emulator class and instance**
+
+  - Issues with the capture could be fixed by entering the correct Emulator class and instance.
+  - Refer to [Changing Bot Config](https://github.com/GkevinOD/msl-bot#changing-bot-config)
+    
 <br>
 
 ## Reporting an issue
