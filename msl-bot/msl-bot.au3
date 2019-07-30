@@ -2,7 +2,7 @@ Global $aVersion = [4, 1, 0] ;Major, Minor, Build, Beta
 
 ConsoleWrite($aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] & @CRLF);"." & $aVersion[3] & @CRLF)
 
-#pragma compile(Out, "msl-donator.exe")
+#pragma compile(Out, "msl-bot")
 #pragma compile(Icon, "bin\_src\msl-bot.ico")
 #pragma compile(x64, False)
 #pragma compile(UPX, False)
@@ -11,7 +11,7 @@ ConsoleWrite($aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] & @CRLF);"."
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
 #pragma compile(FileVersion, 4.1.0)
 #pragma compile(ProductVersion, 4.1.0)
-#pragma compile(OriginalFilename, "msl-donator.exe")
+#pragma compile(OriginalFilename, "msl-bot")
 #pragma compile(AutoItExecuteAllowed, True)
 
 #AutoIt3Wrapper_Version=P
