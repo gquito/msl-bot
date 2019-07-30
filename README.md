@@ -154,13 +154,14 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 <br>
 
 ## Troubleshooting
+  - Most problems can be solved by running the RestartNox() function.
+
 ### Script looping in airship or doing nothing.
 #### Before troubleshooting for this problem:
   - Open Debug Input `Ctrl+D` and enter `getLocation()` in airship and the map.
   - If the locations say 'unknown' on the log, proceed with the following troubleshooting.
   - If the location is `village` in the airship and `map` in the map, your problem is different.
 
----
 **Using the RestartNox() function**: 
 
   - If you have the Nox emulator, you can open Debug Input `Ctrl+D` and enter `RestartNox()`. <br>
@@ -172,6 +173,21 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
   - If `WinAPI` does not work for you, try switching to `ADB` or `None` capture mode.
   - If none of the modes work for you, ask help in Discord or create an issue report on Github.
+  
+---
+### Locations not being recognized or imagesearch not working properly.
+**Check graphics settings**
+  
+  - Your graphics settings could change the way the game looks so the pixels will be slightly different.
+  - Try restoring your graphics setting to default settings and then restart your Nox.
+  
+---
+### ADB Path is too long or is not being recognized.
+**Download ADB files**
+
+  - Download link: https://github.com/GkevinOD/msl-bot/raw/version-check/adb.zip
+  - Extract the zip file into the main folder of the bot.
+  - Change ADB path to new path inside the main folder.
   
 <br>
 
