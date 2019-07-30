@@ -1,1 +1,2 @@
-
+v4.1.0 Update Log:
+- Update consists of mainly bug fixes and new algorithms for existing functions.
