@@ -63,9 +63,9 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 ![Language Setting](https://i.imgur.com/52pN9fo.png)
 
-**Step 2**: Turn off all settings, **except Low-Res Mode**.
+**Step 2**: Turn off all settings.
 
-![Game Setting](https://i.imgur.com/r9IzT5w.png)
+![Game Setting](https://i.imgur.com/YFHC7VI.png)
 
 ---
 ### Changing Bot Config:
@@ -125,6 +125,14 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
   - This error will usually provide a list of all available devices. Chances are one of the device is the Nox emulator. If device is not listed, restart nox.
   
 ![Nox device](https://i.imgur.com/zUg57e5.png)
+
+---
+### Function for the script does not exist.
+  - There are missing or corrupted files detected. Redownload files and extract into a new folder. Then follow the steps to get set up above.
+  
+![Func err](https://i.imgur.com/2ORmJML.png)
+
+
 
 <br>
 <br>
