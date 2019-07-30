@@ -1,6 +1,5 @@
 Pixel set note: The '|' character acts as an AND operator. The '/' character acts as an OR operator. This can be used in locations.txt and pixels.txt.
 For example: 18,25,0xF1C444|31,24,0xF3C645/794,539,0xEBDC59|790,544,0xEBDC59
-*Using the function isPixelOR()
 - There are two parts to look at which are 18,25,0xF1C444|31,24,0xF3C645 and 794,539,0xEBDC59|790,544,0xEBDC59.
 - If either parts are true then the whole thing is true. If all parts are false then the result is false.
 - In 18,25,0xF1C444|31,24,0xF3C645, all parts of this set must be true for it to pass.

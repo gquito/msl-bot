@@ -13,15 +13,13 @@ Func catch($aImages, ByRef $iAstrochips)
 
     Local $bOutput = ""
     While True 
-        If getLocation() <> "catch-mode" Then 
+        If (Not(isLocation("catch-mode"))) Then 
             Log_Add("Not in catch mode.")
             ExitLoop
         EndIf
 
         ;Format images to [image, image, image]
-        If isArray($aImages) = False Then
-            $aImages = StringSplit($aImages, ",", $STR_NOCOUNT)
-        EndIf
+        If (Not(isArray($aImages))) Then $aImages = StringSplit($aImages, ",", $STR_NOCOUNT)
 
         ;Process
         Log_Add("Searching for astromons.")
@@ -30,46 +28,49 @@ Func catch($aImages, ByRef $iAstrochips)
         Local $iSize = UBound($aImages, $UBOUND_ROWS)
         Local $aFound = Null ;This is where the astromon position is stored if found
         For $i = 0 To $iSize-1
+            ;No colors is better for detection
             $aFound = findImage("catch-" & StringReplace(StringStripWS(StringLower($aImages[$i]), $STR_STRIPTRAILING), " ", "-"), 90, 0, 0, 263, 800, 210, True, False)
             $sAstromon = $aImages[$i]
-            If isArray($aFound) = True Then ExitLoop
+            If (isArray($aFound)) Then ExitLoop
         Next
 
-        If isArray($aFound) = False Then
+        If (Not(isArray($aFound))) Then
             Log_Add("Could not find any astromons.")
+            ;CaptureRegion("new" & Random(0, 10000)) ;Debug
             ExitLoop
         EndIf
 
         ;Found process
         While $iAstrochips > 0 
             Log_Add("Attempting to catch " & $sAstromon & " (" & 4-$iAstrochips & "/3).")
-            If _Sleep(0) Then ExitLoop(2)
+            If (_Sleep(0)) Then ExitLoop
 
             Local $t_hTimer = TimerInit()
-            While getLocation() <> "catch-mode"
-                If TimerDiff($t_hTimer) > 10000 Then ExitLoop
-                If _Sleep(0) Then ExitLoop(2)
+            While Not(isLocation("catch-mode"))
+                If (TimerDiff($t_hTimer) > 10000) Then ExitLoop
+                If (_Sleep(0)) Then ExitLoop(2)
             WEnd
 
-            If clickWhile($aFound, "isLocation", "catch-mode", 15, 200) = False Then
+            If (Not(clickWhile($aFound, "isLocation", "catch-mode", 15, 400))) Then
                 Log_Add("Could not attempt to capture astromon.", $LOG_ERROR)
                 $bOutput = "!" & $sAstromon
-                ExitLoop(2)
+                ExitLoop
             EndIf
-
-            If getLocation($g_aLocations, False) = "battle-astromon-full" Then
+            
+            If (waitLocationMS("battle-astromon-full",300,50)) Then
                 Log_Add("Astromon bag full.", $LOG_ERROR)
-                ExitLoop(2)
+                $bOutput = -1
+                ExitLoop
             EndIf
 
             ;In catch process
             $iAstrochips -= 1
             Stat_Increment($g_aStats, "Astrochips used", 1)
-            If $g_bAdbWorking = True Then ;speed catch
+            If ($g_bAdbWorking) Then ;speed catch
                 Log_Add("Double ESCAPE for quick catch.")
-                adbSendESC()
-                ;clickPoint continue instead of adbSendESC()
-                clickPoint(getArg($g_aPoints,"battle-continue"), 2, 50, Null)
+                ADB_SendESC()
+                ;clickPoint continue instead of ADB_SendESC()
+                clickWhile(getPointArg("battle-continue"), "isLocation", "pause", 5, 10)
             EndIf
 
             Local $t_hTimer = TimerInit()
@@ -79,34 +80,34 @@ Func catch($aImages, ByRef $iAstrochips)
             Local $sLocation ;stores current location
             Log_Add("Checking catch status.")
             Do
-                If (TimerDiff($t_hTimer2) > 500) And (TimerDiff($t_hTimer) < 3000) Then
-                    clickPoint(getArg($g_aPoints, "battle-continue"))
+                If (TimerDiff($t_hTimer2) > 500 And TimerDiff($t_hTimer) < 3000) Then
+                    clickPoint(getPointArg("battle-continue"))
                     $t_hTimer2 = TimerInit()
                 EndIf
 
-                If TimerDiff($t_hTimer3) > 500 Then
-                    clickPoint(getArg($g_aPoints, "tap"))
+                If (TimerDiff($t_hTimer3) > 500) Then
+                    clickPoint(getPointArg("tap"))
                     $t_hTimer3 = TimerInit()
                 EndIf
 
-                If TimerDiff($t_hTimer) > 20000 Then 
-                    If navigate("catch-mode", False) = True Then
-                        clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
+                If (TimerDiff($t_hTimer) > 20000) Then 
+                    If (navigate("catch-mode", False)) Then
+                        clickPoint(getPointArg("catch-mode-cancel"))
                         $sLocation = "catch-success"
                         ExitLoop
                     Else
                         Log_Add("Failed to detect capture status.", $LOG_ERROR)
                         $bOutput = "!" & $sAstromon
-                        ExitLoop(3)
+                        ExitLoop(2)
                     EndIf
                 EndIf
-                If _Sleep(0) Then ExitLoop(3)
 
-                CaptureRegion() ;Update
-                $sLocation = getLocation($g_aLocations, False)
+                If (_Sleep(0)) Then ExitLoop(3)
+
+                $sLocation = getLocation()
                 If $sLocation = "battle" Then
-                    If navigate("catch-mode", False) = True Then
-                        clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
+                    If (navigate("catch-mode", False)) Then
+                        clickPoint(getPointArg("catch-mode-cancel"))
                         $sLocation = "catch-success"
                         ExitLoop
                     Else
@@ -115,8 +116,8 @@ Func catch($aImages, ByRef $iAstrochips)
                         ExitLoop(3)
                     EndIf
                 EndIf
-            Until ($sLocation = "catch-success") Or ($sLocation = "battle-auto") Or ($sLocation = "catch-mode") Or ($sLocation = "pause")
-
+            Until ($sLocation = "catch-success") Or ($sLocation = "battle-auto") Or ($sLocation = "catch-mode")
+            Log_Add($sLocation, $LOG_DEBUG)
             Switch $sLocation
                 Case "catch-success"
                     Log_Add("Caught a(n) " & $sAstromon & ".", $LOG_INFORMATION)
@@ -128,16 +129,16 @@ Func catch($aImages, ByRef $iAstrochips)
                     Stat_Increment($g_aStats, "Overall caught")
 
                     $bOutput = $sAstromon
-                    ExitLoop(2)
+                    ExitLoop
                 Case "battle-auto"
-                    If _Sleep(200) Then Return ""
-                    If getLocation() = "battle-auto" Then
+                    If (_Sleep(200)) Then ExitLoop
+                    If (isLocation("battle-auto")) Then
                         Log_Add("Failed to catch a(n) " & $sAstromon & ".", $LOG_INFORMATION)
                         $bOutput = "!" & $sAstromon
-                        ExitLoop(2)
+                        ExitLoop
                     EndIf
                 Case "pause"
-                    clickWhile(getArg($g_aPoints, "battle-continue"), "isLocation", "pause")
+                    clickWhile(getPointArg("battle-continue"), "isLocation", "pause")
                     $iAstrochips += 1
                     Stat_Increment($g_aStats, "Astrochips used", -1)
 

@@ -5,12 +5,6 @@
         Data will be updated through sleep function.
         Any data names not in the Order array will be pushed at the end of the list.
 #ce ====================================================================================================
-
-Global Const $DATA_TEXT = 0, $DATA_NUMBER = 1, $DATA_PERCENT = 2, $DATA_RATIO = 3, $DATA_LIST = 4, $DATA_TIME = 5, $DATA_TIMEAVG = 6
-
-Global $g_aData[0] ;Structure of the array is as follows:
-Global $g_aOrder[0] ;Order of the array, based on name.
-
 #cs ----Start structure here: 
     [
         ["name", "type", "value"],
@@ -27,6 +21,7 @@ Global $g_aOrder[0] ;Order of the array, based on name.
         - list (ex. "a:1, s:2, b:3")
         - time (ex. "1 H 10 M 23 S") => Can't be incremented
         - timeavg (format: time/number)
+        - numberavg (format: number/number)
 
     Merge:
         - number: Data will be added together
@@ -48,32 +43,35 @@ Global $g_aOrder[0] ;Order of the array, based on name.
     Returns: True if success, False if fail.
 #ce
 Func Data_Add($sName, $iType, $vValue, $bMerge = False)
-    Log_Level_Add("Data_Add")
     Local $sValue = $vValue
-    If isArray($sValue) = True Then $sValue = _ArrayToString($sValue)
+    If isArray($sValue) Then $sValue = _ArrayToString($sValue)
     Log_Add("Data add '" & $sName & "' as Type:" & $iType & " with value: " & $sValue, $LOG_DEBUG)
 
     ;Formatting data
     Switch $iType
-        Case $DATA_RATIO, $DATA_PERCENT, $DATA_TIMEAVG
-            If isArray($vValue) = False Then
+        Case $DATA_RATIO, $DATA_PERCENT, $DATA_TIMEAVG, $DATA_NUMAVG_TIME
+            If (Not(isArray($vValue))) Then
                 Local $t_aValue = StringSplit($vValue, "/", $STR_NOCOUNT)
                 $vValue = $t_aValue
             EndIf
         
         Case $DATA_LIST
-            If isArray($vValue) = False Then $vValue = formatArgs($vValue, ",", ":")
+            If (Not(isArray($vValue))) Then $vValue = formatArgs($vValue, ",", ":")
     EndSwitch
 
     Local $vResult = Data_Get($sName, True)
-    If $vResult <> -1 Then
+    If ($vResult <> -1) Then
         ;Data already exists:
-        If $bMerge = True Then
+        If ($bMerge) Then
             Switch $iType
                 Case $DATA_NUMBER
                     $vValue += $vResult
                 Case $DATA_RATIO
-                    If ($vValue[1] = $vResult[1]) Then $vValue[0] += $vResult[0]
+                    If (IsArray($vResult)) Then
+                        If ($vValue[1] = $vResult[1]) Then $vValue[0] += $vResult[0]
+                    Else
+                        $vValue += $vResult
+                    EndIf
                 Case $DATA_LIST
                     For $i = 0 To UBound($vValue)-1
                         $vValue[$i][1] += getArg($vResult, $vValue[$i][0])
@@ -82,20 +80,19 @@ Func Data_Add($sName, $iType, $vValue, $bMerge = False)
         Else
             ;Delete and recreate if no merging to prevent wrong type.
             Data_Remove($sName)
-            
-            Log_Level_Remove()
             Return Data_Add($sName, $iType, $vValue)
         EndIf
 
         Data_Set($sName, $vValue)
     Else
         ;Data does not exist
-        Local $aSub[3] = [$sName, $iType, $vValue]
-        ReDim $g_aData[UBound($g_aData)+1]
-        $g_aData[UBound($g_aData)-1] = $aSub
+        _ArrayAdd($g_aData, $sName)
+        $g_aData[UBound($g_aData)-1][1] = $iType
+        $g_aData[UBound($g_aData)-1][2] = $vValue
+
+        _ArraySort($g_aData)
     EndIf
 
-    Log_Level_Remove()
     Return True
 EndFunc
 
@@ -106,19 +103,9 @@ EndFunc
         sName: Data name to remove.
 #ce
 Func Data_Remove($sName)
-    Local $iSize = 0 ;Size of new array.
-    Local $aNew[$iSize] ;Stores new data with specified item removed
-    For $aSub In $g_aData
-        If $aSub[0] <> $sName Then
-            $iSize += 1
-            ReDim $aNew[$iSize]
-            $aNew[$iSize-1] = $aSub
-        EndIf
-    Next
-
-    $g_aData = $aNew
+    Local $iIndex = _ArrayBinarySearch($g_aData, $sName)
+    If $iIndex <> -1 Then _ArrayDelete($g_aData, $iIndex)
 EndFunc
-
 
 #cs 
     Function: Retrieve data in the form of string.
@@ -127,54 +114,93 @@ EndFunc
         bRaw: If true, will return raw data and not string format.
     Returns: String (if bRaw is true, variant based on type)
 #ce
-Func Data_Get($sName, $bRaw = False)
-    For $aSub In $g_aData
-        If $aSub[0] = $sName Then
-            If $bRaw = True Then Return $aSub[2]
-            Switch $aSub[1]
-                Case $DATA_TEXT, $DATA_NUMBER
-                    Return $aSub[2]
-                Case $DATA_RATIO
-                    Local $vResult = $aSub[2]
-                    If $vResult[1] = 0 Then Return $vResult[0]
-                    Return $vResult[0] & "/" & $vResult[1]
+Func Data_Get($sName, $bRaw = False, $iIndex = Null)
+    If $iIndex <> Null Then 
+        If $iIndex > UBound($g_aData) -1 Then $iIndex = _ArrayBinarySearch($g_aData, $sName)
+    Else
+        $iIndex = _ArrayBinarySearch($g_aData, $sName)
+    EndIf
 
-                Case $DATA_PERCENT
-                    Local $vResult = $aSub[2]
-                    If (Data_Get($vResult[0]) = -1) Or (Data_Get($vResult[1]) = -1) Then Return -1
+    If $iIndex <> -1 Then
+        If $bRaw = True Then Return $g_aData[$iIndex][2]
+        Switch $g_aData[$iIndex][1]
+            Case $DATA_TEXT, $DATA_NUMBER
+                Return $g_aData[$iIndex][2]
+            Case $DATA_RATIO
+                Local $vResult = $g_aData[$iIndex][2]
 
-                    If Data_Get($vResult[1]) = 0 Then Return StringFormat("%.2f", 0) & "%"
-                    Return StringFormat("%.2f", (Int(Data_Get($vResult[0]))  /  Int(Data_Get($vResult[1]))) * 100) & "%"
+                If UBound($vResult) < 2 Then Log_Add("Stat declared incorrectly. Stat Name:" & $g_aData[$iIndex][0])
+                If $vResult[1] = 0 Then Return $vResult[0]
+                Return $vResult[0] & "/" & $vResult[1]
 
-                Case $DATA_TIME
-                    Return getTimeString(TimerDiff($aSub[2])/1000)
+            Case $DATA_PERCENT
+                Local $vResult = $g_aData[$iIndex][2]
+                If (Data_Get($vResult[0]) = -1 Or Data_Get($vResult[1]) = -1) Then Return -1
 
-                Case $DATA_TIMEAVG
-                    Local $vResult = $aSub[2]
+                If (Data_Get($vResult[1]) = 0) Then Return StringFormat("%.2f", 0) & "%"
+                Return StringFormat("%.2f", (Int(Data_Get($vResult[0]))  /  Int(Data_Get($vResult[1]))) * 100) & "%"
 
-                    Local $iSeconds = TimerDiff(Data_Get($vResult[0], True))/1000
-                    Local $iDenom = Data_Get($vResult[1], True)
+            Case $DATA_TIME
+                Return getTimeString(TimerDiff($g_aData[$iIndex][2])/1000)
 
-                    If isArray($iDenom) = True Then $iDenom = $iDenom[0]
+            Case $DATA_TIMEAVG
+                Local $vResult = $g_aData[$iIndex][2]
+
+                Local $iSeconds = TimerDiff(Data_Get($vResult[0], True))/1000
+                Local $iDenom = Data_Get($vResult[1], True)
+
+                If (isArray($iDenom)) Then $iDenom = $iDenom[0]
+                
+                If ($iSeconds = 0 Or $iDenom = 0) Then Return getTimeString(0)
+                Return getTimeString($iSeconds/$iDenom)
+            Case $DATA_NUMAVG_TIME
+                Local $vResult = $g_aData[$iIndex][2]
+
+                Local $iSeconds = $vResult[0] / 1000
+                Local $iDenom = Data_Get($vResult[1], True)
+
+                If (isArray($iDenom)) Then $iDenom = $iDenom[0]
+                
+                If ($iSeconds = 0 Or $iDenom = 0) Then Return getTimeString(0)
+                Return getTimeString($iSeconds/$iDenom)
                     
-                    If $iSeconds = 0 Or $iDenom = 0 Then Return getTimeString(0)
-                    Return getTimeString($iSeconds/$iDenom)
+            Case $DATA_LIST
+                Local $vResult = $g_aData[$iIndex][2]
+                Local $sResult = "" ;Stores list data in string form.
+                For $i = 0 To UBound($vResult)-1
+                    $sResult &= ", " & $vResult[$i][0] & ": " & $vResult[$i][1]
+                Next
 
-                Case $DATA_LIST
-                    Local $vResult = $aSub[2]
-                    Local $sResult = "" ;Stores list data in string form.
-                    For $i = 0 To UBound($vResult)-1
-                        $sResult &= ", " & $vResult[$i][0] & ": " & $vResult[$i][1]
-                    Next
-
-                    Return StringMid($sResult, 3)
-            EndSwitch
-        EndIf
-    Next
+                Return StringMid($sResult, 3)
+        EndSwitch
+    EndIf
 
     Return -1
 EndFunc
 
+Func Data_Get_Type($sName)
+    Local $iIndex = _ArrayBinarySearch($g_aData, $sName)
+    If $iIndex <> -1 Then Return $g_aData[$iIndex][1]
+
+    Return -1
+EndFunc
+
+Func Data_Compare($sName1, $sName2)
+    Return Data_Get($sName1) = Data_Get($sName2)
+EndFunc
+
+Func Data_Copy($sNameTo, $sNameFrom)
+    Data_Set($sNameTo, Data_Get($sNameFrom))
+EndFunc
+
+Func Data_Set_Conditional($sName, $sSetValue, $sGetCheck, $bNot)
+    Local $sDataValue = Data_Get($sName)
+    If (($bNot And $sDataValue <> $sGetCheck) Or (Not($bNot) And $sDataValue = $sGetCheck)) Then Data_Set($sName,$sSetValue)
+EndFunc
+
+Func SetStatus($sStatus)
+    Data_Set($STAT_STATUS, $sStatus)
+EndFunc
 #cs 
     Function: Retrieve calculated quotient of the ratio.
     Parameters:
@@ -182,16 +208,15 @@ EndFunc
     Returns: A double. 
 #ce
 Func Data_Get_Ratio($sName)
-For $aSub In $g_aData
-        If $aSub[0] = $sName Then
-            Switch $aSub[1]
-                Case $DATA_RATIO
-                    Local $vResult = $aSub[2]
-                    If $vResult[1] = 0 Then Return 1
-                    Return Int($vResult[0]) / Int($vResult[1])
-            EndSwitch
-        EndIf
-    Next
+    Local $iIndex = _ArrayBinarySearch($g_aData, $sName)
+    If $iIndex <> -1 Then
+        Switch $g_aData[$iIndex][1]
+            Case $DATA_RATIO
+                Local $vResult = $g_aData[$iIndex][2]
+                If ($vResult[1] = 0) Then Return 1
+                Return Int($vResult[0]) / Int($vResult[1])
+        EndSwitch
+    EndIf
 
     Return 1
 EndFunc
@@ -205,55 +230,29 @@ EndFunc
         If data does not exist, false.
         If data has been changed, true. 
 #ce
-Func Data_Set($sName, $vValue)
-    Log_Level_Add("Data_Set")
-
-    Local $aSub = Null ;Will store sub data
-    Local $iIndex = 0 ;Index of sub data
-
-    For $t_aSub In $g_aData
-        If $t_aSub[0] = $sName Then
-            $aSub = $t_aSub
-            ExitLoop
+Func Data_Set($sName, $vValue)  
+    Local $iIndex = _ArrayBinarySearch($g_aData, $sName)
+    If $iIndex <> -1 Then
+        If $g_aData[$iIndex][2] <> $vValue And $g_aData[$iIndex][2] <> -1 And Data_Get("", False, $iIndex) <> $vValue Then
+            Local $sValue = $vValue
+            If isArray($vValue) Then $sValue = _ArrayToString($vValue)
+            Log_Add("Setting data '" & $sName & "' To: " & $sValue, $LOG_DEBUG)
+        Else
+            Return False
         EndIf
 
-        $iIndex += 1
-    Next
-
-    If (Data_Get($sName) <> $vValue) And (Data_Get($sName, True) <> $vValue) And (Data_Get($sName) <> -1) Then 
-        Local $sValue = $vValue
-        If isArray($sValue) = True Then $sValue = _ArrayToString($vValue)
-        Log_Add("Setting data '" & $sName & "' To: " & $vValue, $LOG_DEBUG)
-    Else
-        Log_Level_Remove()
-        Return False
-    EndIf
-
-    Local $bOutput = False
-    While True 
-        If $aSub = Null Then ExitLoop
-
-        ;Formatting data
-        Switch $aSub[1]
-            Case $DATA_RATIO, $DATA_PERCENT, $DATA_TIMEAVG
-                If isArray($vValue) = False Then
-                    Local $t_aValue = StringSplit($vValue, "/", $STR_NOCOUNT)
-                    $vValue = $t_aValue
-                EndIf
+        Switch $g_aData[$iIndex][1]
+            Case $DATA_RATIO, $DATA_PERCENT, $DATA_TIMEAVG, $DATA_NUMAVG_TIME
+                If isArray($vValue) = False Then $vValue = StringSplit($vValue, "/", $STR_NOCOUNT)
             
             Case $DATA_LIST
                 If isArray($vValue) = False Then $vValue = formatArgs($vValue, ",", ":")
         EndSwitch
 
-        $aSub[2] = $vValue
-        $g_aData[$iIndex] = $aSub
+        $g_aData[$iIndex][2] = $vValue
+    EndIf
 
-        $bOutput = True
-        ExitLoop
-    WEnd
-
-    Log_Level_Remove()
-    Return $bOutput
+    Return ($iIndex <> -1)
 EndFunc
 
 
@@ -268,57 +267,43 @@ EndFunc
         If data has been changed, true. 
 #ce
 Func Data_Increment($sName, $iAmount = 1, $sListItem = Null)
-    Log_Level_Add("Data_Increment")
     Log_Add("Data Increment '" & $sName & "' by " & $iAmount, $LOG_DEBUG)
-    Local $bOutput = False
+    Local $bOutput = True
 
-    While True
-        Local $aSub = Null ;Will store sub data
-        Local $iIndex = 0 ;Index of sub index
-
-        For $t_aSub In $g_aData
-            If $t_aSub[0] = $sName Then
-                $aSub = $t_aSub
-                ExitLoop
-            EndIf
-
-            $iIndex += 1
-        Next
-
-        ;Returns early if not found
-        If $aSub = Null Then ExitLoop
-
-        ;Increment based on type
-        Switch $aSub[1] ;Type
+    Local $iIndex = _ArrayBinarySearch($g_aData, $sName)
+    If $iIndex <> -1 Then
+        Switch $g_aData[$iIndex][1]
             Case $DATA_NUMBER
-                $aSub[2] += $iAmount
+                $g_aData[$iIndex][2] += $iAmount
             Case $DATA_RATIO
-                Local $aRatio = $aSub[2]
+                Local $aRatio = $g_aData[$iIndex][2]
                 $aRatio[0] += $iAmount
 
-                $aSub[2] = $aRatio
+                $g_aData[$iIndex][2] = $aRatio
             Case $DATA_LIST
-                If $sListItem = Null Then ExitLoop
-                Local $vResult = $aSub[2]
-                For $i = 0 To UBound($vResult)-1
-                    If $vResult[$i][0] = $sListItem Then
-                        $vResult[$i][1] += $iAmount
-                        ExitLoop
-                    EndIf
-                Next
+                If $sListItem = Null Then
+                    $bOutput = False
+                Else
+                    Local $vResult = $g_aData[$iIndex][2]
+                    For $i = 0 To UBound($vResult)-1
+                        If ($vResult[$i][0] = $sListItem) Then
+                            $vResult[$i][1] += $iAmount
+                            ExitLoop
+                        EndIf
+                    Next
 
-                $aSub[2] = $vResult
+                    $g_aData[$iIndex][2] = $vResult
+                EndIf
+            Case $DATA_NUMAVG_TIME
+                Local $aRatio = $g_aData[$iIndex][2]
+                $aRatio[0] += $iAmount
+
+                $g_aData[$iIndex][2] = $aRatio
             Case Else  
-                ExitLoop
+                $bOutput = False
         EndSwitch
+    EndIf
 
-        $g_aData[$iIndex] = $aSub
-
-        $bOutput = True
-        ExitLoop
-    WEnd
-
-    Log_Level_Remove()
     Return $bOutput
 EndFunc
 
@@ -329,12 +314,10 @@ EndFunc
         aOrder: An array with the string of data names to specify the order in which the data is displayed.
         hListView: Listview control to display to.
 #ce
-Func Data_Display($aOrder = $g_aOrder, $hListView = $hLV_Stat)
+Func Data_Display($aOrder = $g_aOrder, $hListView = $g_hLV_Stat)
     For $i = 0 To UBound($g_aOrder)-1
         Local $sData = Data_Get($g_aOrder[$i])
-        If _GUICtrlListView_GetItemText($hListView, $i, 1) <> $sData Then
-            _GUICtrlListView_SetItemText($hListView, $i, Data_Get($g_aOrder[$i]), 1)
-        EndIf
+        If (_GUICtrlListView_GetItemText($hListView, $i, 1) <> $sData) Then _GUICtrlListView_SetItemText($hListView, $i, $sData, 1)
     Next
 EndFunc
 
@@ -344,7 +327,7 @@ EndFunc
         aOrder: An array with the string of data names to specify the order in which the data is displayed.
         hListView: Listview control to display to.
 #ce
-Func Data_Display_Update($aOrder = $g_aOrder, $hListView = $hLV_Stat)
+Func Data_Display_Update($aOrder = $g_aOrder, $hListView = $g_hLV_Stat)
     _GUICtrlListView_DeleteAllItems($hListView)
     For $sOrder In $g_aOrder
         Local $iItemIndex = _GUICtrlListView_AddItem($hListView, $sOrder)
@@ -356,7 +339,7 @@ EndFunc
     Function: Clears the global $g_aData list.
 #ce
 Func Data_Clear()
-    Local $t_aEmpty[0]
+    Local $t_aEmpty[0][3]
     $g_aData = $t_aEmpty
 EndFunc
 
@@ -370,19 +353,19 @@ EndFunc
         if success, true. 
 #ce
 Func Data_Order_Insert($sName, $iIndex)
-    If $iIndex > UBound($g_aOrder) Then Return False
+    If ($iIndex > UBound($g_aOrder)) Then Return False
 
     Data_Order_Add($sName)
     Local $iSize = 0 ;Stores number of elements in aNew
     Local $aNew[0] ;Will store new data
     For $sOrder In $g_aOrder
-        If $iSize = $iIndex Then
+        If ($iSize = $iIndex) Then
             $iSize += 1
             ReDim $aNew[$iSize]
             $aNew[$iSize-1] = $sName
         EndIf
 
-        If $sOrder <> $sName Then
+        If ($sOrder <> $sName) Then
             $iSize += 1
             ReDim $aNew[$iSize]
             $aNew[$iSize-1] = $sOrder
@@ -402,7 +385,7 @@ Func Data_Order_Add($sName)
     Local $iSize = 0 ;Stores number of elements in aNew
     Local $aNew[$iSize] ;Will store new data
     For $sOrder In $g_aOrder
-        If $sOrder <> $sName Then
+        If ($sOrder <> $sName) Then
             $iSize += 1
             ReDim $aNew[$iSize]
             $aNew[$iSize-1] = $sOrder
@@ -425,7 +408,7 @@ Func Data_Order_Remove($sName)
     Local $iSize = 0 ;Stores number of elements in aNew
     Local $aNew[0] ;Will store new data
     For $sOrder In $g_aOrder
-        If $sOrder <> $sName Then
+        If ($sOrder <> $sName) Then
             $iSize += 1
             ReDim $aNew[$iSize]
             $aNew[$iSize-1] = $sOrder

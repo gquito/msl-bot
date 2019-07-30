@@ -1,59 +1,158 @@
 #include-once
 #include "../imports.au3"
 
-#cs
-	Function: Sends command to Android Debug Bridge and returns output
-	Parameters:
-	$sCommand: Command to send
-	$sAdbDevice: If more than one device, device is needed.
-	$sAdbPath: ADB executable path.
-	Returns: Output after command has been executed.
-#ce
-Func adbCommand($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
-	Log_Level_Add("adbCommand")
-	Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
+;Run CMD session to send ADB command.
+;Output will be retrieved after command has been executed.
+Func ADB_Command($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+	Log_Level_Add("ADB_Command")
+    Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
 
-	Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
-	If ProcessWaitClose($iPID, 3000) = 0 Then
-		ProcessClose($iPID)
-		$sResult = "timed out."
-	Else
-		$sResult = StdoutRead($iPID)
+    Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
+    Local $hTimer = TimerInit()
+	Local $sResult ;Holds ADB output
+	While ProcessExists($iPID)
+		If (_Sleep(100)) Then ExitLoop
+		If (TimerDiff($hTimer) > 3000) Then
+			$sResult = "Timed out."
+			ProcessClose($iPID)
+			ExitLoop
+		EndIf
+	WEnd
+	If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
+    StdioClose($iPID)
+
+    If ($sResult <> "") Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $sResult
+EndFunc   ;==>ADB_Command
+
+;Run CMD session to send ADB command.
+;Output will be retrieved after command has been executed.
+Func ADB_Command_Ignore_Timeout($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+	Log_Level_Add("ADB_Command")
+    Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
+
+    Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
+    Local $hTimer = TimerInit()
+	Local $sResult ;Holds ADB output
+	While ProcessExists($iPID)
+		If (_Sleep(100)) Then ExitLoop
+		If (TimerDiff($hTimer) > 20000) Then
+			$sResult = "Timed out."
+			ProcessClose($iPID)
+			ExitLoop
+		EndIf
+	WEnd
+	If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
+    StdioClose($iPID)
+
+    If ($sResult <> "") Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $sResult
+EndFunc   ;==>ADB_Command
+
+Func ADB_General_Command($sCommand)
+	Log_Level_Add("ADB_General_Command")
+    Log_Add("ADB command: " & '"' & $g_sAdbDevice & '"' & " " & $sCommand, $LOG_DEBUG)
+
+    Local $iPID = Run('"' & $g_sAdbDevice & '"' & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
+    Local $hTimer = TimerInit()
+	Local $sResult ;Holds ADB output
+	While ProcessExists($iPID)
+		If (_Sleep(100)) Then ExitLoop
+		If (TimerDiff($hTimer) > 3000) Then
+			$sResult = "Timed out."
+			ProcessClose($iPID)
+			ExitLoop
+		EndIf
+	WEnd
+	If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
+    StdioClose($iPID)
+
+    If ($sResult <> "") Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $sResult
+EndFunc
+
+;Runs ADB Shell session directly and inputs commands individually.
+;Commands could be separated by @CRLF.
+;Output is automatically parsed to show only output.
+;Raw output displays all command inputs from session.
+Func ADB_Shell($sCommand, $bOutput = False, $bRawOutput = False, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+	Log_Level_Add("ADB_Shell")
+
+	;Run shell session
+	Local $iPID_ADB = Run('"' & $sAdbPath & '" -s ' & $sAdbDevice & ' shell', "", @SW_HIDE, $STDIN_CHILD + $STDOUT_CHILD)
+	StdinWrite($iPID_ADB, $sCommand & @CRLF)
+	StdinWrite($iPID_ADB, "exit" & @CRLF)
+
+	;Read output from session.
+	Local $sOutput = ""
+	If ($bOutput) Then
+
+        ;Reading output from stream.
+		Local $hTimer = TimerInit()
+		While True 
+			$sOutput &= StdoutRead($iPID_ADB)
+			If (@error Or _Sleep(0)) Then ExitLoop
+
+			If (TimerDiff($hTimer) > 5000) Then
+				$sOutput = "Timed out."
+				ExitLoop
+			EndIf
+		WEnd
+
+		;Parsing output
+		If ($sOutput <> "Timed out." And Not($bRawOutput)) Then
+			Local $aOutput = StringRegExp($sOutput, "(?s)\n.*?\n.*?\n(.*)\n(?:root@)", $STR_REGEXPARRAYMATCH) ;Process input
+			If (IsArray($aOutput)) Then $sOutput = $aOutput[0]
+		EndIf
+
 	EndIf
-	StdioClose($iPID)
 
-	If $sResult <> "" Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
+	;Prevent adb process from building up.
+	If ($sOutput = "Timed out.") Then
+		Log_Add("ADB Process has stopped functioning. Restarting Nox.", $LOG_ERROR)
+		If (ProcessExists($iPID_ADB)) Then ProcessClose($iPID_ADB)
+		RestartNox()
+	EndIf
+
 	Log_Level_Remove()
-	Return $sResult
-EndFunc   ;==>adbCommand
+	Return $sOutput
+EndFunc   ;==>ADB_Shell
 
-Func isAdbWorking()
-	Local $bStatus = (FileExists($g_sAdbPath) = True) And (StringInStr(adbCommand("get-state"), "error") = False)
+;Returns working condition of ADB.
+Func ADB_isWorking()
+	Local $bStatus = (FileExists($g_sAdbPath) = True) And (StringInStr(ADB_Command("get-state"), "error") = False)
 	Log_Add("Checking ADB status: " & $bStatus, $LOG_DEBUG)
 	$g_bAdbWorking = $bStatus
 
-	If $bStatus = True Then $g_sEvent = getEvent()
 	Return $bStatus
-EndFunc   ;==>isAdbWorking
+EndFunc   ;==>ADB_isWorking
 
-Func adbSendESC($sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
-	If $g_sAdbMethod = "input event" Then
-		Return adbCommand("shell input keyevent ESCAPE")
-	Else
-		If IsDeclared("sEvent") = 0 Then
-			Global $g_sEvent = getEvent()
-		EndIf
+;Send ESC through ADB.
+Func ADB_SendESC($iCount = 1, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+	If (Not($g_bAdbWorking)) Then Return 0
+	For $i = 0 To $iCount - 1 
+		ADB_Command("shell input keyevent ESCAPE")
+	Next
+	Return 1
+EndFunc   ;==>ADB_SendESC
 
-		Local $aTCV = ["1 158 1", "0 0 0", "1 158 0", "0 0 0"]
-		Return adbCommand("shell " & sendEvent($g_sEvent, $aTCV), $sAdbDevice, $sAdbPath)
-	EndIf
-EndFunc   ;==>adbSendESC
+Func ADB_RestartServer()
+	ADB_General_Command("kill-server")
+	ADB_General_Command("start-server")
+EndFunc
 
-Func sendEvent($sEvent, $aTCV)
+Func ADB_GetDevices()
+	If (Not($g_bAdbWorking)) Then Return "Adb Not Working"
+	Msgbox(0,"Adb Devices", ADB_Command("devices"))
+EndFunc
+
+;Converts an array of event, type, code, and value to sendevent long text.
+Func ADB_ConvertEvent($sEvent, $aTCV)
 	Local $sFinal = ""
-	If IsArray($aTCV) = False Then
-		$aTCV = StringSplit($aTCV, ",", $STR_NOCOUNT)
-	EndIf
+	If (Not(IsArray($aTCV))) Then $aTCV = StringSplit($aTCV, ",", $STR_NOCOUNT)
 
 	For $i = 0 To UBound($aTCV) - 1
 		Local $aRaw = StringSplit($aTCV[$i], " ", $STR_NOCOUNT)
@@ -64,33 +163,54 @@ Func sendEvent($sEvent, $aTCV)
 		$sFinal &= ";sendevent " & $sEvent & " " & $sType & " " & $sCode & " " & $sValue
 	Next
 
-	Return '"' & StringMid($sFinal, 2) & '"'
-EndFunc   ;==>sendEvent
+	Return StringMid($sFinal, 2)
+EndFunc   ;==>ADB_ConvertEvent
 
-Func getEvent($sGetEvent = "~")
-	If $sGetEvent = "~" Then
-		$g_bLogEnabled = False
-		$sGetEvent = adbCommand("shell getevent -p")
-		$g_bLogEnabled = True
+;Retrieves "Android Input" to be able to use sendevent method.
+Func ADB_GetEvent($iTimeout = 500)
+	Log_Level_Add("ADB_GetEvent")
+	If ($g_sADBMethod <> "sendevent") Then 
+		Log_Level_Remove()
+		Return ""
 	EndIf
 
-	$aEvents = StringSplit(StringStripWS($sGetEvent, $STR_STRIPSPACES), @CRLF, $STR_NOCOUNT)
-	If IsArray($aEvents) Then
+	;Capture event list.
+	Local $sData = ""
+	Local $hTimer = TimerInit()
+
+	$g_bLogEnabled = False
+	While ($sData = "" Or $sData = "Timed out.")
+		$sData = ADB_Command("shell getevent -p")
+		If (TimerDiff($hTimer) > $iTimeout Or _Sleep(100)) Then ExitLoop
+	WEnd
+	$g_bLogEnabled = True
+	
+	If (Not(StringInStr($sData , "Android Input")) And Not(StringInStr($sData , "Android_Input"))) Then
+		Log_Add("ADB_GetEvent() => Could not find Android Input.", $LOG_ERROR)
+		Log_Level_Remove()
+		Return ""
+	EndIf
+
+	Local $aEvents = StringSplit(StringStripWS($sData, $STR_STRIPSPACES), @CRLF, $STR_NOCOUNT)
+	If (IsArray($aEvents)) Then
 		For $i = 0 To UBound($aEvents) - 1
-			If StringInStr($aEvents[$i], "Android Input") Then
+			If (StringInStr($aEvents[$i], "Android Input") Or StringInStr($aEvents[$i], "Android_Input")) Then
+
 				Local $aEventNum = StringSplit($aEvents[$i - 1], ":", $STR_NOCOUNT)
-				If IsArray($aEventNum) = True And UBound($aEventNum) > 1 Then
+				If (IsArray($aEventNum) And UBound($aEventNum) > 1) Then
+					Log_Level_Remove()
 					Return StringStripWS($aEventNum[1], $STR_STRIPLEADING)
 				EndIf
+
 			EndIf
 		Next
 	Else
-		$g_sErrorMessage = "getEvent() => Could not get event list. Using default."
-		Log_Add($g_sErrorMessage, $LOG_ERROR)
-		Return "/dev/input/event7"
+		Log_Add("ADB_GetEvent() => Could not get event list.", $LOG_ERROR)
+		Log_Level_Remove()
+		Return ""
 	EndIf
 
-	$g_sErrorMessage = "getEvent() => Could not retrieve event number for Android Input. Using default."
-	Log_Add($g_sErrorMessage, $LOG_ERROR)
-	Return "/dev/input/event7"
-EndFunc   ;==>getEvent
+	Log_Add("ADB_GetEvent() => Something went wrong.", $LOG_ERROR)
+	Log_Level_Remove()
+	Return ""
+EndFunc   ;==>ADB_GetEvent

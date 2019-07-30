@@ -1,15 +1,13 @@
 #include-once
 #include "../imports.au3"
 
+Global $Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Target_Boss, $Collect_Quests, $Hourly_Script
 Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Target_Boss, $Collect_Quests, $Hourly_Script)
     Log_Level_Add("Farm_Rare")
     Log_Add("Farm Rare has started.")
 
     ;Declaring variables and data
-    Local Const $aLocations = _ 
-    ["lost-connection", "loading", "battle", "battle-auto", "map-gem-full", "battle-gem-full", _
-     "catch-mode", "pause", "battle-end", "battle-end-exp", "battle-sell", "map", "refill", _ 
-     "defeat", "unknown", "battle-boss", "astromon-full"]
+    Local Const $sLocations = "lost-connection,loading,map-gem-full,battle-gem-full,catch-mode,map,refill,defeat,unknown,astromon-full"
 
     Local $aList = StringSplit($Capture, ",", $STR_NOCOUNT)
     Local $sList = ""
@@ -17,7 +15,7 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
         $sList &= "," & StringLeft($sCur, 2) & ":0"
     Next
     $sList = StringMid($sList, 2)
-    
+
     Data_Add("Status", $DATA_TEXT, "")
     Data_Add("Runs", $DATA_RATIO, "0/" & $Runs)
     Data_Add("Win Rate", $DATA_PERCENT, "Victory/Runs")
@@ -44,42 +42,47 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
 
     Data_Display_Update()
     ;pre process
-    Switch isLocation($aLocations, False)
-        Case "battle", "battle-auto", "battle-end-exp", "battle-end", "battle-sell", "battle-sell-item", "pause", ""
-            Data_Set("Status", "Navigating to map.")
-            navigate("map", True)
-    EndSwitch
+    Common_Navigate($sLocations)
 
     ;Script process 
     #cs 
         Script will run story mode and capture rare astromons.
     #ce
-    While (Data_Get("Runs", True)[1] = 0) Or (Data_Get_Ratio("Runs") <= 1)
-        If _Sleep(100) Then ExitLoop
+    While ($Runs = 0) Or (Data_Get_Ratio("Runs") <= 1)
+        $g_bSellGems = True
+        $g_aGemsToSell = $Gems_to_Sell
 
-        $sLocation = isLocation($aLocations, False)
+        If _Sleep(200) Then ExitLoop
+
+        Local $sLocation = getLocation()
         #Region Common functions
-            If $Target_Boss = "Enabled" Then Common_Boss($sLocation)
-            If $Collect_Quests = "Enabled" Then Common_Quests($sLocation)
-            If $Guardian_Mode <> "Disabled" Then Common_Guardian($sLocation, $Guardian_Mode, $Usable_Astrogems, $Target_Boss, $Collect_Quests, $Hourly_Script)
-            If $Hourly_Script = "Enabled" Then Common_Hourly($sLocation)
+            If ($Collect_Quests = "Enabled") Then Common_Quests($sLocation)
+            If ($Guardian_Mode <> "Disabled") Then Common_Guardian($sLocation, $Guardian_Mode, $Usable_Astrogems, $Target_Boss, $Collect_Quests, $Hourly_Script)
+            If ($Hourly_Script = "Enabled") Then Common_Hourly($sLocation)
+            If ($Target_Boss = "Enabled") Then Common_Boss($sLocation, False, True)
             Common_Stuck($sLocation)
         #EndRegion
 
-        If _Sleep(10) Then ExitLoop
+        If _Sleep(0) Then ExitLoop
         Switch $sLocation
+            Case "village"
+                Data_Set("Status", "Navigating to map.")
+                navigate("map", True)
+
             Case "battle"
+                If inBattle() = False Then ContinueLoop
+
                 While Data_Get("Astrochips") > 0 ;Loop for checking for more than 1 rare
-                    If _Sleep(10) Then ExitLoop(2)
-                    If navigate("catch-mode", False) = False Then ExitLoop
+                    If (_Sleep(10)) Then ExitLoop(2)
+                    If (Not(navigate("catch-mode", False))) Then ExitLoop
                     
                     Local $iAstrochips = Data_Get("Astrochips")
                     Local $sResult = catch($Capture, $iAstrochips)
                     Data_Set("Astrochips", $iAstrochips)
 
-                    If $sResult <> "" Then
+                    If ($sResult <> "") Then
                         ;Found and catch status
-                        If StringLeft($sResult, 1) <> "!" Then
+                        If (StringLeft($sResult, 1) <> "!") Then
                             ;Successfully caught
                             Data_Increment("Caught", 1, StringLeft($sResult, 2))
                         Else
@@ -88,54 +91,48 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
                         EndIf
                     Else
                         ;Nothing found.
-                        clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
+                        clickWhile(getPointArg("catch-mode-cancel"), "isLocation", "catch-mode", 5, 1000)
                         ExitLoop
                     EndIf
                 WEnd
 
                 Log_Add("Turning auto battle on.")
-                clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 5, 1000)
+                navigateToBattleAuto($sLocation)
             Case "catch-mode"
-                clickPoint(getArg($g_aPoints, "catch-mode-cancel"))
-
+                clickWhile(getPointArg("catch-mode-cancel"), "isLocation", "catch-mode", 5, 1000)
             Case "battle-end"
-                If (Data_Get("Runs", True)[1] <> 0) And (Data_Get_Ratio("Runs") >= 1) Then ExitLoop
+                If (Data_Get("Runs", True)[1] <> 0 And Data_Get_Ratio("Runs") >= 1) Then ExitLoop
                 Data_Set("Status", "Quick restart.")
 
-                If enterBattle() Then 
+                If (enterBattle()) Then 
                     Data_Increment("Runs")
                     Data_Increment("Victory")
                 EndIf
 
             Case "map"
-                If (Data_Get("Runs", True)[1] <> 0) And (Data_Get_Ratio("Runs") >= 1) Then ExitLoop
+                If (Data_Get("Runs", True)[1] <> 0 And Data_Get_Ratio("Runs") >= 1) Then ExitLoop
                 
                 Log_Add("Going into battle.")
                 Data_Set("Status", "Going to battle.")
                 
-                If enterStage($Map, $Difficulty, $Stage_Level) = True Then 
+                If (enterStage($Map, $Difficulty, $Stage_Level)) Then 
                     Data_Increment("Runs")
                     Data_Increment("Victory")
                 EndIf
 
             Case "refill"
                 Data_Set("Status", "Refill energy.")
-                If (Data_Get_Ratio("Refill") >= 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
-                    ExitLoop
-                Else
-                    Data_Increment("Refill", 30)
-
-                    Data_Increment("Runs")
-                    Data_Increment("Victory")
-                EndIf
-
-                Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)
+                Local $iRefillResult = doRefill(($Usable_Astrogems = "Gold" ? True : False))
+                If ($iRefillResult < -1) Then ExitLoop
 
             Case "pause"
                 Log_Add("Unpausing.")
                 Data_Set("Status", "Unpausing.")
 
-                clickPoint(getArg($g_aPoints, "battle-continue"))
+                clickPoint(getPointArg("battle-continue"))
+
+            Case "battle-auto"
+                Data_Set("Status", "In battle.")
 
             Case "defeat"
                 Log_Add("You have been defeated.")
@@ -147,7 +144,7 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
             Case "battle-sell", "battle-end-exp", "battle-sell-item"
                 Data_Set("Status", "Going to battle-end.")
                 navigate("battle-end")
-
+                
             Case "astromon-full"
                 Log_Add("Astromon bag is full.", $LOG_ERROR)
                 navigate("map")
@@ -157,11 +154,16 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
                 Data_Set("Status", "Selling gems.")
                 sellGems($Gems_To_Sell)
 
-            Case "battle-auto"
-                Data_Set("Status", "In battle.")
-
+            Case "guardian-dungeons"
+                Data_Set("Status", "Navigating to map")
+                navigate("map")
+            Case Else
+                HandleCommonLocations($sLocation)
         EndSwitch
     WEnd
+
+    $g_bSellGems = False
+    $g_aGemsToSell = Null
 
     ;End script
     Log_Add("Farm Rare has ended.")

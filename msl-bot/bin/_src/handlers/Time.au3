@@ -10,7 +10,7 @@ Func NowTimeStamp()
 
     ;Getting time information: yyyy/mm/dd hh:mm:ss
     Local $aRawDate = StringSplit(_NowCalc(), " ", $STR_NOCOUNT)
-    If UBound($aRawDate, $UBOUND_ROWS) <> 2 Then
+    If (UBound($aRawDate, $UBOUND_ROWS) <> 2) Then
         $g_sErrorMessage = "NowTimeStamp() => Could not get date time."
         Return -1
     EndIf
@@ -29,6 +29,14 @@ EndFunc
 #ce
 Func formatTime($sTimeStamp = NowTimeStamp())
     Return getHour($sTimeStamp) & ":" & getMinute($sTimeStamp) & ":" & getSecond($sTimeStamp) ;& ":" & @MSEC
+EndFunc
+
+#cs
+    Function: Formats the date to a readable string
+    Returns: MM-DD-YYYY
+#ce
+Func formatDate($sTimeStamp = NowTimeStamp())
+    Return getMonth($sTimeStamp) & "-" & getDay($sTimeStamp) & "-" & getYear($sTimeStamp) ;& ":" & @MSEC
 EndFunc
 
 #cs 
@@ -55,17 +63,33 @@ Func getSecond($sTimeStamp = NowTimeStamp())
     Return StringMid($sTimeStamp, 13, 2)
 EndFunc
 
+Func getMonth($sTimeStamp = NowTimeStamp())
+    Return StringMid($sTimeStamp, 5, 2)
+EndFunc
+
+Func getDay($sTimeStamp = NowTimeStamp())
+    Return StringMid($sTimeStamp, 7, 2)
+EndFunc
+
+Func getYear($sTimeStamp = NowTimeStamp())
+    Return StringMid($sTimeStamp, 1, 4)
+EndFunc
+
 #cs 
     Function: Converts seconds to formated string. EX: 00 H 00 M 00 S
     Parameters:
         $iSeconds: Seconds.
 #ce
 Func getTimeString($iSeconds)
-	If $iSeconds >= 86400 Then ;a day
+	If ($iSeconds >= 86400) Then ;a day
         Return Int($iSeconds / 60 / 60 / 24) & "D " & Int(Mod($iSeconds / 60 / 60, 24)) & "H " & Int(Mod($iSeconds / 60, 60)) & "M " & Int(Mod($iSeconds, 60)) & "S"
-    ElseIf $iSeconds >= 3600 Then ;an hour
+    ElseIf ($iSeconds >= 3600) Then ;an hour
 		Return Int($iSeconds / 60 / 60) & "H " & Int(Mod($iSeconds / 60, 60)) & "M " & Int(Mod($iSeconds, 60)) & "S"
 	Else
 		Return Int($iSeconds / 60) & "M " & Int(Mod($iSeconds, 60)) & "S"
 	EndIf
+EndFunc
+
+Func _RoundDown($nVar, $iCount)
+    Return Round((Int($nVar * (10 ^ $iCount))) / (10 ^ $iCount), $iCount)
 EndFunc

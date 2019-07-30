@@ -29,3 +29,37 @@ Func updateGuardians()
         FileClose($hFile)
     EndIf
 EndFunc
+
+Func updateGuardiansFromDungeon()
+    If (Not(isLocation("guardian-dungeons"))) Then 
+        If (Not(navigate("guardian-dungeons",True,3))) Then Return buildNavOutput(-1, False)
+    EndIf
+
+    If (Not(FileExists(@ScriptDir & "\bin\images\misc\misc-guardian-left2.bmp"))) Then 
+        Local $aImageLeft = findImage("misc-guardian-left", 90, 0, 312, 174, 138, 58, True, True)
+        Local $aImageRight = findImage("misc-guardian-right", 90, 0, 312, 174, 138, 58, True, True)
+        If (isArray($aImageLeft)) Then
+            If (isArray($aImageRight)) Then Return True
+        EndIf
+    EndIf
+
+    DeleteOldGuardianImages()
+
+    captureRegion("bin\images\misc\misc-guardian-left", 328, 180, 44, 40)
+    captureRegion("bin\images\misc\misc-guardian-right", 391, 180, 44, 40)
+    captureRegion()
+    Return True
+EndFunc
+
+Func DeleteOldGuardianImages()
+    Local $t_leftFile = @ScriptDir & "\bin\images\misc\misc-guardian-left"
+    Local $t_rightFile = @ScriptDir & "\bin\images\misc\misc-guardian-right"
+    Local $t_fileType = ".bmp"
+    If (FileExists($t_leftFile & $t_fileType)) Then FileDelete($t_leftFile & $t_fileType)
+    If (FileExists($t_rightFile & $t_fileType)) Then FileDelete($t_rightFile & $t_fileType)
+    For $i = 1 To 5
+        If (FileExists($t_leftFile & $i & $t_fileType)) Then FileDelete($t_leftFile & $i & $t_fileType)
+        If (FileExists($t_rightFile & $i & $t_fileType)) Then FileDelete($t_rightFile & $i & $t_fileType)
+    Next
+    If (FileExists(@ScriptDir & "\bin\images\misc\guardian-info.txt")) Then FileDelete(@ScriptDir & "\bin\images\misc\guardian-info.txt")
+EndFunc

@@ -25,25 +25,27 @@ EndFunc
 Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap)
     Local $aPixels[0] ;pixels to check
 
-    If ($vArg = "") Or ($vArg = -1) Then ;returns early if vArg is empty
+    If ($vArg = "" Or $vArg = -1) Then ;returns early if vArg is empty
         $g_sErrorMessage = "isPixel() => No Arguments Found."
         Return -1
     EndIf
 
+    If (Not(isArray($vArg)) And StringLeft($vArg,1) = "%") Then $vArg = getPixelArg(StringTrimLeft($vArg,1))
     ;Fixing argument format to [[x, y, color], [...]]
-    If isArray($vArg) = True Then
-        If isArray($vArg[0]) = True Then
+    If (isArray($vArg)) Then
+        If (isArray($vArg[0])) Then
             ;Expected format: "[[x, y, color], [...]]"
             Local $aPixel = $vArg
+            Return comparePixels($aPixels, $iVariation, $hBitmap)
         Else
-            If StringInStr($vArg[0], ",") = True Then
+            If (StringInStr($vArg[0], ",")) Then
                 ;Expected format: ["x,y,color", "..."]
                 Local Const $iSize = UBound($vArg)
                 ReDim $aPixels[$iSize]
 
                 For $i = 0 To $iSize-1
                     Local $t_aPixel = StringSplit($vArg[$i], ",", $STR_NOCOUNT)
-                    If UBound($t_aPixel) <> 3 Then ContinueLoop
+                    If (UBound($t_aPixel) <> 3) Then ContinueLoop
 
                     Local $t_iX = StringStripWS($t_aPixel[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
                     Local $t_iY = StringStripWS($t_aPixel[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
@@ -54,46 +56,63 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap)
                     ReDim $aPixels[UBound($aPixels)+1]
                     $aPixels[UBound($aPixels)-1] = $t_aFormatedPixel
                 Next
+                Return comparePixels($aPixels, $iVariation, $hBitmap)
             Else
                 ;Expected format: ["x", "y", "color"]
+                If (UBound($vArg) <> 3) Then 
+                    Log_Add("Error: isPixel => Could not identify data: " & _ArrayToString($vArg, "|"), $LOG_ERROR)
+                    Return -1
+                EndIf
                 Local $t_aFormatedPixel = [$vArg[0], $vArg[1], $vArg[2]]
 
                 ReDim $aPixels[UBound($aPixels)+1]
                 $aPixels[UBound($aPixels)-1] = $t_aFormatedPixel
+                
+                Return comparePixels($aPixels, $iVariation, $hBitmap)
             EndIf
         EndIf
     Else
-        ;Expected format: "x,y,color|..."
-        Local $t_aPixelSet = StringSplit($vArg, "|", $STR_NOCOUNT)
-        Local Const $t_eSize = UBound($t_aPixelSet)
-
-        For $i = 0 To $t_eSize-1
-            Local $t_aPixel = StringSplit($t_aPixelSet[$i], ",", $STR_NOCOUNT)
-            If UBound($t_aPixel) <> 3 Then ContinueLoop
-
-            Local $t_iX = StringStripWS($t_aPixel[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
-            Local $t_iY = StringStripWS($t_aPixel[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
-            Local $t_cColor = StringStripWS($t_aPixel[2], $STR_STRIPLEADING + $STR_STRIPTRAILING)
-
-            Local $t_aFormatedPixel = [$t_iX, $t_iY, $t_cColor]
-
-            ReDim $aPixels[UBound($aPixels)+1]
-            $aPixels[UBound($aPixels)-1] = $t_aFormatedPixel
-        Next
+        If (StringInStr($vArg,'/', $STR_NOCASESENSE) <> 0) Then
+            Local $t_aPixelOrSet = StringSplit($vArg,'/', $STR_NOCOUNT)
+            For $i = 0 To UBound($t_aPixelOrSet)-1
+                $aPixels = splitPixelString($t_aPixelOrSet[$i])
+                Local $bCompared = comparePixels($aPixels, $iVariation, $hBitmap)
+                If ($bCompared) Then Return True
+            Next
+            Return False
+        Else
+            ;Expected format: "x,y,color|..."
+            $aPixels = splitPixelString($vArg)
+            Local $bCompared = comparePixels($aPixels, $iVariation, $hBitmap)
+            Return $bCompared
+        EndIf
     EndIf
+EndFunc
 
+Func comparePixels($aPixels, $iVariation, $hBitmap)
     ;checking if pixel is within variation
     Local Const $iTotalPixels = UBound($aPixels) ;Total pixels
 
+    If $iTotalPixels = 0 Then
+        Log_Add("isPixel(): Invalid pixel data", $LOG_ERROR)
+        Return -1
+    EndIf
+
     ;Debug information ===============================
-    Global $g_vDebug[1][3]
-    $g_vDebug[0][0] = "Color1"
-    $g_vDebug[0][1] = "Color2"
-    $g_vDebug[0][2] = "Variation"
+    Local $DebugInfo[3]
+    $DebugInfo[0] = "Color1"
+    $DebugInfo[1] = "Color2"
+    $DebugInfo[2] = "Variation"
+    _ArrayAdd($g_vDebug,$DebugInfo)
     ;====================================================
 
     For $i = 0 To $iTotalPixels-1
         Local $t_aCurrPixel = $aPixels[$i]
+
+        If UBound($t_aCurrPixel) <> 3 Then
+            Log_Add("isPixel(): Invalid pixel data", $LOG_ERROR)
+            Return -1
+        EndIf
 
         Local $t_iX = $t_aCurrPixel[0] ;x coordinate
         Local $t_iY = $t_aCurrPixel[1] ;y coordinate
@@ -102,43 +121,38 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap)
         Local $t_cColor2 = getColor($t_iX, $t_iY, $hBitmap) ;current color in position
         Local $t_iColorDifference = compareColors($t_cColor, $t_cColor2)
 
-        ;Extended information ===============================
-        ReDim $g_vDebug[UBound($g_vDebug)+1][3]
-        Local $t_iIndex = UBound($g_vDebug)-1
-
-        $g_vDebug[$t_iIndex][0] = $t_cColor
-        $g_vDebug[$t_iIndex][1] = $t_cColor2
-        $g_vDebug[$t_iIndex][2] = $t_iColorDifference
+        $DebugInfo[0] = $t_cColor
+        $DebugInfo[1] = $t_cColor2
+        $DebugInfo[2] = $t_iColorDifference
+        _ArrayAdd($g_vDebug,$DebugInfo)
         ;====================================================
 
-        If $t_iColorDifference > $iVariation Then
-            Return False
-        EndIf
+        If ($t_iColorDifference > $iVariation) Then Return False
     Next
 
     Return True
 EndFunc
 
-#cs
-    Function: If one of the pixel sets are true then returns true
-    Parameters:
-        $aPixelSet: Format = [[[x,y,color], [...]], [[...], [...]]] or ["x,y,color|...", "...|..."] or "x,y,color|.../...|..." (Array of Pixels Sets)
-        $iVariation: The maximum color variation compared to the actual pixel.
-        $hBitmap: Bitmap to compare the pixels for.
-    Returns: Boolean
-#ce
-Func isPixelOR($aPixelSet, $iVariation = 10, $hBitmap = $g_hBitmap)
-    If isArray($aPixelSet) = False Then ;expected format: "x,y,color|.../...|..."
-        $aPixelSet = StringSplit($aPixelSet, "/", $STR_NOCOUNT)
-    EndIf
-
-    Local $t_eSize = UBound($aPixelSet)
+Func splitPixelString($sPixels)
+    Local $aPixels[0]
+    Local $t_aPixelSet = StringSplit($sPixels, "|", $STR_NOCOUNT)
+    Local Const $t_eSize = UBound($t_aPixelSet)
 
     For $i = 0 To $t_eSize-1
-        If isPixel($aPixelSet[$i], $iVariation, $hBitmap) = True Then Return True
-    Next
+        Local $t_aPixel = StringSplit($t_aPixelSet[$i], ",", $STR_NOCOUNT)
+        If (UBound($t_aPixel) <> 3) Then ContinueLoop
 
-    Return False
+        Local $t_iX = StringStripWS($t_aPixel[0], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+        Local $t_iY = StringStripWS($t_aPixel[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+        Local $t_cColor = StringStripWS($t_aPixel[2], $STR_STRIPLEADING + $STR_STRIPTRAILING)
+
+        Local $t_aFormatedPixel = [$t_iX, $t_iY, $t_cColor]
+
+        ReDim $aPixels[UBound($aPixels)+1]
+        $aPixels[UBound($aPixels)-1] = $t_aFormatedPixel
+    Next
+    
+    Return $aPixels
 EndFunc
 
 #cs
@@ -154,11 +168,9 @@ Func compareColors($nColor1, $nColor2, $nRetType=1)
 	$nRet[0] = Abs(_ColorGetRed($nColor1) - _ColorGetRed($nColor2))
 	$nRet[1] = Abs(_ColorGetGreen($nColor1) - _ColorGetGreen($nColor2))
 	$nRet[2] = Abs(_ColorGetBlue($nColor1) - _ColorGetBlue($nColor2))
-	If $nRetType = 1 Then
-		Return _Max($nRet[0], _Max($nRet[1], $nRet[2]))
-	Else
-		Return $nRet
-	EndIf
+	If ($nRetType = 1) Then Return _Max($nRet[0], _Max($nRet[1], $nRet[2]))
+
+    Return $nRet
 EndFunc
 
 #cs
@@ -179,7 +191,7 @@ Func findColor($startingPoint, $size, $color, $variation = 10, $skipx = 1, $skip
 	Local $width, $height
 
 	;Split starting point array/string to its variables
-	If isArray($startingPoint) = False Then
+	If (Not(isArray($startingPoint))) Then
 		Local $split = StringSplit(StringStripWS($startingPoint, 8), ",", 2)
 		$x = $split[0]
 		$y = $split[1]
@@ -188,7 +200,7 @@ Func findColor($startingPoint, $size, $color, $variation = 10, $skipx = 1, $skip
 		$y = $startingPoint[1]
 	EndIf
 
-	If isArray($size) = False Then
+	If (Not(isArray($size))) Then
 		Local $split = StringSplit(StringStripWS($size, 8), ",", 2)
 		$width = $split[0]
 		$height = $split[1]
@@ -201,7 +213,7 @@ Func findColor($startingPoint, $size, $color, $variation = 10, $skipx = 1, $skip
 	For $x1 = $x to $x+$width Step $skipx
 		For $y1 = $y to $y+$height Step $skipy
 			Local $tempPixel = [$x1, $y1, $color]
-			If isPixel($tempPixel, $variation) = True Then
+			If (isPixel($tempPixel, $variation)) Then
 				Local $tempPoint = [$x1, $y1]
 				Return $tempPoint
 			EndIf
@@ -210,4 +222,50 @@ Func findColor($startingPoint, $size, $color, $variation = 10, $skipx = 1, $skip
 
 	;If not found
 	Return -1
+EndFunc
+
+Func setPixel($sPixels, $aData = Null)
+	Local $aPixela = getPixelArg($sPixels)
+	Local $aPoints[0][2] ;Will store points to find colors for.
+	
+	If ($aPixela = -1) Then
+		;Creates new location.
+		If (Not(isArray($aData))) Then $aData = StringSplit($aData, "|", $STR_NOCOUNT)
+
+		For $sData In $aData
+			Local $aPoint = StringSplit($sData, ",", $STR_NOCOUNT)
+
+			ReDim $aPoints[UBound($aPoints)+1][2]
+			$aPoints[UBound($aPoints)-1][0] = $aPoint[0]
+			$aPoints[UBound($aPoints)-1][1] = $aPoint[1]
+		Next
+	Else
+		;Creates local version of the location. This location will be prioritized versus the remote location.
+		Local $sPixelSet = $aPixela
+		If (StringInStr($sPixelSet, "/")) Then $sPixelSet = StringSplit($sPixelSet, "/", $STR_NOCOUNT)[0]
+
+		Local $aPixels = StringSplit($sPixelSet, "|", $STR_NOCOUNT)
+		ReDim $aPoints[UBound($aPixels)][2]
+		For $i = 0 To UBound($aPixels)-1
+			Local $aPixel = StringSplit($aPixels[$i], ",", $STR_NOCOUNT)
+
+			$aPoints[$i][0] = $aPixel[0]
+			$aPoints[$i][1] = $aPixel[1]
+		Next
+	EndIf
+
+	CaptureRegion()
+
+	Local $sNewPixels = "" ;Will store new pixel set
+	For $i = 0 To UBound($aPoints)-1
+		$sNewPixels &= "|" & $aPoints[$i][0] & "," & $aPoints[$i][1] & "," & getColor($aPoints[$i][0], $aPoints[$i][1])
+	Next
+	$sNewPixels = StringMid($sNewPixels, 2)
+
+	Local $hFile = FileOpen($g_sLocalDataFolder & $g_sPixels, $FO_APPEND+$FO_CREATEPATH)
+	Local $bOutput = (FileWrite($hFile, @CRLF & $sPixels & ":" & $sNewPixels) = 1)
+	FileClose($hFile)
+
+	mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sPixels), $g_aPixels, "/")
+	Return $bOutput
 EndFunc

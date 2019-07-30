@@ -16,20 +16,18 @@ Func sellGems($aGrades)
     Local $bOutput = False
     
     While True
-        If navigate("manage") = True Then
+        If (navigate("manage", False, 3)) Then
             Log_Add("Selling grades: " & $aGrades & ".")
             For $iGrade in StringSplit($aGrades, ",", $STR_NOCOUNT)
-                clickPoint(getArg($g_aPoints, "manage-grade" & $iGrade), 1, 0, Null)
-                If _Sleep(500) Then ExitLoop(2)
+                clickPoint(getPointArg("manage-grade" & $iGrade))
+                If _Sleep(200) Then ExitLoop(2)
             Next
 
-            For $i = 0 To 3 
-                clickPoint(getArg($g_aPoints, "manage-sell-selected"), 3, 200)
-                clickPoint(getArg($g_aPoints, "manage-sell-confirm"), 3, 200, Null)
-            Next
-
-            navigate("map")
+            If (clickUntil(getPointArg("manage-sell-selected"), "isLocation", "sell-gems-confirm", 3, 500)) Then
+                If (clickWhile(getPointArg("manage-sell-confirm"), "isLocation", "sell-gems-confirm", 3, 500)) Then navigate("map")
+            EndIf
         Else
+            If (isLocation("quit")) Then ContinueLoop
             Log_Add("Could not navigate to manage.", $LOG_ERROR)
             ExitLoop
         EndIf

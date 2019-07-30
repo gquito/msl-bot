@@ -4,17 +4,6 @@
 #cs 
     Log system will be based on the function processes and their steps.
 #ce
-
-Global Const $LOG_INFORMATION = "Information", $LOG_ERROR = "Error", $LOG_PROCESS = "Process", $LOG_DEBUG = "Debug"
-
-Global $g_aLog[0][6] ;Stores the log structure
-Global $g_sLogFilter = "Information,Error,Process"
-Global $g_aLOG_Function[1] = [0] ;Current function and level
-Global $g_iLOG_Processed = 0 ;Number of log items processed for display
-Global $g_bLogEnabled = True ;Allows for Log_Add if enabled
-Global $g_iLogInfoLimit = 1000 ;Limit for number of information log
-Global $g_iLogTotalLimit = 5000 ;Number of log before forcing a clear.
-
 #cs ----Log structure
     [
         ["TimeStamp", "Text", "Type", "Function", "Location", "Level"],
@@ -39,7 +28,7 @@ Global $g_iLogTotalLimit = 5000 ;Number of log before forcing a clear.
 #ce
 
 Func Log_Add($sText, $sType = $LOG_PROCESS, $iTimeStamp = NowTimeStamp(), $sFunction = $g_aLOG_Function[$g_aLOG_Function[0]], $iLevel = $g_aLOG_Function[0])
-    If $g_bLogEnabled = False Then Return 0
+    If (Not($g_bLogEnabled)) Then Return 0
     
     Local $iSize = UBound($g_aLog)
     ReDim $g_aLog[$iSize+1][6]
@@ -50,7 +39,7 @@ Func Log_Add($sText, $sType = $LOG_PROCESS, $iTimeStamp = NowTimeStamp(), $sFunc
     $g_aLog[$iSize][4] = $g_sLocation
     $g_aLog[$iSize][5] = $iLevel
 
-    If $iSize > $g_iLogTotalLimit Then Log_Save($g_aLog, getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Profile_Name"), True)
+    Log_WriteLine($iSize,($iSize > $g_iLogTotalLimit))
     Log_Display()
 EndFunc
 
@@ -61,53 +50,60 @@ Func Log_Level_Add($sFunction)
     $g_aLOG_Function[0] += 1
     $g_aLOG_Function[$g_aLOG_Function[0]] = $sFunction
 
-    If isDeclared("hLV_FunctionLevels") = True And $hLV_FunctionLevels <> Null Then
-        Local $iItemCount = _GUICtrlListView_GetItemCount($hLV_FunctionLevels)
+    If ($g_hLV_FunctionLevels <> Null) Then
+        Local $iItemCount = _GUICtrlListView_GetItemCount($g_hLV_FunctionLevels)
         $iSize = UBound($g_aLOG_Function)
 
-        If $iItemCount <> $iSize-1 Then
-            _GUICtrlListView_DeleteAllItems($hLV_FunctionLevels)
+        If ($iItemCount <> $iSize-1) Then
+            _GUICtrlListView_DeleteAllItems($g_hLV_FunctionLevels)
             For $i = 1 To $iSize-1
-                _GUICtrlListView_AddItem($hLV_FunctionLevels, $i)
-                _GUICtrlListView_AddSubItem($hLV_FunctionLevels, $i-1, $g_aLOG_Function[$i], 1)
+                _GUICtrlListView_AddItem($g_hLV_FunctionLevels, $i)
+                _GUICtrlListView_AddSubItem($g_hLV_FunctionLevels, $i-1, $g_aLOG_Function[$i], 1)
             Next
         Else
-            _GUICtrlListView_AddItem($hLV_FunctionLevels, $iItemCount)
-            _GUICtrlListView_AddSubItem($hLV_FunctionLevels, $iItemCount-1, $sFunction, 1)
+            _GUICtrlListView_AddItem($g_hLV_FunctionLevels, $iItemCount)
+            _GUICtrlListView_AddSubItem($g_hLV_FunctionLevels, $iItemCount-1, $sFunction, 1)
         EndIf
+    EndIf
+EndFunc
+
+Func Log_Level_Clear()
+    Local $iSize = UBound($g_aLOG_Function)
+    If ($iSize > 1) Then
+        For $i = 0 to $iSize
+            Log_Level_Remove()
+        Next
     EndIf
 EndFunc
 
 Func Log_Level_Remove()
     Local $iSize = UBound($g_aLOG_Function)
-    If $iSize > 1 Then
+    If ($iSize > 1) Then
         ReDim $g_aLOG_Function[$iSize-1]
         $g_aLOG_Function[0] -= 1
 
-        If isDeclared("hLV_FunctionLevels") = True And $hLV_FunctionLevels <> Null Then
-            _GUICtrlListView_DeleteItem($hLV_FunctionLevels, _GUICtrlListView_GetItemCount($hLV_FunctionLevels)-1)
+        If ($g_hLV_FunctionLevels <> Null) Then
+            _GUICtrlListView_DeleteItem($g_hLV_FunctionLevels, _GUICtrlListView_GetItemCount($g_hLV_FunctionLevels)-1)
         EndIf
     EndIf
 EndFunc
 
-Func Log_Display($sFilter = $g_sLogFilter, $aLog = $g_aLog, $hListView = $hLV_Log)
+Func Log_Display($sFilter = $g_sLogFilter, $aLog = $g_aLog, $hListView = $g_hLV_Log)
     Local $iSize = UBound($aLog)
-    If ($iSize - $g_iLOG_Processed) > 10 Then
-        _GUICtrlListView_BeginUpdate($hLV_Log)
-    EndIf
+    If (($iSize - $g_iLOG_Processed) > 10) Then _GUICtrlListView_BeginUpdate($g_hLV_Log)
 
     Local $iCountProcessed = 0
     While $iSize > $g_iLOG_Processed
-        If ($g_bRunning = True) And ($iCountProcessed > 100) Then ExitLoop
+        If ($g_bRunning And $iCountProcessed > 100) Then ExitLoop
 
-        If (StringInStr($sFilter, $aLog[$g_iLOG_Processed][2]) = True) Or ($sFilter = $aLog[$g_iLOG_Processed][2]) Then
+        If (StringInStr($sFilter, $aLog[$g_iLOG_Processed][2]) Or $sFilter = $aLog[$g_iLOG_Processed][2]) Then
             Local $sTime = $aLog[$g_iLOG_Processed][0]
-            If StringLeft($sTime, 1) = "." Then $sTime = StringMid($sTime, 2)
+            If (StringLeft($sTime, 1) = ".") Then $sTime = StringMid($sTime, 2)
             _GUICtrlListView_InsertItem($hListView, formatTime($sTime) & "      (" & _GUICtrlListView_GetItemCount($hListView)+1 & ")", 0)
             
             Local $sLevel = ""
             Local $sDebug = ""
-            If $aLog[$g_iLOG_Processed][2] = "Debug" Then $sDebug = " \\ "
+            If ($aLog[$g_iLOG_Processed][2] = "Debug") Then $sDebug = " \\ "
             For $i = 2 To $aLog[$g_iLOG_Processed][5]
                 $sLevel &= ">"
             Next
@@ -124,35 +120,69 @@ Func Log_Display($sFilter = $g_sLogFilter, $aLog = $g_aLog, $hListView = $hLV_Lo
         $iCountProcessed += 1
     WEnd
 
-    _GUICtrlListView_EndUpdate($hLV_Log)
+    _GUICtrlListView_EndUpdate($g_hLV_Log)
 EndFunc
 
-Func Log_Display_Reset($sFilter = $g_sLogFilter, $hListView = $hLV_Log)
+Func Log_Display_Reset($sFilter = $g_sLogFilter, $hListView = $g_hLV_Log)
     $g_iLOG_Processed = 0
     _GUICtrlListView_DeleteAllItems($hListView)
 
     Log_Display($sFilter)
-Endfunc
+EndFunc
 
-Func Log_Save(ByRef $aLog, $sProfileName = getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Profile_Name"), $bClear = False)
-    If getArg(formatArgs(getScriptData($g_aScripts, "_Config")[2]), "Save_Logs") = "Disabled" Then 
-        If $bClear = True Then
-            Log_Clear($aLog)
-        EndIf
+Func Log_WriteLine($iLogLine, $bClear = False)
+    If (Not($g_bSaveLog)) Then 
+        If ($bClear) Then Log_Clear($g_aLog)
+        Return False
+    EndIf
+    If (Not($g_bSaveDebug) And $g_aLog[$iLogLine][2] = $LOG_DEBUG) Then Return False
 
+    Local $sLogPath = $g_sProfilePath & "\log\" ;& formatDate() & "\"
+    If (Not(FileExists($sLogPath))) Then DirCreate($sLogPath)
+    Local $sPath = StringReplace($sLogPath & FormatDateForFile() & ".txt", "\\", "\")
+    Local $hFile = FileOpen($sPath, $FO_APPEND+$FO_CREATEPATH)
+
+    If (StringLeft($g_aLog[$iLogLine][0], 1) <> ".") Then
+        Local $sLine = ""
+
+        $sLine &= formatTime($g_aLog[$iLogLine][0]) & " "
+        $sLine &= formatWidth($g_aLog[$iLogLine][2], 11, $ALIGN_RIGHT) & " "
+        $sLine &= formatWidth($g_aLog[$iLogLine][3], 40, $ALIGN_RIGHT) & " "
+        $sLine &= formatWidth($g_aLog[$iLogLine][5], 2, $ALIGN_RIGHT) & " "
+        $sLine &= formatWidth($g_aLog[$iLogLine][4], 20, $ALIGN_RIGHT) & " "
+        $sLine &= '"' & $g_aLog[$iLogLine][1] & '"'
+
+        $g_aLog[$iLogLine][0] = "." & $g_aLog[$iLogLine][0]
+        FileWriteLine($hFile, $sLine)
+    EndIf
+
+    FileClose($hFile)
+
+    If ($bClear) Then Log_Clear($g_aLog)
+EndFunc
+
+Func FormatDateForFile()
+    Return StringFormat("%s.%s.%s", getMonth(), getDay(), getYear())
+EndFunc
+
+Func Log_Save(ByRef $aLog, $bClear = False)
+    If (Not($g_bSaveLog)) Then 
+        If ($bClear) Then Log_Clear($aLog)
         Return False
     EndIf
 
     ;Defining variables
     Local $iSize = UBound($aLog)
-    If $iSize = 0 Then Return 0
-    Local $sPath = StringReplace(@ScriptDir & "\profiles\" & $sProfileName & "\log\" & StringReplace(_NowDate(), "/", ".") & ".txt", "\\", "\")
-    Local $hFile = FileOpen($sPath, 9)
-    Local $sDate = _NowCalc()
+    If ($iSize = 0) Then Return 0
+    Local $sLogPath = $g_sProfilePath & "\log\" ;& formatDate() & "\"
+    If (Not(FileExists($sLogPath))) Then DirCreate($sLogPath)
+    Local $sPath = StringReplace($sLogPath & FormatDateForFile() & ".txt", "\\", "\")
+    Local $hFile = FileOpen($sPath, $FO_APPEND+$FO_CREATEPATH)
 
     FileWriteLine($hFile, @CRLF & "#### Begin Log Saved: " & _NowCalc() & " ####")
     For $i = 0 To $iSize-1
-        If StringLeft($aLog[$i][0], 1) <> "." Then
+        If (StringLeft($aLog[$i][0], 1) <> ".") Then
+            If (Not($g_bSaveDebug) And $aLog[$i][2] = $LOG_DEBUG) Then ContinueLoop
             Local $sLine = ""
 
             $sLine &= formatTime($aLog[$i][0]) & " "
@@ -163,8 +193,6 @@ Func Log_Save(ByRef $aLog, $sProfileName = getArg(formatArgs(getScriptData($g_aS
             $sLine &= '"' & $aLog[$i][1] & '"'
 
             $aLog[$i][0] = "." & $aLog[$i][0]
-
-            If ($g_bSaveDebug = False) And ($aLog[$i][2] = "Debug") Then ContinueLoop
             FileWriteLine($hFile, $sLine)
         EndIf
     Next
@@ -172,17 +200,15 @@ Func Log_Save(ByRef $aLog, $sProfileName = getArg(formatArgs(getScriptData($g_aS
     FileWriteLine($hFile, "#### End Log Saved: " & _NowCalc() & " ####" & @CRLF)
     FileClose($hFile)
 
-    If $bClear = True Then
-        Log_Clear($aLog)
-    EndIf
+    If ($bClear) Then Log_Clear($aLog)
 EndFunc
 
 Func Log_Clear(ByRef $aLog, $bClearInfo = False)
     Local $aEmpty[0][6]
-    If $bClearInfo = False Then
+    If (Not($bClearInfo)) Then
         ;Limit for number of information log: 1000 ($g_iLogInfoLimit)
         For $i = 0 To UBound($aLog)-1
-            If $aLog[$i][2] = "Information" Then
+            If ($aLog[$i][2] = "Information") Then
                 ReDim $aEmpty[UBound($aEmpty)+1][6]
                 For $x = 0 To 5
                     $aEmpty[UBound($aEmpty)-1][$x] = $aLog[$i][$x]
@@ -190,7 +216,7 @@ Func Log_Clear(ByRef $aLog, $bClearInfo = False)
             EndIf
         Next
 
-        If UBound($aEmpty)+1 > $g_iLogInfoLimit Then
+        If (UBound($aEmpty)+1 > $g_iLogInfoLimit) Then
             Local $iEnd = (UBound($aEmpty)+1)-$g_iLogInfoLimit
             LocaL $sRange = "0-" & $iEnd
             _ArrayDelete($aEmpty, $sRange)
@@ -201,18 +227,15 @@ Func Log_Clear(ByRef $aLog, $bClearInfo = False)
     Log_Display_Reset()
 EndFunc
 
-Global Const $ALIGN_LEFT = 0, $ALIGN_RIGHT = 1
 Func formatWidth($sStr, $iWidth, $iAlign)
     Local $sOutput = ""
     Local $sSpace = ""
 
-    If StringLen($sStr) < $iWidth Then
-        For $i = 1 To $iWidth-StringLen($sStr)
-            $sSpace &= " "
-        Next
-    Else
-        Return $sStr
-    EndIf
+    If (StringLen($sStr) >= $iWidth) Then Return $sStr
+
+    For $i = 1 To $iWidth-StringLen($sStr)
+        $sSpace &= " "
+    Next
 
     Switch $iAlign
         Case $ALIGN_LEFT
@@ -226,3 +249,61 @@ Func formatWidth($sStr, $iWidth, $iAlign)
     Return $sOutput
 EndFunc
 
+Func cleanOldLogFiles()
+    Local $sLogPath = StringReplace($g_sProfilePath & "\log\", "\\", "\")
+    Local $a_sLogFiles = _FileListToArray($sLogPath, "*", $FLTA_FILES)
+    If (@error = 4 Or $a_sLogFiles[0] = 0) Then Return True
+    For $i = 1 To $a_sLogFiles[0]
+        If (Not(checkWithin7Days($a_sLogFiles[$i]))) Then FileDelete($sLogPath & $a_sLogFiles[$i])
+    Next
+    ;~ Local $a_sLogFiles = _FileListToArray($sLogPath, "*", $FLTA_FOLDERS)
+    ;~ If (@error = 4 Or $a_sLogFiles[0] = 0) Then Return True
+    ;~ For $i = 1 To $a_sLogFiles[0]
+    ;~     If (Not(checkWithin7Days($a_sLogFiles[$i]))) Then DirRemove($sLogPath & $a_sLogFiles[$i], $DIR_REMOVE)
+    ;~ Next
+EndFunc
+
+Func getAdjustedDay($iIncrement = -7)
+    If (Number(getDay()) + $iIncrement > 0) Then Return Number(getDay()) + $iIncrement
+    Local $iMaxDay = 30
+    Local $iCurrMonth = Number(getMonth())
+    Switch $iCurrMonth
+        Case 3
+            If (_DateIsLeapYear(getYear())) Then 
+                $iMaxDay = 29
+            Else
+                $iMaxDay = 28
+            EndIf
+        Case 1,2,4,6,8,9,11
+            $iMaxDay = 31
+    EndSwitch
+
+    Local $iAdjDay = Number(getDay()) + $iIncrement
+    If ($iAdjDay < 0) Then
+        Return $iMaxDay + $iAdjDay
+    Else
+        Return $iMaxDay - $iAdjDay
+    EndIf    
+EndFunc
+
+Func checkWithin7Days($aDate)
+    If (Not(isArray($aDate))) Then 
+        If (StringInStr($aDate, "-")) Then
+            $aDate = StringSplit($aDate,"-")
+            If ($aDate[0] < 3) Then Return False
+        Else
+            $aDate = StringSplit($aDate, ".")
+            If ($aDate[0] < 4) Then Return False
+        EndIf
+    EndIf
+    Local $iFileMonth = Number($aDate[1]), $iFileDay = Number($aDate[2]), $iFileYear = Number($aDate[3])
+    Local $iCurrMonth = Number(getMonth()), $iCurrDay = Number(getDay()), $iCurrYear = Number(getYear())
+    Local $iAdjDay = getAdjustedDay()
+    If ($iFileYear < $iCurrYear) Then
+        If ($iCurrMonth = 1 And $iFileMonth = 12 And $iFileDay >= $iAdjDay) Then Return True
+    Else
+        If ($iCurrDay < 8 And ($iFileMonth = $iCurrMonth Or ($iFileMonth = $iCurrMonth - 1 And $iFileDay >= $iAdjDay))) Then Return True
+        If ($iFileMonth = $iCurrMonth And $iFileDay >= $iCurrDay - 7) Then Return True
+    EndIf
+    Return False
+EndFunc

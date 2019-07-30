@@ -1,17 +1,16 @@
 #include-once
 #include "../imports.au3"
 
+Global $Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones, $Mid_Stones, $Low_Stones, $Usable_Astrogems, $Guardian_Mode, $Target_Boss, $Collect_Quests, $Hourly_Script
 Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones, $Mid_Stones, $Low_Stones, $Usable_Astrogems, $Guardian_Mode, $Target_Boss, $Collect_Quests, $Hourly_Script)
     Log_Level_Add("Farm_Starstone")
     Log_Add("Farm Starstone has started.")
     
     ;Declaring variables and data
-    Local Const $aLocations = _
-        ["lost-connection", "loading", "unknown", "battle", "battle-auto", "battle-sell", "battle-sell-item", _
-        "battle-end-exp", "battle-end", "map", "pause", "battle-boss", "refill", "defeat", "village"]
+    Local Const $sLocations = "lost-connection,loading,unknown,map,refill,defeat"
 
     Local $sDungeon = "starstone-dungeons";stores navigate dungeon string
-    If $Dungeon_Type = "Elemental" Then $sDungeon = "elemental-dungeons"
+    If ($Dungeon_Type = "Elemental") Then $sDungeon = "elemental-dungeons"
 
     Data_Add("Status", $DATA_TEXT, "")
     Data_Add("Runs", $DATA_NUMBER, "0")
@@ -37,58 +36,59 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
     Data_Order_Insert("Low Stones", 5)
     Data_Order_Insert("Eggs", 6)
     Data_Order_Insert("Refill", 7)
-    If $Guardian_Mode <> "Disabled" Then Data_Order_Insert("Guardians", 8)
+    If ($Guardian_Mode <> "Disabled") Then Data_Order_Insert("Guardians", 8)
 
     Data_Display_Update()
     ;pre process
-    Switch isLocation($aLocations, False)
-        Case "battle", "battle-auto", "battle-end-exp", "battle-end", "battle-sell", "battle-sell-item", "pause", ""
-            Data_Set("Status", "Navigating to map.")
-            navigate("map", True)
-    EndSwitch
+    Common_Navigate($sLocations)
+
+    Local $bConstantRun = False
+    If ($High_Stones = 0 And $Mid_Stones = 0 And $Low_Stones = 0) Then $bConstantRun = True
 
     ;Script process 
     #cs 
         Script will keep running while the high, mid, and low stones ratio are all less than 1.
     #ce
-    While (Data_Get_Ratio("High Stones") < 1) Or (Data_Get_Ratio("Mid Stones") < 1) Or (Data_Get_Ratio("Low Stones") < 1)
-        If _Sleep(100) Then ExitLoop
+    While ($bConstantRun) Or (Data_Get_Ratio("High Stones") < 1) Or (Data_Get_Ratio("Mid Stones") < 1) Or (Data_Get_Ratio("Low Stones") < 1)
+        If _Sleep(200) Then ExitLoop
 
-        $sLocation = isLocation($aLocations, False)
+        Local $sLocation = getLocation()
         #Region Common functions
-            If $Target_Boss = "Enabled" Then Common_Boss($sLocation)
-            If $Collect_Quests = "Enabled" Then Common_Quests($sLocation)
-            If $Guardian_Mode <> "Disabled" Then Common_Guardian($sLocation, $Guardian_Mode, $Usable_Astrogems, $Target_Boss, $Collect_Quests, $Hourly_Script)
-            If $Hourly_Script = "Enabled" Then Common_Hourly($sLocation)
+            If ($Collect_Quests = "Enabled") Then Common_Quests($sLocation)
+            If ($Guardian_Mode <> "Disabled") Then Common_Guardian($sLocation, $Guardian_Mode, $Usable_Astrogems, $Target_Boss, $Collect_Quests, $Hourly_Script)
+            If ($Hourly_Script = "Enabled") Then Common_Hourly($sLocation)
+            If ($Target_Boss = "Enabled") Then Common_Boss($sLocation)
             Common_Stuck($sLocation)
         #EndRegion
-
+        
         ;Checking current round for boss.
-        CaptureRegion()
+        Local $iCurrRound = 0
         Local $aRound = getRound()
-        If isArray($aRound) = True And $aRound[0] = $aRound[1] Then
-            Data_Set("In Boss", "True")
+        If isArray($aRound) = True Then
+            $iCurrRound = $aRound[0]
+            if ($iCurrRound = $aRound[1]) Then Data_Set("In Boss", "True")
         EndIf
 
-        If _Sleep(10) Then ExitLoop
+        If _Sleep(0) Then ExitLoop
         Switch $sLocation
+            Case "battle-gem-full", "map-gem-full"
+                Log_Add("Gem inventory is full.", $LOG_ERROR)
+                If ($g_bSellGems) Then sellGems($g_aGemsToSell)
             Case "battle-end-exp", "battle-sell"
                 Log_Add("Clicking on second item position.")
                 Data_Set("Status", "Clicking Item.")
 
                 ;Clicks 2nd item
-                If clickWhile("229,234", "isLocation", "battle-end-exp,battle-sell,unknown", 30, 1000) = True Then
-                    If getLocation() = "battle-sell-item" Then ContinueCase
+                If (clickWhile(getPointArg("battle-sell-item-second"), "isLocation", "battle-end-exp,battle-sell,unknown", 30, 1000)) Then
+                    If (isLocation("battle-sell-item")) Then ContinueCase
                 EndIf
             Case "battle-sell-item"
                 Log_Add("Retrieving stone data.")
                 Data_Set("Status", "Retrieving stone.")
 
                 Local $aStone = getStone()
-                If $aStone <> -1 Then
-                    If $aStone[0] <> "gold" Then
-                        Log_Add("Element: " & _StringProper($aStone[0]) & ", Grade: " & _StringProper($aStone[1]) & ", Quantity: " & $aStone[2], $LOG_INFORMATION)
-                    EndIf
+                If (isArray($aStone)) Then
+                    If ($aStone[0] <> "gold") Then Log_Add("Element: " & _StringProper($aStone[0]) & ", Grade: " & _StringProper($aStone[1]) & ", Quantity: " & $aStone[2], $LOG_INFORMATION)
                     
                     Switch $aStone[0]
                         Case "gold"
@@ -96,9 +96,9 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
                             Log_Add("Gold detected, clicking on 3rd item.")
                             Data_Set("Status", "Gold detected.")
 
-                            clickPoint(getArg($g_aPoints, "battle-sell-item-okay"))
-                            If _Sleep(200) Then ExitLoop
-                            clickPoint("329,234")
+                            clickPoint(getPointArg("battle-sell-item-okay"))
+                            If (_Sleep(200)) Then ExitLoop
+                            clickPoint(getPointArg("battle-sell-item-third"))
 
                             ContinueLoop
                         Case "egg"
@@ -108,14 +108,7 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
                             Data_Set("Status", "Stone detected.")
 
                             Local $sElement = StringLower($Stone_Element)
-                            Switch $sElement
-                                Case "any"
-                                    Data_Increment(_StringProper($aStone[1]) & " Stones", $aStone[2])
-                                Case Else
-                                    If $sElement = $aStone[0] Then 
-                                        Data_Increment(_StringProper($aStone[1]) & " Stones", $aStone[2])
-                                    EndIf
-                            EndSwitch
+                            If ($sElement = $aStone[0] Or $sElement = "any") Then Data_Increment(_StringProper($aStone[1]) & " Stones", $aStone[2])
                     EndSwitch
                 Else
                     ;Could not detect stone.
@@ -130,7 +123,7 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
                 Data_Set("In Boss", "False")
                 Data_Set("Status", "Quick restart.")
 
-                If enterBattle() Then 
+                If (enterBattle()) Then 
                     Data_Increment("Runs")
                     Data_Increment("Victory")
                 EndIf
@@ -143,66 +136,74 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
                 navigate("battle-end", True)
 
             Case "village"
-                navigate("map")
-
+                Data_Set("Status", "Navigating to map.")
+                navigate("map", True)
             Case "map"
                 Log_Add("Going into battle.")
                 Data_Set("Status", "Navigating to dungeons.")
-                If navigate($sDungeon, True) = True Then
+                If (navigate($sDungeon, True)) Then
                     Data_Set("Status", "Selecting dungeon level.")
-                    Local $aPoint ;Store point to go into dungeon map-battle
-                    If $Dungeon_Level < 7 Then
-                        For $i = 0 To 7
-                            clickDrag($g_aSwipeDown)
-                            If _Sleep(50) Then ExitLoop(2)
-                        Next
-						
-						For $i = 2 To $Dungeon_Level
-							clickDrag($g_aSwipeUp)
-							_Sleep(50)
-						Next
-						
-                        $aPoint = getArg($g_aPoints, "golem-dungeons-top")
-                    Else
-                        $aPoint = getArg($g_aPoints, "golem-dungeons-b" & $Dungeon_Level)
-                    EndIf
+                    Local $aStage = findBLevel($Dungeon_Level, $sDungeon) ;Point to go into map-battle
 
-                    If clickWhile($aPoint, "isLocation", $sDungeon, 10, 1000) = True Then
+                    Local $t_hTimer = TimerInit()
+                    While Not(isArray($aStage))
+                        If ($aStage = -2) Then
+                            Log_Add("No longer in map-stage.", $LOG_DEBUG)
+                            if (navigate("map-stage")) Then ContinueLoop(2)
+                        EndIF
+                        If (_Sleep(10)) Then ExitLoop(3)
+                        If (TimerDiff($t_hTimer) > 60000) Then 
+                            Log_Add("Could not find level.", $LOG_ERROR)
+                            ExitLoop(3)
+                        EndIf
+
+                        If (Not(isArray($aStage))) Then
+                            ;Scrolling up sequence
+                            If (Not(clickDrag($g_aSwipeDown))) Then ExitLoop(3)
+                        EndIf
+                        
+                        $aStage = findBLevel($Dungeon_Level, $sDungeon)
+                    WEnd
+
+                    If (clickWhile($aStage, "isLocation", $sDungeon, 10, 1000)) Then
                         Data_Set("Status", "Entering battle.")
 
-                        If enterBattle() Then 
+                        If (enterBattle()) Then 
                             Data_Increment("Runs")
                             Data_Increment("Victory")
                         EndIf
                     EndIf
+                
                 EndIf
 
             Case "refill"
                 Data_Set("Status", "Refill energy.")
-                If (Data_Get_Ratio("Refill") >= 1) Or (Data_Get("Refill", True)[1] = 0) Or (doRefill() = $REFILL_NOGEMS) Then
-                    ExitLoop
-                Else
-                    Data_Increment("Refill", 30)
-
-                    Data_Increment("Runs")
-                    Data_Increment("Victory")
-                EndIf
-
-                Log_Add("Refilled energy " & Data_Get("Refill"), $LOG_INFORMATION)
+                Local $iRefillResult = doRefill(($Usable_Astrogems = "Gold" ? True : False))
+                If ($iRefillResult < -1) Then ExitLoop
 
             Case "pause"
                 Log_Add("Unpausing.")
                 Data_Set("Status", "Unpausing.")
 
-                clickPoint(getArg($g_aPoints, "battle-continue"))
-            Case "battle"
-                Data_Set("Status", "Toggling auto battle on.")
-
-                clickPoint(getArg($g_aPoints, "battle-auto"))
-
+                clickPoint(getPointArg("battle-continue"))
+            Case "guardian-dungeons"
+                Data_Set("Status", "Navigating to map")
+                navigate("map")
+            Case "map-battle"
+                closeWindow()
+                ContinueLoop
             Case "battle-auto"
-                    Data_Set("Status", "In battle.")
-            EndSwitch
+                Data_Set($STAT_STATUS, "In battle.")
+
+            Case "battle"
+                If inBattle() = False Then ContinueLoop
+
+                Data_Set($STAT_STATUS, "Toggling auto battle on.")
+                clickWhile(getPointArg("battle-auto"), "inBattle") ;to battle-auto
+
+            Case Else
+                HandleCommonLocations($sLocation)
+        EndSwitch
     WEnd
 
     ;End script

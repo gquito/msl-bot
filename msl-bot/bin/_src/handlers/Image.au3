@@ -15,13 +15,11 @@
 	On image not found - Returns -1
 #ce
 Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552, $bUpdate = True, $bUseColor = False)
-	If StringInStr($sImage, "-") Then ;image with specified folder
-		$sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage
-	EndIf
+	If (StringInStr($sImage, "-")) Then $sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage ;image with specified folder
 
 	Local $aImages[0] ;images list to find
 
-	If FileExists($g_sImagesPath & $sImage & ".bmp") Then
+	If (FileExists($g_sImagesPath & $sImage & ".bmp")) Then
 		_ArrayAdd($aImages, $g_sImagesPath & $sImage & ".bmp")
 
 		Local $iDupCounter = 2; Ex: location-village2...
@@ -36,17 +34,15 @@ Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 
 
 	Local $startTimer = TimerInit()
 	Do
-		$vResult = _ImagesSearch($aImages, $iIndex, $iTolerance, $iLeft, $iTop, $iWidth, $iHeight, True, $bUpdate, "", $bUseColor) ;'True' is for return center.
+		Local $vResult = _ImagesSearch($aImages, $iIndex, $iTolerance, $iLeft, $iTop, $iWidth, $iHeight, True, $bUpdate, "", $bUseColor) ;'True' is for return center.
 
-		If isArray($vResult) = True Then
+		If (isArray($vResult)) Then
 			$aPoint = $vResult
 			Local $aFinal = [$aPoint[0], $aPoint[1], $iIndex, StringReplace($aImages[$iIndex], $g_sImagesPath & StringSplit($sImage, "-", 2)[0] & "\", "")]
 			Return $aFinal
 		Else
 			;There is an error
-			If $vResult < 0 Then
-				ExitLoop
-			EndIf
+			If ($vResult < 0) Then ExitLoop
 		EndIf
 	Until (TimerDiff($startTimer) >= $iDuration) Or (_Sleep(100))
 
@@ -72,13 +68,11 @@ Note:
 		times. The same instance could also be scanned not at the same exact point, but in the same area within 1-2 pixels at times.
 #ce
 Func findImageMultiple($sImage, $iTolerance = 90, $iWidthTolerance = 5, $iHeightTolerance = 5, $iLimit = 0, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552, $bUpdate = True, $bUseColor = False)
-	If StringInStr($sImage, "-") Then ;image with specified folder
-		$sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage
-	EndIf
+	If (StringInStr($sImage, "-")) Then $sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage
 
 	Local $aImages[0] ;images list to find
 
-	If FileExists($g_sImagesPath & $sImage & ".bmp") Then
+	If (FileExists($g_sImagesPath & $sImage & ".bmp")) Then
 		_ArrayAdd($aImages, $g_sImagesPath & $sImage & ".bmp")
 
 		Local $iDupCounter = 2; Ex: location-village2...
@@ -95,15 +89,15 @@ Func findImageMultiple($sImage, $iTolerance = 90, $iWidthTolerance = 5, $iHeight
 	Local $bCurrentExists = False ;If current point exists in list
 		
 	For $sImage in $aImages
-		$vResult = _ImageSearchMultiple($sImage, $iTolerance, $iLeft, $iTop, $iWidth, $iHeight, True, $bUpdate, "", $bUseColor) ;'True' is for return center.
-		If isArray($vResult) = True Then
+		$vResult = _ImageSearch($sImage, True, $iTolerance, $iLeft, $iTop, $iWidth, $iHeight, True, $bUpdate, "", $bUseColor) ;'True' is for return center.
+		If (isArray($vResult)) Then
 			For $x = 0 To UBound($vResult)-1
 				$bCurrentExists = False
 
 				;Check if point already exists in list. Also checks the area around the point.
 				For $i = 0 To $iSize-1
-					If $vResult[$x][0] > $aPoints[$i][0]-$iWidthTolerance And $vResult[$x][0] < $aPoints[$i][0]+$iWidthTolerance Then
-						If $vResult[$x][1] > $aPoints[$i][1]-$iHeightTolerance And $vResult[$x][1] < $aPoints[$i][1]+$iHeightTolerance Then
+					If ($vResult[$x][0] > $aPoints[$i][0]-$iWidthTolerance And $vResult[$x][0] < $aPoints[$i][0]+$iWidthTolerance) Then
+						If ($vResult[$x][1] > $aPoints[$i][1]-$iHeightTolerance And $vResult[$x][1] < $aPoints[$i][1]+$iHeightTolerance) Then
 							$bCurrentExists = True
 							ExitLoop
 						EndIf
@@ -111,24 +105,54 @@ Func findImageMultiple($sImage, $iTolerance = 90, $iWidthTolerance = 5, $iHeight
 				Next
 
 				;Adds to point list if it does not exist.
-				If $bCurrentExists = False Then
+				If (Not($bCurrentExists)) Then
 					ReDim $aPoints[$iSize+1][2]
 
 					$aPoints[$iSize][0] = $vResult[$x][0]
 					$aPoints[$iSize][1] = $vResult[$x][1]
 					$iSize += 1
 
-					If $iSize = $iLimit And $iLimit > 0 Then
-						ExitLoop(2)
-					EndIf
+					If ($iSize = $iLimit And $iLimit > 0) Then ExitLoop(2)
 				EndIf
 			Next
 		EndIf
 	Next
 
-	If $iSize <> 0 Then
-		Return $aPoints
-	Else
-		Return 0
-	EndIf
+	If ($iSize <> 0) Then Return $aPoints
+	
+	Return 0
+EndFunc
+
+Func OpenImage()
+	Local $aPos = WinGetPos($g_sAppTitle)
+	$g_hImageWindow = GUICreate($g_sAppTitle & " Image Window", 950, 552, $aPos[0]+$aPos[2]-15, $aPos[1], $WS_SIZEBOX+$WS_MAXIMIZEBOX+$WS_MINIMIZEBOX, -1)
+    GUISetState(@SW_SHOW, $g_hLogWindow)
+
+    $g_hChosenPointsListViewId = _GUICtrlCreateListView("", $aPos[2]-129, 30, 110, $aPos[3]-73, $LVS_REPORT+$LVS_NOSORTHEADER)
+    $g_hChosenPointsListView = GUICtrlGetHandle($g_idLV_FunctionLevels)
+    __GUICtrlListView_AddColumn($g_hLV_FunctionLevels, "x", 30, 0)
+	__GUICtrlListView_AddColumn($g_hLV_FunctionLevels, "y", 30, 0)
+    __GUICtrlListView_AddColumn($g_hLV_FunctionLevels, "Color", 100, 0)
+
+    $g_idLV_Log = _GUICtrlCreateListView("", 3, 30, $aPos[2]-133, $aPos[3]-73, $LVS_REPORT+$LVS_NOSORTHEADER)
+    $g_hLV_Log = GUICtrlGetHandle($g_idLV_Log)
+    _GUICtrlListView_SetExtendedListViewStyle($g_hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+    __GUICtrlListView_AddColumn($g_hLV_Log, "Time", 76, 0)
+    __GUICtrlListView_AddColumn($g_hLV_Log, "Text", 312, 0)
+    __GUICtrlListView_AddColumn($g_hLV_Log, "Type", 100, 0)
+    __GUICtrlListView_AddColumn($g_hLV_Log, "Function", 100, 0)
+    __GUICtrlListView_AddColumn($g_hLV_Log, "Location", 100, 0)
+    __GUICtrlListView_AddColumn($g_hLV_Log, "Level", 100, 0)
+    _GUICtrlListView_JustifyColumn($g_hLV_Log, 0, 0)
+    _GUICtrlListView_JustifyColumn($g_hLV_Log, 1, 0)
+
+    GUICtrlSetResizing($g_idLV_Log, $GUI_DOCKTOP+$GUI_DOCKBOTTOM+$GUI_DOCKLEFT+$GUI_DOCKRIGHT)
+    GUICtrlSetResizing($g_idLV_FunctionLevels, $GUI_DOCKTOP+$GUI_DOCKBOTTOM+$GUI_DOCKRIGHT+$GUI_DOCKWIDTH)
+    GUICtrlSetResizing($g_idCkb_Information, $GUI_DOCKALL)
+    GUICtrlSetResizing($g_idCkb_Error, $GUI_DOCKALL)
+    GUICtrlSetResizing($g_idCkb_Process, $GUI_DOCKALL)
+    GUICtrlSetResizing($g_idCkb_Debug, $GUI_DOCKALL)
+
+    $g_sLogFilter = "Information,Process,Error"
+    Log_Display_Reset()
 EndFunc
