@@ -72,6 +72,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 **Step 1**: Change Emulator Title, Class and Instance according the the info provided by the AutoIt Window Info *Finder Tool*.
 
 *Note: The title of your Nox window should have greater than 3 characters. 'Nox' or 'MSL' will not work. 'NoxPlayer' or 'Nox1' works.
+*Another note: Newer versions of Nox (6.3.0.0 and above) will not display the correct Class and Instance. Use Emulator Class: subWin and Instance: 1
 
 ![Title Class Instance](https://i.imgur.com/WDYfeJ3.png)
 
