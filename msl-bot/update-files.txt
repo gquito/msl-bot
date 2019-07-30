@@ -46,7 +46,7 @@
 !bin/_src/scripts/sub/enterStage.au3
 !bin/_src/scripts/sub/evolve.au3
 !bin/_src/scripts/sub/handlers.au3
-!bin/_src/scripts/sub/helpers.au3
+!bin/_src/scripts/sub/helper.au3
 !bin/_src/scripts/sub/navigate.au3
 !bin/_src/scripts/sub/PixelEditor.au3
 !bin/_src/scripts/sub/sellGems.au3
