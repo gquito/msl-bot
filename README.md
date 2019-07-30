@@ -89,11 +89,11 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 **Step 3**: The compatibility test will check the major controls for the bot. The test will also provide comments on how you may be able to fix any issues that it has detected. If you have any issues, you can copy the compatiblity test information and report the bug in Github or Discord.
 
-![Test Result](https://i.imgur.com/41KUXaj.png)
+![Test Result](https://i.imgur.com/swL98SF.png)
 
 **Step 4**: Run desired script. Descriptions of each script is available on the bot app.
 
-  - For any errors, refer to the *Common Issues*.
+  - For any errors, refer to the *Common Issues* and *Troubleshooting*.
 
 <br>
 
