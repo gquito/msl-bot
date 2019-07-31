@@ -14,7 +14,7 @@ Func doHourly()
     Local $bOutput = False
     Local $HourlyDone = 0
     Local $iPos = GetAirshipPosition()
-    While $HourlyDone < 10
+    While $HourlyDone < 3
         if ($iPos = -1) Then 
             Log_Add("Hourly failed. Unable to find ship position. Exiting", $LOG_INFORMATION)
             ExitLoop
@@ -38,6 +38,8 @@ Func doHourly()
                 If (getHourlyArg("Click_Nezz")) Then Collect_Nezz($iPos)
                 $HourlyDone +=1
                 Log_add("Completed Nezz ", $LOG_DEBUG)
+                $bOutput = True
+                ExitLoop
             Case Else
                 ExitLoop
         EndSwitch
