@@ -71,7 +71,13 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 ### Changing Bot Config:
 **Step 1**: Change Emulator Title, Class and Instance according the the info provided by the AutoIt Window Info *Finder Tool*.
 
-*Note: The title of your Nox window should have greater than 3 characters. 'Nox' or 'MSL' will not work. 'NoxPlayer' or 'Nox1' works.
+*Note: The title of your Nox window should have greater than 3 characters. 'Nox' or 'MSL' will not work. 'NoxPlayer' or 'Nox1' works.*
+
+*Another note: Newer versions of Nox (6.3.0.0 and above) will not display the correct Class and Instance. Use one of the following:*
+  
+  *- Emulator class: "subWin" | Emulator Instance: "1"*
+  
+  *- Emulator class: "Qt5QWindowIcon" | Emulator Instance: "5"*
 
 ![Title Class Instance](https://i.imgur.com/WDYfeJ3.png)
 
@@ -83,11 +89,11 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 **Step 3**: The compatibility test will check the major controls for the bot. The test will also provide comments on how you may be able to fix any issues that it has detected. If you have any issues, you can copy the compatiblity test information and report the bug in Github or Discord.
 
-![Test Result](https://i.imgur.com/41KUXaj.png)
+![Test Result](https://i.imgur.com/swL98SF.png)
 
 **Step 4**: Run desired script. Descriptions of each script is available on the bot app.
 
-  - For any errors, refer to the *Common Issues*.
+  - For any errors, refer to the *Common Issues* and *Troubleshooting*.
 
 <br>
 
@@ -154,13 +160,14 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 <br>
 
 ## Troubleshooting
+  - Most problems can be solved by running the RestartNox() function.
+
 ### Script looping in airship or doing nothing.
 #### Before troubleshooting for this problem:
   - Open Debug Input `Ctrl+D` and enter `getLocation()` in airship and the map.
   - If the locations say 'unknown' on the log, proceed with the following troubleshooting.
   - If the location is `village` in the airship and `map` in the map, your problem is different.
 
----
 **Using the RestartNox() function**: 
 
   - If you have the Nox emulator, you can open Debug Input `Ctrl+D` and enter `RestartNox()`. <br>
@@ -173,6 +180,38 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
   - If `WinAPI` does not work for you, try switching to `ADB` or `None` capture mode.
   - If none of the modes work for you, ask help in Discord or create an issue report on Github.
   
+---
+### Locations not being recognized or imagesearch not working properly.
+**Check graphics settings**
+  
+  - Your graphics settings could change the way the game looks so the pixels will be slightly different.
+  - Try restoring your graphics setting to default settings and then restart your Nox.
+  
+---
+### ADB Path is too long or is not being recognized.
+**Download ADB files**
+
+  - Download link: https://github.com/GkevinOD/msl-bot/raw/version-check/adb.zip
+  - Extract the zip file into the main folder of the bot.
+  - Change ADB path to new path inside the main folder.
+  
+---
+### Checking capture.
+**Use the CaptureRegion function to save an image**
+
+  - Open the Debug Input by pressing Ctrl+D or through the menu.
+  - Enter `CaptureRegion("test_image")~Run("mspaint.exe " & @ScriptDir & "\test_image.bmp")`
+  - Analyze the image and make sure it is capturing correctly.
+    - There should not be Nox window handle.
+    - The entire image should be filled by the MSL game.
+    - No empty spots on the right and bottom side of the image.
+    - Should not be a black screen.
+    
+**Changing the Emulator class and instance**
+
+  - Issues with the capture could be fixed by entering the correct Emulator class and instance.
+  - Refer to [Changing Bot Config](https://github.com/GkevinOD/msl-bot#changing-bot-config)
+    
 <br>
 
 ## Reporting an issue
