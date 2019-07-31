@@ -120,20 +120,12 @@ EndFunc
 	Returns:
 		If the gem meets the criteria returns true; otherwise, returns false.
 #ce
-Func filterGem($aGemData, $bCheckDragonGems = False)
-	If ($bCheckDragonGems And StringInStr("leech,pugilist,siphon", $aGemData[2])) Then
-		Local $iGrade = $aGemData[0]
-		Local $t_bFilter = (getArg($g_aDragonFilterSettings, $iGrade & "*-Filter") = "Enabled")
-		Local $t_bFilterTypes = (StringInStr(getArg($g_aDragonFilterSettings, $iGrade & "*-Types"), $aGemData[2]))
-		Local $t_bFilterStats = (StringInStr(getArg($g_aDragonFilterSettings, $iGrade & "*-Stats"), $aGemData[3]))
-		Local $t_bFilterSubStats = (StringInStr(getArg($g_aDragonFilterSettings, $iGrade & "*-Substats"), $aGemData[4]))
-	Else
-		Local $iGrade = $aGemData[0]
-		Local $t_bFilter = (getArg($g_aFilterSettings, $iGrade & "*-Filter") = "Enabled")
-		Local $t_bFilterTypes = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Types"), $aGemData[2]))
-		Local $t_bFilterStats = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Stats"), $aGemData[3]))
-		Local $t_bFilterSubStats = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Substats"), $aGemData[4]))
-	EndIf
+Func filterGem($aGemData)
+	Local $iGrade = $aGemData[0]
+	Local $t_bFilter = (getArg($g_aFilterSettings, $iGrade & "*-Filter") = "Enabled")
+	Local $t_bFilterTypes = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Types"), $aGemData[2]))
+	Local $t_bFilterStats = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Stats"), $aGemData[3]))
+	Local $t_bFilterSubStats = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Substats"), $aGemData[4]))
 
 	If (Not($t_bFilter) Or Not($t_bFilterTypes) Or Not($t_bFilterStats) Or Not($t_bFilterSubStats)) Then Return False
 

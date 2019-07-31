@@ -903,6 +903,7 @@ Func UpdateSettings()
     $g_aDelaySettings = formatArgs(getScriptData($g_aScripts, "_Delays")[2]) ;This is the list of configs
     $g_aGeneralSettings = formatArgs(getScriptData($g_aScripts, "_General")[2])
     $g_aHourlySettings = formatArgs(getScriptData($g_aScripts, "_Hourly")[2])
+    $g_aFilterSettings = formatArgs(getScriptData($g_aScripts, "_Filter")[2])
 
     ;[script, description, [[config, value, description], [..., ..., ...]]]
     $g_sProfileName = getArg($g_aConfigSettings, "Profile_Name")
