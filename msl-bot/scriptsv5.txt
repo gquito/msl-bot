@@ -98,7 +98,7 @@
 		name: "ADB Method",
 		description: "'input event' is slower to respond, but works with all ADB. 'sendevent' is faster to respond, but specific to Nox client. The sendevent tries to automatically find the device to send information to, but fails on some clients.",
 		default: "input event",
-		data: "input event,sendevent"
+		data: "input event,input event (new),sendevent"
 	]
 	
 	[text:
