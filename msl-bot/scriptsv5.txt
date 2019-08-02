@@ -98,7 +98,14 @@
 		name: "ADB Method",
 		description: "'input event' is slower to respond, but works with all ADB. 'sendevent' is faster to respond, but specific to Nox client. The sendevent tries to automatically find the device to send information to, but fails on some clients.",
 		default: "input event",
-		data: "input event,input event (new),sendevent"
+		data: "input event,sendevent"
+	]
+	
+	[combo:
+		name: "ADB Input Event Version",
+		description: "0 is the most stable, but runs slower. 1 is faster, but does not work well with slower computers.",
+		default: "0",
+		data: "0,1"
 	]
 	
 	[text:
@@ -170,13 +177,13 @@
 	
 	[text:
 		name: "ADB Timeout",
-		description: "How much time in MILLISECONDS the ADB function will wait for a response before timing out. Set higher for slower systems."
+		description: "How much time in MILLISECONDS the ADB function will wait for a response before timing out. Set higher for slower systems.",
 		default: "5000"
 	]
 	
 	[text:
 		name: "Restart Timeout",
-		description: "How much time in SECONDS the RestartGame or RestartNox will wait for the game to load before timing out."
+		description: "How much time in SECONDS the RestartGame or RestartNox will wait for the game to load before timing out.",
 		default: "300"
 	]
 ]
