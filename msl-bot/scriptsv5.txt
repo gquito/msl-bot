@@ -152,20 +152,32 @@
 
 	[text:
 		name: "Swipe Delay",
-		description: "The amount of time in milliseconds that the bot waits after swiping the screen to do anything. (minimum: 300)",
+		description: "The amount of time in MILLISECONDS that the bot waits after swiping the screen to do anything. (minimum: 300)",
 		default: "300"
 	]
 
 	[text:
 		name: "Navigation Click Delay",
-		description: "The amount of time in milliseconds that the bot waits while navigating before clicking. (minimum: 200)",
+		description: "The amount of time in MILLISECONDS that the bot waits while navigating before clicking. (minimum: 200)",
 		default: "1000"
 	]
 
 	[text:
 		name: "Target Boss Delay",
-		description: "The amount of time in milliseconds that the bot waits before clicking on the boss. Do not go higher than 200.",
+		description: "The amount of time in MILLISECONDS that the bot waits before clicking on the boss. Do not go higher than 200.",
 		default: "10"
+	]
+	
+	[text:
+		name: "ADB Timeout",
+		description: "How much time in MILLISECONDS the ADB function will wait for a response before timing out. Set higher for slower systems."
+		default: "5000"
+	]
+	
+	[text:
+		name: "Restart Timeout",
+		description: "How much time in SECONDS the RestartGame or RestartNox will wait for the game to load before timing out."
+		default: "300"
 	]
 ]
 
