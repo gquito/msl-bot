@@ -1,121 +1,98 @@
-#include <GUIListView.au3>
 #include <WinAPIProc.au3>
 #include <String.au3>
+#include <File.au3>
 #RequireAdmin
 
 ;Global Variables
-Global $g_bUpdating = True ;updating status
+Global $g_bUpdating = True 
+Global $g_iStatus = 0
 Global $sParentPath = Null
 
 ;Checking for all command line parameters before successfully running
-Local Const $aRequired = ["hwnd", "list", "rdir", "ldir"]
+Local Const $aRequired = ["hwnd"]
+Local Const $temp_release = "https://github.com/GkevinOD/msl-bot/archive/release.zip"
 If _checkCMDLine($CMDLine, $aRequired) = True Then
-	Update(getParameter($CMDLine, "list"), getParameter($CMDLine, "rdir"), getParameter($CMDLine, "ldir"), getParameter($CMDLine, "hwnd"))
+	Update($temp_release, getParameter($CMDLine, "hwnd"))
 Else
 	MsgBox(16, "MSL Bot Updater: Error", "Parameters invalid.")
 EndIf
 
 ;Main Update function
-Func Update($sRemoteFileListURL, $sRemoteDirURL, $sLocalDirPath, $hParentHandle = Null)
+Func Update($sRemoteZIP, $hParentHandle)
 	If $hParentHandle <> Null Then
 		$hParentHandle = Hwnd($hParentHandle)
 		$sParentPath = _WinAPI_GetProcessFileName(WinGetProcess($hParentHandle)) & " " & _WinAPI_GetProcessCommandLine(WinGetProcess($hParentHandle))
 		ProcessClose(WinGetProcess($hParentHandle))
 	EndIf
 
-	If Execute($sRemoteFileListURL) <> "" Then $sRemoteFileListURL = Execute($sRemoteFileListURL)
-	If Execute($sRemoteDirURL) <> "" Then $sRemoteDirURL = Execute($sRemoteDirURL)
-	If Execute($sLocalDirPath) <> "" Then $sLocalDirPath = Execute($sLocalDirPath)
-
-	$sRemoteDirURL = StringReplace($sRemoteDirURL, "\", "/")
-	$sLocalDirPath = StringReplace($sLocalDirPath, "/", "\")
-	If StringRight($sRemoteDirURL, 1) <> "/" Then $sRemoteDirURL &= "/"
-	If StringRight($sLocalDirPath, 1) <> "\" Then $sLocalDirPath &= "\"
-
 	;GUI, events are in the _Sleep function
-	Local $hWindow = GUICreate("MSL Bot Updater: Updating", 500, 200)
-	Local $hListView = GUICtrlGetHandle(GUICtrlCreateListView("", 0, 0, 500, 200, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER))
-	_GUICtrlListView_AddColumn($hListView, "File", 350)
-	_GUICtrlListView_AddColumn($hListView, "Size", 150)
+	Local $hWindow = GUICreate("MSL Bot Updater: Updating", 500, 100)
+	Local $hLabel = GUICtrlCreateLabel("Downloading zip file...", 0, 25, 500, 100, 0x01)
+	GUICtrlSetFont($hLabel, 13, 700)
+	Local $hProgress = GUICtrlCreateProgress(10, 50, 480, 25)
 	GUISetState(@SW_SHOW)
 
-	;variables
-	Local $aFiles = StringSplit(BinaryToString(InetRead($sRemoteFileListURL)), @CRLF, 2)
-
 	#Region Process
-		For $sFile In $aFiles
-			$sFile = StringReplace($sFile, "/", "\")
-			Switch StringLeft($sFile, 1)
-				Case "!"
-					$sFile = StringMid($sFile, 2)
-				Case "?"
-					$sFile = StringMid($sFile, 2)
-					If FileExists($sLocalDirPath & $sFile) = False Then
-						ContinueLoop
-					EndIf
-				Case "-"
-					$sFile = StringMid($sFile, 2)
-					FileDelete($sLocalDirPath & $sFile)
-					ContinueLoop
-				Case Else
-					If FileExists($sLocalDirPath & $sFile) = True Then ContinueLoop
-			EndSwitch
+		Local $hFile = InetGet($sRemoteZIP, @ScriptDir & "\" & "msl-bot.zip", 1, 1)
+		Local $iTries = 0
 
-			If StringInStr($sFile, "\") = True Then
-				;Create directory for file
-				Local $sRemove = StringSplit($sFile, "\", 2)
-				$sRemove = $sRemove[UBound($sRemove)-1]
-				DirCreate($sLocalDirPath & StringReplace($sFile, $sRemove, ""))
-			EndIf
+		While InetGetInfo($hFile, 3) = False
+			If InetGetInfo($hFile, 4) <> 0 Then
+				;Error occured
+				InetClose($hFile)
+				
+				If $iTries <= 3 Then
+					$iTries += 1
+					GUICtrlSetData($hLabel, "Error, trying again (" & $iTries & ").")
+					_Sleep(3000)
 
-			Local $hFile = InetGet($sRemoteDirURL & $sFile, $sLocalDirPath & $sFile, 1, 1)
-			Local $iTries = 0
-
-			_GUICtrlListView_InsertItem($hListView, $sFile, 0)
-			While InetGetInfo($hFile, 3) = False
-				If InetGetInfo($hFile, 4) <> 0 Then
-					;Error occured
-					InetClose($hFile)
-					
-					If FileExists($sLocalDirPath & $sFile) = True Then
-						If FileRead($sLocalDirPath & $sFile) = "" Then
-							_GUICtrlListView_SetItemText($hListView, 0, "Empty", 1)
-							ContinueLoop(2)
-						EndIf
-					EndIf
-					If $iTries <= 3 Then
-						$iTries += 1
-						_GUICtrlListView_SetItemText($hListView, 0, "Error, trying again (" & $iTries & ").", 1)
-						_Sleep(3000)
-
-						$hFile = InetGet($sRemoteDirURL & $sFile, $sLocalDirPath & $sFile, 1, 1)
-					Else
-						_GUICtrlListView_SetItemText($hListView, 0, "Error", 1)
-						ContinueLoop(2)
-					EndIf
-				EndIf
-
-				;updating listview control
-				If InetGetInfo($hFile, 1) <> 0 Then
-					_GUICtrlListView_SetItemText($hListView, 0, Round(InetGetInfo($hFile, 0)/1000) & "/" & Round(InetGetInfo($hFile, 0)/1000) & " KB", 1)
+					$hFile = InetGet($sRemoteZIP, @ScriptDir & "\" & "msl-bot.zip", 1, 1)
 				Else
-					_GUICtrlListView_SetItemText($hListView, 0, Round(InetGetInfo($hFile, 0)/1000) & " KB", 1)
+					GUICtrlSetData($hLabel, "Error could not download zip file.")
+					ExitLoop
 				EndIf
-				_Sleep(50)
-			WEnd
-
-			;final update
-			If InetGetInfo($hFile, 1) <> 0 Then
-				_GUICtrlListView_SetItemText($hListView, 0, Round(InetGetInfo($hFile, 0)/1000) & "/" & Round(InetGetInfo($hFile, 0)/1000) & " KB", 1)
-			Else
-				_GUICtrlListView_SetItemText($hListView, 0, Round(InetGetInfo($hFile, 0)/1000) & " KB", 1)
 			EndIf
 
-			InetClose($hFile)
-		Next
+			;updating listview control
+			If InetGetInfo($hFile, 1) <> 0 Then
+				GUICtrlSetData($hLabel, "Downloading msl-bot.zip: " & Round(InetGetInfo($hFile, 0)/1000) & "/" & Round(InetGetInfo($hFile, 1)/1000) & " KB")
+				GUICtrlSetData($hProgress, 90*(Round(InetGetInfo($hFile, 0)/1000) / Round(InetGetInfo($hFile, 1)/1000)))
+			Else
+				GUICtrlSetData($hLabel, "Downloading msl-bot.zip: " & Round(InetGetInfo($hFile, 0)/1000) & " KB")
+				GUICtrlSetData($hProgress, 90*(Round(InetGetInfo($hFile, 0)/1000) / 7300)) ;estimate
+			EndIf
+			_Sleep(200)
+		WEnd
+
+		;final update
+		If InetGetInfo($hFile, 1) <> 0 Then
+			GUICtrlSetData($hLabel, "Downloading msl-bot.zip: " & Round(InetGetInfo($hFile, 0)/1000) & "/" & Round(InetGetInfo($hFile, 1)/1000) & " KB")
+		Else
+			GUICtrlSetData($hLabel, "Downloading msl-bot.zip: " & Round(InetGetInfo($hFile, 0)/1000) & " KB")
+		EndIf
+
+		InetClose($hFile)
 	#EndRegion Process
 
 	$g_bUpdating = False
+	WinSetTitle($hWindow, "", "MSL Bot Updater: Extracting")
+	If FileExists(@ScriptDir & "\msl-bot.zip") = True Then
+		GUICtrlSetData($hLabel, "Extracting zip file...")
+		$g_iStatus = 1
+		
+		_ExtractZip(@ScriptDir & "\msl-bot.zip", "msl-bot-release\msl-bot", "README.txt", @ScriptDir)
+		If _ExtractZip(@ScriptDir & "\msl-bot.zip", "msl-bot-release\msl-bot", "msl-bot.au3", @ScriptDir) = 0 Then $giStatus = 0
+		If _ExtractZip(@ScriptDir & "\msl-bot.zip", "msl-bot-release\msl-bot", "bin", @ScriptDir) = 0 Then $giStatus = 0
+
+		If $g_iStatus = 1 Then
+			GUICtrlSetData($hLabel, "Updated successfully.")
+			GUICtrlSetData($hProgress, 100)
+		EndIf
+	Else
+		GUICtrlSetData($hLabel, "Failed to update.")
+		MsgBox(48, "MSL Bot Update: Failed", "Failed to update." & @CRLF & "Update manually through the GitHub page.")
+	EndIf
+
 	WinSetTitle($hWindow, "", "MSL Bot Updater: Complete")
 	_Sleep(30000, 30, $hWindow)
 	_Exit()
@@ -125,8 +102,11 @@ EndFunc
 
 Func _Exit()
 	Local $aParameters = ["sd"]
-	If _checkCMDLine($CMDLine, $aParameters) = True Then FileDelete(@ScriptFullPath) ;self-destruct
-	Run($sParentPath)
+	If _checkCMDLine($CMDLine, $aParameters) = True Then 
+		FileDelete(@ScriptDir & "\msl-bot.zip")
+		FileDelete(@ScriptFullPath) ;self-destruct
+	EndIf
+	If $g_iStatus = 1 Then Run($sParentPath)
 	
 	Exit
 EndFunc
@@ -191,4 +171,62 @@ Func getParameter($aCL, $sParameter)
 	Next
 
 	Return -2
+EndFunc
+
+; #FUNCTION# ;===============================================================================
+;
+; Name...........: _ExtractZip
+; Description ...: Extracts file/folder from ZIP compressed file
+; Syntax.........: _ExtractZip($sZipFile, $sFolderStructure, $sFile, $sDestinationFolder)
+; Parameters ....: $sZipFile - full path to the ZIP file to process
+;                  $sFolderStructure - 'path' to the file/folder to extract inside ZIP file
+;                  $sFile - file/folder to extract
+;                  $sDestinationFolder - folder to extract to. Must exist.
+; Return values .: Success - Returns 1
+;                          - Sets @error to 0
+;                  Failure - Returns 0 sets @error:
+;                  |1 - Shell Object creation failure
+;                  |2 - Destination folder is unavailable
+;                  |3 - Structure within ZIP file is wrong
+;                  |4 - Specified file/folder to extract not existing
+; Author ........: trancexx
+;
+;==========================================================================================
+Func _ExtractZip($sZipFile, $sFolderStructure, $sFile, $sDestinationFolder)
+
+    Local $i
+    Do
+        $i += 1
+        $sTempZipFolder = @TempDir & "\Temporary Directory " & $i & " for " & StringRegExpReplace($sZipFile, ".*\\", "")
+    Until Not FileExists($sTempZipFolder) ; this folder will be created during extraction
+
+    Local $oShell = ObjCreate("Shell.Application")
+
+    If Not IsObj($oShell) Then
+        Return SetError(1, 0, 0) ; highly unlikely but could happen
+    EndIf
+
+    Local $oDestinationFolder = $oShell.NameSpace($sDestinationFolder)
+    If Not IsObj($oDestinationFolder) Then
+        Return SetError(2, 0, 0) ; unavailable destionation location
+    EndIf
+
+    Local $oOriginFolder = $oShell.NameSpace($sZipFile & "\" & $sFolderStructure) ; FolderStructure is overstatement because of the available depth
+    If Not IsObj($oOriginFolder) Then
+        Return SetError(3, 0, 0) ; unavailable location
+    EndIf
+
+    ;Local $oOriginFile = $oOriginFolder.Items.Item($sFile)
+    Local $oOriginFile = $oOriginFolder.ParseName($sFile)
+    If Not IsObj($oOriginFile) Then
+        Return SetError(4, 0, 0) ; no such file in ZIP file
+    EndIf
+
+    ; copy content of origin to destination
+    $oDestinationFolder.CopyHere($oOriginFile, 20) ;https://docs.microsoft.com/en-us/previous-versions/windows/desktop/sidebar/system-shell-folder-copyhere
+
+    DirRemove($sTempZipFolder, 1) ; clean temp dir
+
+    Return 1 ; All OK!
+
 EndFunc
