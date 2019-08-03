@@ -136,7 +136,7 @@
 		name: "Capture Mode",
 		description: "WinAPI: Works in background (not minimized) and takes least amount of CPU. ADB: Works in background including minimized, slowest method and takes the most CPU. None: Does not work in background and must be present in foreground of the screen at all times.",
 		default: "WinAPI",
-		data: "WinAPI,ADB,None"
+		data: "WinAPI,None"
 	]
 	
 	[combo:
