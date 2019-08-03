@@ -287,7 +287,7 @@ Func Update()
     If InetGetInfo($hFile, $INET_DOWNLOADSUCCESS) = True Then
         MsgBox($MB_ICONINFORMATION, "MSL Bot Update", "Auto update will begin shortly.", 3)
         InetClose($hFile)
-        RunWait('"' & @AutoItExe & '" /AutoIt3ExecuteScript "' & @ScriptDir & '\msl-bot-update.au3" -hwnd ' & String($g_hParent) & " -ldir @ScriptDir -list https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/msl-bot/update-files.txt -rdir https://raw.githubusercontent.com/GkevinOD/msl-bot/release/msl-bot/ -sd" & '"')
+        RunWait('"' & @AutoItExe & '" /AutoIt3ExecuteScript "' & @ScriptDir & '\msl-bot-update.au3" -hwnd ' & String($g_hParent) & " -sd")
     Else
         MsgBox($MB_ICONERROR, "MSL Bot Update", "Could not download update file.")
     EndIf

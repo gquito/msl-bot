@@ -1,4 +1,4 @@
-Global $aVersion = [4, 1, 0] ;Major, Minor, Build, Beta
+Global $aVersion = [4, 1, 1] ;Major, Minor, Build, Beta
 
 ConsoleWrite($aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] & @CRLF);"." & $aVersion[3] & @CRLF)
 
@@ -9,8 +9,8 @@ ConsoleWrite($aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] & @CRLF);"."
 #pragma compile(ProductName, "Monster Super League Bot")
 #pragma compile(FileDescription, "Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot")
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 4.1.0)
-#pragma compile(ProductVersion, 4.1.0)
+#pragma compile(FileVersion, 4.1.1)
+#pragma compile(ProductVersion, 4.1.1)
 #pragma compile(OriginalFilename, "msl-bot")
 #pragma compile(AutoItExecuteAllowed, True)
 
