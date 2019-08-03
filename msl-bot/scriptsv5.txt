@@ -117,13 +117,13 @@
 	[text:
 		name: "Emulator Class",
 		description: "This can be found using the AutoIt Window Info, using the Finder Tool.",
-		default: "subWin"
+		default: "~"
 	]
 	
 	[text:
 		name: "Emulator Instance",
 		description: "This can be found using the AutoIt Window Info, using the Finder Tool.",
-		default: "1"
+		default: "~"
 	]
 
 	[text:
