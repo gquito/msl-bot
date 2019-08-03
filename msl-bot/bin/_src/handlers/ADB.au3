@@ -3,83 +3,49 @@
 
 ;Run CMD session to send ADB command.
 ;Output will be retrieved after command has been executed.
-Func ADB_Command($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+Func ADB_Command($sCommand, $iVersion = $g_iADB_Inputevent_Version, $iTimeout = $g_iADB_Timeout, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
 	Log_Level_Add("ADB_Command")
     Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
 
     Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
-    Local $hTimer = TimerInit()
 	Local $sResult ;Holds ADB output
-	While ProcessExists($iPID)
-		If (_Sleep(100)) Then ExitLoop
-		If (TimerDiff($hTimer) > 3000) Then
-			$sResult = "Timed out."
-			ProcessClose($iPID)
-			ExitLoop
-		EndIf
-	WEnd
-	If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
+
+	Switch $iVersion
+		Case 0 ;Most stable method, slower.
+			If ProcessWaitClose($iPID, $iTimeout) = 0 Then
+				ProcessClose($iPID)
+				$sResult = "Timed out."
+			Else
+				$sResult = StdoutRead($iPID)
+			EndIf
+		Case 1 ;Newer method, faster.
+			Local $hTimer = TimerInit()
+			While ProcessExists($iPID)
+				If (_Sleep(100)) Then ExitLoop
+				If (TimerDiff($hTimer) > $iTimeout) Then
+					$sResult = "Timed out."
+					ProcessClose($iPID)
+					ExitLoop
+				EndIf
+			WEnd
+			If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
+		Case Else
+			$sResult = "(ERROR) Version invalid."
+	EndSwitch
     StdioClose($iPID)
 
     If ($sResult <> "") Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
     Log_Level_Remove()
     Return $sResult
 EndFunc   ;==>ADB_Command
-
-;Run CMD session to send ADB command.
-;Output will be retrieved after command has been executed.
-Func ADB_Command_Ignore_Timeout($sCommand, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
-	Log_Level_Add("ADB_Command")
-    Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
-
-    Local $iPID = Run('"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
-    Local $hTimer = TimerInit()
-	Local $sResult ;Holds ADB output
-	While ProcessExists($iPID)
-		If (_Sleep(100)) Then ExitLoop
-		If (TimerDiff($hTimer) > 20000) Then
-			$sResult = "Timed out."
-			ProcessClose($iPID)
-			ExitLoop
-		EndIf
-	WEnd
-	If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
-    StdioClose($iPID)
-
-    If ($sResult <> "") Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
-    Log_Level_Remove()
-    Return $sResult
-EndFunc   ;==>ADB_Command
-
-Func ADB_General_Command($sCommand)
-	Log_Level_Add("ADB_General_Command")
-    Log_Add("ADB command: " & '"' & $g_sAdbDevice & '"' & " " & $sCommand, $LOG_DEBUG)
-
-    Local $iPID = Run('"' & $g_sAdbDevice & '"' & " " & $sCommand, "", @SW_HIDE, $STDERR_MERGED)
-    Local $hTimer = TimerInit()
-	Local $sResult ;Holds ADB output
-	While ProcessExists($iPID)
-		If (_Sleep(100)) Then ExitLoop
-		If (TimerDiff($hTimer) > 3000) Then
-			$sResult = "Timed out."
-			ProcessClose($iPID)
-			ExitLoop
-		EndIf
-	WEnd
-	If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
-    StdioClose($iPID)
-
-    If ($sResult <> "") Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
-    Log_Level_Remove()
-    Return $sResult
-EndFunc
 
 ;Runs ADB Shell session directly and inputs commands individually.
 ;Commands could be separated by @CRLF.
 ;Output is automatically parsed to show only output.
 ;Raw output displays all command inputs from session.
-Func ADB_Shell($sCommand, $bOutput = False, $bRawOutput = False, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+Func ADB_Shell($sCommand, $iTimeout = $g_iADB_Timeout, $bOutput = False, $bRawOutput = False, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
 	Log_Level_Add("ADB_Shell")
+	;Log_Add("ADB shell: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
 
 	;Run shell session
 	Local $iPID_ADB = Run('"' & $sAdbPath & '" -s ' & $sAdbDevice & ' shell', "", @SW_HIDE, $STDIN_CHILD + $STDOUT_CHILD)
@@ -96,7 +62,7 @@ Func ADB_Shell($sCommand, $bOutput = False, $bRawOutput = False, $sAdbDevice = $
 			$sOutput &= StdoutRead($iPID_ADB)
 			If (@error Or _Sleep(0)) Then ExitLoop
 
-			If (TimerDiff($hTimer) > 5000) Then
+			If (TimerDiff($hTimer) > $iTimeout) Then
 				$sOutput = "Timed out."
 				ExitLoop
 			EndIf
@@ -117,6 +83,7 @@ Func ADB_Shell($sCommand, $bOutput = False, $bRawOutput = False, $sAdbDevice = $
 		RestartNox()
 	EndIf
 
+	;If ($sOutput <> "") Then Log_Add("ADB output: " & $sOutput, $LOG_DEBUG)
 	Log_Level_Remove()
 	Return $sOutput
 EndFunc   ;==>ADB_Shell
@@ -131,17 +98,37 @@ Func ADB_isWorking()
 EndFunc   ;==>ADB_isWorking
 
 ;Send ESC through ADB.
-Func ADB_SendESC($iCount = 1, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+Func ADB_SendESC($iCount = 1, $sMethod = $g_sAdbMethod, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
 	If (Not($g_bAdbWorking)) Then Return 0
-	For $i = 0 To $iCount - 1 
-		ADB_Command("shell input keyevent ESCAPE")
-	Next
+
+	Switch $sMethod
+		Case "input event"
+			Local $sCommand = ""
+			For $i = 0 To $iCount - 1
+				$sCommand &= ";input keyevent ESCAPE"
+			Next
+			$sCommand = StringMid($sCommand , 2)
+			ADB_Command('shell "' & $sCommand & '"')
+
+		Case "sendevent"
+			Local $aTCV = ["1 158 1", "0 0 0", "1 158 0", "0 0 0", "0 0 0"]
+			If $g_sADBEvent <> "" Then
+				For $i = 0 To $iCount - 2
+					_ArrayAdd($aTCV, $aTCV)
+				Next
+				ADB_Shell(ADB_ConvertEvent($g_sADBEvent, $aTCV))
+			Else
+				ContinueCase
+			EndIf
+		Case Else
+			Return ADB_SendESC($iCount, "input event", $sAdbDevice, $sAdbPath)
+	EndSwitch
 	Return 1
 EndFunc   ;==>ADB_SendESC
 
 Func ADB_RestartServer()
-	ADB_General_Command("kill-server")
-	ADB_General_Command("start-server")
+	ADB_Command("kill-server")
+	ADB_Command("start-server")
 EndFunc
 
 Func ADB_GetDevices()

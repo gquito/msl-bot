@@ -48,7 +48,7 @@ Global Const $d_sAdbMethod = "input event" ;Method to send clicks and keypresses
 Global Const $d_sEmuSharedFolder[2] = ["/mnt/shared/App/", @UserProfileDir & "\Nox_share\App\"] ;Folder shared between emulator and computer. Default for nox
 
 Global Const $d_sWindowTitle = "NoxPlayer" ;Emulator window title.
-Global Const $d_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
+Global Const $d_sControlInstance = "[CLASS:Qt5QWindowIcon; TEXT:ScreenBoardClassWindow]" ;OPENGL/DIRECTX Control instance.
 Global Const $d_iDisplayScaling = 100 ;Display Scaling percentage. Recommended 100%.
 
 Global Const $g_aGemRanks = ["LEECH,SIPHON,PUGILIST", "RUIN", "INTUITION", "CONVICTION,PROTECTION,VALOR,VITALITY,TENACITY,FORTITUDE,HEALING,FEROCITY", "LIFE"]
@@ -127,6 +127,10 @@ Global Const $g_aDungeonsSwipeUp =      [175, 452, 175, 186, "up"]
 Global Const $d_iSwipeDelay = 300
 Global Const $d_iNavClickDelay = 500
 Global Const $d_iTargetBossDelay = 10
+Global Const $d_iADB_Timeout = 5000
+Global Const $d_iRestart_Timeout = 300000
+
+Global Const $d_iADB_InputEvent_Version = 0
 
 Global Const $g_sSendEvent = "0 0 0,1 330 1,3 58 1,3 53 %s,3 54 %s,0 2 0,0 0 0,0 2 0,0 0 0,1 330 0,3 58 0,3 53 0,3 54 32,0 2 0,0 0 0"
 

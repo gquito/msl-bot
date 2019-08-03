@@ -12,10 +12,16 @@ Global $g_iLoggedOutTime = 0 ;Number of minutes until bot app decides to restart
 Global $g_iStatModify = 0
 Global $g_iCurrentMonitor = 0
 Global $g_iCurrentDpiRatio = 1
+
+;Delays/Timeouts
 Global $g_iMaintenanceTimeout = 5
 Global $g_iSwipeDelay = $d_iSwipeDelay
 Global $g_iNavClickDelay = $d_iNavClickDelay
 Global $g_iTargetBossDelay = $d_iTargetBossDelay
+Global $g_iADB_Timeout = $d_iADB_Timeout
+Global $g_iRestart_Timeout = $d_iRestart_Timeout
+
+Global $g_iADB_InputEvent_Version = $d_iADB_InputEvent_Version
 
 Global $g_bSaveDebug = False ;Write debug type log to log file.
 Global $g_bSaveLog = False ;Write to log file

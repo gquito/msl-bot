@@ -25,7 +25,11 @@ Func clickDrag($aPoints, $iAmount = 1, $iDelay = $g_iSwipeDelay, $iSwipeMode = $
             EndIf
 
             ;executing swipe
-            ADB_Command("shell input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
+            If $g_sADBMethod = "input event" Then
+                ADB_Command("shell input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
+            Else
+                ADB_Shell("input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
+            EndIf
         Case $SWIPE_REAL
             ;clickdrags using real mouse.
             WinActivate($g_hWindow)
@@ -36,7 +40,7 @@ Func clickDrag($aPoints, $iAmount = 1, $iDelay = $g_iSwipeDelay, $iSwipeMode = $
             Local $aOffset = WinGetPos($g_hControl)
             MouseClickDrag("left", ($aPoints[0]+$aOffset[0]), ($aPoints[1]+$aOffset[1]), ($aPoints[2]+$aOffset[0]), ($aPoints[3]+$aOffset[1]))
         EndSwitch
-        If (_Sleep($g_iSwipeDelay)) Then Return False
+        If (_Sleep($iDelay)) Then Return False
         $iSwipes += 1
     WEnd
     Return True
@@ -109,12 +113,7 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $g_iMouseMo
                 Case $MOUSE_ADB
                 ;clicks using adb commands
                     Log_Add("Click point: " & _ArrayToString($aNewPoint), $LOG_DEBUG)
-                    If ($g_sAdbMethod = "input event") Then
-                        ADB_Command("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
-                    Else
-                        Local $aTCV = getSendEventArray($aNewPoint)
-                        ADB_Command("shell" & ADB_ConvertEvent($g_sADBEvent, $aTCV))
-                    EndIf
+                    ADB_Command("shell input tap " & $aNewPoint[0] & " " & $aNewPoint[1])
                 Case Else
                     Log_Add("Invalid mouse mode: " & $iMouseMode, $LOG_ERROR)
                     $g_sErrorMessage = "clickPoint() => Invalid mouse mode: " & $iMouseMode
@@ -176,8 +175,7 @@ Func clickMultiple($aPoints, $iInterval = 0, $iMouseMode = $g_iMouseMode, $hWind
                 EndIf
             Next
             $sCommand = StringMid($sCommand, 2)
-
-            ADB_Shell($sCommand, True, True)
+            ADB_Shell($sCommand, $g_iADB_Timeout, True, True)
     EndSwitch
 EndFunc
 

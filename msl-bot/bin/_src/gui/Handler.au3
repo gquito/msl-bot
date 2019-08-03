@@ -916,6 +916,7 @@ Func UpdateSettings()
     $g_sAdbPath = getConfigArg($g_aConfigSettings, "ADB_Path", "~", $d_sAdbPath)
     $g_sAdbDevice = getConfigArg($g_aConfigSettings, "ADB_Device", "~", $d_sAdbDevice)
     $g_sAdbMethod = getConfigArg($g_aConfigSettings, "ADB_Method", "~", $d_sAdbMethod)
+    $g_iADB_InputEvent_Version = getConfigArg($g_aConfigSettings, "ADB_Input_Event_Version", "~", $d_iADB_InputEvent_Version)
     $g_sWindowTitle = getConfigArg($g_aConfigSettings, "Emulator_Title", "~", $d_sWindowTitle)    
     $g_sEmuSharedFolder[0] = getConfigArg($g_aConfigSettings, "ADB_Shared_Folder1", "~", $d_sEmuSharedFolder[0])
     $g_sEmuSharedFolder[1] = getConfigArg($g_aConfigSettings, "ADB_Shared_Folder2", "~", $d_sEmuSharedFolder[1])
@@ -926,7 +927,13 @@ Func UpdateSettings()
     $g_iTargetBossDelay = GetArg($g_aDelaySettings, "Target_Boss_Delay")
     $g_iMaintenanceTimeout = Int(StringSplit(GetArg($g_aConfigSettings, "Maintenance_Timeout"), " ", $STR_NOCOUNT)[0])
 
-    $g_sControlInstance = "[CLASS:" & getArg($g_aConfigSettings, "Emulator_Class") & "; INSTANCE:" & getArg($g_aConfigSettings, "Emulator_Instance") & "]"
+    Local $t_Emulator_Class = getArg($g_aConfigSettings, "Emulator_Class")
+    Local $t_Emulator_Instance = getArg($g_aConfigSettings, "Emulator_Instance")
+    If $t_Emulator_Class = "~" Or $t_Emulator_Instance = "~" Then
+        $g_sControlInstance = $d_sControlInstance
+    Else
+        $g_sControlInstance = "[CLASS:" & getArg($g_aConfigSettings, "Emulator_Class") & "; INSTANCE:" & getArg($g_aConfigSettings, "Emulator_Instance") & "]"
+    EndIf
     $g_iBackgroundMode = Eval("BKGD_" & StringUpper(getArg($g_aConfigSettings, "Capture_Mode")))
     $g_iMouseMode = Eval("MOUSE_" & StringUpper(getArg($g_aConfigSettings, "Mouse_Mode")))
     $g_iSwipeMode = Eval("SWIPE_" & StringUpper(getArg($g_aConfigSettings, "Swipe_Mode")))
