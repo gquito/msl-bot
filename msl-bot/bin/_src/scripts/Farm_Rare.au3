@@ -97,7 +97,7 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
                 WEnd
 
                 Log_Add("Turning auto battle on.")
-                navigateToBattleAuto($sLocation)
+                clickBattle("until", "battle-auto", 5, 200)
             Case "catch-mode"
                 clickWhile(getPointArg("catch-mode-cancel"), "isLocation", "catch-mode", 5, 1000)
             Case "battle-end"

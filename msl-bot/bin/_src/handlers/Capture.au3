@@ -52,14 +52,17 @@ Func getBitmapHandles(ByRef $hHBitmap, ByRef $hBitmap, $iX = 0, $iY = 0, $iWidth
             Local $aNewPoint = [$iX + $aWinPos[0], $iY + $aWinPos[1]]
             $hHBitmap = _ScreenCapture_Capture("", $aNewPoint[0], $aNewPoint[1], $aNewPoint[0] + $iWidth, $aNewPoint[1] + $iHeight, False)
             $hBitmap = _GDIPlus_BitmapCreateFromHBITMAP($hHBitmap)
-        Case $BKGD_ADB
-            ADB_Command("shell screencap " & $g_sEmuSharedFolder[0] & "\" & $g_sWindowTitle & ".png")
-            Local $t_hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+        Case $BKGD_ADB ;Disabled for now
+            ;If $g_sADBMethod = "input event" Then
+            ;    ADB_Command("shell screencap " & $g_sEmuSharedFolder[0] & $g_sWindowTitle & ".png")
+            ;Else
+            ;    ADB_Shell("screencap " & $g_sEmuSharedFolder[0] & "\" & $g_sWindowTitle & ".png")
+            ;EndIf
+            ;Local $t_hBitmap = _GDIPlus_BitmapCreateFromFile($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
 
-            $hBitmap = _GDIPlus_BitmapCloneArea($t_hBitmap, $iX, $iY, $iWidth, $iHeight)
-            $hHBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap)
-
-            _GDIPlus_BitmapDispose($t_hBitmap)
+            ;$hBitmap = _GDIPlus_BitmapCloneArea($t_hBitmap, $iX, $iY, $iWidth, $iHeight)
+            ;$hHBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($hBitmap)
+            ;_GDIPlus_BitmapDispose($t_hBitmap)
     EndSwitch
 EndFunc
 

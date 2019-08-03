@@ -209,4 +209,7 @@ EndFunc
 Func resetHandles()
 	$g_hWindow = WinGetHandle($g_sWindowTitle)
 	$g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
+    If $g_hControl = 0x000000 Then 
+        $g_hControl = ControlGetHandle($g_hWindow, "", $d_sControlInstance)
+    EndIf
 EndFunc

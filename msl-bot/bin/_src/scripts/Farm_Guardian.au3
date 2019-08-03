@@ -85,7 +85,7 @@ Func Farm_Guardian($Mode, $Usable_Astrogems, $Loop, $Target_Boss, $Collect_Quest
                 Log_Add("Toggling auto battle on.")
                 Data_Set("Status", "Toggling auto battle on.")
 
-				clickWhile(getPointArg("battle-auto"), "inBattle") ;to battle-auto
+				clickBattle("until", "battle-auto", 5, 200)
 
             Case "battle-end-exp", "battle-sell", "battle-sell-item"
                 navigate("battle-end", True)

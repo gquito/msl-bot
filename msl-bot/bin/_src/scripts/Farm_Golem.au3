@@ -82,7 +82,7 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Goal_Type, $Goal_Amount, $G
                 If inBattle() = False Then ContinueLoop
 
                 Data_Set($STAT_STATUS, "Toggling auto battle on.")
-                clickWhile(getPointArg("battle-auto"), "inBattle") ;to battle-auto
+                clickBattle("until", "battle-auto", 5, 200)
 
             Case "battle-end-exp", "battle-sell"
                 If ($hAvgRunTimer <> Null) Then 

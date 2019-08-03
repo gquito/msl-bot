@@ -199,7 +199,7 @@ Func Farm_Starstone($Dungeon_Type, $Dungeon_Level, $Stone_Element, $High_Stones,
                 If inBattle() = False Then ContinueLoop
 
                 Data_Set($STAT_STATUS, "Toggling auto battle on.")
-                clickWhile(getPointArg("battle-auto"), "inBattle") ;to battle-auto
+                clickBattle("until", "battle-auto", 5, 200)
 
             Case Else
                 HandleCommonLocations($sLocation)

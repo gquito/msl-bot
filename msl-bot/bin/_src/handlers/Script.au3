@@ -34,7 +34,7 @@ Func Start()
                     Log_Add("Control Handle not found.", $LOG_ERROR)
                     Log_Add("Attempting to use default for Nox.")
                     
-                    $g_sControlInstance = "[CLASS:Qt5QWindowIcon; TEXT:ScreenBoardClassWindow]"
+                    $g_sControlInstance = $d_sControlInstance
                     $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance) 
 
                     ;If $g_hControl = 0 Then 
@@ -202,7 +202,7 @@ Func _Establish_ADB($iADB_GetEvent_TIMEOUT = 0)
 
             If (StringInStr(ADB_Command("get-state"), "error")) Then
                 Log_Add("Attempting to connect to ADB Device: " & $g_sADBDevice)
-                ADB_Command_Ignore_Timeout("wait-for-device connect " & $g_sADBDevice)
+                ADB_Command("connect " & $g_sADBDevice, 0, 60000)
 
                 If (StringInStr(ADB_Command("get-state"), "error")) Then 
                     MsgBox($MB_ICONERROR+$MB_OK, "ADB device does not exist.", "Device is not connected or does not exist: " & $g_sADBDevice & @CRLF & @CRLF & ADB_Command("devices"))
@@ -274,7 +274,6 @@ Func ScriptTest()
         CaptureRegion()
 
         Local $cFirst = getColor(0, 0)
-        Local $cSecond = "0x000000"
 
         _ArrayAdd($aTempLOG, "  -Current location: " & getLocation())
         If (String($cFirst) = "0x000000" Or String($cFirst) = "0xFFFFFF" Or Not(isLocation("map"))) Then
@@ -285,10 +284,9 @@ Func ScriptTest()
             _ArrayAdd($aTempLOG, "  -Click working status: Unknown")
         Else
             $bCaptureWorking = True
-            clickUntil("414,16", "isLocation", "refill", 3, 200) ; Opens refill window
 
-            $cSecond = getColor(0, 0)
-            If ($cFirst = $cSecond) Then 
+            ;Opens refill window
+            If clickWhile("414,16", "isPixel", CreateArr(0, 0, $cFirst), 5, 2000, "CaptureRegion()") = False Then 
                 $sError &= @CRLF & @CRLF & "- Click is not working. Make sure you have the correct DISPLAY SCALING. You can check by right clicking in your desktop and clicking Display Settings. You will see" & _
                     " the scaling. Set the setting DISPLAY SCALING in _Config as the same as the scaling in your display setting. You can also change the click method in _Config."
             
@@ -318,11 +316,12 @@ Func ScriptTest()
     
     If ($bAdbWorking And $bCaptureWorking) Then
         If (isLocation("map")) Then
-            _ArrayAdd($aTempLOG, "  -ADB response status: " & clickUntil("414,16", "isLocation", "refill", 3, 200, "", $MOUSE_ADB)) ; Opens refill window using ADB
-            If (Not(isLocation("refill"))) Then $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
+            Local $bAdbResponse = clickWhile("414,16", "isPixel", CreateArr(0, 0, getColor(0, 0)), 5, 2000, "CaptureRegion()", $MOUSE_ADB)
+            _ArrayAdd($aTempLOG, "  -ADB response status: " & $bAdbResponse) ; Opens refill window using ADB
+            If $bAdbResponse = False Then $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
         Else
             ADB_SendESC()
-            If (Not(isLocation("map"))) Then
+            If waitLocation("map", 5) = False Then
                 _ArrayAdd($aTempLOG, "  -ADB response status: False")
                 $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
             Else

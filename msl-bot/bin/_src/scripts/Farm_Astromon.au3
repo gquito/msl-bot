@@ -85,7 +85,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 If $aRound[0] = $aRound[1] Then
                     ; ==Final Round Stuff==
                     If Data_Get("Skip Round") = $aRound[0] Or Data_Get("Astrochips") = 0  Then
-                        If $sLocation = "battle" Then clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 250)
+                        If $sLocation = "battle" Then clickBattle("until", "battle-auto", 5, 200)
                         ContinueLoop
                     EndIf
 
@@ -101,18 +101,18 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                                 ContinueCase ;Catch sequence for rare astromons
                             EndIf
                             
-                            clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 250)
+                            clickBattle("until", "battle-auto", 5, 200)
                         EndIf
                         ContinueLoop
                     EndIf
 
                     If $Finish_Round = "Enabled" And Data_Get("Astrochips") = 0 Then
-                        If $sLocation = "battle" Then navigateToBattleAuto($sLocation)
+                        If $sLocation = "battle" Then clickBattle("until", "battle-auto", 5, 200)
                         ContinueLoop
                     EndIf
 
                     If Data_Get("Skip Round") = $aRound[0] Then
-                        If $sLocation = "battle" Then navigateToBattleAuto($sLocation)
+                        If $sLocation = "battle" Then clickBattle("until", "battle-auto", 5, 200)
                         ContinueLoop
                     EndIf
 
@@ -167,7 +167,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 WEnd
 
                 If StringInStr($Capture, "," & $Catch_Image) = False Then
-                    clickUntil(getArg($g_aPoints, "battle-auto"), "isLocation", "battle-auto", 3, 250)
+                    clickBattle("until", "battle-auto", 5, 200)
                     $Capture &= "," & $Catch_Image
                 EndIf
 

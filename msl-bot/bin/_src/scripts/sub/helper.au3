@@ -523,3 +523,35 @@ Func inBattle()
 	;Log_Level_Remove()
 	Return False
 EndFunc
+
+;types: normal, while, until
+Func clickBattle($sType = "", $sLocation = "", $iNum = 1, $iDelay = 200)
+	Local $bOutput = False
+	Switch $sType
+		Case ""
+			clickPoint(getPointArg("battle-auto"))
+			clickDrag(CreateArr(33, 213, 33, 176), 1, 0) ;Prevent sticky button
+
+			$iNum -= 1
+			If $iNum > 0 Then clickBattle($sType, $iNum)
+
+			$bOutput = True
+		Case "while"
+			While waitLocation($sLocation, $iDelay/1000, 50)
+				If $iNum <= 0 Then ExitLoop
+				clickBattle()
+
+				$iNum -= 1
+			WEnd
+			$bOutput = (getLocation() <> $sLocation)
+		Case "until"
+			While waitLocation($sLocation, $iDelay/1000, 50) = False
+				If $iNum <= 0 Then ExitLoop
+				clickBattle()
+
+				$iNum -= 1
+			WEnd
+			$bOutput = (getLocation() = $sLocation)
+	EndSwitch
+	Return $bOutput
+EndFunc

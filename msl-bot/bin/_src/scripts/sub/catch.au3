@@ -68,7 +68,7 @@ Func catch($aImages, ByRef $iAstrochips)
             Stat_Increment($g_aStats, "Astrochips used", 1)
             If ($g_bAdbWorking) Then ;speed catch
                 Log_Add("Double ESCAPE for quick catch.")
-                ADB_SendESC()
+                ADB_SendESC(2)
                 ;clickPoint continue instead of ADB_SendESC()
                 clickWhile(getPointArg("battle-continue"), "isLocation", "pause", 5, 10)
             EndIf

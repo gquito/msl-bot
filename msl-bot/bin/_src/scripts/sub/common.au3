@@ -32,7 +32,9 @@ Func Common_Boss(ByRef $sLocation, $bDoAutoClick = False, $bStoryFarm = False)
                 Data_Set("Common Boss Targeted", "True")
 
                 clickPoint(getPointArg("boss"))
-                If ($bDoAutoClick) Then clickWhile(getPointArg("battle-auto"), "inBattle") ;to battle-auto
+                If ($bDoAutoClick) Then 
+                    clickBattle("until", "battle-auto", 5, 200)
+                EndIf
                 $sLocation = $g_sLocation
         EndSwitch
     Else
@@ -129,7 +131,7 @@ Func Common_Stuck(ByRef $sLocation)
                 If TimerDiff($g_hUnknownBattle) > 15000 Then $g_hUnknownBattle = TimerInit()
                 If TimerDiff($g_hUnknownBattle) > 10000 Then
                     Log_Add("Stuck in battle, trying to unstuck.", $LOG_DEBUG)
-                    If clickUntil(getPointArg("battle-auto"), "inBattle") = False Then
+                    If clickBattle("until", "battle-auto", 5, 200) = False Then
                         ContinueCase ;In case frozen, proceed with normal stuck
                     EndIf
                     $g_hUnknownBattle = TimerInit()
@@ -152,7 +154,7 @@ Func Common_Stuck(ByRef $sLocation)
 
                         If inBattle() = True Then
                             Log_Add("Stuck in battle, trying to unstuck.", $LOG_DEBUG)
-                            clickPoint(getPointArg("battle-auto"))
+                            clickBattle()
                         EndIf
                     ;EndIf
 

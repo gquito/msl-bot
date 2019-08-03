@@ -281,7 +281,7 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                         Switch getLocation()
                             Case "battle-auto"
                                 If isPixel(getPixelArg("battle-catch-available")) = False Then
-                                    clickPoint(getPointArg("battle-auto"))
+                                    clickBattle()
                                 Else
                                     If isPixel(getPixelArg("catch-mode-standby")) = False Then
                                         clickWhile(getPointArg("battle-catch"), "isPixel", CreateArr(getPixelArg("battle-catch-available"), 10), 5, 500, "captureRegion()")
@@ -626,21 +626,4 @@ Func buildNavOutput($outputCode, $bOutput)
     $aOutput[0] = $outputCode
     $aOutput[1] = $bOutput
     Return $aOutput
-EndFunc
-
-Func navigateToBattleAuto($sCurrentLocation = "", $iClickDelay = 300)
-    If $sCurrentLocation = "" Then $sCurrentLocation = getLocation()
-    Switch $sCurrentLocation
-        Case "battle-auto", "unknown"
-            If inBattle() = True Then
-                clickWhile(getPointArg("battle-auto"), "inBattle", 5, $iClickDelay)
-                Return navigateToBattleAuto()
-            Else
-                Return True
-            EndIf
-        Case "battle"
-            clickUntil(getPointArg("battle-auto"), "isLocation", "battle-auto", 5, $iClickDelay)
-            Return navigateToBattleAuto(getLocation(), $iClickDelay)
-    EndSwitch
-    Return False
 EndFunc
