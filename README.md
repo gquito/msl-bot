@@ -75,7 +75,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 *Another note: Newer versions of Nox (6.3.0.0 and above) will not display the correct Class and Instance. Use one of the following:*
   
-  *- Emulator class: "~" | Emulator Instance: "~" Uses NOX Default*
+  *- Emulator class: "\~" | Emulator Instance: "\~" Uses NOX Default*
   
   *- Emulator class: "subWin" | Emulator Instance: "1"*
   
