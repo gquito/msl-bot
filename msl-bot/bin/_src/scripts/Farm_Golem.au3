@@ -79,8 +79,6 @@ Func Farm_Golem($Runs, $Dungeon_Level, $Gem_Filter, $Goal_Type, $Goal_Amount, $G
                 Data_Set($STAT_STATUS, "In battle.")
 
             Case "battle"
-                If inBattle() = False Then ContinueLoop
-
                 Data_Set($STAT_STATUS, "Toggling auto battle on.")
                 clickBattle("until", "battle-auto", 5, 200)
 
