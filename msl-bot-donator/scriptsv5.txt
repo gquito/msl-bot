@@ -150,7 +150,14 @@
 		name: "Swipe Mode",
 		description: "Mode of sending swipes to emulator. ADB: Sends command to emulator ADB, does not affect overall average speed. Keymap: Sends keystrokes to emulator to invoke pre-setup keymap, requires keymap setup. Real: Uses actual mouse to perform a swipe.",
 		default: "ADB",
-		data: "ADB,Keymap,Real"
+		data: "ADB,Control,Real"
+	]
+	
+	[combo:
+		name: "Back Mode",
+		description: "Mode of sending back command to emulator.",
+		default: "ADB",
+		data: "ADB,Control,Real"
 	]
 ]
 
