@@ -252,6 +252,12 @@
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
+	
+	[combo:
+		name: "Max Exotic Chips",
+		description: "The number of chip attempts to use on a single exotic monster.",
+		default: "20",
+	]
 ]
 
 [_Hourly:
