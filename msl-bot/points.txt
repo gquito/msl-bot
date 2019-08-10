@@ -31,6 +31,7 @@ map-stage-normal:678,111
 map-stage-hard:678,141
 map-stage-extreme:676,170
 battle-catch:785,239
+battle-catch-switch:745,358
 catch-mode-cancel:782,84
 village-monsters:255,508
 monsters-grid:133,24
@@ -159,3 +160,5 @@ battle-astromon-full:400,300
 boutique-close:773,77
 inbox-accept-all-confirm:323,323
 facebook-login-close:169,39
+expedition-explore:710,442
+expedition-autoselect:47,384
