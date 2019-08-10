@@ -5,10 +5,12 @@ Global $g_iExtended = 0 ;More info for functions
 Global $g_iBackgroundMode = $BKGD_ADB ;Type of background
 Global $g_iMouseMode = $MOUSE_ADB ;Type of mouse control
 Global $g_iSwipeMode = $SWIPE_ADB ;Type of swipe control
+Global $g_iBackMode = $BACK_ADB ;Type of back control
 
 Global $g_iDisplayScaling = 100 ;Display Scaling percentage. Recommended 100%.
 Global $g_iRestartTime = 10 ;Number of minutes until bot app decides to restart from stuck location.
 Global $g_iLoggedOutTime = 0 ;Number of minutes until bot app decides to restart from logged out.
+Global $g_iScheduledRestartTime = 0 ;Number of minutes until bot app decides to restart from logged out.
 Global $g_iStatModify = 0
 Global $g_iCurrentMonitor = 0
 Global $g_iCurrentDpiRatio = 1

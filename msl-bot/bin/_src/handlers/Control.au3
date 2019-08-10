@@ -11,9 +11,6 @@ Func clickDrag($aPoints, $iAmount = 1, $iDelay = $g_iSwipeDelay, $iSwipeMode = $
     Local $iSwipes = 0
     While $iSwipes < $iAmount
         Switch $iSwipeMode
-            Case $SWIPE_KEYMAP
-                ;Pre-set-up keymap
-                ControlSend($g_hWindow, "", "", "{" & StringUpper($aPoints[4]) & "}")
             Case $SWIPE_ADB
             ;Adb swipe mode
             If (Not(isArray($aPoints))) Then $aPoints = StringSplit($aPoints, ",", $STR_NOCOUNT)
@@ -39,11 +36,34 @@ Func clickDrag($aPoints, $iAmount = 1, $iDelay = $g_iSwipeDelay, $iSwipeMode = $
 
             Local $aOffset = WinGetPos($g_hControl)
             MouseClickDrag("left", ($aPoints[0]+$aOffset[0]), ($aPoints[1]+$aOffset[1]), ($aPoints[2]+$aOffset[0]), ($aPoints[3]+$aOffset[1]))
+        Case $SWIPE_CONTROL
+            ControlClickDrag($g_hControl, CreateArr($aPoints[0], $aPoints[1]), $aPoints[2]-$aPoints[0], $aPoints[3]-$aPoints[1], 100)
         EndSwitch
         If (_Sleep($iDelay)) Then Return False
         $iSwipes += 1
     WEnd
     Return True
+EndFunc
+
+Func ControlClickDrag($hWnd, $point, $x_offset, $y_offset, $time)
+    _WinAPI_PostMessage($hWnd, $WM_LBUTTONDOWN, 0x01, _GetPos($point[0], $point[1]))
+    Local $x = $point[0]
+    Local $y = $point[1]
+    For $i = 1 To $time*4
+        $x += $x_offset/($time*4)
+        $y += $y_offset/($time*4)
+        _HighPrecisionSleep(250)
+        If Mod($i, 4) = 0 And (Floor($x) <> $point[0] Or Floor($y) <> $point[1]) Then
+            $point[0] = Floor($x)
+            $point[1] = Floor($y)
+            _WinAPI_PostMessage($hWnd, $WM_MOUSEMOVE, 0x01, _GetPos(Floor($x), Floor($y)))
+        EndIf
+    Next
+    _WinAPI_PostMessage($hWnd, $WM_LBUTTONUP, 0x00, _GetPos($point[0]+$x_offset, $point[1]+$y_offset))
+EndFunc
+
+Func _GetPos($x, $y)
+    Return BitOR($y * 0x10000, BitAND($x, 0xFFFF))
 EndFunc
 
 #cs
@@ -175,6 +195,7 @@ Func clickMultiple($aPoints, $iInterval = 0, $iMouseMode = $g_iMouseMode, $hWind
                 EndIf
             Next
             $sCommand = StringMid($sCommand, 2)
+
             ADB_Shell($sCommand, $g_iADB_Timeout, True, True)
     EndSwitch
 EndFunc

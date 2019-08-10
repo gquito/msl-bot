@@ -185,39 +185,37 @@ EndFunc
 Func _Establish_ADB($iADB_GetEvent_TIMEOUT = 0)
     $bOutput = False
     While True
-        If ($g_iBackgroundMode = $BKGD_ADB Or $g_iMouseMode = $MOUSE_ADB Or $g_iSwipeMode = $SWIPE_ADB) Then
-            If (Not(FileExists($g_sADBPath))) Then
-                MsgBox($MB_ICONERROR+$MB_OK, "Nox path does not exist.", "Path to adb.exe does not exist: " & $g_sADBPath)
-                ExitLoop
-            EndIf
-
-            ;Add ADB absolute path.
-            If (Not(StringInStr($g_sADBPath, "adb.exe"))) Then 
-                If (StringRight($g_sADBPath, 1) = "\") Then
-                    $g_sADBPath &= "adb.exe"
-                Else
-                    $g_sADBPath &= "\adb.exe"
-                EndIf
-            EndIf
-
-            If (StringInStr(ADB_Command("get-state"), "error")) Then
-                Log_Add("Attempting to connect to ADB Device: " & $g_sADBDevice)
-                ADB_Command("connect " & $g_sADBDevice, 0, 60000)
-
-                If (StringInStr(ADB_Command("get-state"), "error")) Then 
-                    MsgBox($MB_ICONERROR+$MB_OK, "ADB device does not exist.", "Device is not connected or does not exist: " & $g_sADBDevice & @CRLF & @CRLF & ADB_Command("devices"))
-                    Log_Add("Failed to connect to device: " & $g_sADBDevice, $LOG_ERROR)
-
-                    $g_bADBWorking = False
-                    ExitLoop
-                Else
-                    Log_Add("Successfully connected to device: " & $g_sADBDevice)
-                EndIf
-            EndIf
-
-            $g_bADBWorking = True
-            $g_sADBEvent = ADB_GetEvent($iADB_GetEvent_TIMEOUT)
+        If (Not(FileExists($g_sADBPath))) Then
+            MsgBox($MB_ICONERROR+$MB_OK, "Nox path does not exist.", "Path to adb.exe does not exist: " & $g_sADBPath)
+            ExitLoop
         EndIf
+
+        ;Add ADB absolute path.
+        If (Not(StringInStr($g_sADBPath, "adb.exe"))) Then 
+            If (StringRight($g_sADBPath, 1) = "\") Then
+                $g_sADBPath &= "adb.exe"
+            Else
+                $g_sADBPath &= "\adb.exe"
+            EndIf
+        EndIf
+
+        If (StringInStr(ADB_Command("get-state"), "error")) Then
+            Log_Add("Attempting to connect to ADB Device: " & $g_sADBDevice)
+            ADB_Command("connect " & $g_sADBDevice, 0, 60000)
+
+            If (StringInStr(ADB_Command("get-state"), "error")) Then 
+                ;MsgBox($MB_ICONERROR+$MB_OK, "ADB device does not exist.", "Device is not connected or does not exist: " & $g_sADBDevice & @CRLF & @CRLF & ADB_Command("devices"))
+                Log_Add("Failed to connect to device: " & $g_sADBDevice, $LOG_ERROR)
+
+                $g_bADBWorking = False
+                ExitLoop
+            Else
+                Log_Add("Successfully connected to device: " & $g_sADBDevice)
+            EndIf
+        EndIf
+
+        $g_bADBWorking = True
+        $g_sADBEvent = ADB_GetEvent($iADB_GetEvent_TIMEOUT)
 
         $bOutput = True
         ExitLoop
@@ -231,7 +229,6 @@ Func ScriptTest()
     Log_Level_Add("SCRIPT_TEST")
     Local $aTempLOG[0]
     _ArrayAdd($aTempLOG, "== Starting Compatibility Test ==")
-    
     Local $sError = "" ;Will store error information.
 
     ;Pre test
@@ -259,10 +256,11 @@ Func ScriptTest()
     _ArrayAdd($aTempLOG, "  -Swipe Mode: " & getArg($g_aConfigsettings, "Swipe_Mode"))
 
     ;Test window and control handle.
-    resetHandles()
+    ScriptTest_Handles()
     _ArrayAdd($aTempLOG, "Checking handles:")
     _ArrayAdd($aTempLOG, "  -Window handle: " & $g_hWindow)
     _ArrayAdd($aTempLOG, "  -Control handle: " & $g_hControl)
+    _ArrayAdd($aTempLOG, "  -Toolbox handle: " & $g_hToolbox)
 
     If ($g_hWindow = 0) Then $sError &= @CRLF & @CRLF & "- Window handle was not found. Make sure the enter the correct Emulator Title in _Config."
     If ($g_hWindow <> 0 And $g_hControl = 0) Then $sError &= @CRLF & @CRLF & "- Control handle was not found. Make sure to enter the correct Emulator Class and Emulator Instance in _Config."
@@ -320,7 +318,7 @@ Func ScriptTest()
             _ArrayAdd($aTempLOG, "  -ADB response status: " & $bAdbResponse) ; Opens refill window using ADB
             If $bAdbResponse = False Then $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
         Else
-            ADB_SendESC()
+            SendBack(1, 0, $BACK_ADB)
             If waitLocation("map", 5) = False Then
                 _ArrayAdd($aTempLOG, "  -ADB response status: False")
                 $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
@@ -391,6 +389,17 @@ Func ScriptTest()
     Log_Level_Remove()
 
     Return "COMPLETE"
+EndFunc
+
+Func ScriptTest_Handles()
+    Log_Level_Add("Checking Handles")
+    resetHandles()
+    Log_Add("Window Title: " & $g_sWindowTitle, $LOG_DEBUG)
+    Log_Add("Window Handle: " & $g_hWindow, $LOG_DEBUG)
+    Log_Add("Control Properties: " & $g_sControlInstance, $LOG_DEBUG)
+    Log_Add("Control Handle: " & $g_hControl, $LOG_DEBUG)
+    Log_Add("Toolbox Handle: " & $g_hToolbox, $LOG_DEBUG)
+    Log_Level_Remove()
 EndFunc
 
 Func SwitchScript($sScript)

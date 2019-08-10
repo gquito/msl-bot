@@ -633,19 +633,19 @@ Func releaseAstromon()
         EndIf
     EndIf
 
-    While True
-        If _Sleep(500) Then ExitLoop
-        If TimerDiff($hTimer) > 30000 Then ExitLoop
+    If (isLocation("monsters,monsters-evolution,monsters-level-up") = True And _
+        clickWhile(getPointArg("release"), "isLocation", "monsters,monsters-evolution,monsters-level-up", 5, 1000) = True) Then
+        
+        If (waitLocation("release-confirm", 2) = True And _
+            clickWhile(getPointArg("release-confirm"), "isLocation", "release-confirm") = True) Then
 
-        Switch getLocation()
-            Case "monsters","monsters-evolution","monsters-level-up"
-                If $bOutput = True Then ExitLoop
-                clickWhile(getPointArg("release"), "isLocation", "monsters,monsters-evolution,monsters-level-up", 5, 1000)
-            Case "release-confirm", "release-reward", "hourly-reward"
-                clickPoint(getPointArg("release-confirm"))
+            If (waitLocation("release-reward,hourly-reward", 5) = True And _
+                clickWhile(getPointArg("release-confirm"), "isLocation", "release-reward,hourly-reward") = True) Then
+                
                 $bOutput = True
-        EndSwitch
-    WEnd
+            EndIf
+        EndIf
+    EndIf
     
     Log_Add("releaseAstromon() result: " & $bOutput, $LOG_DEBUG)
     Log_Level_Remove()

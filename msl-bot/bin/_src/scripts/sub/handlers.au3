@@ -29,16 +29,16 @@ Func HandleCommonLocations($sCurrLocation)
         Case "tap-to-start"
             If (Not(clickWhile(getPointArg("tap-to-start"), "isLocation", "tap-to-start", 10, 2000))) Then 
                 Log_Add("Emulator is not detecting the commands. Restarting Emulator.", $LOG_ERROR)
-                RestartNox()
+                RestartNox(1, "")
             EndIf
             Return True
         Case "event-list"
             If (Not(clickUntil(getPointArg("event-list-close"), "isLocation", "loading,unknown", 10, 2000))) Then Return False
             Return True
-        case "super-lab", "super-fest-popup"
-            clickBackButton()
+        case "super-lab", "super-fest-popup", "boutique", "village-summon", "anvil"
+            SendBack()
             Return True
-        Case "view-clan-popup", "master-info", "player-info", "toc-mon-info", "hero-fest-popup", "quit", "login-event", "monster-super-evolution", "popup-window", "boutique"
+        Case "view-clan-popup", "master-info", "player-info", "toc-mon-info", "hero-fest-popup", "quit", "login-event", "monster-super-evolution", "popup-window"
             closeWindow()
             Return True
         Case "dialogue-skip"

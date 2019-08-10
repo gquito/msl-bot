@@ -28,8 +28,7 @@ Func catch($aImages, ByRef $iAstrochips)
         Local $iSize = UBound($aImages, $UBOUND_ROWS)
         Local $aFound = Null ;This is where the astromon position is stored if found
         For $i = 0 To $iSize-1
-            ;No colors is better for detection
-            $aFound = findImage("catch-" & StringReplace(StringStripWS(StringLower($aImages[$i]), $STR_STRIPTRAILING), " ", "-"), 90, 0, 0, 263, 800, 210, True, False)
+            $aFound = findImage("catch-" & StringReplace(StringStripWS(StringLower($aImages[$i]), $STR_STRIPTRAILING), " ", "-"), 90, 0, 0, 263, 800, 210, True, True)
             $sAstromon = $aImages[$i]
             If (isArray($aFound)) Then ExitLoop
         Next
@@ -42,7 +41,8 @@ Func catch($aImages, ByRef $iAstrochips)
 
         ;Found process
         While $iAstrochips > 0 
-            Log_Add("Attempting to catch " & $sAstromon & " (" & 4-$iAstrochips & "/3).")
+            Local $iCounter = 1 
+            Log_Add("Attempting to catch " & $sAstromon & " (" & $iCounter & "/" & $iAstrochips & ").")
             If (_Sleep(0)) Then ExitLoop
 
             Local $t_hTimer = TimerInit()
@@ -65,13 +65,11 @@ Func catch($aImages, ByRef $iAstrochips)
 
             ;In catch process
             $iAstrochips -= 1
+            $iCounter += 1
             Stat_Increment($g_aStats, "Astrochips used", 1)
-            If ($g_bAdbWorking) Then ;speed catch
-                Log_Add("Double ESCAPE for quick catch.")
-                ADB_SendESC(2)
-                ;clickPoint continue instead of ADB_SendESC()
-                clickWhile(getPointArg("battle-continue"), "isLocation", "pause", 5, 10)
-            EndIf
+
+            SendBack(2)
+            clickPoint(getPointArg("battle-continue"), 5, 200)
 
             Local $t_hTimer = TimerInit()
             Local $t_hTimer2 = TimerInit()

@@ -28,6 +28,7 @@ Global $g_sEmuSharedFolder[2] = [$d_sEmuSharedFolder[0], $d_sEmuSharedFolder[1]]
 
 Global $g_sWindowTitle = "NoxPlayer" ;Emulator window title.
 Global $g_sControlInstance = "[CLASS:subWin; INSTANCE:1]" ;OPENGL/DIRECTX Control instance.
+Global $g_sScheduledRestartMode = "Never" ;Number of minutes until bot app decides to restart from logged out.
 
 Global $g_sOldTime = ""
 

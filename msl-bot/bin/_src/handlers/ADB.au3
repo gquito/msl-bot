@@ -80,7 +80,7 @@ Func ADB_Shell($sCommand, $iTimeout = $g_iADB_Timeout, $bOutput = False, $bRawOu
 	If ($sOutput = "Timed out.") Then
 		Log_Add("ADB Process has stopped functioning. Restarting Nox.", $LOG_ERROR)
 		If (ProcessExists($iPID_ADB)) Then ProcessClose($iPID_ADB)
-		RestartNox()
+		RestartNox(1, "")
 	EndIf
 
 	;If ($sOutput <> "") Then Log_Add("ADB output: " & $sOutput, $LOG_DEBUG)

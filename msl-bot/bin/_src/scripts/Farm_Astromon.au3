@@ -7,7 +7,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
     Log_Add("Farm Astromon has started")
     
     ;Override Finish_Round
-    If (isEnabled($Final_Round)) Then $Finish_Round = "Enabled"
+    If $Final_Round = "Enabled" Then $Finish_Round = "Enabled"
 
     Local Const $sLocations = "lost-connection,loading,astromon-full,map-gem-full,battle-gem-full,catch-mode,map,refill,defeat,unknown,battle-boss"
 
@@ -53,9 +53,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
 
     ;pre process
     Common_Navigate($sLocations)
-    Local $bBagFull = False
-    Local $bFinishBattle = False
-    Local $bRareFound = False
+
     ;Script Process
     #cs 
         Script will catch astromons until $Number_To_Farm, usually called by Farm Gem script.
@@ -80,6 +78,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
         Local $aRound = getRound()
         Switch $sLocation
             Case "battle", "battle-auto"
+
                 If isArray($aRound) = False Then ContinueLoop
 
                 If $aRound[0] = $aRound[1] Then
@@ -92,6 +91,7 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                     If Data_Get("Astrochips") > 0 Then ContinueCase ;Goes to catch sequence
                 Else
                     ; ==Non Final Round Stuff==
+
                     If $Final_Round = "Enabled" Then
                         If $sLocation = "battle" Then
                             If Data_Get("Astrochips") > 0 Then
@@ -130,7 +130,10 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 While Data_Get("Astrochips") > 0 
                     ; ===END SCRIPT SEQUENCE===
                     If Data_Get_Ratio($Catch_Image) = 1 Then
-                        If $Finish_Round = "Enabled" Then ContinueLoop(2)
+                        If $Finish_Round = "Enabled" Then 
+                            Data_Set("Astrochips", 0)
+                            ContinueLoop(2)
+                        EndIf
 
                         navigate("map", True, 2)
                         ExitLoop(2)
@@ -139,12 +142,23 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
 
                     ;Try to catch astromons here
                     If _Sleep(0) Then ExitLoop(2)
-                    If navigate("catch-mode", False) = False Then ExitLoop
+                    If StringInStr($Capture, "Exotic") = -1 Then
+                        clickWhile(getPointArg("battle-catch-switch"), "isPixel", CreateArr(getPixelArg("battle-catch-exotic")), 4, 1000, "captureRegion()")
+                    EndIf
+                    Local $iNavigate = navigate("catch-mode", False, 2)
+                    If $iNavigate = False Then ExitLoop
 
-                    Local $iAstrochips = Data_Get("Astrochips")
-                    Local $sResult = catch($Capture, $iAstrochips)
-                    Data_Set("Astrochips", $iAstrochips)
+                    Local $sResult, $iAstrochips
+                    If $iNavigate = $CATCH_MODE_EXOTIC Then
+                        $iAstrochips = getArg($g_aGeneralSettings, "Max_Exotic_Chips")
+                        $sResult = catch($Capture, $iAstrochips)
+                    Else
+                        $iAstrochips = Data_Get("Astrochips")
+                        $sResult = catch($Capture, $iAstrochips)
+                        Data_Set("Astrochips", $iAstrochips)
+                    EndIf
 
+                    If ($sResult = -1) Then ExitLoop
                     If $sResult <> "" Then
                         ;Found and catch status
                         If StringLeft($sResult, 1) <> "!" Then
@@ -241,6 +255,9 @@ Func Farm_Astromon($Number_To_Farm, $Catch_Image, $Finish_Round, $Final_Round, $
                 HandleCommonLocations($sLocation)
         EndSwitch
     WEnd
+
+    $g_bSellGems = False
+    $g_aGemsToSell = Null
 
     ;End script
     Log_Add("Farm Astromon has ended.")

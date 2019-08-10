@@ -274,7 +274,7 @@ Func CreateLogWindow()
     ;__GUICtrlListView_AddColumn($g_hLV_FunctionLevels, "#", 20, 0)
     ;__GUICtrlListView_AddColumn($g_hLV_FunctionLevels, "Functions", 150, 0)
 
-    $g_idLV_Log = _GUICtrlCreateListView("", 3, 30, $aPos[2]-133, $aPos[3]-73, $LVS_REPORT+$LVS_NOSORTHEADER)
+    $g_idLV_Log = _GUICtrlCreateListView("", 3, 30, $aPos[2]-23, $aPos[3]-73, $LVS_REPORT+$LVS_NOSORTHEADER) ;-133 WIDTH FOR DEBUG -23 WIDTH FOR NONDEBUG
     $g_hLV_Log = GUICtrlGetHandle($g_idLV_Log)
     _GUICtrlListView_SetExtendedListViewStyle($g_hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
     __GUICtrlListView_AddColumn($g_hLV_Log, "Time", 76, 0)
@@ -937,6 +937,7 @@ Func UpdateSettings()
     $g_iBackgroundMode = Eval("BKGD_" & StringUpper(getArg($g_aConfigSettings, "Capture_Mode")))
     $g_iMouseMode = Eval("MOUSE_" & StringUpper(getArg($g_aConfigSettings, "Mouse_Mode")))
     $g_iSwipeMode = Eval("SWIPE_" & StringUpper(getArg($g_aConfigSettings, "Swipe_Mode")))
+    $g_iBackMode = Eval("BACK_" & StringUpper(getArg($g_aConfigSettings, "Back_Mode")))
     if (getArg($g_aConfigSettings, "Stuck_Restart_Time") = "Never") Then
         $g_iRestartTime = 0
     Else
@@ -953,6 +954,21 @@ Func UpdateSettings()
         $g_iLoggedOutTime = Int($a_LoggedOutSplit[0])
     EndIf
     
+    Local $t_sScheduledRestart = getArg($g_aConfigSettings, "Scheduled_Restart")
+    if ($t_sScheduledRestart = "Never") Then
+        $g_sScheduledRestartMode = "Never"
+        $g_iScheduledRestartTime = 0
+    Else
+        Local $a_ScheduledRestart = StringSplit($t_sScheduledRestart, ":", $STR_NOCOUNT)
+        If (isArray($a_ScheduledRestart)) Then
+            $a_ScheduledRestart[1] = Int(StringMid($a_ScheduledRestart[1], 1, StringLen($a_ScheduledRestart[1])-1))
+            $g_sScheduledRestartMode = $a_ScheduledRestart[0]
+            $g_iScheduledRestartTime = $a_ScheduledRestart[1]
+        Else
+            $g_sScheduledRestartMode = "Never"
+            $g_iScheduledRestartTime = 0
+        EndIf
+    EndIf
     if (Ubound($aVersion) <=1) Then
         $g_bSaveDebug = (getArg($g_aConfigSettings, "Save_Debug_Log") = "Enabled")
         $g_bSaveLog = (getArg($g_aConfigSettings, "Save_Logs") = "Enabled")
@@ -965,6 +981,12 @@ Func UpdateSettings()
 
     $g_hWindow = WinGetHandle($g_sWindowTitle)
     $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
+    If $g_hWindow <> 0 Then
+        Local $t_aPos = WinGetPos($g_hWindow)
+        If isArray($t_aPos) = True Then
+            $g_hToolbox = WinGetHandle("[TITLE:Form; CLASS:Qt5QWindowToolSaveBits; X:" & ($t_aPos[0]+$t_aPos[2]) & "; Y:" & ($t_aPos[1]) & "]")
+        EndIf
+    EndIf
 EndFunc
 
 Func RunMenuItem($sMenuItem)

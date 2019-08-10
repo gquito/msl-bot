@@ -1,4 +1,4 @@
-Global $aVersion = [4, 1, 1] ;Major, Minor, Build, Beta
+Global $aVersion = [4, 1, 2] ;Major, Minor, Build, Beta
 
 ConsoleWrite($aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] & @CRLF);"." & $aVersion[3] & @CRLF)
 
@@ -9,8 +9,8 @@ ConsoleWrite($aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] & @CRLF);"."
 #pragma compile(ProductName, "Monster Super League Bot")
 #pragma compile(FileDescription, "Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot")
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 4.1.1)
-#pragma compile(ProductVersion, 4.1.1)
+#pragma compile(FileVersion, 4.1.2)
+#pragma compile(ProductVersion, 4.1.2)
 #pragma compile(OriginalFilename, "msl-bot")
 #pragma compile(AutoItExecuteAllowed, True)
 
@@ -44,7 +44,6 @@ Func Initialize()
         $g_aLocations = getArgsFromFile($g_sLocalCacheFolder & $g_sLocations)
         $g_aPixels = getArgsFromFile($g_sLocalCacheFolder & $g_sPixels)
         $g_aPoints = getArgsFromFile($g_sLocalCacheFolder & $g_sPoints)
-        $g_aImageLocations = getArgsFromFile($g_sLocalCacheFolder & $g_sImageLocations)
         $g_sLocationsMap = getArgsFromFile($g_sLocalCacheFolder & $g_sLocationsMap)
 
         setScripts($g_aScripts, $g_sLocalCacheFolder & $g_sScriptsSettings)

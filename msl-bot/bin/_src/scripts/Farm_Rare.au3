@@ -70,24 +70,35 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
                 navigate("map", True)
 
             Case "battle"
-                If inBattle() = False Then ContinueLoop
+                If waitLocation("battle-auto,unknown", 1, 50) = True Then ContinueLoop
 
                 While Data_Get("Astrochips") > 0 ;Loop for checking for more than 1 rare
-                    If (_Sleep(10)) Then ExitLoop(2)
-                    If (Not(navigate("catch-mode", False))) Then ExitLoop
-                    
-                    Local $iAstrochips = Data_Get("Astrochips")
-                    Local $sResult = catch($Capture, $iAstrochips)
-                    Data_Set("Astrochips", $iAstrochips)
+                    If _Sleep(10) Then ExitLoop(2)
+                    If StringInStr($Capture, "Exotic") = -1 Then
+                        clickWhile(getPointArg("battle-catch-switch"), "isPixel", CreateArr(getPixelArg("battle-catch-exotic")), 4, 1000, "captureRegion()")
+                    EndIf
+                    Local $iNavigate = navigate("catch-mode", False, 2)
+                    If $iNavigate = False Then ExitLoop
+
+                    Local $sResult, $iAstrochips
+                    If $iNavigate = $CATCH_MODE_EXOTIC Then
+                        $iAstrochips = getArg($g_aGeneralSettings, "Max_Exotic_Chips") ;Exotic catch
+                        $sResult = catch($Capture, $iAstrochips)
+                    Else
+                        $iAstrochips = Data_Get("Astrochips")
+                        $sResult = catch($Capture, $iAstrochips)
+                        Data_Set("Astrochips", $iAstrochips)
+                    EndIf
 
                     If ($sResult <> "") Then
                         ;Found and catch status
-                        If (StringLeft($sResult, 1) <> "!") Then
+                        If StringLeft($sResult, 1) <> "!" Then
                             ;Successfully caught
                             Data_Increment("Caught", 1, StringLeft($sResult, 2))
                         Else
                             ;Not caught
                             Data_Increment("Missed", 1, StringLeft(StringMid($sResult, 2), 2))
+                            ExitLoop
                         EndIf
                     Else
                         ;Nothing found.
@@ -100,6 +111,7 @@ Func Farm_Rare($Runs, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, 
                 clickBattle("until", "battle-auto", 5, 200)
             Case "catch-mode"
                 clickWhile(getPointArg("catch-mode-cancel"), "isLocation", "catch-mode", 5, 1000)
+                
             Case "battle-end"
                 If (Data_Get("Runs", True)[1] <> 0 And Data_Get_Ratio("Runs") >= 1) Then ExitLoop
                 Data_Set("Status", "Quick restart.")

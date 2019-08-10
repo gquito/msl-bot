@@ -1,7 +1,7 @@
 #include-once
 #include "../imports.au3"
 
-Func RestartNox($iAttempt = 1)
+Func RestartNox($iAttempt = 1, $sCL = " -resolution:800x552 -dpi:160 ")
     Log_Level_Add("RestartNox")
     Log_Add("Restarting Nox process.")
     $g_bRestarting = True
@@ -20,9 +20,6 @@ Func RestartNox($iAttempt = 1)
             Local $iPID = WinGetProcess($g_hWindow)
             Local $sPath = _WinAPI_GetProcessFileName($iPID)
             Local $sCommandLine = StringStripWS(_WinAPI_GetProcessCommandLine($iPID), $STR_STRIPALL)
-
-            Local $old_aPos = WinGetPos($g_hWindow)
-
             Local $aCommandLine = formatArgs(StringMid($sCommandLine, StringInStr($sCommandLine, "-")+1), "-", ":")
             Local $sClone = getArg($aCommandLine, "clone")
 
@@ -36,45 +33,42 @@ Func RestartNox($iAttempt = 1)
 
             Local $hTimer = TimerInit()
             While ProcessExists($iPID) = True
-                If (TimerDiff($hTimer) > 120000 Or _Sleep(1000)) Then ;Force end process after 2 minutes
+                Run($sPath & $sClone & " -quit")
+                If (TimerDiff($hTimer) > 120000 Or _Sleep(5000)) Then ;Force end process after 2 minutes
                     Log_Add("RestartNox() => Could not close Nox process.", $LOG_ERROR)
                     ExitLoop(2)
                 EndIf
-
-                ProcessClose($iPID)
             WEnd
 
-            Local $sRun = $sPath & $sClone & " -resolution:800x552 -dpi:160 -package:com.ftt.msleague_gl -lang:en"
+            Local $sRun = $sPath & $sClone & $sCL & "-startPackage:com.ftt.msleague_gl -lang:en"
             Log_Add("Starting Nox process: " & $sRun)
-
-            Run($sRun, "", @SW_SHOWNOACTIVATE)
+            Run($sRun, "")
 
             ;Waiting for Nox handles to load.
             $g_hWindow = 0
             $g_hControl = 0
+            $g_hToolbox = 0
 
             $hTimer = TimerInit()
-            While ($g_hWindow = 0 Or $g_hControl = 0)
+            Do
                 If (TimerDiff($hTimer) > 120000 Or _Sleep(5000)) Then ;Force end process after 2 minutes
                     Log_Add("RestartNox() => Could not get Nox handles.", $LOG_ERROR)
                     ExitLoop(2)
                 EndIf
 
                 resetHandles()
+            Until($g_hWindow <> 0 And $g_hControl <> 0)
 
-                If (isArray($old_aPos)) Then _WinAPI_SetWindowPos($g_hWindow, $HWND_BOTTOM, $old_aPos[0], $old_aPos[1], -1, -1, $SWP_NOACTIVATE+$SWP_NOSIZE)
+            Local $bEstablish_ADB = False
+            $hTimer = TimerInit()
+            While $bEstablish_ADB = False
+                If TimerDiff($hTimer) > 120000 Or _Sleep(10000) Then ExitLoop
+                $bEstablish_ADB = _Establish_ADB(60000)
             WEnd
 
-            If (Not(_Establish_ADB(60000))) Then 
+            If $bEstablish_ADB = False Then 
                 Log_Add("RestartNox() => ADB did not work.", $LOG_ERROR)
                 ExitLoop
-            EndIf
-
-            If (Not(isGameRunning())) Then 
-                If (RestartGame()) Then 
-                    $bOutput = True
-                    ExitLoop(2)
-                EndIf
             EndIf
 
             ;Might cause some problems with ADB capture mode because ADB has not been established yet.
@@ -120,9 +114,83 @@ Func isGameRunning()
     Return $bRunning
 EndFunc
 
-Func RestartGame($iAttempt = 1)
+Func SendBack($iCount = 1, $iSpeed = 50, $iMode = $g_iBackMode)
+    Switch $iMode
+        Case $BACK_REAL
+            While $iCount >= 1
+                ControlSend($g_hWindow, "", "", "{ESCAPE}")
+                $iCount -= 1
+                Sleep($iSpeed)
+            WEnd
+        Case $BACK_CONTROL
+            If $g_hToolbox <> 0 Then
+                ;POS: 5, 480
+                If WinGetPos($g_hToolbox)[2] <> 40 Then ControlClick($g_hToolbox, "", "", "left", 1, 5, 480)
+                While $iCount >= 1
+                    ControlClick($g_hToolbox, "", "", "left", 1, 5, 480)
+                    $iCount -= 1
+                    Sleep($iSpeed)
+                WEnd
+            EndIf
+        Case $BACK_ADB
+            ADB_SendESC($iCount)
+    EndSwitch
+EndFunc
+
+Func RestartGame_NONADB($iAttempt = 1)
     Log_Level_Add("RestartGame")
-    Log_Add("Restarting game.")
+    Log_Add("Restarting Game process.")
+    $g_bRestarting = True
+
+    Local $bOutput = False
+    While $iAttempt > 0
+        While True
+            Local $oldFocus = _WinAPI_GetFocus()
+            WinActivate($g_hWindow)
+            ControlSend($g_hWindow, "", "", "^{7}")
+            WinActivate($oldFocus)
+
+            Local $iPID = WinGetProcess($g_hWindow)
+            Local $sPath = _WinAPI_GetProcessFileName($iPID)
+            Local $sCommandLine = StringStripWS(_WinAPI_GetProcessCommandLine($iPID), $STR_STRIPALL)
+            Local $aCommandLine = formatArgs(StringMid($sCommandLine, StringInStr($sCommandLine, "-")+1), "-", ":")
+            Local $sClone = getArg($aCommandLine, "clone")
+
+            If ($sClone <> -1 And StringInStr($sCommandLine, "-clone")) Then
+                $sClone = " -clone:" & $sClone
+            Else
+                $sClone = " -clone:Nox"
+            EndIf
+
+            Run($sPath & $sClone & " -package:com.ftt.msleague_gl")
+            Local $hTimer = TimerInit()
+            While isLocation("tap-to-start") = False
+                $g_hTimerLocation = NULL ;Reset restart timer to prevent meta restart.
+                If Mod(TimerDiff($hTimer), 5) Then clickPoint(getPointArg("facebook-login-close"))
+                If (TimerDiff($hTimer) > 300000 Or _Sleep(5000)) Then
+                    Log_Add("RestartGame() => Could not detect game.", $LOG_ERROR)
+                    ExitLoop(2)
+                EndIf
+            WEnd
+            If (getLocation() = "tap-to-start") Then ExitLoop(2)
+            ExitLoop
+        WEnd
+        $iAttempt -= 1
+    WEnd
+
+    ;Waiting for start menu
+    $g_bRestarting = False
+    $bOutput = (getLocation() = "tap-to-start")
+    If ($bOutput) Then 
+        $g_bRestarting = False
+        navigate("map", True, 3)
+    EndIf
+    Return $bOutput
+EndFunc
+
+Func RestartGame($iAttempt = 1)
+    Log_Level_Add("ADB_RestartGame")
+    Log_Add("ADB_Restarting game.")
 	$g_bRestarting = True
     $bOutput = False
 
@@ -207,9 +275,22 @@ Func RestartGame($iAttempt = 1)
 EndFunc
 
 Func resetHandles()
+    Log_Level_Add("resetHandles()")
+
 	$g_hWindow = WinGetHandle($g_sWindowTitle)
 	$g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
     If $g_hControl = 0x000000 Then 
+        Log_Add("Control handle not found.", $LOG_DEBUG)
+        Log_Add("Using default control property.", $LOG_DEBUG)
         $g_hControl = ControlGetHandle($g_hWindow, "", $d_sControlInstance)
     EndIf
+
+    If $g_hWindow <> 0 Then
+        Local $t_aPos = WinGetPos($g_hWindow)
+        If isArray($t_aPos) = True Then
+            $g_hToolbox = WinGetHandle("[TITLE:Form; CLASS:Qt5QWindowToolSaveBits; X:" & ($t_aPos[0]+$t_aPos[2]) & "; Y:" & ($t_aPos[1]) & "]")
+        EndIf
+    EndIf
+
+    Log_Level_Remove()
 EndFunc

@@ -24,7 +24,6 @@ Func Common_Boss(ByRef $sLocation, $bDoAutoClick = False, $bStoryFarm = False)
                 If (_Sleep(100)) Then Return 0
 
                 waitLocation("battle-auto,battle", 5, 10)
-
                 If (_Sleep($g_iTargetBossDelay)) Then Return 0
 
                 Data_Set("Status", "Targeting boss.")
@@ -32,9 +31,7 @@ Func Common_Boss(ByRef $sLocation, $bDoAutoClick = False, $bStoryFarm = False)
                 Data_Set("Common Boss Targeted", "True")
 
                 clickPoint(getPointArg("boss"))
-                If ($bDoAutoClick) Then 
-                    clickBattle("until", "battle-auto", 5, 200)
-                EndIf
+                If ($bDoAutoClick) Then clickBattle("until", "battle-auto", 5, 200)
                 $sLocation = $g_sLocation
         EndSwitch
     Else
@@ -111,12 +108,33 @@ Func Common_Stuck(ByRef $sLocation)
         
         ;Data resets
         If (Data_Get("Astrochips") <> -1) Then Data_Set("Astrochips", "3")
+
+        ;Handles scheduled restarts in _Config setting
+        If ($g_hTimerScheduledRestart = Null) Then
+            $g_hTimerScheduledRestart = TimerInit()
+        Else
+            If ($g_sScheduledRestartMode <> "Never") Then
+                $iMS = $g_iScheduledRestartTime * 60 * 60 * 1000 ;Converts hour to millisecond
+                If (TimerDiff($g_hTimerScheduledRestart) > $iMS) Then
+                    Log_Add("Performing scheduled restart.", $LOG_INFORMATION)
+                    Switch $g_sScheduledRestartMode
+                        Case "Game"
+                            RestartGame()
+                        Case "Nox"
+                            RestartNox(1, "")
+                    EndSwitch
+                    $g_hTimerScheduledRestart = Null
+                    
+                    $sLocation = getLocation()
+                EndIf
+            EndIf
+        EndIf
     EndIf
 
     Switch $sLocation
         Case "unknown"
             CaptureRegion()
-            If (Not(isArray(getRound()))) Then
+            If isArray(getRound()) = False Then
                 If (Data_Get("Unknown Tap") = -1) Then Data_Add("Unknown Tap", $DATA_TEXT, TimerInit())
 
                 If (TimerDiff(Data_Get("Unknown Tap")) > 5000) Then
@@ -124,12 +142,13 @@ Func Common_Stuck(ByRef $sLocation)
                     Data_Set("Unknown Tap", TimerInit())
                 EndIf
 
+                $sLocation = getLocation()
                 ContinueCase
             Else
                 ;In battle, but location cannot be found because Auto button is stuck
                 $g_hBattleStuck = TimerInit()
-                If TimerDiff($g_hUnknownBattle) > 15000 Then $g_hUnknownBattle = TimerInit()
-                If TimerDiff($g_hUnknownBattle) > 10000 Then
+                If TimerDiff($g_hUnknownBattle) > 6000 Then $g_hUnknownBattle = TimerInit()
+                If TimerDiff($g_hUnknownBattle) > 5000 Then
                     Log_Add("Stuck in battle, trying to unstuck.", $LOG_DEBUG)
                     If clickBattle("until", "battle-auto", 5, 200) = False Then
                         ContinueCase ;In case frozen, proceed with normal stuck
@@ -144,18 +163,24 @@ Func Common_Stuck(ByRef $sLocation)
 
                 ;Fixes bug where Auto button is clicked and gets stuck.
                 $g_hUnknownBattle = TimerInit()
-                If TimerDiff($g_hBattleStuck) > 15000 Then $g_hBattleStuck = TimerInit()
-                If TimerDiff($g_hBattleStuck) > 10000 Then
+                If TimerDiff($g_hBattleStuck) > 6000 Then $g_hBattleStuck = TimerInit()
+                If TimerDiff($g_hBattleStuck) > 5000 Then
                    ;If isPixel("175,519,0xA9643C|180,519,0xA9643C" & _
                    ;          "/342,519,0xA9653E|350,519,0xA9653E" & _
                    ;          "/510,519,0xAA653F|515,519,0xAA653F" & _
                    ;          "/681,519,0xA9643C|686,519,0xA9643C") And _
                    ;          $sLocation = "battle-auto" Then ;Pixel for when astromons not attacking
 
-                        If inBattle() = True Then
+                        ;Log_Add("Battle Stuck Timer: " & TimerDiff($g_hBattleStuck), $LOG_DEBUG)
+                        ;Log_Add("Current Location: " & getLocation(), $LOG_DEBUG)
+                        ;Log_Add("Is in battle: " & inBattle(), $LOG_DEBUG)
+                        ;Log_Add("CaptureRegion Saved: Test.bmp (" & CaptureRegion("Test" & Floor(Random(1, 100))) & ")", $LOG_DEBUG)
+
+                        If getLocation() = "battle-auto" And inBattle(5000) = True Then
                             Log_Add("Stuck in battle, trying to unstuck.", $LOG_DEBUG)
                             clickBattle()
                         EndIf
+                        $sLocation = getLocation()
                     ;EndIf
 
                     If $sLocation = "battle" And TimerDiff($g_hBattleStuck) > 60000 Then
@@ -166,12 +191,13 @@ Func Common_Stuck(ByRef $sLocation)
                 EndIf
 
         Case "", "lost-connection", "loading"
-            If (_Sleep(10)) Then Return 0
+            If _Sleep(10) Then Return 0
 
             If (Data_Get("Common Stuck Timer") = "Null") Then
                 Data_Set("Common Stuck Timer", TimerInit())
             Else
-                Switch getLocation()
+                $sLocation = getLocation()
+                Switch $sLocation
                     Case "lost-connection"
                         Log_Add("Lost connection detected, retrying.", $LOG_INFORMATION)
                         clickWhile(getPointArg("lost-connection-retry"), "isLocation", "lost-connection")
@@ -205,7 +231,7 @@ Func Common_Stuck(ByRef $sLocation)
                                     Log_Add("Stuck at an unspecified location.", $LOG_ERROR)
                                     takeErrorScreenshot("Common_Stuck")
                                     Log_Add("Restarting game.", $LOG_ERROR)
-                                    If (Not(RestartGame())) Then RestartNox()
+                                    If (Not(RestartGame())) Then RestartNox(1, "")
                                     $sLocation = getLocation()
                                 EndIf
 

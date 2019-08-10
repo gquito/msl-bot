@@ -78,7 +78,7 @@ EndFunc
 #ce
 Func waitLocation($vLocations, $iSeconds, $iDelay = 200, $bReturnBool = True)
 	Local $bOutput = ($bReturnBool? False : "")
-	Log_Level_Add("waitLocation(" & $vLocations & ", " & $iSeconds * ", " & $iDelay & ", " & $bReturnBool & ")")
+	Log_Level_Add("waitLocation()")
 	Local $iTimerInit = TimerInit()	
 	While TimerDiff($iTimerInit) < $iSeconds*1000
 		$bOutput = isLocation($vLocations, $bReturnBool)
@@ -88,6 +88,7 @@ Func waitLocation($vLocations, $iSeconds, $iDelay = 200, $bReturnBool = True)
 	WEnd
 
 	;Not found within timeframe
+	;Log_Add("waitLocation(" & $vLocations & ", " & $iSeconds*1000 & ", " & $iDelay & ", " & $bReturnBool & ") Result: " & $bOutput, $LOG_DEBUG)
 	Log_Level_Remove()
 	Return $bOutput
 EndFunc
@@ -142,7 +143,7 @@ Func isLocation($vLocations, $bReturnBool = True, $bSorted = False)
 	EndIf
 
 	If $bReturnBool = True Then
-		If $iIndex <> -1 Then Return True
+		Return ($iIndex <> -1)
 	Else
 		If $iIndex <> -1 Then 
 			Return $aLocations[$iIndex]
@@ -231,8 +232,8 @@ EndFunc
 Func testLocation()
 	While Not(_Sleep(200))
 		CaptureRegion()
-		$g_iLocationIndex = -1
-		$g_sLocation = "unknown"
+		;$g_iLocationIndex = -1
+		;$g_sLocation = "unknown"
 		Log_Add(getLocation())
 	WEnd
 EndFunc

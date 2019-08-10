@@ -190,7 +190,7 @@ Func findLevel($iLevel)
 		EndIf		 
 
 		Local $t_sImageName = "level-" & $sLevel
-		Local $t_aPoint = findImageMultiple($t_sImageName, 90, 5, 5, 0, 400, 220, 380, 260, True, False) ;tolerance 100, rectangle at (402,229) dim. 50x250
+		Local $t_aPoint = findImageMultiple($t_sImageName, 90, 5, 5, 0, 400, 220, 380, 260, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
 
 		If $t_aPoint = 0 Then Return -1
 		;Found point
@@ -395,7 +395,7 @@ Func closeWindow()
 		Case Else
 			Local $s_getWindowButton = findImage("location-dialogue-close", 90, 100, 400, 0, 400, 276, True, True)
 			If (IsArray($s_getWindowButton)) Then
-				ADB_SendESC()
+				clickPoint($s_getWindowButton)
 				Return True
 			Else
 				$g_sErrorMessage = "closeWindow() => No close found."
@@ -418,15 +418,6 @@ Func skipDialogue()
 	WEnd
 EndFunc
 
-#cs 
-	Function: Tries to close dialogue between players in game
-	Return: If dialogue has been closed successfully then return true. Else return false.
-#ce
-Func clickBackButton()
-	Local $t_iTimerInit = TimerInit()
-	If (isPixel(getPixelArg("back"), 20)) Then clickPoint(getPointArg("back"))
-	_Sleep(300)
-EndFunc
 
 Func testEachPixel($sPixelString)
 	CaptureRegion()
@@ -503,34 +494,50 @@ Func CreateArr($o1 = Null, $o2 = Null, $o3 = Null, $o4 = Null, $o5 = Null, $o6 =
 EndFunc
 
 ;Used to confirm if locations battle and battle-auto are correct
-Func inBattle()
+Func inBattle($iDuration = 500)
 	;Log_Level_Add("inBattle")
-
+	Local $iOutput = 0
 	Local Const $aPixSet = [["175,519,0xA9643C|180,519,0xA9643C", "106,516,0x80918E"], _
 						["342,519,0xA9653E|350,519,0xA9653E", "275,516,0x80918E"], _
 						["510,519,0xAA653F|515,519,0xAA653F", "444,516,0x80918E"], _
 						["681,519,0xA9643C|686,519,0xA9643C", "613,516,0x80918E"]]
+	Local $hTimer = TimerInit()
+	Local $iCounter = 0
+	Do
 	CaptureRegion()
 	For $i = 0 To UBound($aPixSet)-1
-		If isPixel($aPixSet[$i][0]) = True And isPixel($aPixSet[$i][1]) = False Then
+			If isPixel($aPixSet[$i][0], 5) = True And isPixel($aPixSet[$i][1]) = False Then
 			;Log_Add("Is not in battle.", $LOG_DEBUG)
 			;Log_Level_Remove()
-			Return True
+				$iOutput += 1
+				ExitLoop
 		EndIf
 	Next
+		If _Sleep($iDuration/100) Then ExitLoop
+		$iCounter += 1
+		If ($iOutput / $iCounter) <> 1 Then ExitLoop ;Comment out to debug
+	Until(TimerDiff($hTimer) > $iDuration)
 
 	;Log_Add("Is in battle.", $LOG_DEBUG)
+	;Log_Add("inBattle Result: " & ($iOutput / $iCounter) & " (" & (($iOutput / $iCounter) = 1) & ")", $LOG_DEBUG)
 	;Log_Level_Remove()
-	Return False
+	Return (($iOutput / $iCounter) = 1)
 EndFunc
+
 
 ;types: normal, while, until
 Func clickBattle($sType = "", $sLocation = "", $iNum = 1, $iDelay = 200)
 	Local $bOutput = False
 	Switch $sType
 		Case ""
+			Local $hTimer = TimerInit()
 			clickPoint(getPointArg("battle-auto"))
 			clickDrag(CreateArr(33, 213, 33, 176), 1, 0) ;Prevent sticky button
+			If $iNum > 1 Then
+				While TimerDiff($hTimer) < 200
+					If _Sleep(50) Then Return
+				WEnd
+			EndIf
 
 			$iNum -= 1
 			If $iNum > 0 Then clickBattle($sType, $iNum)

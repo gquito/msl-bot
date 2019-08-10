@@ -74,8 +74,8 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                         Local $t_sLoc = ""
 
                         While $t_sLoc <> "pause" And $t_sLoc <> "battle"
-                            If ($g_bAdbWorking) Then ADB_SendESC()
-                            If (_Sleep(50)) Then ExitLoop(2)
+                            SendBack()
+                            If (_Sleep(200)) Then ExitLoop(2)
 
                             $t_sLoc = getLocation()
                         WEnd
@@ -156,8 +156,7 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                             
                         Case "map-battle", "map-stage", "association", "clan", "toc", "astroleague", "starstone-dungeons", "golem-dungeons", "gold-dungeons", "elemental-dungeons", "guardian-dungeons", "extra-dungeons"
                             Local $t_hTimer = TimerInit() 
-                            While Not(isLocation("map"))
-                                If (_Sleep(10)) Then ExitLoop(2)
+                            While isLocation("map") = False
                                 If (TimerDiff($t_hTimer) > 60000) Then
                                     Log_Add("Navigate: Timed out.", $LOG_ERROR)
                                     ExitLoop(2) ;60 seconds
@@ -176,18 +175,10 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                                     Case Else
                                         CaptureRegion()
                                         If (isPixel(getPixelArg("back"), 20)) Then
-                                            ;ADB_SendESC() ; use ESC instead of back. should be better than trying to constantly click back
-                                            clickBackButton()
+                                            SendBack()
                                         Else
-
                                             If (TimerDiff($t_hTimer) > 30000) Then ExitLoop ; Failed to navigate
-
-                                            ;Tries ADB send keyevent escape
-                                            If (TimerDiff($t_hTimer) > 10000 And $g_bAdbWorking) Then
-                                                ADB_SendESC()
-                                                If (_Sleep(500)) Then ExitLoop(2)
-                                            EndIf
-
+                                            SendBack()
                                             ;Usually stuck in place with an in game window and an Exit button for the window.
                                             skipDialogue()
                                             closeWindow()
@@ -200,6 +191,7 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                                             If (TimerDiff($t_hTimer) > 10000 And isLocation("unknown")) Then resetHandles()
                                         EndIf
                                 EndSwitch
+                                If _Sleep(200) Then ExitLoop(2)
                             WEnd
 
                             If (isLocation("map")) Then 
@@ -276,7 +268,10 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                     ExitLoop
                 Case "catch-mode"
                     Local $t_hTimer = TimerInit()
+                    Local $bExotic = False
                     While TimerDiff($t_hTimer) < 30000
+                        captureRegion()
+                        If isPixel(getPixelArg("battle-catch-exotic")) = True Then $bExotic = True
 
                         Switch getLocation()
                             Case "battle-auto"
@@ -284,15 +279,19 @@ Func navigate($sLocation, $bForceSurrender = False, $iAttempt = 1)
                                     clickBattle()
                                 Else
                                     If isPixel(getPixelArg("catch-mode-standby")) = False Then
-                                        clickWhile(getPointArg("battle-catch"), "isPixel", CreateArr(getPixelArg("battle-catch-available"), 10), 5, 500, "captureRegion()")
+                                        clickWhile(getPointArg("battle-catch"), "isPixel", CreateArr(getPixelArg("battle-catch-available")), 5, 500, "captureRegion()")
                                     EndIf
                                 EndIf
                             Case "battle"
-                                If (isPixel(getPixelArg("catch-mode-unavailable")) = False And isPixel(getPixelArg("battle-catch-available"), 10)) And (isPixel(getPixelArg("catch-mode-standby") = False)) Then 
+                                If (isPixel(getPixelArg("catch-mode-unavailable")) = False And isPixel(getPixelArg("battle-catch-available"))) And (isPixel(getPixelArg("catch-mode-standby") = False)) Then 
                                     clickPoint(getPointArg("battle-catch"))
                                 EndIf
                             Case "catch-mode"
-                                $bOutput = True
+                                If $bExotic = True Then
+                                    $bOutput = $CATCH_MODE_EXOTIC
+                                Else
+                                    $bOutput = $CATCH_MODE_NORMAL
+                                EndIf
                                 ExitLoop(2)
                             Case "unknown"
                             Case Else
@@ -442,7 +441,7 @@ Func navigateWhileOnMap($sMapLocation)
     EndIf
     Local $t_aMapCoords = findImage("map-phantom-forest", 90, 100, 0, 0, 800, 552, True, True)
     While Not(IsArray($t_aMapCoords))
-        If (Not(clickDrag($g_aSwipeRight))) Then ExitLoop
+        If (Not(clickDrag($g_aSwipeRightFast))) Then ExitLoop
         $t_aMapCoords = findImage("map-phantom-forest", 90, 100, 0, 0, 800, 552, True, True)
     Wend
     If ($t_sMapLocation = "phantom-forest") Then return $t_aMapCoords
@@ -491,14 +490,13 @@ Func navigateToVillage($bOutput, $bForceSurrender)
         Case "tap-to-start", "event-list", "dialogue-skip", "quit", "unknown"
             Return buildNavOutput(-2, $bOutput)
         Case "map"
-            ADB_SendESC()
+            SendBack()
             _Sleep(100)
             Return buildNavOutput(-2, $bOutput)
         Case Else
             ;All other locations will need either click back or esc to get to village.
             Local $t_hTimer = TimerInit() 
-            While Not(isLocation("village"))
-                If (_Sleep(10)) Then Return buildNavOutput(-3, $bOutput)
+            While isLocation("village") = False
                 If (TimerDiff($t_hTimer) > 60000) Then Return buildNavOutput(-3, $bOutput)
 
                 $t_sCurrLocation = getCurrentLocation()
@@ -514,30 +512,25 @@ Func navigateToVillage($bOutput, $bForceSurrender)
                         $t_hTimer = TimerInit()
                     Case Else
                         If (isPixel(getPixelArg("back"), 20)) Then
-                            ;adbSendESC() ; use ESC instead of back. should be better than trying to constantly click back
-                            clickBackButton()
+                            SendBack()
                         Else
-
                             If (TimerDiff($t_hTimer) > 30000) Then Return buildNavOutput(-1, $bOutput) ; Failed to navigate
-
-                            ;Tries ADB send keyevent escape
-                            If (TimerDiff($t_hTimer) > 10000 And $g_bAdbWorking = True) Then
-                                ADB_SendESC()
-                                If (_Sleep(500)) Then Return buildNavOutput(-3, $bOutput)
-                            EndIf
-
+                            SendBack()
                             ;Usually stuck in place with an in game window and an Exit button for the window.
                             skipDialogue()
                             closeWindow()
 
                             If (isLocation("unknown") And (Mod(Int(TimerDiff($t_hTimer)/1000), 3) = 0)) Then 
                                 clickPoint(getPointArg("tap"))
+
                                 If (_Sleep(1000)) Then Return buildNavOutput(-3, $bOutput)
                             EndIf
 
                             If (TimerDiff($t_hTimer) > 10000 And isLocation("unknown")) Then resetHandles()
                         EndIf
                 EndSwitch
+
+                If _Sleep(200) Then Return buildNavOutput(-3, $bOutput)
             WEnd
             
             $bOutput = isLocation("village")

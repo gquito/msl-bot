@@ -9,13 +9,17 @@ Global Const $BKGD_NONE = 0, $BKGD_WINAPI = 1, $BKGD_ADB = 2
 ; enum _MOUSE_TYPE
 Global Const $MOUSE_REAL = 0, $MOUSE_CONTROL = 1, $MOUSE_ADB = 2
 ; enum _SWIPE_TYPE
-Global Const $SWIPE_KEYMAP = 0, $SWIPE_ADB = 1, $SWIPE_REAL = 2
+Global Const $SWIPE_CONTROL = 0, $SWIPE_ADB = 1, $SWIPE_REAL = 2
+; enum _BACK_TYPE
+Global Const $BACK_REAL = 0, $BACK_CONTROL = 1, $BACK_ADB = 2
 ; enum _ALIGN
 Global Const $ALIGN_LEFT = 0, $ALIGN_RIGHT = 1
 ; enum _DATA_TYPE
 Global Const $DATA_TEXT = 0, $DATA_NUMBER = 1, $DATA_PERCENT = 2, $DATA_RATIO = 3, $DATA_LIST = 4, $DATA_TIME = 5, $DATA_TIMEAVG = 6, $DATA_NUMAVG_TIME = 7
 ; enum _REFILL_RTN
 Global Const $REFILL_TIMEOUT = -1, $REFILL_NOGEMS = -2, $REFILL_MAX = -3
+; enum _CATCH_MODE
+Global Const $CATCH_MODE_NORMAL = 1, $CATCH_MODE_EXOTIC = 2
 
 If isDeclared("WIN_STATE_MINIMIZED") = False Then Global Const $WIN_STATE_MINIMIZED = 16
 
@@ -37,7 +41,7 @@ Global Const $g_sLocations = "locations.txt"
 Global Const $g_sImageLocations = "location-images.txt"
 Global Const $g_sAirshipPositions = "airship-positions.txt"
 Global Const $g_sAirshipTrees = "airship-trees.txt"
-Global Const $g_sScriptsV4 = "scriptsv5.txt"
+Global Const $g_sScriptsV4 = "scriptsv6.txt"
 Global const $g_sLocationsMap = "locations-map.txt"
 
 Global Const $d_sProfile = "Default" ;Path to current seleted profile
@@ -115,11 +119,12 @@ Global Const $g_aVillageTrees = [ _
     "607,146|735,169|789,103|479,68|71,304|259,422|478,211", _
     "80,160|256,34|425,124|325,114|574,442|740,335|577,140"]
 
-Global Const $g_aSwipeLeft =    [350, 550, 0, 550, "left"]
+Global Const $g_aSwipeLeft =    [350, 550, 100, 550, "left"]
 Global Const $g_aSwipeDown =    [434, 317, 434, 406, "down"]
 Global Const $g_aSwipeDown_Half =   [434, 317, 434, 370, "down"]
 Global Const $g_aSwipeUp =      [434, 406, 434, 317, "up"]
 Global Const $g_aSwipeRight =   [10, 550, 350, 550, "right"]
+Global Const $g_aSwipeRightFast = [10, 550, 2000, 550, "right"]
 
 Global Const $g_aDungeonsSwipeDown =    [175, 186, 175, 452, "down"]
 Global Const $g_aDungeonsSwipeUp =      [175, 452, 175, 186, "up"]
