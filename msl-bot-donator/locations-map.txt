@@ -21,6 +21,7 @@ elemental-dungeons:map,starstone-dungeons,gold-dungeons,guardian-dungeons,specia
 gold-dungeons:map,extra-dungeons,starstone-dungeons,elemental-dungeons,guardian-dungeons,special-guardian-dungeons,map-battle,dungeon-info
 guardian-dungeons:map,extra-dungeons,starstone-dungeons,elemental-dungeons,gold-dungeons,special-guardian-dungeons,map-battle,dungeon-info
 special-guardian-dungeons:map,extra-dungeons,starstone-dungeons,elemental-dungeons,gold-dungeons,map-battle,dungeon-info
+dungeon-info:map,extra-dungeons,starstone-dungeons,wood-dungeons,gold-dungeons,guardian-dungeons,special-guardian-dungeons
 golem-dungeons:map,ancient-colossus-dungeon,map-battle
 astroleague:map,map-battle
 clan-plaza:map,clan-titans
