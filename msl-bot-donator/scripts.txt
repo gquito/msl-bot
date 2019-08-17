@@ -115,7 +115,7 @@
 
 	[text:
 		name: "Display Scaling",
-		description: "Display scaling found in display settings of Windows. Recommended set to 100%.".
+		description: "Display scaling found in display settings of Windows. Recommended set to 100%.",
 		default: "100"
 	]
 	
