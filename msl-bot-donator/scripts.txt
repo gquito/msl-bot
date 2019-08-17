@@ -266,7 +266,7 @@
 	
 	[combo:
 		name: "Guardian Dungeons",
-		description: "Check for guardian dungeons, checks every 30 minutes."
+		description: "Check for guardian dungeons, checks every 30 minutes.",
 		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
