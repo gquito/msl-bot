@@ -37,21 +37,21 @@
 	
 	[combo:
 		name: "Save Logs",
-		description: "Save log to file every hour.",
-		default: "Disabled",
+		description: "Save log to file.",
+		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 	
 	[combo:
-		name: "Save Debug Log",
-		description: "Write debug type log to log file.",
-		default: "Disabled",
+		name: "Log Debug",
+		description: "Log debug types.",
+		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 	
 	[combo:
 		name: "Log Clicks",
-		description: "Whether to log clicks made by any functions.",
+		description: "Log click types.",
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
