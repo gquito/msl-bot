@@ -1,0 +1,1043 @@
+[_Config:
+	[description: "These settings are responsible for how the bot interacts with the android emulator. Settings will be saved in the profiles folder once changes has been detected."]
+	
+	[text:
+		name: "Profile Name",
+		description: "Folder will be created using this name in profiles folder.",
+		default: "Default"
+	]
+	
+	[combo:
+		name: "Scheduled Restart",
+		description: "Restart game to prevent lagging overtime. MSL seems to lag after a long time. Game means just restart game process without restarting emulator. Nox means restarting the entire Nox process.",
+		default: "Never",
+		data: "Never,Game:1H,Game:2H,Game:3H,Game:4H,Game:5H,Game:6H,Game:7H,Game:8H,Game:9H,Game:10H,Game:11H,Game:12H,Nox:1H,Nox:2H,Nox:3H,Nox:4H,Nox:5H,Nox:6H,Nox:7H,Nox:8H,Nox:9H,Nox:10H,Nox:11H,Nox:12H"
+	]
+
+	[combo:
+		name: "Stuck Restart Time",
+		description: "Number of minutes it takes until bot app decides to restart emulator app when stuck in one location. Can be used to delay restart when logging in from a different location.",
+		default: "10 Minutes",
+		data: "Never,3 Minutes,5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
+	]
+    
+    [combo:
+		name: "Logged In Another Device Timeout",
+		description: "Number of minutes it takes until bot app decides to re-login to the game.",
+		default: "Immediately",
+		data: "Never,Immediately,1 Minutes,3 Minutes,5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
+	]
+
+	[combo:
+		name: "Maintenance Timeout",
+		description: "Number of minutes it takes until bot app decides to restart during maintenance to the game.",
+		default: "5 Minutes",
+		data: "5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
+	]
+	
+	[combo:
+		name: "Save Logs",
+		description: "Save log to file every hour.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Save Debug Log",
+		description: "Write debug type log to log file.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Log Clicks",
+		description: "Whether to log clicks made by any functions.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[text:
+		name: "ADB Path",
+		description: "Path to adb executable. Default for nox is: C:\Program Files (x86)\Nox\bin\nox_adb.exe",
+		default: "C:\Program Files (x86)\Nox\bin\nox_adb.exe"
+	]
+	
+	[text:
+		name: "ADB Device",
+		description: "Default for first nox emulator: 127.0.0.1:62001. Refer to guide to see how to find device.",
+		default: "127.0.0.1:62001"
+	]
+	
+	[text:
+		name: "ADB Shared Folder1",
+		description: "Shared folder within the emulator. Default for nox: /mnt/shared/App/",
+		default: "/mnt/shared/App/"
+	]
+	
+	[text:
+		name: "ADB Shared Folder2",
+		description: "Shared folder in windows directory. Default for nox is: C:\Users\[USER NAME]\Nox_share\App\",
+		default: "~"
+	]
+	
+	[combo:
+		name: "ADB Method",
+		description: "'input event' is slower to respond, but works with all ADB. 'sendevent' is faster to respond, but specific to Nox client. The sendevent tries to automatically find the device to send information to, but fails on some clients.",
+		default: "input event",
+		data: "input event,sendevent"
+	]
+	
+	[combo:
+		name: "ADB Input Event Version",
+		description: "0 is the most stable, but runs slower. 1 is faster, but does not work well with slower computers.",
+		default: "0",
+		data: "0,1"
+	]
+	
+	[text:
+		name: "Emulator Title",
+		description: "This can be found using the AutoIt Window Info, using the Finder Tool.",
+		default: "NoxPlayer"
+	]
+	
+	[text:
+		name: "Emulator Property",
+		description: "Properties include: CLASS, TEXT, INSTANCE, X, Y, WIDTH, HEIGHT. Information can be found using AutoIt Window Info.",
+		default: "[CLASS:Qt5QWindowIcon; TEXT:ScreenBoardClassWindow]"
+	]
+
+	[text:
+		name: "Display Scaling",
+		description: "Display scaling found in display settings of Windows. Recommended set to 100%.",
+		default: "100"
+	]
+	
+	[combo:
+		name: "Capture Mode",
+		description: "WinAPI: Works in background (not minimized) and takes least amount of CPU. ADB: Works in background including minimized, slowest method and takes the most CPU. None: Does not work in background and must be present in foreground of the screen at all times.",
+		default: "WinAPI",
+		data: "WinAPI,ADB,None"
+	]
+	
+	[combo:
+		name: "Mouse Mode",
+		description: "Mode of sending clicks to emulators. Control: Sends click messages directly to emulator. ADB: Sends command to emulator ADB, generally slower. Real: Uses mouse cursor to click emulator screen.",
+		default: "Control",
+		data: "Control,ADB,Real"
+	]
+	
+	[combo:
+		name: "Swipe Mode",
+		description: "Mode of sending swipes to emulator. ADB: Sends command to emulator ADB, does not affect overall average speed. Keymap: Sends keystrokes to emulator to invoke pre-setup keymap, requires keymap setup. Real: Uses actual mouse to perform a swipe.",
+		default: "ADB",
+		data: "ADB,Control,Real"
+	]
+	
+	[combo:
+		name: "Back Mode",
+		description: "Mode of sending back command to emulator.",
+		default: "ADB",
+		data: "ADB,Control,Real"
+	]
+]
+
+[_Delays:
+	[description: "Delay settings"]
+
+	[text:
+		name: "Swipe Delay",
+		description: "The amount of time in MILLISECONDS that the bot waits after swiping the screen to do anything. (minimum: 300)",
+		default: "300"
+	]
+
+	[text:
+		name: "Navigation Timeout",
+		description: "The amount of time in SECONDS until navigation times out. (minimum: 15)",
+		default: "30"
+	]
+
+	[text:
+		name: "Target Boss Delay",
+		description: "The amount of time in MILLISECONDS that the bot waits before clicking on the boss. Do not go higher than 200.",
+		default: "10"
+	]
+	
+	[text:
+		name: "ADB Timeout",
+		description: "How much time in MILLISECONDS the ADB function will wait for a response before timing out. Set higher for slower systems.",
+		default: "5000"
+	]
+	
+	[text:
+		name: "Restart Timeout",
+		description: "How much time in SECONDS the RestartGame or RestartNox will wait for the game to load before timing out.",
+		default: "300"
+	]
+	
+	[text:
+		name: "Guided Auto Delay",
+		description: "Amount of delay between clicks in milliseconds. Default is 100 ms. Faster computers can do 0 ms.",
+		default: "100"
+	]
+]
+
+[_General:
+	[description: "General settings for certain algorithms."]
+	
+	[combo:
+		name: "Collect Quests",
+		description: "When a quest has been completed, the script will go to village after the round and collect the quest, then goes back to farming.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Evolve Algorithm",
+		description: "Algorithm 1 (Slower)(disabled): Will check the 20 astromons on the recents monsters and find out the correct amount of astromons|||Algorithm 2 (Faster)(disabled): Only works on slime.||Algorithm 3 (Fastest): Uses ImageSearch",
+		default: "Algorithm 3",
+		data: "Algorithm 3"
+	]
+
+	[combo:
+		name: "PVP Attack Random",
+		description: "Attack the random match in pvp. Will only attack once per interval.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "PVP Random Only",
+		description: "Only attack random matches. This setting will override PVP Attack Random",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "PVP Draw",
+		description: "Draw matches when draw button appears. Drawing will stop current PVP session and resume in the next interval.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "PVP Strongest",
+		description: "If this setting is enabled, the script will attack the strongest person on the list or the one with the most points.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Guided Auto Type",
+		description: "Camera angle will be different if all 4 of your astromons are 'chibi' or small astromons.",
+		default: "Default",
+		data: "Default,Chibi"
+	]
+
+	[combo:
+		name: "Guided Auto Active",
+		description: "Enable active during boss round. It can be faster to use active or to use normal attacks for certain situations.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[text:
+		name: "Max Exotic Chips",
+		description: "The number of chip attempts to use on a single exotic monster.",
+		default: "20"
+	]
+]
+
+[_Hourly:
+	[description: "Settings for hourly tasks. These settings are shared among all the scripts and can be turned on or off in a setting called 'Hourly Scripts' which is a boolean setting."]
+	
+	[combo:
+		name: "Hourly Script",
+		description: "Script for hourly sequence which include: Guardian Dungeons, Collecting Trees, Buying Items, Doing PvP, and additional specified scripts. These settings can be found in _Config script.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Guardian Mode",
+		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons. Script will check every 30 minutes.",
+		default: "Both",
+		data: "Left,Right,Both,Disabled"
+	]
+	
+	[combo:
+		name: "Collect Hiddens",
+		description: "Collect hourly hidden rewards, commonly known as trees.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Click Nezz",
+		description: "Attempts to click positions where nezz usually spawns. This system is not perfect, but is able to click on nezz most of the time. Note: newer ships might not have nezz positions.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Attack PVP",
+		description: "Attack PVP until there are no more tickets left.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Complete Bingo",
+		description: "Attempts to complete bingo.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Daily Quests",
+		description: "Tries to complete daily quests. Excluding the 'Use 30 Energy' quest. Note: Recommended to have at least 9 energy, 50k gold, and 3 inventory spaces.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Gold Dungeon",
+		description: "Complete gold dungeon when available. Refill will be taken from existing refill ratio. If Data does not exist or there is not enough refill, this script will not run.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Special Guardian Dungeon",
+		description: "Check for special guardian dungeon every hour.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Buy First Item",
+		description: "Buy the first item in shady shop every hour.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Check Exotic Festival",
+		description: "Check to see if you have an exotic festival ticket waiting.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Get Daily Eggs",
+		description: "Check to see if you have free egg summons waiting.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+]
+
+[_Filter:
+	[description: "Gem filtering system. A function will be called with a gem data passed in and will output whether the gem meets the criteria or not."]
+	
+	[combo:
+		name: "4*-Filter",
+		description: "If Filter is enabled, 4* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "4*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "4*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "4*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "",
+		data: "1,2,3,4"
+	]
+	
+	[combo:
+		name: "5*-Filter",
+		description: "If Filter is enabled, 5* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "5*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "5*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "P.HP,P.ATK,P.DEF,CRIT RATE",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "5*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "3,4",
+		data: "1,2,3,4"
+	]
+	
+	[combo:
+		name: "6*-Filter",
+		description: "If Filter is enabled, 6* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "6*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "6*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "P.HP,P.ATK,P.DEF,CRIT RATE",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "6*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "1,2,3,4",
+		data: "1,2,3,4"
+	]
+]
+
+[_DragonFilter:
+	[description: "Dragon Gem filtering system. A function will be called with a gem data passed in and will output whether the gem meets the criteria or not."]
+	
+	[combo:
+		name: "4*-Filter",
+		description: "If Filter is enabled, 4* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "4*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "",
+		data: "Leech,Pugilist,Siphon"
+	]
+	
+	[list:
+		name: "4*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "4*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "",
+		data: "1,2,3,4"
+	]
+	
+	[combo:
+		name: "5*-Filter",
+		description: "If Filter is enabled, 5* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "5*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "Leech,Pugilist,Siphon",
+		data: "Leech,Pugilist,Siphon"
+	]
+	
+	[list:
+		name: "5*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "P.HP,P.ATK,P.DEF,CRIT RATE",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "5*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "3,4",
+		data: "1,2,3,4"
+	]
+	
+	[combo:
+		name: "6*-Filter",
+		description: "If Filter is enabled, 6* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "6*-Types",
+		description: "Types that are included meet the criteria.",
+		default: "Leech,Pugilist,Siphon",
+		data: "Leech,Pugilist,Siphon"
+	]
+	
+	[list:
+		name: "6*-Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "P.HP,P.ATK,P.DEF,CRIT RATE",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "6*-Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "1,2,3,4",
+		data: "1,2,3,4"
+	]
+]
+
+[Attack_PVP:
+	[description: "Attacks the highest person on the list. This script will current preset team, so set up PvP team that is good at auto battle before running this script. Script will refresh teams as soon as it is available."]
+	
+	[text:
+		name: "Number of Attacks",
+		description: "Number of players to attack. 0 will attack until there are no tickets left. Any number exceeding number of tickets will have the same effect as 0.",
+		default: "5"
+	]
+
+	[combo:
+		name: "Idle Time",
+		description: "Amount of time to remain idle until beginning to attack again. No idle will stop script after first set of attack.",
+		default: "30 minutes",
+		data: "No Idle,30 Minutes,60 Minutes,90 Minutes,120 Minutes,3 Hours,4 Hours,5 Hours"
+	]
+
+	[text:
+		name: "Usable Astrogems",
+		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+		default: "300"
+	]
+
+]
+
+[Farm_TOC:
+	[description: "Attack TOC using current preset team. Script will be stopped once a defeat has been detected."]
+
+	[text:
+		name: "Usable Astrogems",
+		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+		default: "300"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+]
+
+[Farm_Forever:
+	[description: "Alternate between Farming golem dungeon and 'Slime' farming for farming forever. The script will continue running until stopped or specific errors such as no inventory space."]
+
+	[combo:
+		name: "First Script",
+		description: "First script to run.",
+		default: "Farm Golem",
+		data: "Farm Golem,Farm Gem"
+	]
+
+    [combo:
+		name: "Farm Golem Goal Type",
+		description: "Choose whether gold amount or gems is the goal.",
+		default: "Refilled Gems",
+		data: "Gold,Refilled Gems"
+	]
+    
+	[text:
+		name: "Farm Golem Goal Amount",
+		description: "Number used for goal.",
+		default: "300"
+	]
+
+	[text:
+		name: "Farm Gem Amount",
+		description: "Number of gems to 'slime' farm. Generally the amount should be around 40% more than the Farm Golem Refill for net profit in gems. Note: This value will be rounded down to the hundred place.",
+		default: "400"
+	]
+
+	[setting:
+		name: "Golem Settings",
+		description: "The Farm Golem setting will be used with the exception of Usable Astrogems, Guardian Mode, Collect Quests, and Hourly Script.",
+		default: "Farm Golem"
+	]
+
+	[setting:
+		name: "Farm Gem Settings",
+		description: "The Farm Gem setting will be used with the exception of Usable Astrogems, Guardian Mode, Collect Quests, and Hourly Script.",
+		default: "Farm Gem"
+	]
+]
+
+[Farm_Rare:
+	[description: "Attacks a story map and catches rare astromons. Can be used for leveling monsters or farming for materials. You must set your astromons before starting the script."]
+	
+	[text:
+		name: "Runs",
+		description: "Number of runs the script should perform before stopping. Entering 0 will cause the script to run indefinitely.",
+		default: "0"
+	]
+	
+	[combo:
+		name: "Map",
+		description: "Map in story mode to farm rare astromons in.",
+		default: "Pagos Coast",
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+	]
+	
+	[combo:
+		name: "Difficulty",
+		description: "Difficulty of the map, available difficulties are Normal, Hard, or Extreme.",
+		default: "Extreme",
+		data: "Normal,Hard,Extreme"
+	]
+	
+	[combo:
+		name: "Stage Level",
+		description: "The level to farm rares in. This can be used to select a level with materials for super evolution.",
+		default: "Exp",
+		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
+	]
+	
+	[list:
+		name: "Capture",
+		description: "Types of rares to catch. The priority of which to catch is from left, as the highest priority, to right, as lowest priority.",
+		default: "Legendary,Exotic,Super Rare,Rare,Variant",
+		data: "Legendary,Exotic,Super Rare,Rare,Variant"
+	]
+	
+	[list:
+		name: "Gems To Sell",
+		description: "Grade of gems to sell. All selected gems will be sold every hourly sequence or when gem box is full.",
+		default: "1,2,3,4",
+		data: "1,2,3,4"
+	]
+	
+	[text:
+		name: "Usable Astrogems",
+		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+		default: "300"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+]
+
+[Farm_Golem:
+	[description: "Attacks golem boss and filters gems. This script is usually for earning gold or getting good gems. Recommended stage for gold is the fastest dungeon you can do. You must set your astromons before starting the script."]
+	
+	[text:
+		name: "Runs",
+		description: "Number of runs the script should perform before stopping. Entering 0 will cause the script to run indefinitely.",
+		default: "0"
+	]
+	
+	[combo:
+		name: "Dungeon Level",
+		description: "The golem dungeon level to farm in. *Script will assume that you have unlocked up to GB10.",
+		default: "8",
+		data: "1,2,3,4,5,6,7,8,9,10"
+	]
+	
+	[combo:
+		name: "Guided Auto",
+		description: "Script will focus an enemy per astromon in non-boss waves. If all four astromons are able to one-shot the astromon, the runs can reach the fastest times possible without the use of siphon gems. Note: Non-boss waves will be forced to use passive attacks until boss round. ",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+    
+    [combo:
+		name: "Semi Guided Auto",
+		description: "Script will focus left most mon for the first hit and use auto. Best used for SP Siphon teams.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[setting:
+		name: "Gem Filter",
+		description: "Filter unwanted gems. Recommended to filter most gems because script will stop if gem box is full.",
+		default: "_Filter"
+	]
+	
+    [combo:
+		name: "Goal Type",
+		description: "Choose whether gold amount or used gems is the goal.",
+		default: "Refilled Gems",
+		data: "Gold,Refilled Gems"
+	]
+    
+	[text:
+		name: "Goal Amount",
+		description: "Amount of gems to be used/gold to be farmed",
+		default: "300"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+]
+
+[Farm_Gem:
+	[description: "Convert gold into gems though 'slime' farming. Script will catch 16 astromons and evolve them to get 100 gems that by spending 330k gold. *Make sure you lock your gleems and put them on your storage."]
+	
+	[text:
+		name: "Gems To Farm",
+		description: "It will cost 330k gold per 100 gems. This value cannot be below 100 and should go in intervals of 100. Make sure you have enough gold or the bot will stop half way an evolving process.",
+		default: "300"
+	]
+	
+	[text:
+		name: "Catch Image",
+		description: "Image used to look for astromons during catching process. This file must exist /bin/images/catch/catch-[CATCH_IMAGE].bmp",
+		default: "one-star"
+	]
+	
+	[combo:
+		name: "Astromon",
+		description: "Astromon to evolve. Make sure to use the astromon that you are catching.",
+		default: "Slime",
+		data: "Slime,Mimic,Sparkler,Otari"
+	]
+	
+	[combo:
+		name: "Finish Round",
+		description: "If this is enabled, the script will capture continue the round until finished; otherwise, the script will surrender once 3 astrochips has been used up. It is recommended to leave this setting on Disabled for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Final Round",
+		description: "If this is enabled, the script will only catch normal astromons on the final round. Having this setting enabled will automatically enable Finish Round. It is recommended to leave this setting on Disabled for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+    
+    [combo:
+		name: "Empty Astrochips",
+		description: "If this is enabled, the script will catch astromons until there are no more astrochips after reaching the needed number.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+    
+	[combo:
+		name: "Fill Astromon Box",
+		description: "If this is enabled, the script will catch astromons until there is no more room in your box.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	    [combo:
+		name: "Release Evo3",
+		description: "If this is enabled, the script will Release the evo3 astromon it creates.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Map",
+		description: "Map in story mode to farm astromons in.",
+		default: "Phantom Forest",
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+	]
+	
+	[combo:
+		name: "Difficulty",
+		description: "Difficulty of the map, available difficulties are Normal, Hard, or Extreme.",
+		default: "Normal",
+		data: "Normal,Hard,Extreme"
+	]
+	
+	[combo:
+		name: "Stage Level",
+		description: "The level to farm rares in. This can be used to select a level with materials for super evolution.",
+		default: "1",
+		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
+	]
+	
+	[list:
+		name: "Capture",
+		description: "types of rares to catch. The priority of which to catch is from left, as the highest priority, to right, as lowest priority.",
+		default: "Legendary,Exotic,Super Rare,Rare,Variant",
+		data: "Legendary,Exotic,Super Rare,Rare,Variant"
+	]
+	
+	[list:
+		name: "Gems To Sell",
+		description: "Grade of gems to sell. All selected gems will be sold every hourly sequence or when gem box is full.",
+		default: "1,2,3,4",
+		data: "1,2,3,4"
+	]
+	
+	[text:
+		name: "Usable Astrogems",
+		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+		default: "300"
+	]
+	
+]
+
+[Farm_Astromon:
+	[description: "Farms a specified amount of astromon in story mode."]
+	
+	[text:
+		name: "Number To Farm",
+		description: "Number of that astromons to farm.",
+		default: "16"
+	]
+	
+	[text:
+		name: "Catch Image",
+		description: "The normal astromon to farm. Images of catch-[astromon].bmp must exist. Map must contain the astromon or else this script will act like Farm Rare, but slower.",
+		default: "one-star"
+	]
+	
+	[combo:
+		name: "Finish Round",
+		description: "If this is enabled, the script will capture continue the round until finished; otherwise, the script will surrender once 3 astrochips has been used up. It is recommended to leave this setting on Disabled for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Final Round",
+		description: "If this is enabled, the script will only catch normal astromons on the final round. Having this setting enabled will automatically enable Finish Round. It is recommended to leave this setting on Disabled for efficiency.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+    
+    [combo:
+		name: "Empty Astrochips",
+		description: "If this is enabled, the script will catch astromons until there are no more astrochips after reaching the needed number.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Fill Astromon Box",
+		description: "If this is enabled, the script will catch astromons until there is no more room in your box.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+    
+	[combo:
+		name: "Map",
+		description: "Map in story mode to farm astromons in.",
+		default: "Phantom Forest",
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+	]
+	
+	[combo:
+		name: "Difficulty",
+		description: "Difficulty of the map, available difficulties are Normal, Hard, or Extreme.",
+		default: "Normal",
+		data: "Normal,Hard,Extreme"
+	]
+	
+	[combo:
+		name: "Stage Level",
+		description: "The level to farm rares in. This can be used to select a level with materials for super evolution.",
+		default: "1",
+		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
+	]
+	
+	[list:
+		name: "Capture",
+		description: "types of rares to catch. The priority of which to catch is from left, as the highest priority, to right, as lowest priority.",
+		default: "Legendary,Exotic,Super Rare,Rare,Variant",
+		data: "Legendary,Exotic,Super Rare,Rare,Variant"
+	]
+	
+	[list:
+		name: "Gems To Sell",
+		description: "Grade of gems to sell. All selected gems will be sold every hourly sequence or when gem box is full.",
+		default: "1,2,3,4",
+		data: "1,2,3,4"
+	]
+	
+	[text:
+		name: "Usable Astrogems",
+		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+		default: "300"
+	]
+	
+]
+
+[Farm_Guardian:
+	[description: "Attacks specific guardian dungeons until no more is found."]
+
+	[combo:
+		name: "Mode",
+		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons.",
+		default: "Both",
+		data: "Left,Right,Both"
+	]
+	
+	[text:
+		name: "Usable Astrogems",
+		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+		default: "300"
+	]
+
+	[combo:
+		name: "Loop",
+		description: "If loop is enabled, script will keep going to the village and back to check for new guardian dungeons until script is stopped.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Guided Auto",
+		description: "Guided auto.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+]
+
+[Farm_Starstone:
+	[description: "Script will go to normal starstone or elemental dungeon to farm a number of stones. Script will keep farming until all quality stones have been farmed."]
+	
+	[combo:
+		name: "Dungeon Type",
+		description: "Dungeon to farm in. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
+		default: "Normal",
+		data: "Normal,Elemental"
+	]
+	
+	[combo:
+		name: "Dungeon Level",
+		description: "Must have up to B9 unlocked for the script to correctly choose dungeon level.",
+		default: "10",
+		data: "1,2,3,4,5,6,7,8,9,10"
+	]
+
+	[combo:
+		name: "Guided Auto",
+		description: "Script will focus an enemy per astromon in non-boss waves. If all four astromons are able to one-shot the astromon, the runs can reach the fastest times possible without the use of siphon gems. Note: Non-boss waves will be forced to use passive attacks until boss round. ",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Stone Element",
+		description: "Element of stone you wish to farm. This will not change the dungeon type, it will only count the type of stone. This is mostly useful during the weekend dungeons when you can get three different kinds of stones and you want only a specific number of certain a element. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
+		default: "Any",
+		data: "Any,Water,Fire,Wood"
+	]
+	
+	[text:
+		name: "High Stones",
+		description: "Number of highstones to farm.",
+		default: "50"
+	]
+	
+	[text:
+		name: "Mid Stones",
+		description: "Number of midstones to farm.",
+		default: "0"
+	]
+	
+	[text:
+		name: "Low Stones",
+		description: "Number of lowstones to farm.",
+		default: "0"
+	]
+	
+	[text:
+		name: "Usable Astrogems",
+		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+		default: "300"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+]
+
+[Farm_Dragon:
+	[description: "(EXPERIMENTAL) Farm dragon dungeon during the weekend. Currently there are not many data regarding the dragon gem type so filtering is different."]
+
+	[text:
+		name: "Runs",
+		description: "Number of runs the script should perform before stopping. Entering 0 will cause the script to run indefinitely.",
+		default: "0"
+	]
+	
+	[combo:
+		name: "Dungeon Level",
+		description: "Dungeon level to farm in.",
+		default: "8",
+		data: "1,2,3,4,5,6,7,8,9,10"
+	]
+
+	[setting:
+		name: "Gem Filter",
+		description: "Filter unwanted gems.",
+		default: "_Filter"
+	]
+
+	[setting:
+		name: "Dragon Gem Filter",
+		description: "Filter unwanted dragon gems.",
+		default: "_DragonFilter"
+	]
+
+	[combo:
+		name: "Continue On Defeat",
+		description: "Continue the dragon run if defeated.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Target Middle",
+		description: "Target the astromon in the middle during the first round.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+]
