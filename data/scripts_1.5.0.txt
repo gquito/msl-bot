@@ -15,14 +15,14 @@
 	]
 
 	[combo:
-		name: "Stuck Restart Time",
+		name: "Location Stuck Timeout",
 		description: "Number of minutes it takes until bot app decides to restart emulator app when stuck in one location. Can be used to delay restart when logging in from a different location.",
 		default: "10 Minutes",
 		data: "Never,3 Minutes,5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
 	]
     
     [combo:
-		name: "Logged In Another Device Timeout",
+		name: "Another Device Timeout",
 		description: "Number of minutes it takes until bot app decides to re-login to the game.",
 		default: "Immediately",
 		data: "Never,Immediately,1 Minutes,3 Minutes,5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
