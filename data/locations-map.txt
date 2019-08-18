@@ -1,7 +1,7 @@
 ancient-colossus-dungeon:golem-dungeons,map
 anvil:village
-association:association-expedition,buy-gem,map,refill
-association-expedition:association,map,refill
+association:association-expedition,buy-gem,buy-gold,map,refill
+association-expedition:association,buy-gem,buy-gold,map,refill
 astroleague:map,map-battle
 autobattle-prompt:battle,battle-auto,map-battle
 awakened-success:monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,release-confirm
@@ -14,8 +14,8 @@ battle-sell:battle-end,battle-sell-item
 battle-sell-item:battle-sell
 bingo:bingo-complete,village
 bingo-complete:bingo,village
-buy-gem:association-expedition,monsters,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,refill
-buy-gold:association-expedition,monsters,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,refill
+buy-gem:association,association-expedition,monsters,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,refill
+buy-gold:association,association-expedition,monsters,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,refill
 catch-mode:battle,battle-auto,catch-success,pause
 catch-success:battle,battle-auto,battle-end-exp,catch-mode
 clan-plaza:clan-titans,map
