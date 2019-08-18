@@ -332,10 +332,17 @@
 	[description: "Search and attack guardian dungeons."]
 	
 	[combo:
+		name: "Guardian Script",
+		description: "Enable or disable the Guardian script using this setting.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
 		name: "Guardian Mode",
 		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons. Script will check every 30 minutes.",
 		default: "Both",
-		data: "Left,Right,Both,Disabled"
+		data: "Left,Right,Both"
 	]
 	
 	[combo:
