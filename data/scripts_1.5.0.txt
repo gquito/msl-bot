@@ -258,13 +258,6 @@
 	]
 	
 	[combo:
-		name: "Guardian Mode",
-		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons. Script will check every 30 minutes.",
-		default: "Both",
-		data: "Left,Right,Both,Disabled"
-	]
-	
-	[combo:
 		name: "Collect Hiddens",
 		description: "Collect hourly hidden rewards, commonly known as trees.",
 		default: "Enabled",
@@ -332,6 +325,56 @@
 		description: "Check to see if you have free egg summons waiting.",
 		default: "Disabled",
 		data: "Enabled,Disabled"
+	]
+]
+
+[_Guardian:
+	[description: "Search and attack guardian dungeons."]
+	
+	[combo:
+		name: "Guardian Mode",
+		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons. Script will check every 30 minutes.",
+		default: "Both",
+		data: "Left,Right,Both,Disabled"
+	]
+	
+	[combo:
+		name: "Check Intervals",
+		description: "Bot will check for guardian dungeons at this interval.",
+		default: "30 Minutes",
+		data: "15 Minutes,30 Minutes, 45 Minutes, 60 Minutes, 90 Minutes, 120 Minutes"
+	]
+]
+
+[_Expedition:
+	[description: "Explore the expedition and farm trinket materials."]
+	
+	[combo:
+		name: "Expedition Script",
+		description: "Enable or disable expedition script."
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Check Intervals",
+		description: "Bot will check for completed expeditions and explore them again at this interval.",
+		default: "60 Minutes",
+		data: "1 Hours,2 Hours,4 Hours,8 Hours"
+	]
+	
+	[combo:
+		name: "Use Luck Item",
+		description: "Use luck items for better materials using this setting. If there are no remaining luck item, then it will not use any luck item.",
+		default: "None",
+		data: "None,Low,Medium,High"
+	]
+	
+	[combo:
+		name: "Explore Time",
+		description: "Change length of exploration using this setting.",
+		default: "8 Hours",
+		data: "2 Hours,4 Hours,8 Hours"
 	]
 ]
 
