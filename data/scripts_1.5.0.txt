@@ -351,7 +351,7 @@
 	
 	[combo:
 		name: "Expedition Script",
-		description: "Enable or disable expedition script."
+		description: "Enable or disable expedition script.",
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
