@@ -146,7 +146,7 @@ shop-buy-confirm:411,310
 shop-buy:648,450
 summon-10+1:475,360
 summon-popup-close:647,105
-tab-expand:6,247
+tab-expand:14,295
 tab-friends:96,204
 tap-to-start:394,469
 tap:795,500
