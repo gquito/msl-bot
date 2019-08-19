@@ -982,6 +982,12 @@
 [Farm_Starstone:
 	[description: "Script will go to normal starstone or elemental dungeon to farm a number of stones. Script will keep farming until all quality stones have been farmed."]
 	
+	[text:
+		name: "Runs",
+		description: "Set the number of runs until the bot stops running the script. Setting the value to 0 or below will cause the script to disregard the number of runs.",
+		data: "0"
+	]
+	
 	[combo:
 		name: "Dungeon Type",
 		description: "Dungeon to farm in. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
@@ -1080,6 +1086,13 @@
 	[combo:
 		name: "Target Middle",
 		description: "Target the astromon in the middle during the first round.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "Enable or disable targeting of the dragon boss with this setting.",
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
