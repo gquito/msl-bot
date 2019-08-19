@@ -190,13 +190,6 @@
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
-	
-	[combo:
-		name: "Evolve Algorithm",
-		description: "Algorithm 1 (Slower)(disabled): Will check the 20 astromons on the recents monsters and find out the correct amount of astromons|||Algorithm 2 (Faster)(disabled): Only works on slime.||Algorithm 3 (Fastest): Uses ImageSearch",
-		default: "Algorithm 3",
-		data: "Algorithm 3"
-	]
 
 	[combo:
 		name: "PVP Attack Random",
