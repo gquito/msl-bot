@@ -985,7 +985,7 @@
 	[text:
 		name: "Runs",
 		description: "Set the number of runs until the bot stops running the script. Setting the value to 0 or below will cause the script to disregard the number of runs.",
-		data: "0"
+		default: "0"
 	]
 	
 	[combo:
