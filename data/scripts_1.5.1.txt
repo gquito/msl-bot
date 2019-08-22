@@ -697,45 +697,38 @@
 ]
 
 [Farm_Golem:
-	[description: "Attacks golem boss and filters gems. This script is usually for earning gold or getting good gems. Recommended stage for gold is the fastest dungeon you can do. You must set your astromons before starting the script."]
+	[description: "Attacks golem dungeons and sells unwanted gems. Gems are filter settings is under _Filter."]
 	
 	[text:
 		name: "Runs",
-		description: "Number of runs the script should perform before stopping. Entering 0 will cause the script to run indefinitely.",
+		description: "Number of runs the script should perform before stopping. Entering 0 will ignore this feature.",
 		default: "0"
 	]
 	
 	[combo:
 		name: "Dungeon Level",
-		description: "The golem dungeon level to farm in. *Script will assume that you have unlocked up to GB10.",
+		description: "Enter golem dungeon level.",
 		default: "8",
 		data: "1,2,3,4,5,6,7,8,9,10"
 	]
 	
 	[combo:
 		name: "Guided Auto",
-		description: "Manually attack monsters to speed up rounds. Full guided is good for one shot astromons. Semi is good for siphon astromons.",
+		description: "Enter type of guided auto. Full guided will attack one enemy per one ally. Semi guided will select first astromon in the first round and auto attack.",
 		default: "Disabled",
 		data: "Full,Semi,Disabled"
 	]
 	
-	[setting:
-		name: "Gem Filter",
-		description: "Filter unwanted gems. Recommended to filter most gems because script will stop if gem box is full.",
-		default: "_Filter"
-	]
-	
-    [combo:
-		name: "Goal Type",
-		description: "Choose whether gold amount or used gems is the goal.",
-		default: "Refilled Gems",
-		data: "Gold,Refilled Gems"
+    	[text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use.",
+		default: "300"
 	]
     
 	[text:
-		name: "Goal Amount",
-		description: "Amount of gems to be used/gold to be farmed",
-		default: "300"
+		name: "Gold Goal",
+		description: "Enter the amount of gold. Bot will stop once it reaches this amount. Entering 0 will ignore this feature.",
+		default: "0"
 	]
 	
 	[combo:
