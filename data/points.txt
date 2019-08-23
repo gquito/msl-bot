@@ -156,6 +156,6 @@ village-events-close:744,72
 village-missions-popup-close:74,333
 village-monsters:255,508
 village-pack-close:779,108
-village-play:710,507
+village-play:707,536
 village-quests:460,502
 village-summon:600,500
