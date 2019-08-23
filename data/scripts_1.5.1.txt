@@ -192,34 +192,6 @@
 	]
 
 	[combo:
-		name: "PVP Attack Random",
-		description: "Attack the random match in pvp. Will only attack once per interval.",
-		default: "Enabled",
-		data: "Enabled,Disabled"
-	]
-
-	[combo:
-		name: "PVP Random Only",
-		description: "Only attack random matches. This setting will override PVP Attack Random",
-		default: "Disabled",
-		data: "Enabled,Disabled"
-	]
-
-	[combo:
-		name: "PVP Draw",
-		description: "Draw matches when draw button appears. Drawing will stop current PVP session and resume in the next interval.",
-		default: "Disabled",
-		data: "Enabled,Disabled"
-	]
-
-	[combo:
-		name: "PVP Strongest",
-		description: "If this setting is enabled, the script will attack the strongest person on the list or the one with the most points.",
-		default: "Enabled",
-		data: "Enabled,Disabled"
-	]
-
-	[combo:
 		name: "Guided Auto Type",
 		description: "Camera angle will be different if all 4 of your astromons are 'chibi' or small astromons.",
 		default: "Default",
@@ -555,27 +527,48 @@
 ]
 
 [Attack_PVP:
-	[description: "Attacks the highest person on the list. This script will current preset team, so set up PvP team that is good at auto battle before running this script. Script will refresh teams as soon as it is available."]
+	[description: "Attack astroleague to earn league points and medals. Script will use preset team to attacking in the matches."]
 	
 	[text:
-		name: "Number of Attacks",
-		description: "Number of players to attack. 0 will attack until there are no tickets left. Any number exceeding number of tickets will have the same effect as 0.",
-		default: "5"
+		name: "Runs",
+		description: "Number of PvP attacks until script will stop or go idle. Entering 0 will ignore this feature.",
+		default: "0"
 	]
 
 	[combo:
 		name: "Idle Time",
-		description: "Amount of time to remain idle until beginning to attack again. No idle will stop script after first set of attack.",
+		description: "Bot will remain idle to wait for tickets to refresh.",
 		default: "30 minutes",
-		data: "No Idle,30 Minutes,60 Minutes,90 Minutes,120 Minutes,3 Hours,4 Hours,5 Hours"
+		data: "Never,30 Minutes,60 Minutes,120 Minutes,240 Minutes"
+	]
+	
+	[combo:
+		name: "Attack Strongest",
+		description: "Bot will prioritize attacking the match that gives the most points.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Attack Random",
+		description: "Enable or disable attacking of random match.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
 	]
 
-	[text:
-		name: "Usable Astrogems",
-		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
-		default: "300"
+	[combo:
+		name: "Random Only",
+		description: "Enable or disable attacking random match only.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
 	]
 
+	[combo:
+		name: "Draw Match",
+		description: "Enter time for when to draw the match AFTER the draw button appears.",
+		default: "5 Minutes",
+		data: "0 Minutes,1 Minutes,2 Minutes,3 Minutes,4 Minutes,5 Minutes,6 Minutes,7 Minutes,8 Minutes,9 Minutes,10 Minutes"
+	]
 ]
 
 [Farm_TOC:
