@@ -762,13 +762,6 @@
 		data: "Enabled,Disabled"
 	]
     
-    [combo:
-		name: "Empty Astrochips",
-		description: "When enabled, all astrochips will be used regardless of number of astromons already caught.",
-		default: "Disabled",
-		data: "Enabled,Disabled"
-	]
-    
 	[combo:
 		name: "Fill Inventory",
 		description: "When enabled, script will continue to catch astromons until inventory is full regardless of number of astromons already caught.",
@@ -851,13 +844,6 @@
 	[combo:
 		name: "Final Round",
 		description: "When enabled, script will only catch astromons in the last round. This setting will also finish the round.",
-		default: "Disabled",
-		data: "Enabled,Disabled"
-	]
-    
-    [combo:
-		name: "Empty Astrochips",
-		description: "When enabled, all astrochips will be used regardless of number of astromons already caught.",
 		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
