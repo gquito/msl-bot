@@ -635,48 +635,48 @@
 	
 	[text:
 		name: "Runs",
-		description: "Number of runs the script should perform before stopping. Entering 0 will cause the script to run indefinitely.",
+		description: "Number of runs the script should perform before stopping. Entering 0 will ignore this feature.",
 		default: "0"
 	]
 	
 	[combo:
 		name: "Map",
-		description: "Map in story mode to farm rare astromons in.",
-		default: "Pagos Coast",
+		description: "Enter map which hosts the astromon.",
+		default: "Phantom Forest",
 		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
 	]
 	
 	[combo:
 		name: "Difficulty",
-		description: "Difficulty of the map, available difficulties are Normal, Hard, or Extreme.",
-		default: "Extreme",
+		description: "Enter the difficulty of the map selected.",
+		default: "Normal",
 		data: "Normal,Hard,Extreme"
 	]
 	
 	[combo:
 		name: "Stage Level",
-		description: "The level to farm rares in. This can be used to select a level with materials for super evolution.",
-		default: "Exp",
+		description: "Enter the level of the stage selected.",
+		default: "1",
 		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
 	]
 	
 	[list:
 		name: "Capture",
-		description: "Types of rares to catch. The priority of which to catch is from left, as the highest priority, to right, as lowest priority.",
+		description: "Capture the astromons on the list. Priority goes from left to right.",
 		default: "Legendary,Exotic,Super Rare,Rare,Variant",
 		data: "Legendary,Exotic,Super Rare,Rare,Variant"
 	]
 	
 	[list:
 		name: "Gems To Sell",
-		description: "Grade of gems to sell. All selected gems will be sold every hourly sequence or when gem box is full.",
+		description: "Enter grade of gems to sell. All selected gems will be sold when the gem inventory is full.",
 		default: "1,2,3,4",
 		data: "1,2,3,4"
 	]
 	
-	[text:
-		name: "Usable Astrogems",
-		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+    [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use.",
 		default: "300"
 	]
 	
