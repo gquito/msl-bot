@@ -817,7 +817,7 @@
 	
 	[text:
 		name: "Amount",
-		description: "Amount of astromons to catch.",
+		description: "Amount of astromons to catch. Entering 0 will ignore this feature and will fill your astromon inventory.",
 		default: "16"
 	]
 	
