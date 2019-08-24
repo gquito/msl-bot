@@ -761,13 +761,6 @@
 		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
-    
-	[combo:
-		name: "Fill Inventory",
-		description: "When enabled, script will continue to catch astromons until inventory is full regardless of number of astromons already caught.",
-		default: "Disabled",
-		data: "Enabled,Disabled"
-	]
 	
 	[combo:
 		name: "Release Evo3",
@@ -847,14 +840,7 @@
 		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
-    
-	[combo:
-		name: "Fill Inventory",
-		description: "When enabled, script will continue to catch astromons until inventory is full regardless of number of astromons already caught.",
-		default: "Disabled",
-		data: "Enabled,Disabled"
-	]
-    
+
 	[combo:
 		name: "Map",
 		description: "Enter map which hosts the astromon.",
