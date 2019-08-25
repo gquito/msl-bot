@@ -676,7 +676,7 @@
 	
     [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use.",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
 		default: "300"
 	]
 	
@@ -714,7 +714,7 @@
 	
     [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use.",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
 		default: "300"
 	]
     
@@ -813,7 +813,7 @@
 	
     [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use.",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
 		default: "300"
 	]
 	
@@ -885,7 +885,7 @@
 	
     [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use.",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
 		default: "300"
 	]
 	
