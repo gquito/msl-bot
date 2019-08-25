@@ -3,12 +3,13 @@ anvil:village
 association:association-expedition,buy-gem,buy-gold,map,refill
 association-expedition:association,buy-gem,buy-gold,map,refill
 astroleague:map,map-battle
+astromon-full:map-battle
 autobattle-prompt:battle,battle-auto,map-battle
 awakened-success:monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,release-confirm
 battle:battle-auto,battle-boss,battle-end-exp,catch-mode,pause
 battle-auto:battle,battle-boss,battle-end-exp,catch-mode,pause
 battle-boss:battle,battle-auto
-battle-end:battle,battle-auto,loading,map,map-battle,monsters,refill,village
+battle-end:battle,battle-auto,loading,map,map-astromon-full,map-battle,monsters,refill,village
 battle-end-exp:battle-end,battle-sell,battle-sell-item
 battle-sell:battle-end,battle-sell-item
 battle-sell-item:battle-sell
@@ -39,7 +40,8 @@ inbox:friend-gifts,village
 loading:astroleague,battle,battle-auto,map,titans-battle,village
 manage:gem-upgrade-not-upgrading,monsters,monsters-evolution,monsters-level-up,sell-gems-confirm
 map:association,astroleague,clan-plaza,dialogue-skip,dialogue-skip,dragon-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,golem-dungeons,guardian-dungeons,loading,map-stage,refill,special-guardian-dungeons,starstone-dungeons,toc,view-clan-popup,village
-map-battle:astroleague,autobattle-prompt,battle,battle-auto,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc
+map-astromon-full:battle-end
+map-battle:astroleague,astromon-full,autobattle-prompt,battle,battle-auto,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc
 map-battle-autofill:map-battle,refill-astrochips-popup
 map-stage:map,map-battle
 monsters:awakened-success,buy-gem,buy-gold,hourly-reward,manage,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,release-confirm,release-reward,village
