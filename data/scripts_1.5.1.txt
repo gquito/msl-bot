@@ -356,8 +356,8 @@
 	[combo:
 		name: "Check Intervals",
 		description: "Bot will check for available matches and attack at this interval.",
-		default: "30 Minutes",
-		data "30 Minutes,60 Minutes, 120 Minutes, 180 Minutes, 240 Minutes, 300 Minutes"
+		default: "60 Minutes",
+		data "30 Minutes,60 Minutes,120 Minutes,150 Minutes,180 Minutes,210 Minutes,240 Minutes,270 Minutes,300 Minutes"
 	]
 	
 	[combo:
@@ -948,7 +948,7 @@
 
 	[combo:
 		name: "Idle Time",
-		description: "Bot will remain idle to wait for tickets to refresh.",
+		description: "Bot will remain idle to wait for more guardian dungeons.",
 		default: "30 minutes",
 		data: "Never,30 Minutes,60 Minutes,120 Minutes,240 Minutes"
 	]
