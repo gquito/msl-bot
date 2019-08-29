@@ -267,14 +267,14 @@
 	[combo:
 		name: "Buy First Item",
 		description: "Buy the first item in shady shop every hour.",
-		default: "Enabled",
+		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
 
 	[combo:
 		name: "Check Exotic Festival",
 		description: "Check to see if you have an exotic festival ticket waiting.",
-		default: "Enabled",
+		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
 
@@ -307,7 +307,7 @@
 		name: "Check Intervals",
 		description: "Bot will check for guardian dungeons at this interval.",
 		default: "30 Minutes",
-		data: "15 Minutes,30 Minutes, 45 Minutes, 60 Minutes, 90 Minutes, 120 Minutes"
+		data: "15 Minutes,30 Minutes,45 Minutes,60 Minutes,90 Minutes,120 Minutes"
 	]
 ]
 
@@ -357,7 +357,7 @@
 		name: "Check Intervals",
 		description: "Bot will check for available matches and attack at this interval.",
 		default: "60 Minutes",
-		data "30 Minutes,60 Minutes,120 Minutes,150 Minutes,180 Minutes,210 Minutes,240 Minutes,270 Minutes,300 Minutes"
+		data: "30 Minutes,60 Minutes,120 Minutes,150 Minutes,180 Minutes,210 Minutes,240 Minutes,270 Minutes,300 Minutes"
 	]
 	
 	[combo:
