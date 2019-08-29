@@ -935,59 +935,59 @@
 	
 	[text:
 		name: "Runs",
-		description: "Set the number of runs until the bot stops running the script. Setting the value to 0 or below will cause the script to disregard the number of runs.",
+		description: "Number of runs the script should perform before stopping. Entering 0 will ignore this feature.",
 		default: "0"
 	]
 	
 	[combo:
 		name: "Dungeon Type",
-		description: "Dungeon to farm in. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
+		description: "Enter dungeon type. Normal is for starstones and elemental is for the current element starstone of the week.",
 		default: "Normal",
 		data: "Normal,Elemental"
 	]
 	
 	[combo:
 		name: "Dungeon Level",
-		description: "Must have up to B9 unlocked for the script to correctly choose dungeon level.",
+		description: "Enter the dungeon level.",
 		default: "10",
 		data: "1,2,3,4,5,6,7,8,9,10"
 	]
 
 	[combo:
 		name: "Guided Auto",
-		description: "Manually attack monsters to speed up rounds. Full guided is good for one shot astromons. Semi is good for siphon astromons.",
+		description: "Enter type of guided auto. Full guided will attack one enemy per one ally. Semi guided will select first astromon in the first round and auto attack.",
 		default: "Disabled",
 		data: "Full,Semi,Disabled"
 	]
 	
 	[combo:
 		name: "Stone Element",
-		description: "Element of stone you wish to farm. This will not change the dungeon type, it will only count the type of stone. This is mostly useful during the weekend dungeons when you can get three different kinds of stones and you want only a specific number of certain a element. Make sure this is correct or bot will keep farming until usable astrogems is complete.",
+		description: "Enter which element to count. This will count towards the High, Mid, Low stones stats.",
 		default: "Any",
 		data: "Any,Water,Fire,Wood"
 	]
 	
 	[text:
 		name: "High Stones",
-		description: "Number of highstones to farm.",
+		description: "Enter the number of Highstones to farm.",
 		default: "50"
 	]
 	
 	[text:
 		name: "Mid Stones",
-		description: "Number of midstones to farm.",
+		description: "Enter number of Midstones to farm.",
 		default: "0"
 	]
 	
 	[text:
 		name: "Low Stones",
-		description: "Number of lowstones to farm.",
+		description: "Enter number of Lowstones to farm.",
 		default: "0"
 	]
 	
-	[text:
-		name: "Usable Astrogems",
-		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+    [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
 		default: "300"
 	]
 	
