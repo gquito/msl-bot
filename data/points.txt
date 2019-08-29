@@ -39,10 +39,10 @@ battle-sell-item-second:229,234
 battle-sell-item-sell:500,400
 battle-sell-item-third:329,234
 battle-third-friendly-mon:441,515
-bingo-accept-all:597,339
+bingo-accept:469,333
+bingo-accept-all:539,347
 bingo-button:600,346
-bingo-icon:79,87
-bingo-reward:448,331
+bingo-reward:462,384
 boss:402,239
 boutique-close:773,77
 catch-mode-cancel:782,84
