@@ -37,9 +37,10 @@ golem-dungeons:ancient-colossus-dungeon,map,map-battle
 guardian-dungeons:dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,map,map-battle,special-guardian-dungeons,starstone-dungeons
 hourly-reward:monsters,monsters-evolution,monsters-level-up,village
 inbox:friend-gifts,village
+leagues:astroleague,map
 loading:astroleague,battle,battle-auto,map,titans-battle,village
 manage:gem-upgrade-not-upgrading,monsters,monsters-evolution,monsters-level-up,sell-gems-confirm
-map:association,astroleague,clan-plaza,dialogue-skip,dialogue-skip,dragon-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,golem-dungeons,guardian-dungeons,loading,map-stage,refill,special-guardian-dungeons,starstone-dungeons,toc,view-clan-popup,village
+map:association,astroleague,clan-plaza,dialogue-skip,dialogue-skip,dragon-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,golem-dungeons,guardian-dungeons,leagues,loading,map-stage,refill,special-guardian-dungeons,starstone-dungeons,toc,view-clan-popup,village
 map-astromon-full:battle-end
 map-battle:astroleague,astromon-full,autobattle-prompt,battle,battle-auto,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc
 map-battle-autofill:map-battle,refill-astrochips-popup
