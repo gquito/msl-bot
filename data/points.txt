@@ -92,6 +92,8 @@ guided-4-mon-third-chibi:454,233
 guided-4-mon-third:447,210
 inbox-accept-all-confirm:323,323
 inbox-accept-all:640,175
+leagues-astromon:243,283
+leagues-champion:557,281
 lost-connection-retry:332,322
 manage-grade1:327,438
 manage-grade2:365,438
