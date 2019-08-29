@@ -65,4 +65,5 @@ tap-to-start:event-list
 titans-battle:pause,titans-result
 titans-monsters:clan-titans,loading,titans-battle
 toc:map,map-battle
-village:anvil,bingo,bingo-complete,boutique,dialogue-skip,event-list,exotic-festival,exotic-ticket-claim,friends,friends-request,hourly-reward,inbox,loading,map,master-info,monsters,player-info,quests,refill,shop,super-fest-popup,super-lab
+village:anvil,bingo,bingo-complete,boutique,dialogue-skip,event-list,exotic-festival,exotic-ticket-claim,friends,friends-request,hourly-reward,inbox,loading,map,master-info,monsters,player-info,quests,refill,shop,super-fest-popup,super-lab,village-summon
+village-summon:village
