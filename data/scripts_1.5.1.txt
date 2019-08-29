@@ -217,7 +217,7 @@
 	
 	[combo:
 		name: "Hourly Script",
-		description: "Script for hourly sequence which include: Guardian Dungeons, Collecting Trees, Buying Items, Doing PvP, and additional specified scripts. These settings can be found in _Config script.",
+		description: "Enable or disable hourly schedule to run short scripts. Settings below will run if they are enabled.",
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
@@ -233,13 +233,6 @@
 		name: "Click Nezz",
 		description: "Attempts to click positions where nezz usually spawns. This system is not perfect, but is able to click on nezz most of the time. Note: newer ships might not have nezz positions.",
 		default: "Disabled",
-		data: "Enabled,Disabled"
-	]
-
-	[combo:
-		name: "Attack PVP",
-		description: "Attack PVP until there are no more tickets left.",
-		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 
@@ -331,7 +324,7 @@
 	[combo:
 		name: "Check Intervals",
 		description: "Bot will check for completed expeditions and explore them again at this interval.",
-		default: "60 Minutes",
+		default: "1 Hours",
 		data: "1 Hours,2 Hours,4 Hours,8 Hours"
 	]
 	
@@ -347,6 +340,52 @@
 		description: "Change length of exploration using this setting.",
 		default: "8 Hours",
 		data: "2 Hours,4 Hours,8 Hours"
+	]
+]
+
+[_Astroleague:
+	[description: "Find matches and attack to earn points and league medals."]
+		
+	[combo:
+		name: "Astroleague Script",
+		description: "Enable or disable astromon league script.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Check Intervals",
+		description: "Bot will check for available matches and attack at this interval.",
+		default: "30 Minutes",
+		data "30 Minutes,60 Minutes, 120 Minutes, 180 Minutes, 240 Minutes, 300 Minutes"
+	]
+	
+	[combo:
+		name: "Attack Strongest",
+		description: "Bot will prioritize attacking the match that gives the most points.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Attack Random",
+		description: "Enable or disable attacking of random match.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Random Only",
+		description: "Enable or disable attacking random match only.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Draw Match",
+		description: "Enter time for when to draw the match AFTER the draw button appears.",
+		default: "5 Minutes",
+		data: "0 Minutes,1 Minutes,2 Minutes,3 Minutes,4 Minutes,5 Minutes,6 Minutes,7 Minutes,8 Minutes,9 Minutes,10 Minutes"
 	]
 ]
 
@@ -901,17 +940,17 @@
 		data: "Left,Right,Both"
 	]
 	
-	[text:
-		name: "Usable Astrogems",
-		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
+    [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
 		default: "300"
 	]
 
 	[combo:
-		name: "Loop",
-		description: "If loop is enabled, script will keep going to the village and back to check for new guardian dungeons until script is stopped.",
-		default: "Enabled",
-		data: "Enabled,Disabled"
+		name: "Idle Time",
+		description: "Bot will remain idle to wait for tickets to refresh.",
+		default: "30 minutes",
+		data: "Never,30 Minutes,60 Minutes,120 Minutes,240 Minutes"
 	]
 
 	[combo:
