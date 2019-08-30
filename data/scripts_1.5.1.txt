@@ -304,6 +304,13 @@
 	]
 	
 	[combo:
+		name: "Guided Auto",
+		description: "Enter type of guided auto. Full guided will attack one enemy per one ally. Semi guided will select first astromon in the first round and auto attack.",
+		default: "Disabled",
+		data: "Full,Semi,Disabled"
+	]
+	
+	[combo:
 		name: "Check Intervals",
 		description: "Bot will check for guardian dungeons at this interval.",
 		default: "30 Minutes",
