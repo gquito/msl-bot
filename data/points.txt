@@ -104,7 +104,7 @@ manage-sell-confirm:382,327
 manage-sell-selected:670,438
 manage-sort-order:750,154
 manage-sort-recent:709,270
-manage-sort:690,266
+manage-sort:693,153
 manage-upgrade:256,254
 manage-x:773,113
 map-battle-autobattle-confirm:331,318
