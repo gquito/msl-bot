@@ -31,6 +31,7 @@ friends-send-to-all:712,161,0x7B4A36
 gold-dungeons-attempt:645,237,0xFFF109
 guardian-dungeons-no-found:518,364,0xD8C1A6|433,362,0xDBC4A9
 inbox-accept-all-enabled:620,180,0x015f65
+manage-oldest:745,157,0xFED328
 map-battle-autofill-on:751,305,0x49B5FF
 map-stage-extreme:644,78,0xDD4D43
 map-stage-hard:654,78,0x8CAA27
