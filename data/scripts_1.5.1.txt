@@ -311,6 +311,13 @@
 	]
 	
 	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
 		name: "Check Intervals",
 		description: "Bot will check for guardian dungeons at this interval.",
 		default: "30 Minutes",
@@ -614,23 +621,6 @@
 		description: "Enter time for when to draw the match AFTER the draw button appears.",
 		default: "5 Minutes",
 		data: "0 Minutes,1 Minutes,2 Minutes,3 Minutes,4 Minutes,5 Minutes,6 Minutes,7 Minutes,8 Minutes,9 Minutes,10 Minutes"
-	]
-]
-
-[Farm_TOC:
-	[description: "Attack TOC using current preset team. Script will be stopped once a defeat has been detected."]
-
-	[text:
-		name: "Usable Astrogems",
-		description: "Number of astrogems the bot is allowed to use for refilling energy. Script will refill when the refill warning shows up. Insufficient gems will stop the script.",
-		default: "300"
-	]
-	
-	[combo:
-		name: "Target Boss",
-		description: "During the final round, you can choose to target boss for efficiency.",
-		default: "Enabled",
-		data: "Enabled,Disabled"
 	]
 ]
 
