@@ -625,31 +625,30 @@
 ]
 
 [Farm_Forever:
-	[description: "Alternate between Farming golem dungeon and 'Slime' farming for farming forever. The script will continue running until stopped or specific errors such as no inventory space."]
+	[description: "Alternate between Farm Golem and Farm Gem for farming forever. The script will continue running until stopped or specific errors such as no inventory space."]
 
 	[combo:
 		name: "First Script",
 		description: "First script to run.",
-		default: "Farm Golem",
-		data: "Farm Golem,Farm Gem"
+		default: "Farm_Golem",
+		data: "Farm_Golem,Farm_Gem"
 	]
 
-    [combo:
-		name: "Farm Golem Goal Type",
-		description: "Choose whether gold amount or gems is the goal.",
-		default: "Refilled Gems",
-		data: "Gold,Refilled Gems"
+    [text:
+		name: "Golem Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use for Farm Golem script. Entering 0 will ignore this feature.",
+		default: "0"
 	]
     
 	[text:
-		name: "Farm Golem Goal Amount",
-		description: "Number used for goal.",
-		default: "300"
+		name: "Golem Gold Goal",
+		description: "Enter the amount of gold. Farm Golem script will stop once it reaches this amount. Entering 0 will ignore this feature.",
+		default: "1320000"
 	]
 
 	[text:
-		name: "Farm Gem Amount",
-		description: "Number of gems to 'slime' farm. Generally the amount should be around 40% more than the Farm Golem Refill for net profit in gems. Note: This value will be rounded down to the hundred place.",
+		name: "Astrogems",
+		description: "Enter the number of astrogems you wish to convert. Using 'g' as the first character will convert the amount of gold to the corresponding number of astrogems.",
 		default: "400"
 	]
 
@@ -660,7 +659,7 @@
 	]
 
 	[setting:
-		name: "Farm Gem Settings",
+		name: "Gem Settings",
 		description: "The Farm Gem setting will be used with the exception of Usable Astrogems, Guardian Mode, Collect Quests, and Hourly Script.",
 		default: "Farm Gem"
 	]
