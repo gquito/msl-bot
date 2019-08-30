@@ -45,6 +45,7 @@ monsters-awakened-enabled:425,394,0xF5E448
 monsters-evolution-second:356,129,0xD9D5D0/356,129,0xB1ADA9
 monsters-evolution-third:360,129,0xDDD9D4/360,129,0xB8B3AE
 monsters-evolve-enabled:656,393,0xFCF662
+monsters-feed-10:333,398,0x33F09A
 monsters-not-awakened-first:439,198,0x1C1311|461,172,0x7D624D
 monsters-not-awakened-second:501,198,0x1C1311|523,172,0x7D624D
 monsters-not-awakened-third:563,198,0x1C1311|586,172,0x7D624D
