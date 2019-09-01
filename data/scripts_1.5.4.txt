@@ -146,19 +146,19 @@
 
 	[text:
 		name: "Swipe Delay",
-		description: "The amount of time in MILLISECONDS that the bot waits after swiping the screen to do anything. (minimum: 300)",
+		description: "The amount of time in MILLISECONDS that the bot waits after swiping the screen to do anything.",
 		default: "300"
 	]
 
 	[text:
 		name: "Navigation Timeout",
-		description: "The amount of time in SECONDS until navigation times out. (minimum: 15)",
+		description: "The amount of time in SECONDS until navigation times out.",
 		default: "30"
 	]
 
 	[text:
 		name: "Target Boss Delay",
-		description: "The amount of time in MILLISECONDS that the bot waits before clicking on the boss. Do not go higher than 200.",
+		description: "The amount of time in MILLISECONDS that the bot waits before clicking on the boss.",
 		default: "10"
 	]
 	
