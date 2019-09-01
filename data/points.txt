@@ -100,6 +100,7 @@ manage-grade1:327,438
 manage-grade2:365,438
 manage-grade3:402,438
 manage-grade4:440,438
+manage-grade5:478,438
 manage-grid-first:346,213
 manage-sell-confirm:382,327
 manage-sell-selected:670,438
