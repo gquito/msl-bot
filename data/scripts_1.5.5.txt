@@ -191,12 +191,12 @@
 		data: "Enabled,Disabled"
 	]
   
-  [list:
-    name: "Sell Gems",
-    description: "When gem inventory is full, the script will go to inventory to sell gems from 1-5 stars.",
-    default: "1,2,3",
-    data: "1,2,3,4,5"
-  ]
+	[list:
+	    	name: "Sell Gems",
+	    	description: "When gem inventory is full, the script will go to inventory to sell gems from 1-5 stars.",
+	    	default: "1,2,3",
+	    	data: "1,2,3,4,5"
+	]
 
 	[combo:
 		name: "Guided Auto Type",
@@ -416,15 +416,15 @@
 	[combo:
 		name: "Champion League Script",
 		description: "Enable or disable astromon champion league script.",
-		default: "Enabled",
+		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
 	
 	[combo:
 		name: "Check Intervals",
 		description: "Bot will check for available matches and attack at this interval.",
-		default: "60 Minutes",
-		data: "30 Minutes,60 Minutes,120 Minutes,150 Minutes,180 Minutes,210 Minutes,240 Minutes,270 Minutes,300 Minutes"
+		default: "120 Minutes",
+		data: "60 Minutes,120 Minutes,180 Minutes,240 Minutes,300 Minutes"
 	]
 	
 	[combo:
