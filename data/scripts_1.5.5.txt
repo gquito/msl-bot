@@ -689,7 +689,7 @@
 	[combo:
 		name: "Idle Time",
 		description: "Bot will remain idle to wait for tickets to refresh.",
-		default: "30 minutes",
+		default: "60 minutes",
 		data: "Never,60 Minutes,120 Minutes,180 Minutes,240 Minutes"
 	]
 	
