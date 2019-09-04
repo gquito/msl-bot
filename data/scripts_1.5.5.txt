@@ -401,6 +401,13 @@
 		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
+	
+	[combo:
+		name: "Focus Enemy",
+		description: "Enable or disable targeting of enemy.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
 
 	[combo:
 		name: "Draw Match",
@@ -423,7 +430,7 @@
 	[combo:
 		name: "Check Intervals",
 		description: "Bot will check for available matches and attack at this interval.",
-		default: "120 Minutes",
+		default: "180 Minutes",
 		data: "60 Minutes,120 Minutes,180 Minutes,240 Minutes,300 Minutes"
 	]
 	
@@ -435,10 +442,10 @@
 	]
 
 	[combo:
-		name: "Draw Match",
-		description: "Enter time for when to draw the match AFTER the draw button appears.",
-		default: "5 Minutes",
-		data: "0 Minutes,1 Minutes,2 Minutes,3 Minutes,4 Minutes,5 Minutes,6 Minutes,7 Minutes,8 Minutes,9 Minutes,10 Minutes"
+		name: "Focus Enemy",
+		description: "Enable or disable targeting of enemy.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
 	]
 ]
 
@@ -651,6 +658,13 @@
 	[combo:
 		name: "Random Only",
 		description: "Enable or disable attacking random match only.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Focus Enemy",
+		description: "Enable or disable targeting of enemy.",
 		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
