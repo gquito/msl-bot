@@ -677,6 +677,38 @@
 	]
 ]
 
+[Attack_Champion:
+	[description: "Find matches and attack in champions league to earn points and league medals."]
+		
+	[text:
+		name: "Runs",
+		description: "Number of Champion attacks until script will stop or go idle. Entering 0 will ignore this feature.",
+		default: "0"
+	]
+
+	[combo:
+		name: "Idle Time",
+		description: "Bot will remain idle to wait for tickets to refresh.",
+		default: "30 minutes",
+		data: "Never,60 Minutes,120 Minutes,180 Minutes,240 Minutes"
+	]
+	
+	
+	[combo:
+		name: "Attack Strongest",
+		description: "Bot will prioritize attacking the match that gives the most points.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Focus Enemy",
+		description: "Enable or disable targeting of enemy.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+]
+
 [Farm_Forever:
 	[description: "Alternate between Farm Golem and Farm Gem for farming forever. The script will continue running until stopped or specific errors such as no inventory space."]
 
