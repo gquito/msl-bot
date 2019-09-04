@@ -112,7 +112,7 @@ manage-x:773,113
 map-battle-autobattle-confirm:331,318
 map-battle-autobattle:653,422
 map-battle-autofill:401,311
-map-battle-play:706,492
+map-battle-play:708,455
 map-stage-close:775,75
 map-stage-extreme:676,170
 map-stage-hard:678,141
