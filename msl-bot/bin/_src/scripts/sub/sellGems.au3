@@ -1,5 +1,4 @@
 #include-once
-#include "../../imports.au3"
 
 #cs 
     Function: Sell gems in manage screen.
@@ -16,18 +15,19 @@ Func sellGems($aGrades)
     Local $bOutput = False
     
     While True
-        If (navigate("manage", False, 3)) Then
-            Log_Add("Selling grades: " & $aGrades & ".")
+        If navigate("manage", False, 3) Then
+            Log_Add("Selling grades: " & $aGrades & ".", $LOG_INFORMATION)
             For $iGrade in StringSplit($aGrades, ",", $STR_NOCOUNT)
                 clickPoint(getPointArg("manage-grade" & $iGrade))
                 If _Sleep(200) Then ExitLoop(2)
             Next
 
-            If (clickUntil(getPointArg("manage-sell-selected"), "isLocation", "sell-gems-confirm", 3, 500)) Then
-                If (clickWhile(getPointArg("manage-sell-confirm"), "isLocation", "sell-gems-confirm", 3, 500)) Then navigate("map")
+            If clickUntil(getPointArg("manage-sell-selected"), "isLocation", "sell-gems-confirm", 3, 500) Then
+                If clickWhile(getPointArg("manage-sell-confirm"), "isLocation", "sell-gems-confirm", 3, 500) Then 
+                    navigate("map")
+                EndIf
             EndIf
         Else
-            If (isLocation("quit")) Then ContinueLoop
             Log_Add("Could not navigate to manage.", $LOG_ERROR)
             ExitLoop
         EndIf

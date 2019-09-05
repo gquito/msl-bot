@@ -1,10 +1,10 @@
 #include-once
-#include "../imports.au3"
 
 ;For cumulative stats
+Global $g_iStatModify = 0
 
 ;$aData will store data from the file to an array
-Func Stat_Read(ByRef $aData, $sFilePath = $g_sProfilePath & "\CumulativeStats")
+Func Cumulative_Read(ByRef $aData, $sFilePath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\CumulativeStats")
     $aData = Null
     If (Not(FileExists($sFilePath))) Then
         Local $t_aData[0]
@@ -31,6 +31,10 @@ Func Stat_Read(ByRef $aData, $sFilePath = $g_sProfilePath & "\CumulativeStats")
         _ArrayAdd($t_aData,"Hidden_rewards:0")
         _ArrayAdd($t_aData,"Nezz_found:0")
         _ArrayAdd($t_aData,"Guardian_dungeons:0")
+        _ArrayAdd($t_aData,"Bingo_completed:0")
+        _ArrayAdd($t_aData,"Daily_completed:0")
+        _ArrayAdd($t_aData,"Gold_dungeon:0")
+        _ArrayAdd($t_aData,"Special_dungeon:0")
         _ArrayAdd($t_aData,"Quest_collected:0")
         _FileWriteFromArray($sFilePath,$t_aData)
     EndIf
@@ -49,7 +53,7 @@ Func Stat_Read(ByRef $aData, $sFilePath = $g_sProfilePath & "\CumulativeStats")
     Return True
 EndFunc
 
-Func Stat_Save(ByRef $aData, $sFilePath = $g_sProfilePath & "\CumulativeStats")
+Func Cumulative_Save(ByRef $aData, $sFilePath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\CumulativeStats")
     If (Not(isArray($aData))) Then Return False
 
     Local $hFile = FileOpen($sFilePath, $FO_OVERWRITE)
@@ -66,12 +70,12 @@ Func Stat_Save(ByRef $aData, $sFilePath = $g_sProfilePath & "\CumulativeStats")
     Return True
 EndFunc
 
-Func Stat_Set(ByRef $aDataList, $sData, $sValue, $bUpdate = True, $hListView = $g_hLV_OverallStats)
+Func Cumulative_Set(ByRef $aDataList, $sData, $sValue, $bUpdate = True, $hListView = $g_hLV_OverallStats)
     If (Not(isArray($aDataList))) Then Return False
 
     ;Saves every 10 modifications.
     If ($g_iStatModify >= 10) Then
-        Stat_Save($aDataList)
+        Cumulative_Save($aDataList)
         $g_iStatModify = 0
     Else
         $g_iStatModify += 1
@@ -93,42 +97,42 @@ Func Stat_Set(ByRef $aDataList, $sData, $sValue, $bUpdate = True, $hListView = $
         $aDataList[UBound($aDataList)-1][1] = $sValue
     EndIf
 
-    _Stat_Calculated($aDataList)
+    _Cumulative_Calculated($aDataList)
     If ($g_hTimeSpent = Null) Then $g_hTimeSpent = TimerInit()
 
-    If ($bUpdate) Then Stat_Update($aDataList, $hListView)
+    If ($bUpdate) Then Cumulative_Update($aDataList, $hListView)
 
     Return True
 EndFunc
 
 ;Stats that are calculated after another stat has been set.
-Func _Stat_Calculated(ByRef $aData)
+Func _Cumulative_Calculated(ByRef $aData)
     If (Not(isArray($aData))) Then Return False
 
     ;Time spent
     If ($g_hTimeSpent <> Null And TimerDiff($g_hTimeSpent) > 60000) Then
         Local $iSeconds = TimerDiff($g_hTimeSpent)/1000
         $g_hTimeSpent = Null
-        Stat_Set($aData, "Hours spent", Round(Number(getArg($aData, "Hours spent"))+($iSeconds/60/60), 4))
+        Cumulative_Set($aData, "Hours spent", Round(Number(getArg($aData, "Hours spent"))+($iSeconds/60/60), 4))
     EndIf
 
     ;Gold and astrogem profit
     Local $iGoldNetProfit = Int(getArg($aData, "Gold profit")) - Int(getArg($aData, "Gold spent"))
-    If ($iGoldNetProfit <> Int(getArg($aData, "Gold net profit"))) Then Stat_Set($aData, "Gold net profit", $iGoldNetProfit)
+    If ($iGoldNetProfit <> Int(getArg($aData, "Gold net profit"))) Then Cumulative_Set($aData, "Gold net profit", $iGoldNetProfit)
 
     Local $iAstrogemNetProfit = Int(getArg($aData, "Astrogems farmed")) - Int(getArg($aData, "Astrogems spent"))
-    If ($iAstrogemNetProfit <> Int(getArg($aData, "Astrogem net profit"))) Then Stat_Set($aData, "Astrogem net profit", $iAstrogemNetProfit)
+    If ($iAstrogemNetProfit <> Int(getArg($aData, "Astrogem net profit"))) Then Cumulative_Set($aData, "Astrogem net profit", $iAstrogemNetProfit)
 EndFunc
 
-Func Stat_Increment(ByRef $aDataList, $sData, $iAmount = 1)
+Func Cumulative_Increment(ByRef $aDataList, $sData, $iAmount = 1)
     Local $sDataValue = getArg($aDataList, $sData)
     If ($sDataValue = -1) Then Return False
     
-    Return Stat_Set($aDataList, $sData, $sDataValue+$iAmount)
+    Return Cumulative_Set($aDataList, $sData, $sDataValue+$iAmount)
 EndFunc
 
 ;Listview must have 2 columns
-Func Stat_Update(ByRef $aData, ByRef $hListView)
+Func Cumulative_Update(ByRef $aData, ByRef $hListView)
     If (Not(isArray($aData))) Then Return False
     _GUICtrlListView_BeginUpdate($hListView)
 
@@ -149,14 +153,14 @@ Func Stat_Update(ByRef $aData, ByRef $hListView)
     Return True
 EndFunc
 
-Func Stat_Reset(ByRef $aData, ByRef $hListView, $sFilePath = $g_sProfilePath & "\CumulativeStats")
+Func Cumulative_Reset(ByRef $aData, ByRef $hListView, $sFilePath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\CumulativeStats")
     If (Not(isArray($aData))) Then Return False
     For $i = 0 To UBound($aData)-1  
         $aData[$i][1] = 0
         _GUICtrlListView_SetItem($hListView, 0, $i, 1)
     Next
 
-    Stat_Save($aData, $sFilePath)
+    Cumulative_Save($aData, $sFilePath)
     Local $sDate = _Now()
     If (Not(FileExists($sFilePath & "Update"))) Then
         FileWrite($sFilePath & "Update", $sDate)

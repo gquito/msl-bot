@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 #cs
     Function: Sleep that accounts for script state
@@ -8,120 +7,90 @@
     Returns: True if script needs to be stopped.
 #ce
 Func _Sleep($iDuration = 0)
-    ;Log_Add("_Sleep for " & $iDuration & " seconds.", $LOG_DEBUG)
-    If ($iDuration = 0) Then 
-        If (Not($g_bRunning)) Then 
-            $g_hTimerLocation = Null
-            Return True
-        Else
-            If (Not($g_bRestarting)) Then Return Not(_AntiStuck())
-        EndIf
-    EndIf
+    Local $hTimer = TimerInit()
+    Do 
+        If (UBound($g_aLog) > $g_iLOG_Processed) Then Log_Display()
 
-    Local $vTimerInit = TimerInit()
-    While TimerDiff($vTimerInit) < $iDuration
-        If (UBound($g_alog) > $g_iLOG_Processed) Then Log_Display()
-        
-        If (Not($g_bRunning)) Then 
-            $g_hTimerLocation = Null
-            Return True
-        EndIf
+        If $g_bRunning = True Then
+            If $iDuration = 0 And $g_bRestarting = False Then ExitLoop
+            If $g_hScriptTimer <> Null Then
+                Local $sTime = getTimeString(TimerDiff($g_hScriptTimer)/1000)
+                If $sTime <> $g_sOldTime And Not(WinGetState($g_hParent) = 0x16) Then ;$WIN_STATE_MINIMIZED
+                    $g_sOldTime = $sTime
 
-        Switch getMinute()
-            Case "00"
-                If (Not($g_bScheduled)) Then 
-                    $g_bPerformHourly = True
-                    $g_bPerformGuardian = True
-                EndIf
+                    GUICtrlSetData($g_idLbl_ScriptTime, "Time: " & $sTime)
+                EndIf    
 
-                $g_bScheduled = True
-            Case "30"
-                If (getHour() = "00") Then 
-                    $g_bCleanLogFiles = False
-                EndIf
-
-                If (Not($g_bScheduled)) Then $g_bPerformGuardian = True
-                $g_bScheduled = True
-            Case Else
-                $g_bScheduled = False
-        EndSwitch
-
-        If (Not($g_bCleanLogFiles)) Then 
-            cleanOldLogFiles()
-            $g_bCleanLogFiles = True
-        EndIf
-
-        If ($g_bRunning And $g_hScriptTimer <> Null) Then
-            Local $sTime = getTimeString(TimerDiff($g_hScriptTimer)/1000)
-            If Not(BitAND(WinGetState($g_hParent), $WIN_STATE_MINIMIZED)) And ($sTime <> $g_sOldTime) Then
-                Data_Display()
-                GUICtrlSetData($g_idLbl_ScriptTime, "Time: " & $sTime)
-                $g_sOldTime = $sTime
-            EndIf    
-
-            ;AntiStuck sequence
-            If (Not($g_bRestarting)) Then _AntiStuck()
-        EndIf
-        
-        While $g_bPaused
-            If ($g_hTimeSpent <> "/Paused") Then 
-                _Stat_Calculated($g_aStats)
-                Stat_Save($g_aStats)
-                $g_hTimeSpent = "/Paused"
+                If $g_bRestarting = False Then _AntiStuck()
             EndIf
-            
-            $g_hTimerLocation = Null
-            GUI_HANDLE()
-        WEnd
-        If ($g_hTimeSpent = "/Paused") Then $g_hTimeSpent = TimerInit()
 
-        GUI_HANDLE()
-    WEnd
+            While $g_bPaused
+                If ($g_hTimeSpent <> "/Paused") Then 
+                    _Cumulative_Calculated($g_aCumulative)
+                    Cumulative_Save($g_aCumulative)
+                    $g_hTimeSpent = "/Paused"
+                EndIf
+                
+                $g_hTimerLocation = Null
+                GUI_HANDLE()
+            WEnd
+            If ($g_hTimeSpent = "/Paused") Then $g_hTimeSpent = TimerInit()
+
+            GUI_HANDLE()
+        Else
+            $g_hTimerLocation = Null
+            Return True
+        EndIf
+    Until (TimerDiff($hTimer) > $iDuration)
     Return False
 EndFunc
 
 Func _AntiStuck()
-    Local $b_Output = True
-    If ($g_bDisableAntiStuck) Then Return True
+    If $g_bAntiStuck = False Then Return True
     Log_Level_Add("_AntiStuck")
-    ;Check if game is running every 30 seconds
-    If ($g_bADBWorking And Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, 30) = 0 And TimerDiff($g_hGameCheckCD) > 2000) Then
+    Local $bOutput = False
+
+    If (Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, 30) = 0 And TimerDiff($g_hGameCheckCD) > 2000) Then
         $g_hGameCheckCD = TimerInit()
 
-        If (Not(isGameRunning())) Then
-
+        If getLocation() = "crash" Then
             Log_Add("AntiStuck: Game is not running. Restarting Game.", $LOG_ERROR)
-            takeErrorScreenshot("Common_Stuck")
-            If (Not(RestartGame())) Then 
-                If (Not(RestartNox(2))) Then
-                    Log_Add("AntiStuck: Could not restart nox.", $LOG_ERROR)
-                    Stop()
-                    $b_Output = False
-                EndIf
-            EndIf
+
+            $bOutput =_AntiStuck_Restart()
+            If $bOutput = False Then Stop()
+
         EndIf
     EndIf
 
     ;AntiStuck sequence
-    If ($b_Output And $g_iRestartTime <> 0) Then
-        If ($g_hTimerLocation <> Null And TimerDiff($g_hTimerLocation) > 60000 * $g_iRestartTime) Then 
+    If $Config_Location_Stuck_Timeout > 0 Then
+        If $g_hTimerLocation <> Null And TimerDiff($g_hTimerLocation) > (60000 * $Config_Location_Stuck_Timeout) Then 
             $g_hTimerLocation = Null
             
-            Log_Add("AntiStuck: Stuck for " & $g_iRestartTime & " minutes, restarting game.", $LOG_ERROR)
-            takeErrorScreenshot("Common_Stuck")
-            If (Not(RestartGame())) Then 
-                If (Not(RestartNox(2))) Then
-                    Log_Add("AntiStuck: Could not restart nox.", $LOG_ERROR)
-                    Stop()
-                    $b_Output = False
-                EndIf
+            Log_Add("AntiStuck: Stuck for " & $Config_Location_Stuck_Timeout & " minutes, restarting game.", $LOG_ERROR)
+            If navigate("map", True) = False Then
+                $bOutput =_AntiStuck_Restart()
+                If $bOutput = False Then Stop()
             EndIf
+
         EndIf
     EndIf
 
     Log_Level_Remove()
-    Return $b_Output
+    Return $bOutput
 EndFunc
+
+Func _AntiStuck_Restart()
+    Local $bOutput = True
+    If RestartGame() = False Then 
+        If RestartNox(2, "") = False Then
+            Log_Add("AntiStuck: Could not restart nox.", $LOG_ERROR)
+            $bOutput = False
+        EndIf
+    EndIf
+    Return $bOutput
+EndFunc
+
 
 ;===============================================================================
 ;
@@ -157,7 +126,7 @@ EndFunc
         $vDebug: Data containing debug information.
 #ce
 Func DisplayDebug($vDebug = $g_vDebug)
-    If (isArray($vDebug)) Then
+    If isArray($vDebug = True) Then
         _ArrayDisplay($vDebug)
         MsgBox(0, "MSL Bot DEBUG", "Error Message:" & @CRLF & $g_sErrorMessage)
     Else   
@@ -167,10 +136,8 @@ EndFunc
 
 ;calls for debug prompt
 Func Debug()
-    If (Not($g_bRunning)) Then
+    If $g_bRunning = False Then
         $g_sScript = "_Debug"
-        $g_aScriptArgs = Null
-
         Start()
     EndIf
 EndFunc
@@ -181,22 +148,23 @@ Func _Debug()
     
     ;Prompting for code
     Local $aLines = StringSplit(InputBox("Debug Input", "Enter an expression: " & @CRLF & "- Lines of expressions can be separated by '~' delimeter.", default, default, default, 150), "~", $STR_NOCOUNT)
-
-    ;Process each line of code
+    
+    $g_bAntiStuck = False
     _ProcessLines($aLines)
+    $g_bAntiStuck = True
 
     Log_Add("Debug Input has stopped.")
     Log_Level_Remove()
     Stop()
 EndFunc
 
-Func _ProcessLines($aLines, $bDisplayArray = True)
-    For $i = 0 To UBound($aLines, $UBOUND_ROWS)-1
+Func _ProcessLines($aLines, $bDisplayArray = True, $bLog = True)
+    For $i = 0 To UBound($aLines)-1
         If ($aLines[$i] = "") Then ContinueLoop
         Local $sResult = Execute($aLines[$i])
 
         If (@error) Then
-            Log_Add("ERROR <= " & $aLines[$i], $LOG_INFORMATION)
+            If $bLog Then Log_Add("ERROR <= " & $aLines[$i], $LOG_INFORMATION)
             ContinueLoop
         EndIf
 
@@ -204,9 +172,9 @@ Func _ProcessLines($aLines, $bDisplayArray = True)
 
         If (isArray($sResult)) Then
             If $bDisplayArray = True Then _ArrayDisplay($sResult)
-            Log_Add("{Array} <= " & $aLines[$i], $LOG_INFORMATION)
+            If $bLog Then Log_Add("{Array} <= " & $aLines[$i], $LOG_INFORMATION)
         Else
-            Log_Add(String($sResult) & " <= " & $aLines[$i], $LOG_INFORMATION)
+            If $bLog Then Log_Add(String($sResult) & " <= " & $aLines[$i], $LOG_INFORMATION)
         EndIf
     Next
 EndFunc
@@ -235,13 +203,17 @@ Func RunDebug($sCommand, $sLogLevel)
 EndFunc
 
 Func _DebugFunction()
-    If (Not($g_bRunning)) Then
+    If $g_bRunning = False Then
         $g_sScript = "_DebugFunction"
-        $g_aScriptArgs = Null
 
         Start()
         ;Start test here:
         RestartNox()
         ;End TEST
     EndIf
+EndFunc
+
+Func Custom_Function()
+    While _Sleep(100) = False
+    WEnd
 EndFunc

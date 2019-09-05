@@ -1,118 +1,267 @@
 #include-once
-#include "../imports.au3"
 
-Global $Gems_To_Farm, $Catch_Image, $Astromon, $Finish_Round, $Final_Round, $Release_Evo3, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Collect_Quests, $Hourly_Script
-Func Farm_Gem($Gems_To_Farm, $Catch_Image, $Astromon, $Finish_Round, $Final_Round, $Release_Evo3, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Collect_Quests, $Hourly_Script)
+Func Farm_Gem($bParam = True, $aStats = Null)
+    If $bParam = True Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Gem")[2]), "Farm_Gem")
+    ;Astrogems, Astromon, Release Evo3, Max Catch, Finish Round, Final Round, Map, Difficulty, Stage Level, Capture, Refill
+
+    $Farm_Gem_Astrogems = (StringLeft($Farm_Gem_Astrogems, 1)="g"?Int(StringMid($Farm_Gem_Astrogems, 2)/330000)*100:($Farm_Gem_Astrogems))
+
     Log_Level_Add("Farm_Gem")
-    Log_Add("Farm Gem has started.")
     
-    ;Declaring variables and data
-    If (StringLeft(StringLower($Gems_To_Farm), 1) = "g") Then
-        $Gems_To_Farm = Floor(Int(StringMid($Gems_To_Farm, 2))/330000)*100
-    EndIf
+    Global $Status, $Farmed_Gems, $Astrogems_Used
+    Stats_Add(  CreateArr( _
+                    CreateArr("Text",       "Status"), _
+                    CreateArr("Ratio",      "Farmed_Gems",      "Farm_Gem_Astrogems"), _
+                    CreateArr("Ratio",      "Astrogems_Used",   "Farm_Gem_Refill") _
+                ))
+    If $aStats <> Null Then Stats_Values_Set($aStats)
 
-    Data_Add("Status", $DATA_TEXT, "")
-    Data_Add("Farmed Gems", $DATA_RATIO, "0/" & $Gems_To_Farm)
+    Status("Farm Gem has started.", $LOG_INFORMATION)
 
-    Data_Add("Refill", $DATA_RATIO, "0/" & $Usable_Astrogems, True)
+    Local $iEvo = 0
+    Local $aAstromons = Null
+    Local $aFarm_Astromon_Stats = Null
 
-    Data_Add("Need Catch", $DATA_NUMBER, "0")
-    Data_Add("Error", $DATA_NUMBER, "0")
+    navigate("village", True)
+    While $g_bRunning = True
+        If _Sleep(200) Then ExitLoop
+        Local $sLocation = getLocation()
+        Common_Stuck($sLocation)
 
-    ;Adding to display order
-    Data_Order_Insert("Status", 0)
-    Data_Order_Insert("Farmed Gems", 1)
-    Data_Order_Insert("Refill", 2)
+        If $Farmed_Gems >= $Farm_Gem_Astrogems Then ExitLoop
+        Switch $sLocation
+            Case "monsters"
+                Status("Counting astromons.")
+                If $aAstromons = Null Then 
+                    clickPoint("48,429", 3)
+                    $aAstromons = Farm_Gem_Count($Farm_Gem_Astromon)
+                Else
+                    If $aAstromons[0] <> -1 Or $aAstromons[1] <> -1 Then
+                        If UBound($aAstromons[0]) >= 4 Then $iEvo = 1
+                        If UBound($aAstromons[1]) >= 4 Then $iEvo = 2
+                        If $iEvo <> 0 Then
+                            If $aAstromons[$iEvo+1] <> -1 Then
+                                For $i = 0 To UBound($aAstromons[$iEvo-1])-1
+                                    For $x = 0 To UBound($aAstromons[$iEvo+1])-1
+                                        Local $aMon = $aAstromons[$iEvo-1]
+                                        Local $aAwakened = $aAstromons[$iEvo+1]
 
-    Data_Display_Update()
+                                        If ($aMon[$i][0] > $aAwakened[$x][0]-30 And $aMon[$i][0] < $aAwakened[$x][0]+30) Then
+                                            If ($aMon[$i][1] > $aAwakened[$x][1]-30 And $aMon[$i][1] < $aAwakened[$x][1]+30) Then
+                                                clickPoint(CreateArr($aMon[$i][0], $aMon[$i][1]), 3)
+                                                clickPoint(getPointArg("monsters-evolution"))
+                                                waitLocation("monsters-evolution", 3)
+                                                ContinueLoop(3)
+                                            EndIf
+                                        EndIf
 
-    ;Script Process
-    #cs 
-        Script will evolve in monsters location and catch astromons using Farm_Astormon script.
-    #ce
-    While Data_Get_Ratio("Farmed Gems") < 1
-        $g_bSellGems = True
-        $g_aGemsToSell = $Gems_to_Sell
+                                    Next
+                                Next
+                            EndIf
 
-        If $Hourly_Script = "Enabled" Then Common_Hourly($g_sLocation)
-        If _Sleep(10) Then ExitLoop
-
-        ;Handles catching process
-        While Data_Get("Need Catch") > 0
-            Log_Add("Going to catch " & Data_Get("Need Catch") & " astromons.", $LOG_INFORMATION)
-
-            Local $aArg = [Data_Get("Need Catch"), $Catch_Image, $Finish_Round, $Final_Round, $Map, $Difficulty, $Stage_Level, $Capture, $Gems_To_Sell, $Usable_Astrogems, $Guardian_Mode, $Collect_Quests, $Hourly_Script]
-            _RunScript("Farm_Astromon", $aArg, True, "Refill," & $Catch_Image, "Farmed Gems,Refill")
-
-            If _Sleep(10) Then ExitLoop(2)
-            If getLocation() = "astromon-full" And $g_sLocation = "battle-astromon-full" Then
-                Data_Set("Need Catch", "0")
-                ExitLoop
-            Else
-                If (Data_Get_Ratio("Caught") < 1) Then
-                    Log_Add("Something went wrong with Farm Astromon.", $LOG_ERROR)
-                    ExitLoop(2)
-                EndIf
-            EndIf
-
-            Data_Increment("Need Catch", "-" & Data_Get($Catch_Image, True)[0])
-        WEnd
-
-        ;Handles evolving process
-        Data_Set("Status", "Evolving astromon.")
-        Local $sAlgorithm = getArg($g_aGeneralSettings, "Evolve_Algorithm")
-        
-        If ($sAlgorithm = "Algorithm 2" And $Astromon <> "Slime") Then
-            Log_Add("Unable to use algorithm 2 because it will only work on Slimes. Switching to algorithm 1.", $LOG_ERROR)
-            $sAlgorithm = "Algorithm 1"
-        EndIf
-        Local $bReleaseEvo3 = False;
-        If ($Release_Evo3 = "Enabled") Then $bReleaseEvo3 = True
-        Switch $sAlgorithm
-            Case "Algorithm 1"
-                $vResult = evolve1($Astromon, True,$bReleaseEvo3)
-                Switch $vResult
-                    Case -1, -2, -3, -4, -6 ;Normal errors.
-                        Log_Add("Could not evolve, error code: " & $vResult, $LOG_ERROR)
-                        Data_Increment("Error", 1)
-                        If Data_Get("Error") > 5 Then 
-                            Log_Add("Too many errors has occurred.", $LOG_ERROR)
-                            ExitLoop
+                            clickPoint(CreateArr(($aAstromons[$iEvo-1])[0][0], ($aAstromons[$iEvo-1])[0][1]), 3)
+                            clickPoint(getPointArg("monsters-evolution"))
+                            waitLocation("monsters-evolution", 3)
+                            ContinueLoop
                         EndIf
-                    Case -5 ;No currency.
-                        Log_Add("Not enough gold to procceed.", $LOG_ERROR)
-                        ExitLoop
-                    Case Else ;Success
-                        If $vResult = 0 Then Data_Increment("Farmed Gems", 100)
-                        Log_Add("Farmed Gems " & Data_Get("Farmed Gems"), $LOG_INFORMATION)
-                        Data_Set("Need Catch", $vResult)
-                EndSwitch
-            Case "Algorithm 2", "Algorithm 3"
-                Local $aResult = Null
-                If ($sAlgorithm = "Algorithm 2") Then $aResult = evolve2($bReleaseEvo3)
-                If ($sAlgorithm = "Algorithm 3") Then $aResult = evolve3($Astromon, 85, $bReleaseEvo3)
-                Switch $aResult[0]
-                    Case -2 ; Not enough gold
-                        Log_Add($aResult[1])
-                        ExitLoop
-                    Case -1 ;General Error
-                        Log_Add($aResult[1])
-                        ExitLoop
-                    Case 0
-                        Log_Add($aResult[1])
-                        Stat_Increment($g_aStats, "Gold spent", 330000)
-                    Case Else
-                        Local $iCatchAmount = $aResult[0]                            ; Not enough astromons
-                        If (Data_Get("Need Catch") < 0) Then $iCatchAmount -= Data_Get("Need Catch")
-                        Data_Increment("Need Catch", $iCatchAmount)
-                EndSwitch
+                    EndIf
+            
+                    Local $iCount_Evo1 = ($aAstromons[0]<>-1)?(UBound($aAstromons[0])):(0)
+                    Local $iCount_Evo2 = ($aAstromons[1]<>-1)?(UBound($aAstromons[1])):(0)
+                    Local $iTotal = $iCount_Evo1+($iCount_Evo2*4)
+
+                    Local $iCalculated_Need = Ceiling((($Farm_Gem_Astrogems-$Farmed_Gems)/100)*16)
+                    Status("Total astromons needed: " & $iCalculated_Need, $LOG_PROCESS)
+                    Status("Current number of astromons: " & $iTotal, $LOG_PROCESS)
+                    
+                    Local $iCatch = 0
+                    If $Farm_Gem_Max_Catch = 0 Then
+                        $iCatch = $iCalculated_Need-$iTotal
+                    Else
+                        $iCatch = (($iCalculated_Need-$iTotal)>$Farm_Gem_Max_Catch)?($Farm_Gem_Max_Catch):($iCalculated_Need-$iTotal)
+                    EndIf
+                    
+                    Status(StringFormat("Going to catch %d astromons.", $iCatch), $LOG_PROCESS)
+
+                    Local $aParam = [$iCatch, $Farm_Gem_Astromon, $Farm_Gem_Finish_Round, $Farm_Gem_Final_Round, $Farm_Gem_Map, _
+                                    $Farm_Gem_Difficulty, $Farm_Gem_Stage_Level, $Farm_Gem_Capture, $Farm_Gem_Refill]
+
+                    Stats_Values_Edit($aFarm_Astromon_Stats, Stats_Values_IndexByName($aFarm_Astromon_Stats, "Runs"), 0)
+                    Stats_Values_Edit($aFarm_Astromon_Stats, Stats_Values_IndexByName($aFarm_Astromon_Stats, StringReplace($Farm_Gem_Astromon, "-", "_")), 0)
+                    $aFarm_Astromon_Stats = _RunScript("Farm_Astromon", $aParam, $aFarm_Astromon_Stats)
+                    Stats_Values_Remove($aFarm_Astromon_Stats, CreateArr("Farmed_Gems"))
+
+                    $aAstromons = Null
+                EndIf
+
+            Case "monsters-evolution"
+                If $iEvo = 0 Or $aAstromons = Null Then
+                    navigate("monsters")
+                    ContinueLoop
+                EndIf
+
+                Status(StringFormat("Awakening evo%d %s.", Number($iEvo), String($Farm_Gem_Astromon)), $LOG_PROCESS)
+                If Farm_Gem_Awaken() = True Then
+                    Status(StringFormat("Evolving evo%d %s.", Number($iEvo), String($Farm_Gem_Astromon)), $LOG_PROCESS)
+                    If Farm_Gem_Evolve() = True Then
+                        Status(StringFormat("Successfully evolved evo%d %s.", Number($iEvo), String($Farm_Gem_Astromon)), $LOG_PROCESS)
+                        If UBound($aAstromons[1]) <> 3 Then
+                            If $iEvo = 2 And $Farm_Gem_Release_Evo3 = True Then
+                                If navigate("monsters") = True And isPixel(getPixelArg("monsters-evolution-third"), 10, CaptureRegion()) = True Then
+                                    Farm_Gem_Release()
+                                EndIf
+                            EndIf
+                            collectQuest(3)
+                        EndIf
+                        If $iEvo = 2 Then $Farmed_Gems += 100 ;10 and 60, but that causes some weird stuff
+                        $iEvo = 0
+                    Else
+                        navigate("monsters")
+                        Status("Could not evolve astromon.", $LOG_ERROR)
+                    EndIf
+                Else
+                    navigate("monsters")
+                    Status("Could not awaken astromon.", $LOG_ERROR)
+                EndIf
+
+                $aAstromons = Null
+            Case "buy-gold", "buy-gem"
+                Status("There was not enough gold to evolve.", $LOG_ERROR)
+                ExitLoop
+            Case "unknown"
+                clickPoint(getPointArg("tap"))
+                ContinueCase
+            Case Else
+                If HandleCommonLocations($sLocation) = False And $sLocation <> "unknown" Then
+                    $aAstromons = Null
+                    Status("Proceeding to monsters.")
+                    navigate("monsters", True)
+                EndIf
         EndSwitch
     WEnd
 
-    $g_bSellGems = False
-    $g_aGemsToSell = Null
-
-    ;End script
-    Log_Add("Farm Astromon has ended.")
+    Log_Add("Farm Gem has ended.", $LOG_INFORMATION)
     Log_Level_Remove()
+    Return Stats_GetValues($g_aStats)
+EndFunc
+
+Func Farm_Gem_Count($sName)
+    CaptureRegion("", 10, 100, 280, 350)
+    Local $aEvo1 = findImageMultiple($sName & "-evo-one", 80, 10, 10, 0, 10, 100, 280, 350, False)
+    Local $aEvo2 = findImageMultiple($sName & "-evo-two", 80, 10, 10, 0, 10, 100, 280, 350, False)
+    Local $aAwakenedEvo1 = findImageMultiple("misc-awakened-evo-one", 70, 10, 10, 0, 10, 100, 280, 350, False)
+    Local $aAwakenedEvo2 = findImageMultiple("misc-awakened-evo-two", 70, 10, 10, 0, 10, 100, 280, 350, False)
+    Return CreateArr($aEvo1, $aEvo2, $aAwakenedEvo1, $aAwakenedEvo2)
+EndFunc
+
+Func Farm_Gem_Awaken()
+    Log_Level_Add("Farm_Gem_Awaken")
+    Local $bOutput = False
+
+    Local $hTimer = TimerInit()
+    Local $iX = 351
+    Local $iY = 330
+    While TimerDiff($hTimer) < 30000
+        If _Sleep(300) = True Then ExitLoop
+        Local $sLocation = getLocation()
+        Switch $sLocation
+            Case "monsters-evolution"
+                If isPixel(getPixelArg("monsters-not-awakened-third"), 20, CaptureRegion()) = True Then ;Not selected
+                    clickPoint(CreateArr($iX, $iY))
+                    $iX += 65
+                    If $iX > 741 Then ExitLoop
+                Else
+                    If isPixel(getPixelArg("monsters-awakened-enabled"), 20, CaptureRegion()) = False Then 
+                        $bOutput = True
+                        ExitLoop
+                    EndIf
+                    clickPoint(getPointArg("monsters-awaken"))
+                EndIf
+            Case "monsters-awaken"
+                clickPoint(getPointArg("monsters-awaken-confirm"), 3)
+                waitLocation("awakened-success", 10)
+            Case "awakened-success"
+                clickPoint(getPointArg("monsters-awaken-tap"), 3, 100)
+                $bOutput = True
+                ExitLoop
+            Case "popup-window"
+                closeWindow()
+            Case "buy-gem", "buy-gold"
+                ExitLoop
+            Case "unknown"
+            Case Else
+                ExitLoop
+        EndSwitch
+    WEnd
+
+    Log_Add("Awaken astromon result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $bOutput
+EndFunc
+
+Func Farm_Gem_Evolve()
+    Log_Level_Add("Farm_Gem_Evolve")
+    Local $bOutput = False
+
+    Local $hTimer = TimerInit()
+    While TimerDiff($hTimer) < 30000
+        If _Sleep(300) = True Then ExitLoop
+        Local $sLocation = getLocation()
+        Switch $sLocation
+            Case "monsters-evolution"
+                If isPixel(getPixelArg("monsters-evolve-enabled"), 20, CaptureRegion()) = False Then 
+                    $bOutput = True
+                    ExitLoop
+                EndIf
+                clickPoint(getPointArg("monsters-evolve"))
+            Case "monsters-evolve"
+                clickPoint(getPointArg("monsters-evolve-confirm"), 3)
+                waitLocation("unknown,monsters-astromon", 10)
+            Case "monsters-astromon"
+                closeWindow()
+                $bOutput = True
+                ExitLoop
+            Case "popup-window"
+                closeWindow()
+            Case "buy-gem", "buy-gold"
+                ExitLoop
+            Case "unknown"
+                clickPoint(getPointArg("tap"))
+            Case Else
+                ExitLoop
+        EndSwitch
+    WEnd
+
+    Log_Add("Evolve astromon result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $bOutput
+EndFunc
+
+Func Farm_Gem_Release()
+    Log_Level_Add("Farm_Gem_Release")
+    Local $bOutput = False
+    Local $hTimer = TimerInit()
+    While TimerDiff($hTimer) < 15000
+        If _Sleep(500) Then ExitLoop
+        Local $sLocation = getLocation()
+        Switch $sLocation
+            Case "monsters", "monsters-evolution", "monsters-level-up"
+                clickPoint(getPointArg("release"), 3)
+                waitLocation("release-confirm", 5)
+            Case "release-confirm"
+                clickPoint(getPointArg("release-confirm"), 3)
+                waitLocation("release-reward,hourly-reward", 5)
+            Case "release-reward", "hourly-reward"
+                clickPoint(getPointArg("release-confirm"), 3)
+                $bOutput = True
+                ExitLoop
+            Case "unknown"
+            Case Else
+                ExitLoop
+        EndSwitch
+    WEnd
+    
+    Log_Add("Release astromon result: " & $bOutput, $LOG_DEBUG)
+    Log_Level_Remove()
+    Return $bOutput
 EndFunc

@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 #cs 
     Function: Retrieves timestamp of now.

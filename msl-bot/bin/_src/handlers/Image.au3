@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 #cs
  Function: Using ImageSearch find an image within the HBMP
@@ -14,7 +13,7 @@
 	On image found - Returns array
 	On image not found - Returns -1
 #ce
-Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552, $bUpdate = True, $bUseColor = False)
+Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552, $bUpdate = True, $bUseColor = True)
 	If (StringInStr($sImage, "-")) Then $sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage ;image with specified folder
 
 	Local $aImages[0] ;images list to find
@@ -39,6 +38,7 @@ Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 
 		If (isArray($vResult)) Then
 			$aPoint = $vResult
 			Local $aFinal = [$aPoint[0], $aPoint[1], $iIndex, StringReplace($aImages[$iIndex], $g_sImagesPath & StringSplit($sImage, "-", 2)[0] & "\", "")]
+			Log_Add("Found " & $sImage & " at (" & $aPoint[0] & ", " & $aPoint[1] & ").", $LOG_DEBUG)
 			Return $aFinal
 		Else
 			;There is an error
@@ -118,41 +118,9 @@ Func findImageMultiple($sImage, $iTolerance = 90, $iWidthTolerance = 5, $iHeight
 		EndIf
 	Next
 
-	If ($iSize <> 0) Then Return $aPoints
-	
-	Return 0
-EndFunc
-
-Func OpenImage()
-	Local $aPos = WinGetPos($g_sAppTitle)
-	$g_hImageWindow = GUICreate($g_sAppTitle & " Image Window", 950, 552, $aPos[0]+$aPos[2]-15, $aPos[1], $WS_SIZEBOX+$WS_MAXIMIZEBOX+$WS_MINIMIZEBOX, -1)
-    GUISetState(@SW_SHOW, $g_hLogWindow)
-
-    $g_hChosenPointsListViewId = _GUICtrlCreateListView("", $aPos[2]-129, 30, 110, $aPos[3]-73, $LVS_REPORT+$LVS_NOSORTHEADER)
-    $g_hChosenPointsListView = GUICtrlGetHandle($g_idLV_FunctionLevels)
-    __GUICtrlListView_AddColumn($g_hLV_FunctionLevels, "x", 30, 0)
-	__GUICtrlListView_AddColumn($g_hLV_FunctionLevels, "y", 30, 0)
-    __GUICtrlListView_AddColumn($g_hLV_FunctionLevels, "Color", 100, 0)
-
-    $g_idLV_Log = _GUICtrlCreateListView("", 3, 30, $aPos[2]-133, $aPos[3]-73, $LVS_REPORT+$LVS_NOSORTHEADER)
-    $g_hLV_Log = GUICtrlGetHandle($g_idLV_Log)
-    _GUICtrlListView_SetExtendedListViewStyle($g_hLV_Log, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
-    __GUICtrlListView_AddColumn($g_hLV_Log, "Time", 76, 0)
-    __GUICtrlListView_AddColumn($g_hLV_Log, "Text", 312, 0)
-    __GUICtrlListView_AddColumn($g_hLV_Log, "Type", 100, 0)
-    __GUICtrlListView_AddColumn($g_hLV_Log, "Function", 100, 0)
-    __GUICtrlListView_AddColumn($g_hLV_Log, "Location", 100, 0)
-    __GUICtrlListView_AddColumn($g_hLV_Log, "Level", 100, 0)
-    _GUICtrlListView_JustifyColumn($g_hLV_Log, 0, 0)
-    _GUICtrlListView_JustifyColumn($g_hLV_Log, 1, 0)
-
-    GUICtrlSetResizing($g_idLV_Log, $GUI_DOCKTOP+$GUI_DOCKBOTTOM+$GUI_DOCKLEFT+$GUI_DOCKRIGHT)
-    GUICtrlSetResizing($g_idLV_FunctionLevels, $GUI_DOCKTOP+$GUI_DOCKBOTTOM+$GUI_DOCKRIGHT+$GUI_DOCKWIDTH)
-    GUICtrlSetResizing($g_idCkb_Information, $GUI_DOCKALL)
-    GUICtrlSetResizing($g_idCkb_Error, $GUI_DOCKALL)
-    GUICtrlSetResizing($g_idCkb_Process, $GUI_DOCKALL)
-    GUICtrlSetResizing($g_idCkb_Debug, $GUI_DOCKALL)
-
-    $g_sLogFilter = "Information,Process,Error"
-    Log_Display_Reset()
+	If ($iSize <> 0) Then
+		Log_Add("Found " & $iSize & " matches for " & $sImage & ".", $LOG_DEBUG)
+		Return $aPoints 
+	EndIf
+	Return -1
 EndFunc

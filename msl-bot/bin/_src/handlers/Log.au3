@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 #cs 
     Log system will be based on the function processes and their steps.
@@ -27,9 +26,16 @@
             - Debug logs are usually in functions that are called often such as getLocation()
 #ce
 
-Func Log_Add($sText, $sType = $LOG_PROCESS, $iTimeStamp = NowTimeStamp(), $sFunction = $g_aLOG_Function[$g_aLOG_Function[0]], $iLevel = $g_aLOG_Function[0])
-    If (Not($g_bLogEnabled)) Then Return 0
-    
+Func Log_Add($sText, $sType = $LOG_PROCESS, $iTimeStamp = NowTimeStamp(), $sFunction = "", $iLevel = $g_aLOG_Function[0])
+    If ($Config_Log_Debug = False And $sType = $LOG_DEBUG) Or ($g_bLogEnabled = False) Then Return 0
+    If $sFunction = "" Then
+        If $g_aLOG_Function[0] > 1 Then
+            $sFunction = $g_aLOG_Function[$g_aLOG_Function[0]] & " <- " & $g_aLOG_Function[$g_aLOG_Function[0]-1]
+        Else
+            $sFunction = $g_aLOG_Function[$g_aLOG_Function[0]]
+        EndIf
+    EndIf
+
     Local $iSize = UBound($g_aLog)
     ReDim $g_aLog[$iSize+1][6]
     $g_aLog[$iSize][0] = $iTimeStamp
@@ -131,13 +137,12 @@ Func Log_Display_Reset($sFilter = $g_sLogFilter, $hListView = $g_hLV_Log)
 EndFunc
 
 Func Log_WriteLine($iLogLine, $bClear = False)
-    If (Not($g_bSaveLog)) Then 
+    If $Config_Save_Logs = False Then 
         If ($bClear) Then Log_Clear($g_aLog)
         Return False
     EndIf
-    If (Not($g_bSaveDebug) And $g_aLog[$iLogLine][2] = $LOG_DEBUG) Then Return False
-
-    Local $sLogPath = $g_sProfilePath & "\log\" ;& formatDate() & "\"
+	
+    Local $sLogPath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\log\" ;& formatDate() & "\"
     If (Not(FileExists($sLogPath))) Then DirCreate($sLogPath)
     Local $sPath = StringReplace($sLogPath & FormatDateForFile() & ".txt", "\\", "\")
     Local $hFile = FileOpen($sPath, $FO_APPEND+$FO_CREATEPATH)
@@ -166,7 +171,7 @@ Func FormatDateForFile()
 EndFunc
 
 Func Log_Save(ByRef $aLog, $bClear = False)
-    If (Not($g_bSaveLog)) Then 
+    If $Config_Save_Logs = False Then 
         If ($bClear) Then Log_Clear($aLog)
         Return False
     EndIf
@@ -174,7 +179,7 @@ Func Log_Save(ByRef $aLog, $bClear = False)
     ;Defining variables
     Local $iSize = UBound($aLog)
     If ($iSize = 0) Then Return 0
-    Local $sLogPath = $g_sProfilePath & "\log\" ;& formatDate() & "\"
+    Local $sLogPath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\log\" ;& formatDate() & "\"
     If (Not(FileExists($sLogPath))) Then DirCreate($sLogPath)
     Local $sPath = StringReplace($sLogPath & FormatDateForFile() & ".txt", "\\", "\")
     Local $hFile = FileOpen($sPath, $FO_APPEND+$FO_CREATEPATH)
@@ -182,7 +187,6 @@ Func Log_Save(ByRef $aLog, $bClear = False)
     FileWriteLine($hFile, @CRLF & "#### Begin Log Saved: " & _NowCalc() & " ####")
     For $i = 0 To $iSize-1
         If (StringLeft($aLog[$i][0], 1) <> ".") Then
-            If (Not($g_bSaveDebug) And $aLog[$i][2] = $LOG_DEBUG) Then ContinueLoop
             Local $sLine = ""
 
             $sLine &= formatTime($aLog[$i][0]) & " "
@@ -247,63 +251,4 @@ Func formatWidth($sStr, $iWidth, $iAlign)
     EndSwitch
 
     Return $sOutput
-EndFunc
-
-Func cleanOldLogFiles()
-    Local $sLogPath = StringReplace($g_sProfilePath & "\log\", "\\", "\")
-    Local $a_sLogFiles = _FileListToArray($sLogPath, "*", $FLTA_FILES)
-    If (@error = 4 Or $a_sLogFiles[0] = 0) Then Return True
-    For $i = 1 To $a_sLogFiles[0]
-        If (Not(checkWithin7Days($a_sLogFiles[$i]))) Then FileDelete($sLogPath & $a_sLogFiles[$i])
-    Next
-    ;~ Local $a_sLogFiles = _FileListToArray($sLogPath, "*", $FLTA_FOLDERS)
-    ;~ If (@error = 4 Or $a_sLogFiles[0] = 0) Then Return True
-    ;~ For $i = 1 To $a_sLogFiles[0]
-    ;~     If (Not(checkWithin7Days($a_sLogFiles[$i]))) Then DirRemove($sLogPath & $a_sLogFiles[$i], $DIR_REMOVE)
-    ;~ Next
-EndFunc
-
-Func getAdjustedDay($iIncrement = -7)
-    If (Number(getDay()) + $iIncrement > 0) Then Return Number(getDay()) + $iIncrement
-    Local $iMaxDay = 30
-    Local $iCurrMonth = Number(getMonth())
-    Switch $iCurrMonth
-        Case 3
-            If (_DateIsLeapYear(getYear())) Then 
-                $iMaxDay = 29
-            Else
-                $iMaxDay = 28
-            EndIf
-        Case 1,2,4,6,8,9,11
-            $iMaxDay = 31
-    EndSwitch
-
-    Local $iAdjDay = Number(getDay()) + $iIncrement
-    If ($iAdjDay < 0) Then
-        Return $iMaxDay + $iAdjDay
-    Else
-        Return $iMaxDay - $iAdjDay
-    EndIf    
-EndFunc
-
-Func checkWithin7Days($aDate)
-    If (Not(isArray($aDate))) Then 
-        If (StringInStr($aDate, "-")) Then
-            $aDate = StringSplit($aDate,"-")
-            If ($aDate[0] < 3) Then Return False
-        Else
-            $aDate = StringSplit($aDate, ".")
-            If ($aDate[0] < 4) Then Return False
-        EndIf
-    EndIf
-    Local $iFileMonth = Number($aDate[1]), $iFileDay = Number($aDate[2]), $iFileYear = Number($aDate[3])
-    Local $iCurrMonth = Number(getMonth()), $iCurrDay = Number(getDay()), $iCurrYear = Number(getYear())
-    Local $iAdjDay = getAdjustedDay()
-    If ($iFileYear < $iCurrYear) Then
-        If ($iCurrMonth = 1 And $iFileMonth = 12 And $iFileDay >= $iAdjDay) Then Return True
-    Else
-        If ($iCurrDay < 8 And ($iFileMonth = $iCurrMonth Or ($iFileMonth = $iCurrMonth - 1 And $iFileDay >= $iAdjDay))) Then Return True
-        If ($iFileMonth = $iCurrMonth And $iFileDay >= $iCurrDay - 7) Then Return True
-    EndIf
-    Return False
 EndFunc

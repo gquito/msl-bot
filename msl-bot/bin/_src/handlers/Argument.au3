@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 #cs
 	Function: Gets value of argument from an array of arguments

@@ -1,9 +1,8 @@
 #include-once
-#include "../imports.au3"
 
 ;Run CMD session to send ADB command.
 ;Output will be retrieved after command has been executed.
-Func ADB_Command($sCommand, $iVersion = $g_iADB_Inputevent_Version, $iTimeout = $g_iADB_Timeout, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+Func ADB_Command($sCommand, $iVersion = $Config_ADB_Input_Event_Version, $iTimeout = $Delay_ADB_Timeout, $sAdbDevice = $Config_ADB_Device, $sAdbPath = $Config_ADB_Path)
 	Log_Level_Add("ADB_Command")
     Log_Add("ADB command: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
 
@@ -43,7 +42,7 @@ EndFunc   ;==>ADB_Command
 ;Commands could be separated by @CRLF.
 ;Output is automatically parsed to show only output.
 ;Raw output displays all command inputs from session.
-Func ADB_Shell($sCommand, $iTimeout = $g_iADB_Timeout, $bOutput = False, $bRawOutput = False, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+Func ADB_Shell($sCommand, $iTimeout = $Delay_ADB_Timeout, $bOutput = False, $bRawOutput = False, $sAdbDevice = $Config_ADB_Device, $sAdbPath = $Config_ADB_Path)
 	Log_Level_Add("ADB_Shell")
 	;Log_Add("ADB shell: " & '"' & $sAdbPath & '"' & " -s " & $sAdbDevice & " " & $sCommand, $LOG_DEBUG)
 
@@ -90,7 +89,7 @@ EndFunc   ;==>ADB_Shell
 
 ;Returns working condition of ADB.
 Func ADB_isWorking()
-	Local $bStatus = (FileExists($g_sAdbPath) = True) And (StringInStr(ADB_Command("get-state"), "error") = False)
+	Local $bStatus = (FileExists($Config_ADB_Path) = True) And (StringInStr(ADB_Command("get-state"), "error") = False)
 	Log_Add("Checking ADB status: " & $bStatus, $LOG_DEBUG)
 	$g_bAdbWorking = $bStatus
 
@@ -98,7 +97,7 @@ Func ADB_isWorking()
 EndFunc   ;==>ADB_isWorking
 
 ;Send ESC through ADB.
-Func ADB_SendESC($iCount = 1, $sMethod = $g_sAdbMethod, $sAdbDevice = $g_sAdbDevice, $sAdbPath = $g_sAdbPath)
+Func ADB_SendESC($iCount = 1, $sMethod = $Config_ADB_Method, $sAdbDevice = $Config_ADB_Device, $sAdbPath = $Config_ADB_Path)
 	If (Not($g_bAdbWorking)) Then Return 0
 
 	Switch $sMethod
@@ -156,7 +155,7 @@ EndFunc   ;==>ADB_ConvertEvent
 ;Retrieves "Android Input" to be able to use sendevent method.
 Func ADB_GetEvent($iTimeout = 500)
 	Log_Level_Add("ADB_GetEvent")
-	If ($g_sADBMethod <> "sendevent") Then 
+	If ($Config_ADB_Method <> "sendevent") Then 
 		Log_Level_Remove()
 		Return ""
 	EndIf

@@ -1,0 +1,4 @@
+Quit Application: Ctrl+Q
+Debug Input: Ctrl+D
+Compatibility Test: Ctrl+T
+Test Function: Ctrl+W

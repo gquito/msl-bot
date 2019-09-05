@@ -1,6 +1,7 @@
 _Delays
 _General
 _Hourly
+_Guardian
 _Filter
 Farm Rare
 Farm Golem

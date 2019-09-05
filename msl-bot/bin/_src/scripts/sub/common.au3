@@ -1,170 +1,52 @@
 #include-once
-#include "../../imports.au3"
-
-#cs 
-    Function: Selects boss during battle-boss location or last round.
-    Parameter: Reference to current location of the script.
-#ce
-Func Common_Boss(ByRef $sLocation, $bDoAutoClick = False, $bStoryFarm = False)
-    If (Data_Get("Common Boss Targeted") = -1) Then Data_Add("Common Boss Targeted", $DATA_TEXT, "False")
-
-    If (Data_Get("Common Boss Targeted") = "False") Then
-        Switch $sLocation
-            Case "battle-auto", "battle", "unknown"
-                Local $aRound = getRound()
-                If (isArray($aRound)) Then
-                    If ((Not($bStoryFarm) And $aRound[0] = $aRound[1]) Or ($bStoryFarm And $aRound[0] = 4)) Then 
-                        waitLocation("unknown,battle-boss", 3, 10)
-                        ContinueCase
-                    EndIf
-                EndIf
-
-                Return 0
-            Case "battle-boss"
-                If (_Sleep(100)) Then Return 0
-
-                waitLocation("battle-auto,battle", 5, 10)
-                If (_Sleep($g_iTargetBossDelay)) Then Return 0
-
-                Data_Set("Status", "Targeting boss.")
-                Log_Add("Targeting boss.")
-                Data_Set("Common Boss Targeted", "True")
-
-                clickPoint(getPointArg("boss"))
-                If ($bDoAutoClick) Then clickBattle("until", "battle-auto", 5, 200)
-                $sLocation = $g_sLocation
-        EndSwitch
-    Else
-        Switch $sLocation
-            Case "battle-end", "battle-end-exp", "battle-sell", "map", "village"
-                Data_Set("Common Boss Targeted", "False")
-        EndSwitch
-    EndIf
-EndFunc
-
-#cs 
-    Function: Collect quest from battle-end location.
-    Parameter: Reference to current location of the script.
-#ce
-Func Common_Quests(ByRef $sLocation)
-    If ($sLocation = "battle-end") And isPixel("%battle-end-quest") Then
-        If (Data_Get("In Boss") <> -1) Then Data_Set("In Boss", "False")
-        Data_Set("Status", "Collecting quests.")
-        collectQuest()
-
-        $sLocation = getLocation()
-    EndIf
-EndFunc
-
-#cs 
-    Function: Attacks guardian dungeons by running Farm_Guardian() script, usually once every 30 minutes
-    Parameters:
-        $sLocation: Reference to current location of the script.
-        *Other parameters include settings for Farm_Guardian excluding $Loop
-#ce
-Func Common_Guardian(ByRef $sLocation, $Mode, $Usable_Astrogems, $Target_Boss, $Collect_Quests, $Hourly_Script)
-    If $g_bPerformGuardian = True Then
-        Switch $sLocation
-            Case "battle-end", "map", "village"
-                Local $aFarmGuardian = formatArgs(getScriptData($g_aScripts, "Farm_Guardian")[2])
-                Local $aArgs = [$Mode, $Usable_Astrogems, "Disabled", getArg($aFarmGuardian,"Guided_Auto"), $Target_Boss, $Collect_Quests, $Hourly_Script]
-                _RunScript("Farm_Guardian", $aArgs, True, "Guardians,Refill", "Guardians,Refill")
-                $g_bPerformGuardian = False
-
-                $sLocation = getLocation()
-        EndSwitch
-    EndIf
-EndFunc
-
-
-Func setGuardianTrue()
-    $g_bPerformGuardian = True
-EndFunc
-#cs 
-    Function: Perform hourly functions as per scheduled time.
-    Parameters: Reference to currentl ocation of the script.
-#ce
-Func Common_Hourly(ByRef $sLocation)
-    If ($g_bPerformHourly) Then
-        Switch $sLocation
-            Case "battle-end", "map", "village"
-                doHourly()
-        EndSwitch
-
-        $sLocation = getLocation()
-    EndIf
-EndFunc
 
 #cs 
     Function: Prevents getting stuck at an unknown/unspecified location for a script.
     Parameter: Reference to current location of the script.
 #ce
+Global $Common_Stuck_Timer = Null
+Global $Common_Stuck_Unknown_Tap = Null
+Global $Common_Stuck_Battle_Stuck = Null
+Global $Common_Stuck_Unknown_Battle = Null
 Func Common_Stuck(ByRef $sLocation)
-    If (Data_Get("Common Stuck Timer") = -1) Then Data_Add("Common Stuck Timer", $DATA_TEXT, TimerInit())
-
     If ($sLocation = "battle-end" Or $sLocation = "map" Or $sLocation = "village") Then
-        $g_hBattleStuck = Null
-        $g_hUnknownBattle = Null
-        
-        ;Data resets
-        If (Data_Get("Astrochips") <> -1) Then Data_Set("Astrochips", "3")
-
-        ;Handles scheduled restarts in _Config setting
-        If ($g_hTimerScheduledRestart = Null) Then
-            $g_hTimerScheduledRestart = TimerInit()
-        Else
-            If ($g_sScheduledRestartMode <> "Never") Then
-                $iMS = $g_iScheduledRestartTime * 60 * 60 * 1000 ;Converts hour to millisecond
-                If (TimerDiff($g_hTimerScheduledRestart) > $iMS) Then
-                    Log_Add("Performing scheduled restart.", $LOG_INFORMATION)
-                    Switch $g_sScheduledRestartMode
-                        Case "Game"
-                            RestartGame()
-                        Case "Nox"
-                            RestartNox(1, "")
-                    EndSwitch
-                    $g_hTimerScheduledRestart = Null
-                    
-                    $sLocation = getLocation()
-                EndIf
-            EndIf
-        EndIf
+        $Common_Stuck_Battle_Stuck = Null
+        $Common_Stuck_Unknown_Battle = Null
     EndIf
 
     Switch $sLocation
         Case "unknown"
             CaptureRegion()
             If isArray(getRound()) = False Then
-                If (Data_Get("Unknown Tap") = -1) Then Data_Add("Unknown Tap", $DATA_TEXT, TimerInit())
 
-                If (TimerDiff(Data_Get("Unknown Tap")) > 5000) Then
+                If TimerDiff($Common_Stuck_Unknown_Tap) > 5000 Then
                     clickPoint(getPointArg("tap"))
-                    Data_Set("Unknown Tap", TimerInit())
+                    $Common_Stuck_Unknown_Tap = TimerInit()
                 EndIf
 
                 $sLocation = getLocation()
                 ContinueCase
             Else
                 ;In battle, but location cannot be found because Auto button is stuck
-                $g_hBattleStuck = TimerInit()
-                If TimerDiff($g_hUnknownBattle) > 6000 Then $g_hUnknownBattle = TimerInit()
-                If TimerDiff($g_hUnknownBattle) > 5000 Then
+                $Common_Stuck_Battle_Stuck = TimerInit()
+                If TimerDiff($Common_Stuck_Unknown_Battle) > 6000 Then $Common_Stuck_Unknown_Battle = TimerInit()
+                If TimerDiff($Common_Stuck_Unknown_Battle) > 5000 Then
                     Log_Add("Stuck in battle, trying to unstuck.", $LOG_DEBUG)
                     If clickBattle("until", "battle-auto", 5, 200) = False Then
                         ContinueCase ;In case frozen, proceed with normal stuck
                     EndIf
-                    $g_hUnknownBattle = TimerInit()
+                    $Common_Stuck_Unknown_Battle = TimerInit()
                 EndIf
 
-                Data_Set("Common Stuck Timer", "Null")
+                $Common_Stuck_Timer = Null
             EndIf
         Case "battle-auto", "battle"
                 If $sLocation = "unknown" Then ContinueCase
 
                 ;Fixes bug where Auto button is clicked and gets stuck.
-                $g_hUnknownBattle = TimerInit()
-                If TimerDiff($g_hBattleStuck) > 6000 Then $g_hBattleStuck = TimerInit()
-                If TimerDiff($g_hBattleStuck) > 5000 Then
+                $Common_Stuck_Unknown_Battle = TimerInit()
+                If TimerDiff($Common_Stuck_Battle_Stuck) > 6000 Then $Common_Stuck_Battle_Stuck = TimerInit()
+                If TimerDiff($Common_Stuck_Battle_Stuck) > 5000 Then
                    ;If isPixel("175,519,0xA9643C|180,519,0xA9643C" & _
                    ;          "/342,519,0xA9653E|350,519,0xA9653E" & _
                    ;          "/510,519,0xAA653F|515,519,0xAA653F" & _
@@ -183,18 +65,18 @@ Func Common_Stuck(ByRef $sLocation)
                         $sLocation = getLocation()
                     ;EndIf
 
-                    If $sLocation = "battle" And TimerDiff($g_hBattleStuck) > 60000 Then
+                    If $sLocation = "battle" And TimerDiff($Common_Stuck_Battle_Stuck) > 60000 Then
                         ContinueCase
                     EndIf
                     
-                    $g_hBattleStuck = TimerInit()
+                    $Common_Stuck_Battle_Stuck = TimerInit()
                 EndIf
 
-        Case "", "lost-connection", "loading"
+        Case "lost-connection", "loading"
             If _Sleep(10) Then Return 0
 
-            If (Data_Get("Common Stuck Timer") = "Null") Then
-                Data_Set("Common Stuck Timer", TimerInit())
+            If $Common_Stuck_Timer = Null Then
+                $Common_Stuck_Timer  = TimerInit()
             Else
                 $sLocation = getLocation()
                 Switch $sLocation
@@ -205,49 +87,28 @@ Func Common_Stuck(ByRef $sLocation)
                     Case "another-device"
                         Log_Add("Another device detected!", $LOG_INFORMATION)
 
-                        Switch $g_iLoggedOutTime
+                        Switch $Config_Another_Device_Timeout
                             Case -1
                                 Log_Add("Restart time set to Never, Stopping script.", $LOG_INFORMATION)
                                 Stop()
                             Case 0
                                 Log_Add("Restart time set to Immediately", $LOG_INFORMATION)
                             Case Else
-                                Local $iMinutes = $g_iLoggedOutTime
+                                Local $iMinutes = $Config_Another_Device_Timeout
                                 Log_Add("Restart time set to " & $iMinutes & " minutes.", $LOG_INFORMATION)
                                 
                                 Local $hTimer = TimerInit()
-                                $g_bDisableAntiStuck = True
+                                $g_bAntiStuck = True
                                 While TimerDiff($hTimer) < ($iMinutes*60000)
                                     Local $iSeconds = Int(($iMinutes*60) - (TimerDiff($hTimer)/1000))
-                                    Data_Set("Status", "Restarting in: " & getTimeString($iSeconds))
-                                    If (_Sleep(1000)) Then ExitLoop
+                                    Status("Restarting in: " & getTimeString($iSeconds))
+                                    If _Sleep(1000) Then ExitLoop
                                 WEnd
-                                $g_bDisableAntiStuck = False
+                                $g_bAntiStuck = False
                         EndSwitch
-                    Case Else
-                        If ($g_iRestartTime <> 0) Then
-                            If (TimerDiff(Data_Get("Common Stuck Timer")) > ($g_iRestartTime*60000)) Then
-                                If (Not(navigate("map", True))) Then
-                                    Log_Add("Stuck at an unspecified location.", $LOG_ERROR)
-                                    takeErrorScreenshot("Common_Stuck")
-                                    Log_Add("Restarting game.", $LOG_ERROR)
-                                    If (Not(RestartGame())) Then RestartNox(1, "")
-                                    $sLocation = getLocation()
-                                EndIf
-
-                                Data_Set("Common Stuck Timer", "Null")
-                            EndIf
-                        EndIf
                 EndSwitch
             EndIf
         Case Else
-            If (Data_Get("Common Stuck Timer") <> "Null") Then Data_Set("Common Stuck Timer", "Null")
+            $Common_Stuck_Timer = Null
     EndSwitch
-EndFunc
-
-Func Common_Navigate($sExcludedLocations)
-    If (Not(isLocation($sExcludedLocations))) Then
-        Data_Set("Status", "Navigating to map.")
-        navigate("map", True)
-    EndIf
 EndFunc

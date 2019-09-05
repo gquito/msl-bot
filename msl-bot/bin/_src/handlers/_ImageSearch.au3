@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 ; == FUNCTION LIST:
 ;   _ImageSearch()
@@ -45,11 +44,11 @@ Func _ImageSearch($sImage, $bMultiple = False, $iTolerance = 95, $iLeft = 0, $iT
     ;== Update bitmap ==
     If ($sSourcePath = "") Then
         ;Use HBITMAP
-        If ($bUpdateBMP) Then captureRegion("", $iLeft, $iTop, $iWidth, $iHeight)
+        If ($bUpdateBMP) Then CaptureRegion("", $iLeft, $iTop, $iWidth, $iHeight)
     Else
         ;Use string path to source image file.
         If ($bUpdateBMP) Then
-            captureRegion($sSourcePath, $iLeft, $iTop, $iWidth, $iHeight)
+            CaptureRegion($sSourcePath, $iLeft, $iTop, $iWidth, $iHeight)
         Else
             saveHBitmap($sSourcePath)
         EndIf
@@ -101,7 +100,7 @@ Func ProcessImageReturn($aResult, $iLeft, $iTop, $bCenter, $sImage, $bMultiple =
 
             For $i = 3 To UBound($aSplitResult)-1 Step 3
                 if ($i+1 >= UBound($aSplitResult)) Then 
-                    Log_Add("$i = " & $i+1 & ", $aResult = " & Ubound($aSplitResult) & ", Result = " & $tmpResult, $LOG_DEBUG)
+                    ;Log_Add("$i = " & $i+1 & ", $aResult = " & Ubound($aSplitResult) & ", Result = " & $tmpResult, $LOG_DEBUG)
                     ExitLoop
                 EndIf
                 $aPoints[$tempCount][0] = Number($aSplitResult[$i])+$iLeft
@@ -112,7 +111,7 @@ Func ProcessImageReturn($aResult, $iLeft, $iTop, $bCenter, $sImage, $bMultiple =
                     $aPoints[$tempCount][1] = $aPoints[$tempCount][1] + Int($aTemplateSize[1]/2)
                 EndIf
 
-                Log_Add("Image found at (" & $aPoints[$tempCount][0] & ", " & $aPoints[$tempCount][1] & ") -> " & $sImage, $LOG_DEBUG)
+                ;Log_Add("Image found at (" & $aPoints[$tempCount][0] & ", " & $aPoints[$tempCount][1] & ") -> " & $sImage, $LOG_DEBUG)
                 $tempCount += 1
             Next
 

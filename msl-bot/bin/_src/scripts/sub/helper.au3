@@ -1,5 +1,4 @@
 #include-once
-#include "../../imports.au3"
 
 #cs
 	Function: Retrieves data of current gem on screen. Works during battle-sell-item location
@@ -120,12 +119,20 @@ EndFunc
 	Returns:
 		If the gem meets the criteria returns true; otherwise, returns false.
 #ce
-Func filterGem($aGemData)
-	Local $iGrade = $aGemData[0]
-	Local $t_bFilter = (getArg($g_aFilterSettings, $iGrade & "*-Filter") = "Enabled")
-	Local $t_bFilterTypes = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Types"), $aGemData[2]))
-	Local $t_bFilterStats = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Stats"), $aGemData[3]))
-	Local $t_bFilterSubStats = (StringInStr(getArg($g_aFilterSettings, $iGrade & "*-Substats"), $aGemData[4]))
+Func filterGem($aGemData, $bCheckDragonGems = False)
+	If ($bCheckDragonGems And StringInStr("leech,pugilist,siphon", $aGemData[2])) Then
+		Local $iGrade = $aGemData[0]
+		Local $t_bFilter = Eval("DragonFilter_" & $iGrade & "_Star_Filter")
+		Local $t_bFilterTypes = StringInStr(Eval("DragonFilter_" & $iGrade & "_Star_Types"), $aGemData[2])
+		Local $t_bFilterStats = StringInStr(Eval("DragonFilter_" & $iGrade & "_Star_Stats"), $aGemData[3])
+		Local $t_bFilterSubStats = StringInStr(Eval("DragonFilter_" & $iGrade & "_Star_Substats"), $aGemData[4])
+	Else
+		Local $iGrade = $aGemData[0]
+		Local $t_bFilter = Eval("Filter_" & $iGrade & "_Star_Filter")
+		Local $t_bFilterTypes = StringInStr(Eval("Filter_" & $iGrade & "_Star_Types"), $aGemData[2])
+		Local $t_bFilterStats = StringInStr(Eval("Filter_" & $iGrade & "_Star_Stats"), $aGemData[3])
+		Local $t_bFilterSubStats = StringInStr(Eval("Filter_" & $iGrade & "_Star_Substats"), $aGemData[4])
+	EndIf
 
 	If (Not($t_bFilter) Or Not($t_bFilterTypes) Or Not($t_bFilterStats) Or Not($t_bFilterSubStats)) Then Return False
 
@@ -190,38 +197,26 @@ Func findLevel($iLevel)
 		EndIf		 
 
 		Local $t_sImageName = "level-" & $sLevel
-		Local $t_aPoint = findImageMultiple($t_sImageName, 90, 5, 5, 0, 400, 220, 380, 260, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
+		Local $t_aPoint = findImage($t_sImageName, 95, 0, 400, 220, 380, 260, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
 
-		If $t_aPoint = 0 Then Return -1
+		If $t_aPoint = -1 Then Return -1
 		;Found point
 		
 		$aPoint[0] = 725
-		$aPoint[1] = $t_aPoint[0][1]
+		$aPoint[1] = $t_aPoint[1]
 		Return $aPoint
 	EndIf
 
 	Return -2
 EndFunc
 
-Func findBLevel($iLevel, $sMap)
+Func findBLevel($iLevel)
 	Local $aPoint[2]
-	Local $sLevel = StringLower($iLevel)
-	Local $iX = 402, $iY = 220, $iWidth = 50, $iHeight = 280
-	If (IsLocation($sMap)) Then
-		If ($iLevel < 10) Then $iLevel = "0" & $iLevel ;Must be in format ##
+	Local $aPoint = findImage("level-b" & ($iLevel<10?"0":"") & $iLevel , 95, 0, 310, 160, 50, 330, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
+	If isArray($aPoint) = False Then Return -1
 
-		Local $t_sImageName = "level-b" & $iLevel
-		Local $t_aPoint = findImage($t_sImageName, 95, 0, 310, 160, 50, 330, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
-
-		If (Not(isArray($t_aPoint))) Then Return -1
-		;Found point
-
-		$aPoint[0] = 626 ;x coordinate for left side of button
-		$aPoint[1] = $t_aPoint[1]
-		Return $aPoint
-	EndIf
-
-	Return -2
+	$aPoint[0] = 626 ;x coordinate for left side of button
+	Return $aPoint
 EndFunc
 
 #cs
@@ -231,22 +226,23 @@ EndFunc
 	Return: Points of the energy of the guardian dungeon.
 #ce
 Func findGuardian($sMode)
-	captureRegion()
-	
 	$sMode = StringLower(StringStripWS($sMode, $STR_STRIPALL))
+
+	CaptureRegion("\bin\images\misc\misc-guardian-left", 335, 191, 15, 15)
+	CaptureRegion("\bin\images\misc\misc-guardian-right", 398, 191, 15, 15)
 	Local $sImagePath, $aResult = False
 	Local Const $iX = 650
 	Switch $sMode
 		Case "left", "right"
 			$sImagePath = "misc-guardian-" & $sMode
-			$aResult = findImage($sImagePath, 90, 0, 550, 250, 60, 250, True, True)
+			$aResult = findImage($sImagePath, 70, 0, 550, 250, 60, 250, True, True)
 			If (Not(isArray($aResult))) Then Return -1
 		Case Else
 			$sImagePath = "misc-guardian-left"
-			$aResult = findImage($sImagePath, 90, 0, 550, 250, 60, 250, True, True)
+			$aResult = findImage($sImagePath, 70, 0, 550, 250, 60, 250, True, True)
 			If (Not(isArray($aResult))) Then 
 				$sImagePath = "misc-guardian-right"
-				$aResult = findImage($sImagePath, 90, 0, 550, 250, 60, 250, True, True)
+				$aResult = findImage($sImagePath, 70, 0, 550, 250, 60, 250, True, True)
 				If (Not(isArray($aResult))) Then Return -1
 			EndIf
 	EndSwitch
@@ -299,10 +295,10 @@ Func getStone()
 	Local $sElement = "", $sGrade = "", $iQuantity = -1
 
 	;Check if egg or gold
-	If (isPixel(getPixelArg("battle-item-egg"))) Then
+	If isPixel(getPixelArg("battle-item-egg"), 10, CaptureRegion()) Then
 		Local $t_aData = ["egg", "n/a", "1"]
 		Return $t_aData
-	ElseIf (isPixel(getPixelArg("battle-item-gold"))) Then
+	ElseIf isPixel(getPixelArg("battle-item-gold"), 10, CaptureRegion()) Then
 		Local $t_aData = ["gold", "n/a", "n/a"]
 		Return $t_aData
 	EndIf
@@ -312,7 +308,10 @@ Func getStone()
 	Local $aGrades = ["low", "mid", "high"]
 	For $sCurElement In $aElements
 		For $sCurGrade In $aGrades
-			If (isPixel(getPixelArg("stone-" & $sCurElement & "-" & $sCurGrade), 50)) Then
+			If isPixel(getPixelArg("stone-" & $sCurElement & "-" & $sCurGrade), 50, CaptureRegion()) = True Or findImage("stone-" & $sCurElement & "-" & $sCurGrade, 90, 0, 359, 131, 80, 80) <> -1 Then
+				If FileExists(@ScriptDir & "\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade) = False Then
+					CaptureRegion("\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade, 382, 145, 35, 45)
+				EndIf
 				$sElement = $sCurElement
 				$sGrade = $sCurGrade
 
@@ -322,7 +321,12 @@ Func getStone()
 	Next
 
 	If ($sElement = "" Or $sGrade = "") Then
-		$g_ErrorMessage = "getStone() => Could not get Element or Grade"
+		Local $iCounter = 0
+		While FileExists(@ScriptDir & "\bin\images\stone\stone-unknown" & $iCounter & ".bmp")
+			$iCounter += 1
+		WEnd
+		CaptureRegion("\bin\images\stone\stone-unknown" & $iCounter, 382, 145, 35, 45)
+		Log_Add("Could not get Element or Grade", $LOG_ERROR)
 		Return -1
 	EndIf
 
@@ -336,7 +340,7 @@ Func getStone()
 	Next
 
 	If ($iQuantity = -1) Then
-		$g_sErrorMessage = "getStone() => Could not get quantity."
+		Log_Add("Could not get quantity", $LOG_ERROR)
 		Return -1
 	EndIf
 
@@ -351,7 +355,7 @@ EndFunc
 	Return: Current round and the number of total rounds: Array format=[current, max, isLastRound, isBoss, MonsPerRound]
 #ce
 Func getRound($bUpdate = True)
-	If ($bUpdate) Then captureRegion()
+	If ($bUpdate) Then CaptureRegion()
 	Local $iMax = 0 ;Max number of rounds
 	Local $iCurr = 0 ;Current round
 	$g_sErrorMessage = ""
@@ -383,25 +387,33 @@ EndFunc
 #ce
 Func closeWindow()
 	Local $sCurrLocation = getLocation()
-	Switch $sCurrLocation
-		Case "autobattle-prompt"
-			Return clickWhile(getPointArg("autobattle-prompt-close"), "isLocation", "autobattle-prompt", 5, 1000)
-		Case "monsters-previous-awaken"
-			Return clickWhile(getPointArg("already-awakened-close"), "isLocation", "monsters-previous-awaken", 5, 1000)
-		Case "refill"
-			Return clickWhile(getPointArg("refill-close"), "isLocation", "refill", 5, 1000)
-		Case "boutique"
-			Return clickWhile(getPointArg("boutique-close"), "isLocation", "boutique", 5, 1000)
-		Case Else
-			Local $s_getWindowButton = findImage("location-dialogue-close", 90, 100, 400, 0, 400, 276, True, True)
-			If (IsArray($s_getWindowButton)) Then
-				clickPoint($s_getWindowButton)
+	;Switch $sCurrLocation
+		;Case "autobattle-prompt"
+		;	Return clickWhile(getPointArg("autobattle-prompt-close"), "isLocation", "autobattle-prompt", 5, 1000)
+		;Case "monsters-previous-awaken"
+		;	Return clickWhile(getPointArg("already-awakened-close"), "isLocation", "monsters-previous-awaken", 5, 1000)
+		;Case "refill"
+		;	Return clickWhile(getPointArg("refill-close"), "isLocation", "refill", 5, 1000)
+		;Case "boutique"
+		;	Return clickWhile(getPointArg("boutique-close"), "isLocation", "boutique", 5, 1000)
+		;Case Else
+			Local $aPoints = findImageMultiple("location-dialogue-close", 90, 5, 5, 0, 0, 0, 800, 552, True, True)
+			If IsArray($aPoints) Then
+				For $i = 0 to UBound($aPoints)-1
+					Local $sLoc = getLocation()
+					
+					clickPoint(CreateArr($aPoints[$i][0], $aPoints[$i][1]))
+					If _Sleep(300) Then ExitLoop
+
+					If $sLoc <> getLocation() Then ExitLoop
+				Next
+
 				Return True
 			Else
 				$g_sErrorMessage = "closeWindow() => No close found."
 				Return False
 			EndIf
-	EndSwitch
+	;EndSwitch
 EndFunc
 
 #cs 
@@ -448,7 +460,7 @@ Func checkEachPixel(ByRef $aFailedArray, $aPixels)
 EndFunc
 
 ;Only deals with 1D array
-Func __ArrayToString(ByRef $aArray, $iLayer = 1)
+Func __ArrayToString($aArray, $iLayer = 1)
     Local $sArray = ""
     For $i = 0 To UBound($aArray)-1
         Local $temp = $aArray[$i]
@@ -476,9 +488,10 @@ Func __ArrayFromString($sString, $iLayer = 1)
     Return $aArray
 EndFunc
 
-Func CreateArr($o1 = Null, $o2 = Null, $o3 = Null, $o4 = Null, $o5 = Null, $o6 = Null, $o7 = Null, $o8 = Null, $o9 = Null, $o10 = Null)
+Func CreateArr($o1 = Null, $o2 = Null, $o3 = Null, $o4 = Null, $o5 = Null, $o6 = Null, $o7 = Null, $o8 = Null, $o9 = Null, $o10 = Null, _
+			   $o11 = Null, $o12 = Null, $o13 = Null, $o14 = Null, $o15 = Null, $o16 = Null, $o17 = Null, $o18 = Null, $o19 = Null, $o20 = Null)
 	;count defined
-	For $i = 10 To 1 Step -1
+	For $i = 20 To 1 Step -1
 		If Eval("o" & $i) <> Null Then
 			ExitLoop 
 		EndIf
@@ -504,16 +517,16 @@ Func inBattle($iDuration = 500)
 	Local $hTimer = TimerInit()
 	Local $iCounter = 0
 	Do
-	CaptureRegion()
-	For $i = 0 To UBound($aPixSet)-1
+		CaptureRegion()
+		For $i = 0 To UBound($aPixSet)-1
 			If isPixel($aPixSet[$i][0], 5) = True And isPixel($aPixSet[$i][1]) = False Then
-			;Log_Add("Is not in battle.", $LOG_DEBUG)
-			;Log_Level_Remove()
+				;Log_Add("Is not in battle.", $LOG_DEBUG)
+				;Log_Level_Remove()
 				$iOutput += 1
 				ExitLoop
-		EndIf
-	Next
-		If _Sleep($iDuration/100) Then ExitLoop
+			EndIf
+		Next
+		If _Sleep(Int($iDuration/50)) Then ExitLoop
 		$iCounter += 1
 		If ($iOutput / $iCounter) <> 1 Then ExitLoop ;Comment out to debug
 	Until(TimerDiff($hTimer) > $iDuration)
@@ -534,7 +547,7 @@ Func clickBattle($sType = "", $sLocation = "", $iNum = 1, $iDelay = 200)
 			clickPoint(getPointArg("battle-auto"))
 			clickDrag(CreateArr(33, 213, 33, 176), 1, 0) ;Prevent sticky button
 			If $iNum > 1 Then
-				While TimerDiff($hTimer) < 200
+				While TimerDiff($hTimer) < $iDelay
 					If _Sleep(50) Then Return
 				WEnd
 			EndIf
@@ -561,4 +574,41 @@ Func clickBattle($sType = "", $sLocation = "", $iNum = 1, $iDelay = 200)
 			$bOutput = (getLocation() = $sLocation)
 	EndSwitch
 	Return $bOutput
+EndFunc
+
+Func findMap($sMap)
+	If getLocation() <> "map" Then Return -1
+	$sMap = StringReplace(StringLower($sMap)," ","-")
+
+	Local $aPoint = findImage("map-" & $sMap, 90, 100, 0, 0, 800, 552, True, True)
+
+	If isArray($aPoint) = False Then clickDrag($g_aSwipeRightFast)
+	While isArray($aPoint) = False
+		If _Sleep(200) Or getLocation() <> "map" Then ExitLoop
+		If $sMap = "astromon-league" Then
+			If findImage("map-astromon-league-disabled", 90, 100, 0, 0, 800, 552, True, True) Then
+				$aPoint = -1
+				ExitLoop
+			EndIf
+		EndIf
+
+		$aPoint = findImage("map-" & $sMap, 90, 100, 0, 0, 800, 552, True, True)
+		If isArray(findImage("map-terrestrial-rift", 90, 500, 0, 0, 800, 552, True, True)) = True Then ExitLoop
+		
+		If isArray($aPoint) = False Then 
+			clickDrag($g_aSwipeLeft)
+		EndIf
+	WEnd
+
+	If $sMap = "ancient-dungeon" And isArray($aPoint) = True Then $aPoint[1] -= 100
+	Return $aPoint
+EndFunc
+
+Func goBack()
+	Log_Add("Sending back command", $LOG_DEBUG)
+	If isPixel(getPixelArg("back"), 20, CaptureRegion()) = True Then
+		clickPoint(getPointArg("back"))
+	Else
+		If closeWindow() = False Then clickPoint(getPointArg("tap"))
+	EndIf
 EndFunc

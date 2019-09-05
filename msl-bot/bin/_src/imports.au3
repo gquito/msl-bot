@@ -24,13 +24,21 @@
 #include <GUIComboBox.au3>
 #include <GUIButton.au3>
 #include <GUIMenu.au3>
-#include "global.au3"
 
-#include "gui/GuiDpiFunctions.au3"
+#include "globals/Arrays.au3"
+#include "globals/Const.au3"
+#include "globals/Default.au3"
+#include "globals/Handles.au3"
+#include "globals/Numbers.au3"
+#include "globals/Schedule.au3"
+#include "globals/Strings.au3"
+
+#include "gui/Config.au3"
 #include "gui/Design.au3"
 #include "gui/Handler.au3"
+#include "gui/Menu.au3"
+#include "gui/Script.au3"
 
-#include "handlers/Log.au3"
 #include "handlers/_ImageSearch.au3"
 #include "handlers/ADB.au3"
 #include "handlers/Argument.au3"
@@ -38,16 +46,17 @@
 #include "handlers/Control.au3"
 #include "handlers/Cumulative.au3"
 #include "handlers/Location.au3"
+#include "handlers/Log.au3"
 #include "handlers/Image.au3"
 #include "handlers/Json.au3"
 #include "handlers/Nox.au3"
 #include "handlers/OtherFunctions.au3"
 #include "handlers/Pixel.au3"
+#include "handlers/Schedule.au3"
 #include "handlers/Script.au3"
 #include "handlers/Stats.au3"
 #include "handlers/System.au3"
 #include "handlers/Time.au3"
-#include "handlers/Monitor.au3"
 
 #include "scripts/sub/doRefill.au3"
 
@@ -67,10 +76,7 @@
 #include "scripts/sub/common.au3"
 #include "scripts/sub/enterStage.au3"
 #include "scripts/sub/catch.au3"
-#include "scripts/sub/evolve.au3"
 #include "scripts/sub/enterBattle.au3"
 #include "scripts/sub/sellGems.au3"
-#include "scripts/sub/updateGuardians.au3"
 
 #include "../local/imports.au3"
-#include "handlers/_ErrorHandler.au3"

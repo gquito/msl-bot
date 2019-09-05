@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 Func RestartNox($iAttempt = 1, $sCL = " -resolution:800x552 -dpi:160 ")
     Log_Level_Add("RestartNox")
@@ -10,9 +9,8 @@ Func RestartNox($iAttempt = 1, $sCL = " -resolution:800x552 -dpi:160 ")
     While $iAttempt >= 1
         $iAttempt -= 1
 
-        $g_hTimerLocation = NULL ;Reset restart timer to prevent meta restart.
         While True
-            $g_hTimerLocation = Null
+            $g_hTimerLocation = Null ;Prevent AntiStuck restart
 
             ;Getting all process information to restart process with correct Nox clone.
             ;Clone can be found and ran through Command Line. If no clone is in command line then
@@ -40,7 +38,7 @@ Func RestartNox($iAttempt = 1, $sCL = " -resolution:800x552 -dpi:160 ")
                 EndIf
             WEnd
 
-            Local $sRun = $sPath & $sClone & $sCL & "-startPackage:com.ftt.msleague_gl -lang:en"
+            Local $sRun = $sPath & $sClone & $sCL & " -package:com.ftt.msleague_gl -lang:en"
             Log_Add("Starting Nox process: " & $sRun)
             Run($sRun, "")
 
@@ -56,7 +54,7 @@ Func RestartNox($iAttempt = 1, $sCL = " -resolution:800x552 -dpi:160 ")
                     ExitLoop(2)
                 EndIf
 
-                resetHandles()
+                ResetHandles()
             Until($g_hWindow <> 0 And $g_hControl <> 0)
 
             Local $bEstablish_ADB = False
@@ -82,7 +80,7 @@ Func RestartNox($iAttempt = 1, $sCL = " -resolution:800x552 -dpi:160 ")
                     ExitLoop(2)
                 EndIf
 
-                resetHandles()
+                ResetHandles()
             WEnd
 
             ;Waiting for start menu
@@ -114,7 +112,9 @@ Func isGameRunning()
     Return $bRunning
 EndFunc
 
-Func SendBack($iCount = 1, $iSpeed = 50, $iMode = $g_iBackMode)
+Func SendBack($iCount = 1, $iSpeed = 50, $iMode = $Config_Back_Mode)
+    Log_Level_Add("SendBack")
+    Log_Add("Sending back command.", $LOG_DEBUG)
     Switch $iMode
         Case $BACK_REAL
             While $iCount >= 1
@@ -135,6 +135,7 @@ Func SendBack($iCount = 1, $iSpeed = 50, $iMode = $g_iBackMode)
         Case $BACK_ADB
             ADB_SendESC($iCount)
     EndSwitch
+    Log_Level_Remove()
 EndFunc
 
 Func RestartGame_NONADB($iAttempt = 1)
@@ -189,8 +190,8 @@ Func RestartGame_NONADB($iAttempt = 1)
 EndFunc
 
 Func RestartGame($iAttempt = 1)
-    Log_Level_Add("ADB_RestartGame")
-    Log_Add("ADB_Restarting game.")
+    Log_Level_Add("RestartGame")
+    Log_Add("Restarting game.")
 	$g_bRestarting = True
     $bOutput = False
 
@@ -201,12 +202,12 @@ Func RestartGame($iAttempt = 1)
 		While True
 			Local $hTimer ;Store timer
 
-			If (Not($g_bADBWorking)) Then 
+			If $g_bADBWorking = False Then 
 				Log_Add("ADB Unavailable, could not restart game.", $LOG_ERROR)
 				ExitLoop(2)
 			EndIf
 
-			If (isGameRunning()) Then
+			If isGameRunning() = True Then
 				Log_Add("Game is already running, killing current process.", $LOG_DEBUG)
 
 				$hTimer = TimerInit()
@@ -244,9 +245,9 @@ Func RestartGame($iAttempt = 1)
 			WEnd
 
 			if (isLocation("app-maintenance")) Then
-				Log_Add("Maintenance found. Waiting " & ($g_iMaintenanceTimeout) & " minutes then restarting game.", $LOG_DEBUG)
+				Log_Add("Maintenance found. Waiting " & ($Config_Maintenance_Timeout) & " minutes then restarting game.", $LOG_DEBUG)
 				$hTimer = TimerInit()
-				While TimerDiff($hTimer) < (1000 * 60 * $g_iMaintenanceTimeout)
+				While TimerDiff($hTimer) < (1000 * 60 * $Config_Maintenance_Timeout)
 					_Sleep(10)
 				WEnd
 				ContinueLoop
@@ -274,23 +275,3 @@ Func RestartGame($iAttempt = 1)
     Return $bOutput
 EndFunc
 
-Func resetHandles()
-    Log_Level_Add("resetHandles()")
-
-	$g_hWindow = WinGetHandle($g_sWindowTitle)
-	$g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
-    If $g_hControl = 0x000000 Then 
-        Log_Add("Control handle not found.", $LOG_DEBUG)
-        Log_Add("Using default control property.", $LOG_DEBUG)
-        $g_hControl = ControlGetHandle($g_hWindow, "", $d_sControlInstance)
-    EndIf
-
-    If $g_hWindow <> 0 Then
-        Local $t_aPos = WinGetPos($g_hWindow)
-        If isArray($t_aPos) = True Then
-            $g_hToolbox = WinGetHandle("[TITLE:Form; CLASS:Qt5QWindowToolSaveBits; X:" & ($t_aPos[0]+$t_aPos[2]) & "; Y:" & ($t_aPos[1]) & "]")
-        EndIf
-    EndIf
-
-    Log_Level_Remove()
-EndFunc

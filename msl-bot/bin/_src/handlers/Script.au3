@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 Func Start()
     Log_Level_Add("PREPROCESS")
@@ -8,13 +7,11 @@ Func Start()
 ;Initializing variables
     $g_bRunning = True
 
-    Data_Clear()
-    Data_Order_Clear()
-
     $g_hTimeSpent = TimerInit()
     $g_hScriptTimer = TimerInit()
-    UpdateSettings()
-    $g_bDisableAntiStuck = False
+    Config_Update()
+    $g_bAntiStuck = True
+    Stats_Clear()
 
     ;Pre Conditions
     Local $bOutput = False
@@ -22,62 +19,26 @@ Func Start()
         If ($g_hWindow = 0 Or $g_hControl = 0) Then
             If ($g_hWindow = 0) Then 
                 Log_Add("Window handle not found.", $LOG_ERROR)
-                MsgBox($MB_ICONERROR+$MB_OK, "Window handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
+                MsgBox($MB_ICONERROR+$MB_OK, "Window handle not found.", "Window handle (" & $Config_Emulator_Title & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $Config_Emulator_Property & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
                 ExitLoop
-            EndIf
-
-            If ($g_hControl = 0) Then
-                Local $iPID = WinGetProcess($g_hWindow)
-                Local $sPath = _WinAPI_GetProcessFileName($iPID)
-                        
-                If (StringInStr($sPath, "Nox")) Then
-                    Log_Add("Control Handle not found.", $LOG_ERROR)
-                    Log_Add("Attempting to use default for Nox.")
-                    
-                    $g_sControlInstance = $d_sControlInstance
-                    $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance) 
-
-                    ;If $g_hControl = 0 Then 
-                    ;    $g_sControlInstance = "[CLASS:AnglePlayer_0; INSTANCE:1]"
-                    ;    $g_hControl = ControlGetHandle($g_hWindow, "", $g_sControlInstance)
-                    ;EndIf
-
-                    If ($g_hControl = 0) Then 
-                        MsgBox($MB_ICONERROR+$MB_OK, "Control handle not found.", "Window handle (" & $g_sWindowTitle & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $g_sControlInstance & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Set the Emulator Title, Emulator Class, and Emulator Instance correctly.")
-                        ExitLoop
-                    EndIf
-                EndIf
-
             EndIf
         EndIf
 
         ;Establish ADB controls
-        If (Not(_Establish_ADB())) Then ExitLoop
+        If _Establish_ADB() = False Then ExitLoop
 
-        If ($g_iMouseMode = $MOUSE_REAL Or $g_iSwipeMode = $SWIPE_REAL) Then
+        If ($Config_Mouse_Mode = $MOUSE_REAL Or $Config_Swipe_Mode = $SWIPE_REAL) Then
             MsgBox($MB_ICONWARNING+$MB_OK, "Script is using real mouse.", "Mouse cursor will be moved automatically. To stop the script, press ESCAPE key.")
             HotKeySet("{ESC}", "Stop")
         EndIf
-
-    ;Processing
-        If ($g_sScript = "") Then
-            _GUICtrlComboBox_GetLBText($g_hCmb_Scripts, _GUICtrlComboBox_GetCurSel($g_hCmb_Scripts), $g_sScript)
-
-            Local $t_aScriptArgs[_GUICtrlListView_GetItemCount($g_hLV_ScriptConfig)+1] ;Contains script args
-            $t_aScriptArgs[0] = "CallArgArray"
-            For $i = 1 To UBound($t_aScriptArgs, $UBOUND_ROWS)-1
-                ;Retrieves the values column for each setting
-                $t_aScriptArgs[$i] = _GUICtrlListView_GetItemText($g_hLV_ScriptConfig, $i-1, 1) 
-            Next
-
-            $g_aScriptArgs = $t_aScriptArgs
-        EndIf
     
+        If $g_sScript = "" Then _GUICtrlComboBox_GetLBText($g_hCmb_Scripts, _GUICtrlComboBox_GetCurSel($g_hCmb_Scripts), $g_sScript)
+
         $bOutput = True
         ExitLoop
     WEnd
     
-    If (Not($bOutput)) Then
+    If $bOutput = False Then
         Log_Level_Remove()
         Return $bOutput
     EndIf
@@ -85,18 +46,19 @@ Func Start()
     While True
         ;Changing bot state and checking pixels
         $g_bRunning = True
-        CaptureRegion()
-        If (Not(isPixel("100,457,0x1FA9CE|200,457,0x24ABBD|300,457,0x29AEA8|400,457,0x2FB091", 10))) Then
+        
+        If isPixel("100,457,0x1FA9CE|200,457,0x24ABBD|300,457,0x29AEA8|400,457,0x2FB091", 10, CaptureRegion()) = False Then
             For $i = 0 To $NOX_WIDTH Step 100
                 Local $hColor = getColor($i, $NOX_HEIGHT/2)
                 If ($hColor <> "0x000000" Or $hColor <> "0xFFFFFF") Then 
                 ;Pass all conditions -> Setting control states
-                    Local $sUser = "[" & getArg($g_aConfigSettings, "Profile_Name") & "] "
+                    Local $sUser = "[" & $Config_Profile_Name & "] "
                     GUICtrlSetData($g_idLbl_RunningScript, "Running Script: " & $sUser & $g_sScript)
                     ControlDisable("", "", $g_hCmb_Scripts)
                     ControlDisable("", "", $g_hLV_ScriptConfig)
                     ControlDisable("", "", $g_hBtn_Start)
                     ControlDisable("", "", $g_hBtn_StatReset)
+
                     ControlEnable("", "", $g_hBtn_Stop)
                     ControlEnable("", "", $g_hBtn_Pause)
 
@@ -113,17 +75,31 @@ Func Start()
         ExitLoop
     WEnd
 
-    ;Write for error handler
-    ConsoleWrite(@CRLF & "~> Info stop" & @CRLF)
+    ;DEBUG INFO
+    Local $aData = ($g_aScripts[0])[2] ;Config data
+    For $i = 0 To UBound($aData)-1
+        Local $aSetting = $aData[$i] ;Setting data
+        Log_Add("::" & $aSetting[0] & " = " & $aSetting[1], $LOG_DEBUG)
+    Next
 
-    ConsoleWrite("Swipe Mode: " & getArg($g_aConfigsettings, "Swipe_Mode") & @CRLF)
-    ConsoleWrite("Mouse Mode: " & getArg($g_aConfigsettings, "Mouse_Mode") & @CRLF)
-    ConsoleWrite("Capture Mode: " & getArg($g_aConfigsettings, "Capture_Mode") & @CRLF)
-    ConsoleWrite("Display Scaling: " & getArg($g_aConfigsettings, "Display_Scaling") & @CRLF)
-    ConsoleWrite("ADB Method: " & getArg($g_aConfigsettings, "ADB_Method") & @CRLF)
-    ConsoleWrite("Emulator Instance: " & getArg($g_aConfigsettings, "Emulator_Instance") & @CRLF)
-    ConsoleWrite("Emulator Class: " & getArg($g_aConfigsettings, "Emulator_Class") & @CRLF)
-    ConsoleWrite(@CRLF & "Current Script: " & $g_sScript & @CRLF)
+    Log_Add("Current Script: " & $g_sScript, $LOG_DEBUG)
+    Local $iIndex = -1
+    For $i = 0 To UBound($g_aScripts)-1
+        If ($g_aScripts[$i])[0] = StringReplace($g_sScript, " ", "_") Then
+            $iIndex = $i
+            ExitLoop
+        EndIf
+    Next
+
+    If $iIndex <> -1 Then
+        $aData = ($g_aScripts[$iIndex])[2] ;Current Script data
+        For $i = 0 To UBound($aData)-1
+            Local $aSetting = $aData[$i] ;Setting data
+            Log_Add("::" & $aSetting[0] & " = " & $aSetting[1], $LOG_DEBUG)
+        Next
+    EndIf
+
+    Start_Schedule()
 
     Log_Add("Start result: " & $bOutput & ".", $LOG_DEBUG)
     Log_Level_Remove()
@@ -131,22 +107,62 @@ Func Start()
     Return $bOutput
 EndFunc
 
+Func Start_Schedule()
+    If StringLeft($g_sScript, 4) = "Farm" Or StringLeft($g_sScript, 6) = "Attack" Then
+        Local $aStructure = ""
+        Local $aAction = ""
+        If $Hourly_Hourly_Script = True Then
+            $aStructure = CreateArr(CreateArr("*", "*", "*", "00", "*"))
+            $aAction = CreateArr("doHourly()")
+            Schedule_Add("_Hourly", $aAction, $SCHEDULE_TYPE_DATE, "*", $aStructure, $SCHEDULE_FLAG_RunSafe, 60, True, False)
+        EndIf
+
+        If $General_Collect_Quests = True Then
+            $aStructure = CreateArr(CreateArr(CreateArr('$g_sLocation = "battle-end"', 'isPixel(getPixelArg("battle-end-quest"), 10, CaptureRegion())')), True)
+            $aAction = CreateArr("collectQuest()")
+            Schedule_Add("_Quest", $aAction, $SCHEDULE_TYPE_CONDITION, "*", $aStructure, $SCHEDULE_FLAG_RunSafe, 5, True, False)
+        EndIf   
+
+        If $Guardian_Guardian_Script = True Then
+            $aStructure = CreateArr(TimerInit(), $Guardian_Check_Intervals*60)
+            $aAction = CreateArr('_Schedule_Guardian()')
+            Schedule_Add("_Guardian", $aAction, $SCHEDULE_TYPE_TIMER, "*", $aStructure, $SCHEDULE_FLAG_RunSafe, 0, True, False)
+        EndIf
+    EndIf
+EndFunc
+
+Func _Schedule_Stop()
+    Schedule_RemoveByName("_Hourly")
+    Schedule_RemoveByName("_Quest")
+    Schedule_RemoveByName("_Guardian")
+
+    $g_iSchedulesQueueSize = 0
+    ReDim $g_aSchedulesQueue[0][2]
+EndFunc
+
+Func _Schedule_Guardian()
+    Local $aValues = Stats_Values_GetSpecific(Stats_GetValues($g_aStats), CreateArr("Guardians", "Astrogems_Used"))
+    Local $aParam = CreateArr($Guardian_Guardian_Mode, IsDeclared($g_sScript & "_Refill")?Eval($g_sScript & "_Refill"):0, 0, $Guardian_Target_Boss)
+    _RunScript("Farm_Guardian", $aParam, $aValues)
+EndFunc
+
 Func Stop()
-    ConsoleWrite("~> Script stopped" & @CRLF)
     HotKeySet("{Esc}") ;unbinds hotkey
 
 ;Save stats
-    _Stat_Calculated($g_aStats)
-    Stat_Save($g_aStats)
+    _Cumulative_Calculated($g_aCumulative)
+    Cumulative_Save($g_aCumulative)
     $g_hTimeSpent = Null
 
 ;Resets variables
-    If (FileExists($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")) Then FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+    If (FileExists($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")) Then FileDelete($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")
     $g_hTimerLocation = Null
     $g_hScriptTimer = Null
-    $g_aScriptArgs = Null
     $g_sScript = ""
-    $g_bDisableAntiStuck = False
+    $g_bAntiStuck = True
+
+;Removing Schedules
+    _Schedule_Stop()
 
 ;Setting control states
     GUICtrlSetData($g_idLbl_RunningScript, "Running Script: ")
@@ -154,6 +170,7 @@ Func Stop()
     ControlEnable("", "", $g_hLV_ScriptConfig)
     ControlEnable("", "", $g_hBtn_Start)
     ControlEnable("", "", $g_hBtn_StatReset)
+
     ControlDisable("", "", $g_hBtn_Stop)
     ControlDisable("", "", $g_hBtn_Pause)
 
@@ -177,7 +194,7 @@ Func Pause()
 EndFunc
 
 Func CloseApp()
-    FileDelete($g_sEmuSharedFolder[1] & "\" & $g_sWindowTitle & ".png")
+    FileDelete($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")
     _GDIPlus_Shutdown()
     Exit
 EndFunc
@@ -185,32 +202,32 @@ EndFunc
 Func _Establish_ADB($iADB_GetEvent_TIMEOUT = 0)
     $bOutput = False
     While True
-        If (Not(FileExists($g_sADBPath))) Then
-            MsgBox($MB_ICONERROR+$MB_OK, "Nox path does not exist.", "Path to adb.exe does not exist: " & $g_sADBPath)
+        If (Not(FileExists($Config_ADB_Path))) Then
+            MsgBox($MB_ICONERROR+$MB_OK, "Nox path does not exist.", "Path to adb.exe does not exist: " & $Config_ADB_Path)
             ExitLoop
         EndIf
 
         ;Add ADB absolute path.
-        If (Not(StringInStr($g_sADBPath, "adb.exe"))) Then 
-            If (StringRight($g_sADBPath, 1) = "\") Then
-                $g_sADBPath &= "adb.exe"
+        If (Not(StringInStr($Config_ADB_Path, "adb.exe"))) Then 
+            If (StringRight($Config_ADB_Path, 1) = "\") Then
+                $Config_ADB_Path &= "adb.exe"
             Else
-                $g_sADBPath &= "\adb.exe"
+                $Config_ADB_Path &= "\adb.exe"
             EndIf
         EndIf
 
         If (StringInStr(ADB_Command("get-state"), "error")) Then
-            Log_Add("Attempting to connect to ADB Device: " & $g_sADBDevice)
-            ADB_Command("connect " & $g_sADBDevice, 0, 60000)
+            Log_Add("Attempting to connect to ADB Device: " & $Config_ADB_Device)
+            ADB_Command("connect " & $Config_ADB_Device, 0, 60000)
 
             If (StringInStr(ADB_Command("get-state"), "error")) Then 
-                ;MsgBox($MB_ICONERROR+$MB_OK, "ADB device does not exist.", "Device is not connected or does not exist: " & $g_sADBDevice & @CRLF & @CRLF & ADB_Command("devices"))
-                Log_Add("Failed to connect to device: " & $g_sADBDevice, $LOG_ERROR)
+                ;MsgBox($MB_ICONERROR+$MB_OK, "ADB device does not exist.", "Device is not connected or does not exist: " & $Config_ADB_Device & @CRLF & @CRLF & ADB_Command("devices"))
+                Log_Add("Failed to connect to device: " & $Config_ADB_Device, $LOG_ERROR)
 
                 $g_bADBWorking = False
                 ExitLoop
             Else
-                Log_Add("Successfully connected to device: " & $g_sADBDevice)
+                Log_Add("Successfully connected to device: " & $Config_ADB_Device)
             EndIf
         EndIf
 
@@ -246,14 +263,15 @@ Func ScriptTest()
     ;Add necessary information 
     _ArrayAdd($aTempLOG, "Config information:")
     _ArrayAdd($aTempLOG, "  -Bot version: " & _ArrayToString($aVersion, "."))
-    _ArrayAdd($aTempLOG, "  -Emulator Class: " & getArg($g_aConfigsettings, "Emulator_Class"))
-    _ArrayAdd($aTempLOG, "  -Emulator Instance: " & getArg($g_aConfigsettings, "Emulator_Instance"))
-    Local $sAdbMethod = getArg($g_aConfigsettings, "ADB_Method")
+    _ArrayAdd($aTempLOG, "  -Emulator Title: " & $Config_Emulator_Title)
+    _ArrayAdd($aTempLOG, "  -Emulator Property: " & $Config_Emulator_Property)
+    Local $sAdbMethod = $Config_ADB_Method
     _ArrayAdd($aTempLOG, "  -ADB Method: " & $sAdbMethod)
-    _ArrayAdd($aTempLOG, "  -Display Scaling: " & getArg($g_aConfigsettings, "Display_Scaling"))
-    _ArrayAdd($aTempLOG, "  -Capture Mode: " & getArg($g_aConfigsettings, "Capture_Mode"))
-    _ArrayAdd($aTempLOG, "  -Mouse Mode: " & getArg($g_aConfigsettings, "Mouse_Mode"))
-    _ArrayAdd($aTempLOG, "  -Swipe Mode: " & getArg($g_aConfigsettings, "Swipe_Mode"))
+    _ArrayAdd($aTempLOG, "  -Display Scaling: " & $Config_Display_Scaling)
+    _ArrayAdd($aTempLOG, "  -Capture Mode: " & $Config_Capture_Mode)
+    _ArrayAdd($aTempLOG, "  -Mouse Mode: " & $Config_Mouse_Mode)
+    _ArrayAdd($aTempLOG, "  -Swipe Mode: " & $Config_Swipe_Mode)
+    _ArrayAdd($aTempLOG, "  -Back Mode: " & $Config_Back_Mode)
 
     ;Test window and control handle.
     ScriptTest_Handles()
@@ -343,17 +361,6 @@ Func ScriptTest()
         _ArrayAdd($aTempLOG, "  -Android Dpi: " & $sAdbResponse)
         If ($sAdbResponse <> "160") Then $sError &= @CRLF & "- Emulator dpi is not 160."
 
-        Local $screenScaling = getScreenScaling()
-        if (IsArray($screenScaling) And Ubound($screenScaling) > 0) Then
-            For $i = 0 To Ubound($screenScaling)-1
-                If ($g_iCurrentMonitor = $i + 1) Then
-                    _ArrayAdd($aTempLOG, "  -Monitor #" & $i+1 & " (Current) Scaling: " & $screenScaling[$i])
-                    If ($screenScaling[$i] <> $g_iDisplayScaling) Then $sError &= @CRLF & "- Screen scaling does not match. Monitor Scaling: " & $screenScaling[$i] & ", Display Scaling Setting: " & $g_iDisplayScaling
-                Else
-                    _ArrayAdd($aTempLOG, "  -Monitor #" & $i+1 & " Scaling: " & $screenScaling[$i])
-                EndIf
-            Next
-        EndIf
     EndIf
     
     ;Imagesearch test
@@ -394,19 +401,40 @@ EndFunc
 Func ScriptTest_Handles()
     Log_Level_Add("Checking Handles")
     resetHandles()
-    Log_Add("Window Title: " & $g_sWindowTitle, $LOG_DEBUG)
+    Log_Add("Window Title: " & $Config_Emulator_Title, $LOG_DEBUG)
     Log_Add("Window Handle: " & $g_hWindow, $LOG_DEBUG)
-    Log_Add("Control Properties: " & $g_sControlInstance, $LOG_DEBUG)
+    Log_Add("Control Properties: " & $Config_Emulator_Property, $LOG_DEBUG)
     Log_Add("Control Handle: " & $g_hControl, $LOG_DEBUG)
     Log_Add("Toolbox Handle: " & $g_hToolbox, $LOG_DEBUG)
     Log_Level_Remove()
+EndFunc
+
+Func ResetHandles()
+    ;Log_Level_Add("ResetHandles()")
+
+	$g_hWindow = WinGetHandle($Config_Emulator_Title)
+	$g_hControl = ControlGetHandle($g_hWindow, "", $Config_Emulator_Property)
+    If $g_hControl = 0x000000 Then 
+        ;Log_Add("Control handle not found.", $LOG_DEBUG)
+        ;Log_Add("Using default control property.", $LOG_DEBUG)
+        $g_hControl = ControlGetHandle($g_hWindow, "", "[CLASS:Qt5QWindowIcon; TEXT:ScreenBoardClassWindow]")
+    EndIf
+
+    If $g_hWindow <> 0 Then
+        Local $t_aPos = WinGetPos($g_hWindow)
+        If isArray($t_aPos) = True Then
+            $g_hToolbox = WinGetHandle("[TITLE:Form; CLASS:Qt5QWindowToolSaveBits; X:" & ($t_aPos[0]+$t_aPos[2]) & "; Y:" & ($t_aPos[1]) & "]")
+        EndIf
+    EndIf
+
+    ;Log_Level_Remove()
 EndFunc
 
 Func SwitchScript($sScript)
     Local $iIndex = _GUICtrlComboBox_FindStringExact($g_hCmb_Scripts, $sScript)
     If $iIndex <> -1 Then
         _GUICtrlComboBox_SetCurSel($g_hCmb_Scripts, $iIndex)
-        ChangeScript()
+        Script_ChangeConfig()
 
         If $g_bRunning = True Then Stop()
         Schedule_Add("Start " & $sScript & ".", __ArrayFromString("\1Start()"), $SCHEDULE_TYPE_CONDITION, 1, __ArrayFromString("\2$g_bRunning = False\1True"), 0, 0)
@@ -459,7 +487,7 @@ Func EditScript($sName, $sConfig, $sValue)
                         $aNew[2] = $aLayer
                         $g_aScripts[$iFound] = $aNew
 
-                        Log_Add($sScript & ", " & $sConfig & " has been changed to " & $sValue)
+                        Log_Add($g_sScript & ", " & $sConfig & " has been changed to " & $sValue)
                     EndIf
 
                 Case "text"
@@ -472,15 +500,15 @@ Func EditScript($sName, $sConfig, $sValue)
                     $aNew[2] = $aLayer
                     $g_aScripts[$iFound] = $aNew
 
-                    Log_Add($sScript & ", " & $sConfig & " has been changed to " & $sValue)
+                    Log_Add($g_sScript & ", " & $sConfig & " has been changed to " & $sValue)
 
                 Case "list"
                     MsgBox($MB_ICONWARNING, "EditScript Warning", "List cannot be edited yet.")
             EndSwitch
             _GUICtrlComboBox_SetCurSel($g_hCmb_Scripts, _GUICtrlComboBox_FindStringExact($g_hCmb_Scripts, $sName))
 
-            ChangeScript()
-            _saveSettings()
+            Script_ChangeConfig()
+            Config_Save()
         EndIf
     EndIf
 EndFunc

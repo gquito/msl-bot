@@ -1,5 +1,4 @@
 #include-once
-#include "../imports.au3"
 
 #cs
     Function: Retrieves current game location.
@@ -10,9 +9,10 @@ Func getLocation($bUpdate = True, $bSkipImage = False)
 	If TimerDiff($g_hGetLocationCoolDown) < 100 Then Return $g_sLocation
 	$g_hGetLocationCoolDown = TimerInit()
 
-	If ($g_hTimerLocation = Null Or TimerDiff($g_hTimerLocation) > 5000) And $g_sLocation = "unknown" Then $g_iLocationIndex = -1
-	
-	If ($g_hTimerLocation = Null) Then $g_hTimerLocation = TimerInit()
+
+	If $g_sLocation = "unknown" And TimerDiff($g_hTimerLocation) > 3000 Then $g_iLocationIndex = -1
+	If $g_hTimerLocation = Null Then $g_hTimerLocation = TimerInit()
+
 	Local $sOldLocation = $g_sLocation
 
 	If $bUpdate = True Then CaptureRegion()
@@ -28,7 +28,7 @@ Func getLocation($bUpdate = True, $bSkipImage = False)
 
 				$g_sLocation = $sLocation
 				If ($g_sLocation <> $sOldLocation) Then $g_hTimerLocation = TimerInit()
-				If $g_sLocation <> "unknown" Then $g_iLocationIndex = $aIndices[$i]
+				$g_iLocationIndex = $aIndices[$i]
 
 				Return $g_sLocation
 			EndIf
@@ -44,28 +44,22 @@ Func getLocation($bUpdate = True, $bSkipImage = False)
 
 				$g_sLocation = $sLocation
 				If ($g_sLocation <> $sOldLocation) Then $g_hTimerLocation = TimerInit()
-				If $g_sLocation <> "unknown" Then $g_iLocationIndex = $i
+				$g_iLocationIndex = $i
 
 				Return $g_sLocation
 			EndIf
-
 		Next
 	EndIf
 
-    If (Not($bSkipImage)) Then
+    If $bSkipImage = False And $g_iLocationIndex = -1 Then
         Local $imageLocation = checkImageLocations()
-        If ($imageLocation <> False) Then return $imageLocation
+        If ($imageLocation <> False) Then Return $imageLocation
     EndIf
-	$g_vDebug = ""
 
 	$g_sLocation = "unknown"
 	If ($g_sLocation <> $sOldLocation) Then $g_hTimerLocation = TimerInit()
 
 	Return $g_sLocation ;If no location from database is found.
-EndFunc
-
-Func getCurrentLocation()
-	Return $g_sLocation
 EndFunc
 
 #cs
@@ -213,7 +207,7 @@ Func checkImageLocations()
 	If ($iSize = 0 Or Not(isArray($g_aImageLocations))) Then Return False
 	For $i = 0 To $iSize-1
 		Local $aImageLocation = StringSplit($g_aImageLocations[$i][1],",")
-		Local $locationFound = findImage($aImageLocation[5], 90, 100, $aImageLocation[1], $aImageLocation[2], $aImageLocation[3], $aImageLocation[4], True, True)
+		Local $locationFound = findImage($aImageLocation[5], 90, 0, $aImageLocation[1], $aImageLocation[2], $aImageLocation[3], $aImageLocation[4], True, True)
 		If (IsArray($locationFound)) Then 
 			#cs 
 			Code for ignore location. test and fix later.
@@ -231,9 +225,7 @@ EndFunc
 ; Calls getLocation() in .2 second intervals until debug stopped.
 Func testLocation()
 	While Not(_Sleep(200))
-		CaptureRegion()
-		;$g_iLocationIndex = -1
-		;$g_sLocation = "unknown"
+		$g_iLocationIndex = -1
 		Log_Add(getLocation())
 	WEnd
 EndFunc
@@ -241,16 +233,16 @@ EndFunc
 Func CreateLocationsMap(ByRef $aLocationsMap, ByRef $aLocations)
 	Local $iSize = UBound($aLocations)
 
-    Local $t_aMapped[$iSize][2]
+    Local $t_aMapped[$iSize][2] ;Contain final location map
     For $a = 0 To $iSize-1
-        Local $sContent = getArg($aLocationsMap, $aLocations[$a][0])
-        If $sContent <> -1 Then
-            $sContent = $aLocations[$a][0] & "," & $sContent
+        Local $sContent = getArg($aLocationsMap, $aLocations[$a][0]) ;Find corresponding mapped location from name
+        If $sContent <> -1 Then ;if exist
+            $sContent = $aLocations[$a][0] & "," & $sContent ;Add current location as first in search and other mapped locations
 
-            Local $aContents = StringSplit($sContent, ",")
+            Local $aContents = StringSplit($sContent, ",") 
             Local $aIndex[0] ;List of index
-            For $b = 1 To $aContents[0]
-                For $c = 0 To $iSize-1
+            For $b = 1 To $aContents[0] ;traverse mapped array
+                For $c = 0 To $iSize-1 ;traverse location array
                     If $aContents[$b] = $aLocations[$c][0] Then
                         _ArrayAdd($aIndex, $c)
                     EndIf
