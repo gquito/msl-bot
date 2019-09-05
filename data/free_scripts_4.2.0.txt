@@ -21,7 +21,7 @@
 		data: "Never,3 Minutes,5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
 	]
     
-    [combo:
+    	[combo:
 		name: "Another Device Timeout",
 		description: "Number of minutes it takes until bot app decides to re-login to the game.",
 		default: "Immediately",
