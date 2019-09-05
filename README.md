@@ -46,16 +46,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 ![Resolution](https://i.imgur.com/tlirVWL.png)
 
-**Step 3**: Change Graphics Rendering mode according to Windows version. Check by pressing `Win+R` and typing **winver**.
-  - Version 1709 require **OpenGL**.
-  - Lower versions require **DirectX**.
-  - Versions greater than 1709 could probably use both.
-
-![Windows version 1709](https://i.imgur.com/acU6Al9.png)
-
-![Graphics Rendering Mode](https://i.imgur.com/2H9WuG5.png)
-
-**Step 4**: Save settings.
+**Step 3**: Save settings.
 
 ---
 ### Monster Super League Game Settings:
@@ -67,23 +58,13 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 ![Game Setting](https://i.imgur.com/YFHC7VI.png)
 
+**Step 3**: Download game resources.
+
 ---
 ### Changing Bot Config:
-**Step 1**: Change Emulator Title, Class and Instance according the the info provided by the AutoIt Window Info *Finder Tool*.
+**Step 1**: Change Emulator Title according to the title of the emulator window.
 
 *Note: The title of your Nox window should have greater than 3 characters. 'Nox' or 'MSL' will not work. 'NoxPlayer' or 'Nox1' works.*
-
-*Another note: Newer versions of Nox (6.3.0.0 and above) will not display the correct Class and Instance. Use one of the following:*
-  
-  *- Emulator class: "\~" | Emulator Instance: "\~" Uses NOX Default*
-  
-  *- Emulator class: "subWin" | Emulator Instance: "1"*
-  
-  *- Emulator class: "Qt5QWindowIcon" | Emulator Instance: "5"*
-
-![Title Class Instance](https://i.imgur.com/WDYfeJ3.png)
-
-![Bot Config Emulator Settings](https://i.imgur.com/dicFkhe.png)
 
 **Step 2**: Check your settings by performing the Compatibility Test. Focus on the bot and press Ctrl+T
 
@@ -116,7 +97,14 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
 
 ## Common Issues
 ### Window/Control Handle not found.
-  - This issue can be fixed by correctly setting the Bot config. Refer to [*Changing Bot Config*](https://github.com/GkevinOD/msl-bot#changing-bot-config), Step 1 of **How to use bot** section.
+  - Check Emulator Title. If Emulator Title is correct, change the Emulator Property accordingly:
+    - For Nox Emulator try using one of the following: 
+    
+    "\[CLASS:Qt5QWindowIcon; TEXT:ScreenBoardClassWindow\]"
+    
+    "\[CLASS:subWin; INSTANCE:1\]"
+    
+    "\[CLASS:AnglePlayer_0; INSTANCE:1\]"
 
 ![Window/Control handle error](https://i.imgur.com/m21F7iP.png)
 
