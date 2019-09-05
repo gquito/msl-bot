@@ -180,12 +180,6 @@
 		description: "How much time in SECONDS the RestartGame or RestartNox will wait for the game to load before timing out.",
 		default: "300"
 	]
-	
-	[text:
-		name: "Guided Auto Delay",
-		description: "Amount of delay between clicks in milliseconds. Default is 100 ms. Faster computers can do 0 ms.",
-		default: "100"
-	]
 ]
 
 [_General:
