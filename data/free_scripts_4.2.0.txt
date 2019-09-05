@@ -52,7 +52,7 @@
 	[combo:
 		name: "Log Clicks",
 		description: "Log click types.",
-		default: "Disabled",
+		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 
