@@ -100,11 +100,11 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
   - Check Emulator Title. If Emulator Title is correct, change the Emulator Property accordingly:
     - For Nox Emulator try using one of the following: 
     
-    "\[CLASS:Qt5QWindowIcon; TEXT:ScreenBoardClassWindow\]"
+    \[CLASS:Qt5QWindowIcon; TEXT:ScreenBoardClassWindow\]
     
-    "\[CLASS:subWin; INSTANCE:1\]"
+    \[CLASS:subWin; INSTANCE:1\]"
     
-    "\[CLASS:AnglePlayer_0; INSTANCE:1\]"
+    \[CLASS:AnglePlayer_0; INSTANCE:1\]
 
 ![Window/Control handle error](https://i.imgur.com/m21F7iP.png)
 
