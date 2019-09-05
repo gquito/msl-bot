@@ -56,12 +56,12 @@
 		data: "Enabled,Disabled"
 	]
 
-  [combo:
-    name: "Ask For Updates",
-    description: "Prompt user for update when there is a new version.",
-    default: "Enabled",
-    data: "Enabled,Disabled"
-  ]
+  	[combo:
+    		name: "Ask For Updates",
+    		description: "Prompt user for update when there is a new version.",
+    		default: "Enabled",
+    		data: "Enabled,Disabled"
+  	]
 
 	[text:
 		name: "ADB Path",
