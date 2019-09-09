@@ -40,7 +40,7 @@ battle-sell-item-sell:500,400
 battle-sell-item-third:329,234
 battle-third-friendly-mon:441,515
 bingo-accept:469,333
-bingo-accept-all:539,347
+bingo-accept-all:560,346
 bingo-button:600,346
 bingo-icon:78,89
 bingo-reward:462,384
