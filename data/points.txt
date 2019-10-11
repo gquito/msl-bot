@@ -61,7 +61,7 @@ exotic-festival-tickets:730,450
 exotic-ticket-claim-close:770,340
 expedition-autoselect:47,384
 expedition-explore:710,442
-facebook-login-close:169,39
+facebook-login-close:169,36
 free-1-3-summon:475,460
 free-3-5-summon:694,460
 friend-gifts:286,128
