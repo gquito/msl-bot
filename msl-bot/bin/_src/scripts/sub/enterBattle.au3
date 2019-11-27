@@ -14,6 +14,7 @@ Func enterBattle()
 		Switch $sLocation
 			Case "map-battle"
 				clickPoint(getPointArg("map-battle-play"))
+				waitLocation("loading,unknown,refill", 5)
 			Case "battle-end"
 				Local $aRestart = findImage("misc-restart")
 				If isArray($aRestart) = True Then 

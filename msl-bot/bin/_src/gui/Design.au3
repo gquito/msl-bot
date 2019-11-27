@@ -176,10 +176,6 @@ Func CreateGUI()
     _GUICtrlListView_AddColumn($g_hLV_OverallStats, "Stat", 250, 0)
     _GUICtrlListView_AddColumn($g_hLV_OverallStats, "Value", 145, 0)
 
-    ;Updating cumulative stats
-    Cumulative_Read($g_aCumulative)
-    Cumulative_Update($g_aCumulative, $g_hLV_OverallStats)
-
     Global $hLbl_StatMessage = GUICtrlCreateLabel("Support MSL Bot by donating! For more details click on the Donate tab.", 5, 355, 389, 17, $WS_BORDER+$SS_CENTER)
 
     GuiCtrlSetResizing($g_idLbl_Stat, $GUI_DOCKTOP+$GUI_DOCKLEFT+$GUI_DOCKSIZE)
@@ -223,6 +219,7 @@ Func CreateGUI()
     GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
 
     WinMove($g_hParent, "", (@DesktopWidth / 2)-200, (@DesktopHeight / 2)-200, 400, 420)
+    Cumulative_Load()
     GUIMain()
 EndFunc
 

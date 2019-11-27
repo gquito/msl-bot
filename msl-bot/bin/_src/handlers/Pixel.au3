@@ -280,7 +280,7 @@ Func findColor($startingPoint, $size, $color, $variation = 10, $skipx = 1, $skip
 	Return -1
 EndFunc
 
-Func setPixel($sPixels, $aData = Null)
+Func setPixel($sPixels, $aData = Null, $bUpdate = True)
 	Local $aPixela = getPixelArg($sPixels)
 	Local $aPoints[0][2] ;Will store points to find colors for.
 	
@@ -310,7 +310,7 @@ Func setPixel($sPixels, $aData = Null)
 		Next
 	EndIf
 
-	CaptureRegion()
+	If $bUpdate = True Then CaptureRegion()
 
 	Local $sNewPixels = "" ;Will store new pixel set
 	For $i = 0 To UBound($aPoints)-1

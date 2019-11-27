@@ -51,8 +51,6 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
 
         Switch $sLocation
             Case "guardian-dungeons"
-                If $Farm_Guardian_Refill <> 0 And $Astrogems_Used >= $Farm_Guardian_Refill Then ExitLoop
-
                 Status("Searching for dungeons.")
                 If isPixel(getPixelArg("guardian-dungeons-no-found"), 10, CaptureRegion()) = True Then
                     $bIdle = True
@@ -72,7 +70,9 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
                     clickDrag($g_aSwipeUp)
                 EndIf
             Case "map-battle"
-                enterBattle()
+                If enterBattle() = True Then
+                    Cumulative_AddNum("Runs (Farm Guardian)", 1)
+                EndIf
             Case "battle-end"
                 Status("Searching for more guardian dungeons.")
 
@@ -82,7 +82,9 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
                 Status("You have been defeated.", $LOG_INFORMATION)
                 navigate("battle-end", True)
             Case "refill"
+                If $Farm_Guardian_Refill <> 0 And $Astrogems_Used+30 > $Farm_Guardian_Refill Then ExitLoop
                 Status("Refilling energy.")
+
                 Local $iRefill = doRefill()
                 If $iRefill = -1 Then
                     $bIdle = True

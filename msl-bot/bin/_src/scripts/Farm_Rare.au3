@@ -52,7 +52,7 @@ Func Farm_Rare($bParam = True, $aStats = Null)
 
                 If inBattle(500) = True And navigate("catch-mode") = False Then clickBattle()
             Case "catch-mode"
-                    Local $aResult = catch($Farm_Rare_Capture, $General_Max_Exotic_Chips)
+                    Local $aResult = catch($Farm_Rare_Capture, ($General_Max_Exotic_Chips < 3)?$General_Max_Exotic_Chips:3)
                     Local $iSize = UBound($aResult)
 
                     For $i = 0 To $iSize-1
@@ -79,13 +79,13 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                     EndIf
             Case "map-battle", "battle-end"
                 If $Farm_Rare_Runs <> 0 And $Runs >= $Farm_Rare_Runs Then ExitLoop
-                If $Farm_Rare_Refill <> 0 And $Astrogems_Used >= $Farm_Rare_Refill Then ExitLoop
 
                 Status("Entering battle x" & $Runs+1, $LOG_PROCESS)
                 If enterBattle() = True Then
                     $hAverage = TimerInit()
                     $Win_Rate += 1
                     $Runs += 1
+                    Cumulative_AddNum("Runs (Farm Rare)", 1)
                 EndIf
             Case "map"
                 Status(StringFormat("Looking for %s on Level %s %s.", $Farm_Rare_Map, $Farm_Rare_Stage_Level, $Farm_Rare_Difficulty))
@@ -93,9 +93,12 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                     $hAverage = TimerInit()
                     $Win_Rate += 1
                     $Runs += 1
+                    Cumulative_AddNum("Runs (Farm Rare)", 1)
                 EndIf
             Case "refill"
+                If $Farm_Rare_Refill <> 0 And $Astrogems_Used+30 > $Farm_Rare_Refill Then ExitLoop
                 Status("Refilling energy.")
+
                 Local $iRefill = doRefill()
                 If $iRefill = -1 Then ExitLoop
                 If $iRefill = 1 Then $Astrogems_Used += 30

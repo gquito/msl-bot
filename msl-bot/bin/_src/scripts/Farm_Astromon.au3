@@ -48,6 +48,7 @@ Func Farm_Astromon($bParam = True, $aStats = Null)
                     $iSkip = 0
                     $bCatch = True
                     $Runs += 1
+                    Cumulative_AddNum("Runs (Farm Astromon)", 1)
                 EndIf
             Case "battle-end"
                 If $Farm_Astromon_Amount <> 0 And Eval(StringReplace($Farm_Astromon_Astromon, "-", "_")) >= $Farm_Astromon_Amount Then ExitLoop
@@ -57,6 +58,7 @@ Func Farm_Astromon($bParam = True, $aStats = Null)
                     $iSkip = 0
                     $bCatch = True
                     $Runs += 1
+                    Cumulative_AddNum("Runs (Farm Astromon)", 1)
                 EndIf
             Case "battle-auto"
                 Local $iNumCurr = Eval(StringReplace($Farm_Astromon_Astromon, "-", "_"))
@@ -142,6 +144,8 @@ Func Farm_Astromon($bParam = True, $aStats = Null)
                     waitLocation("battle,battle-auto", 5)
                 EndIf
             Case "refill"
+                If $Farm_Astromon_Refill <> 0 And $Astrogems_Used+30 > $Farm_Astromon_Refill Then ExitLoop
+
                 Status("Refilling energy.")
                 Local $iRefill = doRefill()
                 If $iRefill = -1 Then ExitLoop

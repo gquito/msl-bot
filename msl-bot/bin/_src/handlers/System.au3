@@ -25,16 +25,9 @@ Func _Sleep($iDuration = 0)
             EndIf
 
             While $g_bPaused
-                If ($g_hTimeSpent <> "/Paused") Then 
-                    _Cumulative_Calculated($g_aCumulative)
-                    Cumulative_Save($g_aCumulative)
-                    $g_hTimeSpent = "/Paused"
-                EndIf
-                
                 $g_hTimerLocation = Null
                 GUI_HANDLE()
             WEnd
-            If ($g_hTimeSpent = "/Paused") Then $g_hTimeSpent = TimerInit()
 
             GUI_HANDLE()
         Else

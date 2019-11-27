@@ -75,6 +75,7 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                 EndIf
             Case "catch-success"
                 Log_Add("Successfully caught a " & ($aPoints[$iCurrent])[2] & ".", $LOG_DEBUG)
+
                 _ArrayAdd($aOutput, ($aPoints[$iCurrent])[2])
                 _ArrayDelete($aPoints, $iCurrent)
                 $iNumCatch += 1
@@ -85,6 +86,7 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
             Case "battle-auto", "battle"
                 If $iCurrent <> -1 Then
                     Log_Add("Failed to catch " & ($aPoints[$iCurrent])[2] & ".", $LOG_DEBUG)
+
                     If $bSaveMissed = True Then _ArrayAdd($aOutput, "-" & ($aPoints[$iCurrent])[2])
                     _ArrayDelete($aPoints, $iCurrent)
                     $iCurrent = -1
@@ -93,6 +95,7 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                 If $iAstrochips <> -1 And $iAstrochips = 0 Then
                     If $iCurrent <> -1 Then
                         Log_Add("Failed to catch " & ($aPoints[$iCurrent])[2] & ".", $LOG_DEBUG)
+                        
                         If $bSaveMissed = True Then _ArrayAdd($aOutput, "-" & ($aPoints[$iCurrent])[2])
                         _ArrayDelete($aPoints, $iCurrent)
                         $iCurrent = -1
@@ -124,6 +127,14 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
             _ArrayAdd($aOutput, "-" & ($aPoints[$i])[2])
         Next
     EndIf
+
+    For $i = 0 To UBound($aOutput)-1
+        If StringLeft($aOutput[$i], 1) = "-" Then
+            Cumulative_SubRatio("Caught (" & _StringProper(StringReplace(StringMid($aOutput[$i], 2), "_", " ")) & ")")
+        Else
+            Cumulative_AddRatio("Caught (" & _StringProper(StringReplace($aOutput[$i], "_", " ")) & ")")
+        EndIf
+    Next
 
     Log_Add("Catch result: " & _ArrayToString($aOutput, ","), $LOG_DEBUG)
     Log_Level_Remove()

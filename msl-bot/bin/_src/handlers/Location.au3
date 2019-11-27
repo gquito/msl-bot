@@ -156,16 +156,16 @@ EndFunc
 		- On successful, true
 		- On failure, false
 #ce
-Func setLocation($sLocation, $aData = Null)
+Func setLocation($sLocation, $aData = Null, $bUpdate = True)
 	Local $aLocation = getArg($g_aLocations, $sLocation)
 	Local $aPoints[0][2] ;Will store points to find colors for.
 	
 	If ($aLocation = -1) Then
 		;Creates new location.
-		If (Not(isArray($aData))) Then $aData = StringSplit(StringStripWS($aData, 4), "|", $STR_NOCOUNT)
+		If isArray($aData) = False Then $aData = StringSplit(StringStripWS($aData, 4), "|", $STR_NOCOUNT)
 
-		For $sData In $aData
-			Local $aPoint = StringSplit($sData, ",", $STR_NOCOUNT)
+		For $i = 0 To UBound($aData)-1
+			Local $aPoint = StringSplit($aData[$i], ",", $STR_NOCOUNT)
 
 			ReDim $aPoints[UBound($aPoints)+1][2]
 			$aPoints[UBound($aPoints)-1][0] = $aPoint[0]
@@ -186,7 +186,7 @@ Func setLocation($sLocation, $aData = Null)
 		Next
 	EndIf
 
-	CaptureRegion()
+	If $bUpdate = True Then CaptureRegion()
 
 	Local $sNewPixels = "" ;Will store new pixel set
 	For $i = 0 To UBound($aPoints)-1

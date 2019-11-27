@@ -7,7 +7,6 @@ Func Start()
 ;Initializing variables
     $g_bRunning = True
 
-    $g_hTimeSpent = TimerInit()
     $g_hScriptTimer = TimerInit()
     Config_Update()
     $g_bAntiStuck = True
@@ -99,6 +98,8 @@ Func Start()
         Next
     EndIf
 
+    Cumulative_Load()
+
     Start_Schedule()
 
     Log_Add("Start result: " & $bOutput & ".", $LOG_DEBUG)
@@ -149,11 +150,6 @@ EndFunc
 Func Stop()
     HotKeySet("{Esc}") ;unbinds hotkey
 
-;Save stats
-    _Cumulative_Calculated($g_aCumulative)
-    Cumulative_Save($g_aCumulative)
-    $g_hTimeSpent = Null
-
 ;Resets variables
     If (FileExists($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")) Then FileDelete($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")
     $g_hTimerLocation = Null
@@ -177,6 +173,9 @@ Func Stop()
 ;Calls to stop scripts
     $g_bRunning = False
     WinSetTitle($g_hParent, "", $g_sAppTitle & UpdateStatus())
+
+;Cumulative
+    Cumulative_Save()
 EndFunc
 
 Func Pause()
@@ -194,6 +193,7 @@ Func Pause()
 EndFunc
 
 Func CloseApp()
+    Cumulative_Save()
     FileDelete($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")
     _GDIPlus_Shutdown()
     Exit

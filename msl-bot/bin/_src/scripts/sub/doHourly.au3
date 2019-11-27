@@ -14,6 +14,8 @@ Func doHourly()
         Log_Add($aTurn[$i] & " result: " & $bResult, $LOG_DEBUG)
     Next
 
+    Cumulative_AddNum("Collected (Hourly)", 1)
+
     Log_Level_Remove()
     Return True
 EndFunc
@@ -68,7 +70,6 @@ Func Hourly_Collect_Hiddens()
         If _Sleep(100) Then Return False
 
         Log_Add("Collecting hidden #" & $i+1)
-        Cumulative_Increment($g_aCumulative, "Hidden rewards")
 
         Local $hTimer = TimerInit()
 
@@ -81,6 +82,7 @@ Func Hourly_Collect_Hiddens()
                     Hourly_Close_Village_Interface()
                     clickPoint($aPoints[$i])
                 Case "hourly-reward"
+                    Cumulative_AddNum("Collected (Hidden Trees)", 1)
                     navigate("village")
                     ExitLoop
                 Case Else
@@ -109,6 +111,7 @@ Func Hourly_Click_Nezz()
 
                 If $sLocation = "dialogue-skip" Then
                     Log_Add("Found nezz", $LOG_INFORMATION)
+                    Cumulative_AddNum("Collected (Nezz)", 1)
                     navigate("village")
                     Return True
                 EndIf

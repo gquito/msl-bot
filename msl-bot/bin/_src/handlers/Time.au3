@@ -38,6 +38,10 @@ Func formatDate($sTimeStamp = NowTimeStamp())
     Return getMonth($sTimeStamp) & "-" & getDay($sTimeStamp) & "-" & getYear($sTimeStamp) ;& ":" & @MSEC
 EndFunc
 
+Func formatDateTime($sTimeStamp = NowTimeStamp())
+    Return formatDate($sTimeStamp) & " " & formatTime($sTimeStamp)
+EndFunc
+
 #cs 
     Function: Retrieves hour from timestamp
     Returns: ## hour.
@@ -87,6 +91,23 @@ Func getTimeString($iSeconds)
 	Else
 		Return Int($iSeconds / 60) & "M " & Int(Mod($iSeconds, 60)) & "S"
 	EndIf
+EndFunc
+
+Func getSecondsFromString($sTime, $iIndex = 1, $iCount = 1)
+    If $sTime = "" Or $sTime = -1 Then Return -1
+    Local $sCur = StringMid(StringStripWS($sTime, 8), $iIndex, $iCount)
+    Switch StringRight($sCur, 1)
+        Case "D"
+            Return StringMid($sCur, 1, StringLen($sCur)-1)*86400 + getSecondsFromString($sTime, $iIndex+StringLen($sCur), 1)
+        Case "H"
+            Return StringMid($sCur, 1, StringLen($sCur)-1)*3600 + getSecondsFromString($sTime, $iIndex+StringLen($sCur), 1)
+        Case "M"
+            Return StringMid($sCur, 1, StringLen($sCur)-1)*60 + getSecondsFromString($sTime, $iIndex+StringLen($sCur), 1)
+        Case "S"
+            Return StringMid($sCur, 1, StringLen($sCur)-1)
+        Case Else
+            Return getSecondsFromString($sTime, $iIndex, $iCount+1)
+    EndSwitch
 EndFunc
 
 Func _RoundDown($nVar, $iCount)

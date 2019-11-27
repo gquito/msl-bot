@@ -14,6 +14,7 @@ EndFunc
 Func GUI_HANDLE()
     Schedule_Handle()
     Stats_Handle()
+    Cumulative_Handle()
     
     Local $iCode = GUIGetMsg(1)
     GUI_HANDLE_MESSAGE($iCode)
@@ -123,7 +124,18 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
         Case $g_hBtn_StatReset
             If ($nNotifyCode = $BN_CLICKED) Then
                 If (MsgBox($MB_YESNO+$MB_ICONQUESTION, "Reset Confirmation", "Are you sure you wish to reset the stats?", 30) = $IDYES) Then
-                    Cumulative_Reset($g_aCumulative, $g_hLV_OverallStats)
+                    Local $t_a[0]
+                    $g_aCumulative = $t_a
+
+                    Local $hFile = FileOpen(($g_sProfileFolder & "\" & $Config_Profile_Name & "\Cumulative"), 10)
+                    FileWrite($hFile, "")
+                    FileClose($hFile)
+
+                    FileSetTime($g_sProfileFolder & "\" & $Config_Profile_Name & "\Cumulative", "", 1)
+
+                    GUICtrlSetData($g_idLbl_Stat, "Cumulative stats (Last reset: " & formatDateTime() & ")")
+
+                    Cumulative_Update($g_hLV_OverallStats)
                 EndIf
             EndIf
         Case $g_hCmb_Scripts

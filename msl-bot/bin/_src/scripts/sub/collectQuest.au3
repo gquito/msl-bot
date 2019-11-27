@@ -24,6 +24,7 @@ Func collectQuest($iAttempt = 1)
 						ContinueLoop
 					EndIf
 					clickPoint("729,190")
+					Cumulative_AddNum("Collected (Quests)", 1)
 				Else ;monthly, weekly, daily
 					clickPoint("570,190")
 					clickPoint("712,444") ;the top get reward

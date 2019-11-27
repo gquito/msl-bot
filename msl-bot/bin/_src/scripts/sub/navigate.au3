@@ -110,6 +110,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                             If waitLocation("loading,map", 5) Then clickPoint(getPointArg("astroleague-exit"))
                         Case "village"
                             clickPoint(getPointArg("village-play"))
+                            waitLocation("loading,bingo,unknown,dialogue-skip", 5)
                         Case Else
                             goBack()
                     EndSwitch
@@ -117,7 +118,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                     Switch $sLocation
                         Case "popup-window", "battle-sell-item"
                             goBack()
-                        Case Else
+                        Case "battle-end-exp", "unknown", "battle-sell"
                             clickPoint(getPointArg("tap"))
                             clickPoint("742,477")
                     EndSwitch

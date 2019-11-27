@@ -35,64 +35,63 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                 If $aAstromons = Null Then 
                     clickPoint("48,429", 3)
                     $aAstromons = Farm_Gem_Count($Farm_Gem_Astromon)
-                Else
-                    If $aAstromons[0] <> -1 Or $aAstromons[1] <> -1 Then
-                        If UBound($aAstromons[0]) >= 4 Then $iEvo = 1
-                        If UBound($aAstromons[1]) >= 4 Then $iEvo = 2
-                        If $iEvo <> 0 Then
-                            If $aAstromons[$iEvo+1] <> -1 Then
-                                For $i = 0 To UBound($aAstromons[$iEvo-1])-1
-                                    For $x = 0 To UBound($aAstromons[$iEvo+1])-1
-                                        Local $aMon = $aAstromons[$iEvo-1]
-                                        Local $aAwakened = $aAstromons[$iEvo+1]
-
-                                        If ($aMon[$i][0] > $aAwakened[$x][0]-30 And $aMon[$i][0] < $aAwakened[$x][0]+30) Then
-                                            If ($aMon[$i][1] > $aAwakened[$x][1]-30 And $aMon[$i][1] < $aAwakened[$x][1]+30) Then
-                                                clickPoint(CreateArr($aMon[$i][0], $aMon[$i][1]), 3)
-                                                clickPoint(getPointArg("monsters-evolution"))
-                                                waitLocation("monsters-evolution", 3)
-                                                ContinueLoop(3)
-                                            EndIf
-                                        EndIf
-
-                                    Next
-                                Next
-                            EndIf
-
-                            clickPoint(CreateArr(($aAstromons[$iEvo-1])[0][0], ($aAstromons[$iEvo-1])[0][1]), 3)
-                            clickPoint(getPointArg("monsters-evolution"))
-                            waitLocation("monsters-evolution", 3)
-                            ContinueLoop
-                        EndIf
-                    EndIf
-            
-                    Local $iCount_Evo1 = ($aAstromons[0]<>-1)?(UBound($aAstromons[0])):(0)
-                    Local $iCount_Evo2 = ($aAstromons[1]<>-1)?(UBound($aAstromons[1])):(0)
-                    Local $iTotal = $iCount_Evo1+($iCount_Evo2*4)
-
-                    Local $iCalculated_Need = Ceiling((($Farm_Gem_Astrogems-$Farmed_Gems)/100)*16)
-                    Status("Total astromons needed: " & $iCalculated_Need, $LOG_PROCESS)
-                    Status("Current number of astromons: " & $iTotal, $LOG_PROCESS)
-                    
-                    Local $iCatch = 0
-                    If $Farm_Gem_Max_Catch = 0 Then
-                        $iCatch = $iCalculated_Need-$iTotal
-                    Else
-                        $iCatch = (($iCalculated_Need-$iTotal)>$Farm_Gem_Max_Catch)?($Farm_Gem_Max_Catch):($iCalculated_Need-$iTotal)
-                    EndIf
-                    
-                    Status(StringFormat("Going to catch %d astromons.", $iCatch), $LOG_PROCESS)
-
-                    Local $aParam = [$iCatch, $Farm_Gem_Astromon, $Farm_Gem_Finish_Round, $Farm_Gem_Final_Round, $Farm_Gem_Map, _
-                                    $Farm_Gem_Difficulty, $Farm_Gem_Stage_Level, $Farm_Gem_Capture, $Farm_Gem_Refill]
-
-                    Stats_Values_Edit($aFarm_Astromon_Stats, Stats_Values_IndexByName($aFarm_Astromon_Stats, "Runs"), 0)
-                    Stats_Values_Edit($aFarm_Astromon_Stats, Stats_Values_IndexByName($aFarm_Astromon_Stats, StringReplace($Farm_Gem_Astromon, "-", "_")), 0)
-                    $aFarm_Astromon_Stats = _RunScript("Farm_Astromon", $aParam, $aFarm_Astromon_Stats)
-                    Stats_Values_Remove($aFarm_Astromon_Stats, CreateArr("Farmed_Gems"))
-
-                    $aAstromons = Null
                 EndIf
+                If $aAstromons[0] <> -1 Or $aAstromons[1] <> -1 Then
+                    If UBound($aAstromons[0]) >= 4 Then $iEvo = 1
+                    If UBound($aAstromons[1]) >= 4 Then $iEvo = 2
+                    If $iEvo <> 0 Then
+                        If $aAstromons[$iEvo+1] <> -1 Then
+                            For $i = 0 To UBound($aAstromons[$iEvo-1])-1
+                                For $x = 0 To UBound($aAstromons[$iEvo+1])-1
+                                    Local $aMon = $aAstromons[$iEvo-1]
+                                    Local $aAwakened = $aAstromons[$iEvo+1]
+
+                                    If ($aMon[$i][0] > $aAwakened[$x][0]-30 And $aMon[$i][0] < $aAwakened[$x][0]+30) Then
+                                        If ($aMon[$i][1] > $aAwakened[$x][1]-30 And $aMon[$i][1] < $aAwakened[$x][1]+30) Then
+                                            clickPoint(CreateArr($aMon[$i][0], $aMon[$i][1]), 3)
+                                            clickPoint(getPointArg("monsters-evolution"))
+                                            waitLocation("monsters-evolution", 3)
+                                            ContinueLoop(3)
+                                        EndIf
+                                    EndIf
+
+                                Next
+                            Next
+                        EndIf
+
+                        clickPoint(CreateArr(($aAstromons[$iEvo-1])[0][0], ($aAstromons[$iEvo-1])[0][1]), 3)
+                        clickPoint(getPointArg("monsters-evolution"))
+                        waitLocation("monsters-evolution", 3)
+                        ContinueLoop
+                    EndIf
+                EndIf
+        
+                Local $iCount_Evo1 = ($aAstromons[0]<>-1)?(UBound($aAstromons[0])):(0)
+                Local $iCount_Evo2 = ($aAstromons[1]<>-1)?(UBound($aAstromons[1])):(0)
+                Local $iTotal = $iCount_Evo1+($iCount_Evo2*4)
+
+                Local $iCalculated_Need = Ceiling((($Farm_Gem_Astrogems-$Farmed_Gems)/100)*16)
+                Status("Total astromons needed: " & $iCalculated_Need, $LOG_PROCESS)
+                Status("Current number of astromons: " & $iTotal, $LOG_PROCESS)
+                
+                Local $iCatch = 0
+                If $Farm_Gem_Max_Catch = 0 Then
+                    $iCatch = $iCalculated_Need-$iTotal
+                Else
+                    $iCatch = (($iCalculated_Need-$iTotal)>$Farm_Gem_Max_Catch)?($Farm_Gem_Max_Catch):($iCalculated_Need-$iTotal)
+                EndIf
+                
+                Status(StringFormat("Going to catch %d astromons.", $iCatch), $LOG_PROCESS)
+
+                Local $aParam = [$iCatch, $Farm_Gem_Astromon, $Farm_Gem_Finish_Round, $Farm_Gem_Final_Round, $Farm_Gem_Map, _
+                                $Farm_Gem_Difficulty, $Farm_Gem_Stage_Level, $Farm_Gem_Capture, $Farm_Gem_Refill]
+
+                Stats_Values_Edit($aFarm_Astromon_Stats, Stats_Values_IndexByName($aFarm_Astromon_Stats, "Runs"), 0)
+                Stats_Values_Edit($aFarm_Astromon_Stats, Stats_Values_IndexByName($aFarm_Astromon_Stats, StringReplace($Farm_Gem_Astromon, "-", "_")), 0)
+                $aFarm_Astromon_Stats = _RunScript("Farm_Astromon", $aParam, $aFarm_Astromon_Stats)
+                Stats_Values_Remove($aFarm_Astromon_Stats, CreateArr("Farmed_Gems"))
+
+                $aAstromons = Null
 
             Case "monsters-evolution"
                 If $iEvo = 0 Or $aAstromons = Null Then
@@ -113,7 +112,11 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                             EndIf
                             collectQuest(3)
                         EndIf
-                        If $iEvo = 2 Then $Farmed_Gems += 100 ;10 and 60, but that causes some weird stuff
+                        If $iEvo = 2 Then 
+                            $Farmed_Gems += 100 ;10 and 60, but that causes some weird stuff
+                            Cumulative_AddNum("Resource Earned (Astrogems)", 100)
+                            Cumulative_AddNum("Resource Used (Gold)", 330000)
+                        EndIf
                         $iEvo = 0
                     Else
                         navigate("monsters")

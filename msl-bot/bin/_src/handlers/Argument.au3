@@ -116,89 +116,39 @@ Func setArg(ByRef $aArgs, $sName, $sValue)
 	Return True
 EndFunc
 
-#cs
-	Function: Convert string of arguments into a readable array.
-	Parameters:
-		$sArgs: String => "arg1=value1,arg2=value2, arg3=value3"
-		$sArgSeparator: The character used to separate each argument and value.
-		$sValueSeparator: The character used to separate value from identifier.
-	Return: Array => [[arg1, value1], [arg2, value2], [arg3, value3]]
-#ce
 Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
-	If ($sArgs = -1) Then Return -1
+	If $sArgs = -1 Then Return -1
+	Local $aArgs[0][2]
 
-	Local $iArgSize = 0
-	Local $aArgs[$iArgSize][2] ;Final formated argument array.
+	If isArray($sArgs) = False Then
+		Local $aArguments = StringSplit($sArgs, $sArgSeparator)
+		ReDim $aArgs[$aArguments[0]][2]
 
-	If (Not(isArray($sArgs))) Then
-		Local Const $iSize = StringLen($sArgs)
-
-		Local $sName = "", $sValue = ""
-		Local $bName = False, $bQuoted = False
-		For $i = 0 To $iSize
-			Local $sChar = StringMid($sArgs, $i, 1)
-			If (Not($bName)) Then ;Handles name
-				Switch $sChar
-					Case $sArgSeparator, '"'
-						$g_sErrorMessage = "formatArgs() => Invalid character in argument name."
-						Return -2
-					Case $sValueSeparator
-						$bName = True
-					Case " "
-						ContinueLoop
-					Case Else
-						$sName &= $sChar
-				EndSwitch
-			Else ;Handles value
-				If ($sChar = '"') Then 
-					$bQuoted = Not($bQuoted)
-				Else
-					If (Not($bQuoted)) Then 
-						If ($sChar = " ") Then ContinueLoop
-						If ($sChar = $sArgSeparator) Then
-							;Indicates finished argument
-							$iArgSize += 1
-							ReDim $aArgs[$iArgSize][2]
-
-							$aArgs[$iArgSize-1][0] = $sName
-							$aArgs[$iArgSize-1][1] = $sValue
-
-							;Reset for next argument
-							$bName = False
-							$sName = ""
-							$sValue = ""
-						Else
-							$sValue &= $sChar ;Non-quoted
-						EndIf
-					Else
-						$sValue &= $sChar ;Quoted
-					EndIf
-				EndIf
+		For $i = 1 To $aArguments[0]
+			Local $aData = StringSplit($aArguments[$i], $sValueSeparator, 2)
+			Local $iSize = UBound($aData)
+			If $iSize < 2 Then ContinueLoop
+			If $iSize > 2 Then
+				For $x = 2 To $iSize-1
+					$aData[1] &= $sValueSeparator & $aData[$x]
+				Next
 			EndIf
+
+			$aArgs[$i-1][0] = $aData[0]
+			$aArgs[$i-1][1] = (StringLeft($aData[1], 1) = '"')?StringMid($aData[1], 2, StringLen($aData[1])-2):$aData[1]
 		Next
-		
-		If ($bQuoted) Then ;No closing quote
-			$g_sErrorMessage = "formatArgs() => Quote has not been closed."
-			Return -3
-		EndIf
-
-		;Adds last argument
-		$iArgSize += 1
-		ReDim $aArgs[$iArgSize][2]
-
-		$aArgs[$iArgSize-1][0] = $sName
-		$aArgs[$iArgSize-1][1] = $sValue
 	Else
-		For $i = 0 To UBound($sArgs)-1
-			$iArgSize += 1
-			ReDim $aArgs[$iArgSize][2]
+		Local $iSize = UBound($sArgs)
+		ReDim $aArgs[$iSize][2]
 
+		For $i = 0 To $iSize-1
 			Local $aArg = $sArgs[$i]
-			$aArgs[$iArgSize-1][0] = $aArg[0]
-			$aArgs[$iArgSize-1][1] = $aArg[1]
+			$aArgs[$i][0] = $aArg[0]
+			$aArgs[$i][1] = $aArg[1]
 		Next
 	EndIf
-	;Formated Argument should be: [[arg1, value1], [arg2, value2], [..., ...]]
+
+	;_ArrayDisplay($aArgs)
 	Return $aArgs
 EndFunc
 

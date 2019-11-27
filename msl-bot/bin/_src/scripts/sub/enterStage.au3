@@ -29,12 +29,20 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 			Case "map-stage"
 				If $bFoundMap = True Then
 					Local $hTimer2 = TimerInit()
-					If isPixel(getPixelArg("map-stage-" & StringLower($sDifficulty))) = False Then
-						Log_Add("Changing difficulty to " & $sDifficulty & ".")
-						clickPoint(getPointArg("map-stage-mode"), 5, 100)
-						clickPoint(getPointArg("map-stage-" & StringLower($sDifficulty)))
-					EndIf
+					While isArray(findImage("misc-stage-" & StringLower($sDifficulty), 90, 0)) = False
+						If TimerDiff($hTimer2) > 5000 Then
+							Log_Add("Could not select stage level.", $LOG_ERROR)
+							ExitLoop(2)
+						EndIf
 
+						
+						Log_Add("Changing difficulty to " & $sDifficulty & ".")
+						clickPoint(getPointArg("map-stage-mode"), 2)
+						If _Sleep(500) Then ExitLoop(2)
+						clickPoint(getPointArg("map-stage-" & StringLower($sDifficulty)))
+						If _Sleep(500) Then ExitLoop(2)
+					WEnd
+					
 					Local $aPoint = findLevel($sStage)
 					If isArray($aPoint) = True Then
 						clickPoint($aPoint)

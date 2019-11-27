@@ -36,7 +36,6 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
         Switch $sLocation
             Case "map"
                 If $Farm_Starstone_Runs <> 0 And $Runs >= $Farm_Starstone_Runs Then ExitLoop
-                If $Farm_Starstone_Refill <> 0 And $Astrogems_Used >= $Farm_Starstone_Refill Then ExitLoop
                 If (($Farm_Starstone_High_Stones = 0 And $Farm_Starstone_Mid_Stones = 0) And $Farm_Starstone_Low_Stones = 0) = False Then
                     If $Farm_Starstone_High_Stones = 0 Or $High_Stones >= $Farm_Starstone_High_Stones Then
                         If $Farm_Starstone_Mid_Stones = 0 Or $Mid_Stones >= $Farm_Starstone_Mid_Stones Then
@@ -61,7 +60,6 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 EndIf
             Case "map-battle", "battle-end"
                 If $Farm_Starstone_Runs <> 0 And $Runs >= $Farm_Starstone_Runs Then ExitLoop
-                If $Farm_Starstone_Refill <> 0 And $Astrogems_Used >= $Farm_Starstone_Refill Then ExitLoop
                 If (($Farm_Starstone_High_Stones = 0 And $Farm_Starstone_Mid_Stones = 0) And $Farm_Starstone_Low_Stones = 0) = False Then
                     If $Farm_Starstone_High_Stones = 0 Or $High_Stones >= $Farm_Starstone_High_Stones Then
                         If $Farm_Starstone_Mid_Stones = 0 Or $Mid_Stones >= $Farm_Starstone_Mid_Stones Then
@@ -77,6 +75,7 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                     $hAverage = TimerInit()
                     $Win_Rate += 1
                     $Runs += 1
+                    Cumulative_AddNum("Runs (Farm Starstone)", 1)
                 EndIf
             Case "defeat"
                 $Average_Time += (($hAverage<>Null)?Int(TimerDiff($hAverage)/1000):0)
@@ -86,7 +85,9 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 Status("You have been defeated.", $LOG_INFORMATION)
                 navigate("battle-end", True)
             Case "refill"
+                If $Farm_Starstone_Refill <> 0 And $Astrogems_Used+30 > $Farm_Starstone_Refill Then ExitLoop
                 Status("Refilling energy.")
+
                 Local $iRefill = doRefill()
                 If $iRefill = -1 Then ExitLoop
                 If $iRefill = 1 Then $Astrogems_Used += 30
@@ -116,12 +117,14 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                         Case "egg"
                             $Eggs_Found += 1
                             Status("Found egg x" & $Eggs_Found)
+                            Cumulative_AddNum("Resource Collected (Egg)", 1)
                         Case Else
                             Local $sElement = StringLower($Farm_Starstone_Stone_Element)
                             If $sElement = "any" Or $sElement = $aStone[0] Then
                                 Assign($aStone[1] & "_Stones", Eval($aStone[1] & "_Stones")+$aStone[2])
                             EndIf
                             Log_Add(StringFormat("Found %s %s x%s.", $aStone[1], $aStone[0], $aStone[2]), $LOG_INFORMATION)
+                            Cumulative_AddNum("Resource Collected (" & _StringProper($aStone[1]) & " " & _StringProper($aStone[0]) & ")", $aStone[2])
                     EndSwitch
                 Else
                     Status("Error: could not detect stone.", $LOG_ERROR)

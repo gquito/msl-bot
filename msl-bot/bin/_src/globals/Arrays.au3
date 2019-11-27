@@ -15,10 +15,11 @@ Global $g_aLogSize[0] ;Log size info for when the log is detached
 Global $g_vDebug = "" ;Extra information given after an execution of a select function.
 Global $g_aData[0][3] ;Structure of the array is as follows:
 Global $g_aOrder[0] ;Order of the array, based on name.
-Global $g_aCumulative[0] ;Stores the Cumulative stats.
 Global $g_aStats[0] ;Stores script stats
 
 Global $g_aComboMenu = Null ;Holds temporary context menus from combo type settings.
 Global $g_aListEditor = Null ;Holds temporary gui and controls for list type settings.
 Global $g_aLog[0][6] ;Stores the log structure
 Global $g_aLOG_Function[1] = [0] ;Current function and level
+
+Global $g_aCumulative[0] ;Cumulative Stats

@@ -96,6 +96,5 @@ Global $g_old_hControl = Null
 Global $g_hTimerLocation = Null ;Global timer for location. Used for antiStuck
 Global $g_hGetLocationCoolDown = TimerInit() ;Cooldown for getLocation function
 Global $g_hTimerScheduledRestart = Null ;Global timer for schedules restart.
-Global $g_hTimeSpent = Null ;Time spent. Will be reset everytime it is saved into the cumulative stats.
 
 Global $g_hGameCheckCD = TimerInit()

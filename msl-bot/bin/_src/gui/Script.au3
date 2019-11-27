@@ -21,8 +21,6 @@ EndFunc
 
 Func Script_ChangeProfile($sName)
     _GUICtrlListView_DeleteAllItems($g_hLV_OverallStats)
-    Cumulative_Read($g_aCumulative)
-    Cumulative_Update($g_aCumulative, $g_hLV_OverallStats)
 
     $g_aScripts = CreateArr()
     Script_SetData($g_sLocalFolder &  $g_sScriptsSettings)

@@ -30,6 +30,8 @@ Func Schedule_Handle()
 EndFunc
 
 Func Schedule_HandleQueue()
+    If $g_bScheduleBusy = True Then Return
+
     For $i = $g_iSchedulesQueueSize-1 To 0 Step -1
         If $g_bScheduleBusy = True Then ExitLoop
         Local $iFlag = $g_aSchedulesQueue[$i][$SCHEDULE_QUEUE_FLAG]

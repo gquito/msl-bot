@@ -1,2 +1,3 @@
 popup-window:400,0,400,275,"location-dialogue-close"
 crash:0,0,800,552,"location-crash"
+another-device:230,230,350,70,"location-another-device"

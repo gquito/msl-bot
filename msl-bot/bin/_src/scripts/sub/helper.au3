@@ -197,7 +197,7 @@ Func findLevel($iLevel)
 		EndIf		 
 
 		Local $t_sImageName = "level-" & $sLevel
-		Local $t_aPoint = findImage($t_sImageName, 95, 0, 400, 220, 380, 260, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
+		Local $t_aPoint = findImage($t_sImageName, 90, 0, 400, 220, 380, 260, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
 
 		If $t_aPoint = -1 Then Return -1
 		;Found point

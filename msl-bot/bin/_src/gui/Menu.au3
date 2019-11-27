@@ -92,6 +92,34 @@ Func HandleMenu($iCode)
         Case $M_Location_Get_Location
             MsgBox($MB_ICONINFORMATION, "Get Location", "Current location: " & getLocation())
         Case $M_Location_Set_Location
+            If $g_bRunning = True Then
+                MsgBox($MB_ICONWARNING, "Set Location", "A script is currently running.")
+            Else
+                Local $sLocation = InputBox("Set Location", "Enter location:")
+
+                Local $sCurrent = getLocation()
+                If $sCurrent = $sLocation Then
+                    MsgBox($MB_ICONWARNING, "Set Location", "Location is already set to " & $sCurrent, 30)
+                Else
+                    If $sCurrent = "unknown" Or MsgBox($MB_ICONWARNING+$MB_YESNO, "Set Location", "Location is already set: " & $sCurrent & "." & @CRLF & "Would you like to set this as another location?", 30) = $IDYES Then
+                        Local $bExist = False
+                        For $i = 0 To UBound($g_aLocations)-1
+                            If $sLocation = $g_aLocations[$i][0] Then
+                                $bExist = True
+                                ExitLoop
+                            EndIf
+                        Next
+
+                        If $bExist = True Or MsgBox($MB_ICONWARNING+$MB_YESNO, "Set Location", "Location '" & $sLocation & "' does not exist." & @CRLF & "Would you like to continue?", 30) = $IDYES Then
+                            Local $aData = Null
+                            If $bExist = False Then
+                                $aData = InputBox("Set Location", "Enter points using '|' per point:" & @CRLF & "Example: '0,0|12,10|313,544")
+                            EndIf
+                            MsgBox($MB_ICONINFORMATION, "Set Location", "Set location result: " & setLocation($sLocation, $aData, False))
+                        EndIf
+                    EndIf
+                EndIf
+            EndIf
         Case $M_Location_Test_Location
             If $g_bRunning = True Then
                 MsgBox($MB_ICONWARNING, "Test Location", "A script is currently running.")
@@ -105,6 +133,28 @@ Func HandleMenu($iCode)
             MsgBox($MB_ICONINFORMATION, "Check Pixel", "Pixel set matches: " & $bResult & @CRLF)
             _ArrayDisplay($g_vDebug)
         Case $M_Pixel_Set_Pixel
+            If $g_bRunning = True Then
+                MsgBox($MB_ICONWARNING, "Set Pixel", "A script is currently running.")
+            Else
+                Local $sPixel = InputBox("Set Pixel", "Enter pixel name:")
+                CaptureRegion()
+                
+                Local $bExist = False
+                For $i = 0 To UBound($g_aPixels)-1
+                    If $sPixel = $g_aPixels[$i][0] Then
+                        $bExist = True
+                        ExitLoop
+                    EndIf
+                Next
+
+                If ($bExist = True And MsgBox($MB_ICONWARNING+$MB_YESNO, "Set Pixel", "Pixel '" & $sPixel & "' already exists." & @CRLF & "Would you like to continue?", 30) = $IDYES) Or MsgBox($MB_ICONWARNING+$MB_YESNO, "Set Pixel", "Pixel '" & $sPixel & "' does not exist." & @CRLF & "Would you like to continue?", 30) = $IDYES Then
+                    Local $aData = Null
+                    If $bExist = False Then
+                        $aData = InputBox("Set Pixel", "Enter points using '|' per point:" & @CRLF & "Example: '0,0|12,10|313,544")
+                    EndIf
+                    MsgBox($MB_ICONINFORMATION, "Set Pixel", "Set Pixel result: " & setPixel($sPixel, $aData, False))
+                EndIf
+            EndIf
         Case $M_Pixel_Get_Color
             Local $sX = InputBox("Get Color", "Enter x-coordinate:")
             Local $sY = InputBox("Get Color", "Enter y-coordinate:")

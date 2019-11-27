@@ -35,7 +35,6 @@ Func Farm_Golem($bParam = True, $aStats = Null)
         Switch $sLocation
             Case "map"
                 If $Farm_Golem_Runs <> 0 And $Runs >= $Farm_Golem_Runs Then ExitLoop
-                If $Farm_Golem_Refill <> 0 And $Astrogems_Used >= $Farm_Golem_Refill Then ExitLoop
                 If $Farm_Golem_Gold_Goal <> 0 And $Gold_Earned >= $Farm_Golem_Gold_Goal Then ExitLoop
 
                 Status("Looking for golem dungeons.")
@@ -51,7 +50,6 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                 EndIf
             Case "map-battle", "battle-end"
                 If $Farm_Golem_Runs <> 0 And $Runs >= $Farm_Golem_Runs Then ExitLoop
-                If $Farm_Golem_Refill <> 0 And $Astrogems_Used >= $Farm_Golem_Refill Then ExitLoop
                 If $Farm_Golem_Gold_Goal <> 0 And $Gold_Earned >= $Farm_Golem_Gold_Goal Then ExitLoop
 
                 Status("Entering battle x" & $Runs+1, $LOG_PROCESS)
@@ -59,6 +57,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                     $hAverage = TimerInit()
                     $Win_Rate += 1
                     $Runs += 1
+                    Cumulative_AddNum("Runs (Farm Golem)", 1)
                 EndIf
             Case "defeat"
                 $Average_Time += (($hAverage<>Null)?Int(TimerDiff($hAverage)/1000):0)
@@ -68,7 +67,9 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                 Status("You have been defeated.", $LOG_INFORMATION)
                 navigate("battle-end", True)
             Case "refill"
+                If $Farm_Golem_Refill <> 0 And $Astrogems_Used+30 > $Farm_Golem_Refill Then ExitLoop
                 Status("Refilling energy.")
+
                 Local $iRefill = doRefill()
                 If $iRefill = -1 Then ExitLoop
                 If $iRefill = 1 Then $Astrogems_Used += 30
@@ -99,6 +100,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                         Case "EGG"
                             $Eggs_Found += 1
                             Status("Found egg x" & $Eggs_Found)
+                            Cumulative_AddNum("Resource Collected (Egg)", 1)
                         Case Else
                             If filterGem($aGem) = False Then
                                 $bSold = True
@@ -107,8 +109,10 @@ Func Farm_Golem($bParam = True, $aStats = Null)
 
                             If $bSold = False Then 
                                 $Gems_Kept += 1
+                                Cumulative_AddNum("Resource Collected (Gem)", 1)
                             Else
                                 $Gold_Earned += getGemPrice($aGem)
+                                Cumulative_AddNum("Resource Earned (Gold)", getGemPrice($aGem))
                             EndIf
                             Log_Add(($bSold?"Sold":"Kept") & ": " & stringGem($aGem), $LOG_INFORMATION)
                     EndSwitch
