@@ -102,7 +102,7 @@ A free open-sourced bot for Monster Super League using AutoIT programming langua
     
     \[CLASS:Qt5QWindowIcon; TEXT:ScreenBoardClassWindow\]
     
-    \[CLASS:subWin; INSTANCE:1\]"
+    \[CLASS:subWin; INSTANCE:1\]
     
     \[CLASS:AnglePlayer_0; INSTANCE:1\]
 
