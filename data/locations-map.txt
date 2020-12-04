@@ -67,6 +67,7 @@ special-guardian-dungeons:dungeon-info,elemental-dungeons,extra-dungeons,gold-du
 starstone-dungeons:dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,guardian-dungeons,map,map-battle,special-guardian-dungeons
 summon-astromon-popup:village-summon
 super-lab:super-lab-forge,village
+super-lab-forge:super-lab
 tap-to-start:event-list
 titans-battle:pause,titans-result
 titans-monsters:clan-titans,loading,titans-battle
