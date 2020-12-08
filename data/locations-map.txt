@@ -8,12 +8,12 @@ astroleague-victory:battle-end,pvp-battle-end
 astromon-full:map-battle
 autobattle-prompt:battle,battle-auto,map-battle
 awakened-success:monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,release-confirm
-battle:astroleague-defeat,astroleague-victory,battle-auto,battle-boss,battle-end-exp,catch-mode,championleague-victory,champion-league-defeat,pause
-battle-auto:astroleague-defeat,astroleague-victory,battle,battle-boss,battle-end-exp,catch-mode,championleague-victory,champion-league-defeat,pause
+battle:astroleague-defeat,astroleague-victory,battle-auto,battle-boss,battle-end-exp,catch-mode,championleague-victory,champion-league-defeat,pause,pvp-battle-end
+battle-auto:astroleague-defeat,astroleague-victory,battle,battle-boss,battle-end-exp,catch-mode,championleague-victory,champion-league-defeat,pause,pvp-battle-end
 battle-boss:battle,battle-auto
 battle-end:battle,battle-auto,loading,map,map-astromon-full,map-battle,monsters,refill,village
 battle-end-exp:battle-end,battle-sell,battle-sell-item
-battle-sell:battle-end,battle-sell-item
+battle-sell:battle-end,battle-sell-item,pvp-battle-end
 battle-sell-item:battle-sell
 bingo:bingo-complete,village
 bingo-complete:bingo,village
