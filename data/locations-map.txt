@@ -17,14 +17,14 @@ battle-sell:battle-end,battle-sell-item,pvp-battle-end
 battle-sell-item:battle-sell
 bingo:bingo-complete,village
 bingo-complete:bingo,village
-buy-gem:association,association-expedition,monsters,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,refill
-buy-gold:association,association-expedition,monsters,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,refill
+buy-gem:association,association-expedition,clan-shop,monsters,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,refill
+buy-gold:association,association-expedition,clan-shop,monsters,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,refill
 catch-mode:battle,battle-auto,catch-success,pause
 catch-success:battle,battle-auto,battle-end-exp,catch-mode
 championleague-defeat:battle-end,pvp-battle-end
 championleague-victory:battle-end,pvp-battle-end
 clan-battle:map,titans
-clan-shop:titans
+clan-shop:buy-gold,buy-gem,titans
 dragon-dungeons:map,map-battle
 dungeon-info:extra-dungeons,gold-dungeons,guardian-dungeons,map,special-guardian-dungeons,starstone-dungeons,wood-dungeons
 elemental-dungeons:dungeon-info,gold-dungeons,guardian-dungeons,map,map-battle,special-guardian-dungeons,starstone-dungeons
