@@ -23,8 +23,8 @@ catch-mode:battle,battle-auto,catch-success,pause
 catch-success:battle,battle-auto,battle-end-exp,catch-mode
 championleague-defeat:battle-end,pvp-battle-end
 championleague-victory:battle-end,pvp-battle-end
-clan-plaza:clan-titans,map
-clan-titans:map,titans-monsters
+clan-battle:map,titans
+clan-shop:titans
 dragon-dungeons:map,map-battle
 dungeon-info:extra-dungeons,gold-dungeons,guardian-dungeons,map,special-guardian-dungeons,starstone-dungeons,wood-dungeons
 elemental-dungeons:dungeon-info,gold-dungeons,guardian-dungeons,map,map-battle,special-guardian-dungeons,starstone-dungeons
@@ -45,7 +45,7 @@ inbox:friend-gifts,village
 leagues:astroleague,map
 loading:astroleague,battle,battle-auto,map,titans-battle,village
 manage:gem-upgrade-not-upgrading,monsters,monsters-evolution,monsters-level-up,sell-gems-confirm
-map:association,astroleague,clan-plaza,dialogue-skip,dialogue-skip,dragon-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,golem-dungeons,guardian-dungeons,hero-dungeons,leagues,loading,map-stage,refill,special-guardian-dungeons,starstone-dungeons,towers,view-clan-popup,village
+map:association,astroleague,clan-battle,dialogue-skip,dialogue-skip,dragon-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,golem-dungeons,guardian-dungeons,hero-dungeons,leagues,loading,map-stage,refill,special-guardian-dungeons,starstone-dungeons,towers,village
 map-astromon-full:battle-end
 map-battle:astroleague,astromon-full,autobattle-prompt,battle,battle-auto,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc,towers,towers-elemental
 map-battle-autofill:map-battle,refill-astrochips-popup
@@ -70,8 +70,9 @@ summon-astromon-popup:village-summon
 super-lab:super-lab-forge,village
 super-lab-forge:super-lab
 tap-to-start:event-list
+titans:clan-shop,map,titans-monsters
 titans-battle:pause,titans-result
-titans-monsters:clan-titans,loading,titans-battle
+titans-monsters:titans,loading,titans-battle
 towers:map,map-battle,toc,towers-elemental
 towers-elemental:towers,map-battle
 toc:towers,map-battle
