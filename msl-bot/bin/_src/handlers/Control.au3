@@ -20,12 +20,7 @@ Func clickDrag($aPoints, $iAmount = 1, $iDelay = $Delay_Swipe_Delay, $iSwipeMode
                 Return False
             EndIf
 
-            ;executing swipe
-            If $Config_ADB_Method = "input event" Then
-                ADB_Command("shell input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
-            Else
-                ADB_Shell("input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
-            EndIf
+            ADB_Command("shell input swipe " & $aPoints[0] & " " & $aPoints[1] & " " & $aPoints[2] & " " & $aPoints[3])
         Case $SWIPE_REAL
             ;clickdrags using real mouse.
             WinActivate($g_hWindow)
@@ -83,8 +78,8 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mou
 
     ;Fixing format to [x, y]
     While True
-        If isArray($vPoint) = False Then
-            If ($vPoint = "" Or $vPoint = -1) Then
+        If isArray($vPoint) = 0 Then
+            If ($vPoint == "" Or $vPoint = -1) Then
                 Log_Add("Invalid points: " & $vPoint, $LOG_ERROR)
                 $g_sErrorMessage = "clickPoint() => Invalid points."
                 ExitLoop
@@ -121,7 +116,7 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mou
                     MouseClick("left", $aPoint[0], $aPoint[1], 1, 0)
                 Case $MOUSE_CONTROL ;clicks using fake mouse.
                     Log_Add("Click point: " & _ArrayToString($aPoint), $LOG_DEBUG)
-                    ControlClick($hWindow, "", $Config_Emulator_Property, "left", 1, $aPoint[0]/($Config_Display_Scaling/100), $aPoint[1]/($Config_Display_Scaling/100)) ;For simulated clicks
+                    ControlClick($hWindow, "", $hControl, "left", 1, $aPoint[0]/($Config_Display_Scaling/100), $aPoint[1]/($Config_Display_Scaling/100)) ;For simulated clicks
                 Case $MOUSE_ADB
                 ;clicks using adb commands
                     Log_Add("Click point: " & _ArrayToString($aPoint), $LOG_DEBUG)
@@ -163,32 +158,14 @@ Func clickMultiple($aPoints, $iInterval = 0, $iMouseMode = $Config_Mouse_Mode, $
             Next
         Case $MOUSE_ADB
             ;Generating click commands for ADB
-            Local $sCommand = ""
-            For $i = 0 To UBound($aPoints)-1
-                For $iCount = 0 To $aPoints[$i][2]-1
-                    If ($Config_ADB_Method = "sendevent") Then
-                        Local $aTCV = getSendEventArray($aPoints[$i])
-                        $sCommand &= @CRLF & ADB_ConvertEvent($g_sADBEvent, $aTCV)
-
-                        If $aPoints[$i][3] <> 0 Then
-                            $sCommand &= @CRLF & "sleep " & $aPoints[$i][3]/1000
-                        EndIf
-                    Else
-                        $sCommand &= @CRLF & "input tap " & $aPoints[$i][0] & " " & $aPoints[$i][1]
-                        
-                        If $aPoints[$i][3] <> 0 Then
-                            $sCommand &= @CRLF & "sleep " & $aPoints[$i][3]/1000
-                        EndIf
-                    EndIf
-                Next
-
-                If $iInterval <> 0 Then
-                    $sCommand &= @CRLF & "sleep " & $iInterval/1000
-                EndIf
+            Local $sCommand = ';input tap "' & $aPoint[0][0] & " " & $aPoint[0][1]
+            For $i = 1 To UBound($aPoints)-1
+                $sCommand &= ";input tap " & $aPoint[$i][0] & " " & $aPoint[$i][1]
             Next
             $sCommand = StringMid($sCommand, 2)
+            $sCommand &= 'shell ' & $sCommand
 
-            ADB_Shell($sCommand, $Delay_ADB_Timeout, True, True)
+            ADB_Command($sCommand)
     EndSwitch
 EndFunc
 
@@ -222,7 +199,7 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
     Else
         $bResult = Call($sBooleanFunction, $aArg)
     EndIf
-    If $bResult = True Then
+    If $bResult > 0 Then
         $bOutput = True
         Log_Add("Clicking until result: " & $bOutput & " (# Clicks: 0)", $LOG_DEBUG)
         Log_Level_Remove()
@@ -244,7 +221,7 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
             Else
                 $bResult = Call($sBooleanFunction, $aArg)
             EndIf
-            If $bResult = True Then
+            If $bResult > 0 Then
                 $bOutput = True
                 ExitLoop(2)
             EndIf
@@ -258,7 +235,7 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
 EndFunc
 
 Func parseVArg($vArg)
-    If isArray($vArg) = True Then
+    If isArray($vArg) > 0 Then
         If $vArg[0] <> "CallArgArray" Then
             _ArrayInsert($vArg, 0, "CallArgArray")
         EndIf
@@ -326,7 +303,7 @@ Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
     Else
         $bResult = Call($sBooleanFunction, $aArg)
     EndIf
-    If $bResult = False Then 
+    If $bResult = 0 Then 
         $bOutput = True
         Log_Add("Clicking while result: " & $bOutput & " (# Clicks: 0)", $LOG_DEBUG)
         Log_Level_Remove()
@@ -349,7 +326,7 @@ Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
             Else
                 $bResult = Call($sBooleanFunction, $aArg)
             EndIf
-            If $bResult = False Then 
+            If $bResult = 0 Then 
                 $bOutput = True
                 ExitLoop(2)
             EndIf
@@ -370,8 +347,9 @@ EndFunc
         $sControlInstance = Control ID or Control instance.
     Returns: True if nothing goes wrong. -1 With error if handle not found.
 #ce
-Func sendKey($sKey, $hWindow = $g_hWindow, $sControlInstance = $Config_Emulator_Property)
-    Local $iResult = ControlSend($hWindow, "", $sControlInstance, $sKey)
+Func sendKey($sKey, $hWindow = $g_hWindow, $hControl = $g_hControl)
+    Local $iResult = ControlSend($hWindow, "", "", $sKey)
+    ControlSend($hControl, "", "", $sKey)
 
     If ($iResult = 1) Then Return True
     
@@ -382,4 +360,24 @@ EndFunc
 Func getSendEventArray($aClickPoints, $sSendEvent = $g_sSendEvent)
     Local $aSendEvent = StringSplit(StringFormat($sSendEvent, $aClickPoints[0], $aClickPoints[1]), ",", $STR_NOCOUNT)
     Return $aSendEvent
+EndFunc
+
+Func SendBack($iCount = 1, $iSpeed = 50, $iMode = $Config_Back_Mode)
+    Log_Level_Add("SendBack")
+    Log_Add("Sending back command.", $LOG_DEBUG)
+    While $iCount >= 1
+        Switch $iMode
+            Case $BACK_REAL
+                Send("{ESC}")
+            Case $BACK_CONTROL
+                SendKey("{ESC}")
+            Case $BACK_ADB
+                ADB_SendESC($iCount)
+                ExitLoop
+        EndSwitch
+
+        $iCount -= 1
+        Sleep($iSpeed)
+    WEnd
+    Log_Level_Remove()
 EndFunc

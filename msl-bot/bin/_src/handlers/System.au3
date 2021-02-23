@@ -8,20 +8,20 @@
 #ce
 Func _Sleep($iDuration = 0)
     Local $hTimer = TimerInit()
-    Do 
+    Do
         If (UBound($g_aLog) > $g_iLOG_Processed) Then Log_Display()
 
-        If $g_bRunning = True Then
-            If $iDuration = 0 And $g_bRestarting = False Then ExitLoop
+        If $g_bRunning > 0 Then
+            If $iDuration = 0 And $g_bRestarting = 0 Then ExitLoop
             If $g_hScriptTimer <> Null Then
                 Local $sTime = getTimeString(TimerDiff($g_hScriptTimer)/1000)
                 If $sTime <> $g_sOldTime And Not(WinGetState($g_hParent) = 0x16) Then ;$WIN_STATE_MINIMIZED
                     $g_sOldTime = $sTime
 
                     GUICtrlSetData($g_idLbl_ScriptTime, "Time: " & $sTime)
-                EndIf    
+                EndIf
 
-                If $g_bRestarting = False Then _AntiStuck()
+                If $g_bRestarting = 0 Then _AntiStuck()
             EndIf
 
             While $g_bPaused
@@ -39,33 +39,34 @@ Func _Sleep($iDuration = 0)
 EndFunc
 
 Func _AntiStuck()
-    If $g_bAntiStuck = False Then Return True
+    If $g_bAntiStuck = 0 Then Return True
     Log_Level_Add("_AntiStuck")
     Local $bOutput = False
 
-    If (Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, 30) = 0 And TimerDiff($g_hGameCheckCD) > 2000) Then
+    If Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, 30) = 0 And TimerDiff($g_hGameCheckCD) > 2000 Then
         $g_hGameCheckCD = TimerInit()
 
-        If getLocation() = "crash" Then
-            Log_Add("AntiStuck: Game is not running. Restarting Game.", $LOG_ERROR)
+        If _AntiStuck_Frozen() > 0 Or (ADB_isWorking() > 0 And ADB_IsGameRunning() <= 0) Then
+            Log_Add("AntiStuck: Game is not running or frozen. Restarting Game.", $LOG_ERROR)
 
             $bOutput =_AntiStuck_Restart()
-            If $bOutput = False Then Stop()
+            If $bOutput <= 0 Then Stop()
 
         EndIf
     EndIf
 
     ;AntiStuck sequence
     If $Config_Location_Stuck_Timeout > 0 Then
-        If $g_hTimerLocation <> Null And TimerDiff($g_hTimerLocation) > (60000 * $Config_Location_Stuck_Timeout) Then 
-            $g_hTimerLocation = Null
-            
-            Log_Add("AntiStuck: Stuck for " & $Config_Location_Stuck_Timeout & " minutes, restarting game.", $LOG_ERROR)
-            If navigate("map", True) = False Then
-                $bOutput =_AntiStuck_Restart()
-                If $bOutput = False Then Stop()
-            EndIf
+        If $g_hTimerLocation <> Null Then
+            If TimerDiff($g_hTimerLocation) > (60000 * $Config_Location_Stuck_Timeout) Then
+                $g_hTimerLocation = Null
 
+                Log_Add("AntiStuck: Stuck for " & $Config_Location_Stuck_Timeout & " minutes, restarting game.", $LOG_ERROR)
+                If navigate("map", True) = 0 Then
+                    $bOutput =_AntiStuck_Restart()
+                    If $bOutput = 0 Then Stop()
+                EndIf
+            EndIf
         EndIf
     EndIf
 
@@ -73,11 +74,33 @@ Func _AntiStuck()
     Return $bOutput
 EndFunc
 
+Global $_AntiStuck_Frozen_FirstBMP = Null
+Func _AntiStuck_Frozen()
+    If $_AntiStuck_Frozen_FirstBMP = Null Then
+        $_AntiStuck_Frozen_FirstBMP = _GDIPlus_BitmapCloneArea(CaptureRegion(), 0, 0, $EMULATOR_WIDTH, $EMULATOR_HEIGHT, $GDIP_PXF32ARGB)
+        Return -1
+    EndIf
+
+    Local $tBitmapData1 = _GDIPlus_BitmapLockBits($_AntiStuck_Frozen_FirstBMP, 0, 0, $EMULATOR_WIDTH, $EMULATOR_HEIGHT, $GDIP_ILMREAD, $GDIP_PXF32ARGB)
+    Local $tBitmapData2 = _GDIPlus_BitmapLockBits(CaptureRegion(), 0, 0, $EMULATOR_WIDTH, $EMULATOR_HEIGHT, $GDIP_ILMREAD, $GDIP_PXF32ARGB)
+    Local $hFirst = DllStructGetData($tBitmapData1, "Scan0")
+    Local $hSecond = DllStructGetData($tBitmapData2, "Scan0")
+
+    Local $iResult = DllCall("msvcrt.dll", "int:cdecl", "memcmp", "ptr", $hFirst, "ptr", $hSecond, "uint", $EMULATOR_WIDTH * $EMULATOR_HEIGHT)
+
+    _GDIPlus_BitmapUnlockBits($_AntiStuck_Frozen_FirstBMP, $tBitmapData1)
+    _GDIPlus_BitmapUnlockBits($g_hBitmap, $tBitmapData2)
+    _GDIPlus_BitmapDispose($_AntiStuck_Frozen_FirstBMP)
+    $_AntiStuck_Frozen_FirstBMP = Null
+
+    Return $iResult[0] = 0
+EndFunc
+
 Func _AntiStuck_Restart()
     Local $bOutput = True
-    If RestartGame() = False Then 
-        If RestartNox(2, "") = False Then
-            Log_Add("AntiStuck: Could not restart nox.", $LOG_ERROR)
+    If Emulator_RestartGame(2) <= 0 Then
+        If Emulator_Restart(2) <= 0 Then
+            Log_Add("AntiStuck: Could not restart emulator.", $LOG_ERROR)
             $bOutput = False
         EndIf
     EndIf
@@ -97,7 +120,7 @@ EndFunc
 ; Modified.......:
 ; Remarks .......: Even though this has high precision you need to take into consideration that it will take some time for autoit to call the function.
 ; Related .......:
-; Link ..........; 
+; Link ..........;
 ; Example .......; No
 ;
 ;;==========================================================================================
@@ -113,23 +136,23 @@ Func _HighPrecisionSleep($iMicroSeconds,$hDll=False)
     ;If $bLoaded Then DllClose($hDll)
 EndFunc
 
-#cs 
+#cs
     Function: Displays global debug variable.
     Parameter:
         $vDebug: Data containing debug information.
 #ce
 Func DisplayDebug($vDebug = $g_vDebug)
-    If isArray($vDebug = True) Then
+    If isArray($vDebug > 0) Then
         _ArrayDisplay($vDebug)
         MsgBox(0, "MSL Bot DEBUG", "Error Message:" & @CRLF & $g_sErrorMessage)
-    Else   
+    Else
         MsgBox(0, "MSL Bot DEBUG", $vDebug & @CRLF & "Error Message:" & @CRLF & $g_sErrorMessage)
     EndIf
 EndFunc
 
 ;calls for debug prompt
 Func Debug()
-    If $g_bRunning = False Then
+    If $g_bRunning = 0 Then
         $g_sScript = "_Debug"
         Start()
     EndIf
@@ -138,10 +161,10 @@ EndFunc
 Func _Debug()
     Log_Level_Add("_Debug")
     Log_Add("Debug Input has started.")
-    
+
     ;Prompting for code
     Local $aLines = StringSplit(InputBox("Debug Input", "Enter an expression: " & @CRLF & "- Lines of expressions can be separated by '~' delimeter.", default, default, default, 150), "~", $STR_NOCOUNT)
-    
+
     $g_bAntiStuck = False
     _ProcessLines($aLines)
     $g_bAntiStuck = True
@@ -153,7 +176,7 @@ EndFunc
 
 Func _ProcessLines($aLines, $bDisplayArray = True, $bLog = True)
     For $i = 0 To UBound($aLines)-1
-        If ($aLines[$i] = "") Then ContinueLoop
+        If ($aLines[$i] == "") Then ContinueLoop
         Local $sResult = Execute($aLines[$i])
 
         If (@error) Then
@@ -161,10 +184,10 @@ Func _ProcessLines($aLines, $bDisplayArray = True, $bLog = True)
             ContinueLoop
         EndIf
 
-        If (Not(isArray($sResult)) And String($sResult) = "") Then $sResult = "N/A"
+        If (Not(isArray($sResult)) And String($sResult) == "") Then $sResult = "N/A"
 
         If (isArray($sResult)) Then
-            If $bDisplayArray = True Then _ArrayDisplay($sResult)
+            If $bDisplayArray > 0 Then _ArrayDisplay($sResult)
             If $bLog Then Log_Add("{Array} <= " & $aLines[$i], $LOG_INFORMATION)
         Else
             If $bLog Then Log_Add(String($sResult) & " <= " & $aLines[$i], $LOG_INFORMATION)
@@ -178,9 +201,9 @@ Func RunDebug($sCommand, $sLogLevel)
     _GUICtrlTab_ClickTab($g_hTb_Main, 1)
     Local $aLines = StringSplit($sCommand, "~", $STR_NOCOUNT)
     For $i = 0 To UBound($aLines, $UBOUND_ROWS)-1
-        If ($aLines[$i] = "") Then ContinueLoop
+        If ($aLines[$i] == "") Then ContinueLoop
         Local $sResult = Execute($aLines[$i])
-        If (Not(isArray($sResult)) And String($sResult) = "") Then $sResult = "N/A"
+        If (Not(isArray($sResult)) And String($sResult) == "") Then $sResult = "N/A"
 
         If (isArray($sResult)) Then
             _ArrayDisplay($sResult)
@@ -188,7 +211,7 @@ Func RunDebug($sCommand, $sLogLevel)
         Else
             Log_Add(String($sResult) & " <= " & $aLines[$i], $LOG_INFORMATION)
         EndIf
-        
+
     Next
     Log_Add("Command " & $sCommand & " finished")
     Log_Level_Remove()
@@ -196,17 +219,18 @@ Func RunDebug($sCommand, $sLogLevel)
 EndFunc
 
 Func _DebugFunction()
-    If $g_bRunning = False Then
+    If $g_bRunning = 0 Then
         $g_sScript = "_DebugFunction"
 
         Start()
         ;Start test here:
-        RestartNox()
+        Emulator_Restart()
         ;End TEST
     EndIf
 EndFunc
 
 Func Custom_Function()
-    While _Sleep(100) = False
+    While Sleep(50)
+        CaptureRegion()
     WEnd
 EndFunc

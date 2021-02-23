@@ -22,12 +22,12 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 			Case "map"
 				Log_Add("Searching for map.")
 				Local $aPoint = findMap($sMap)
-				If isArray($aPoint) = True Then
+				If isArray($aPoint) > 0 Then
 					clickPoint($aPoint) 
 					If waitLocation("map-stage", 5) Then $bFoundMap = True
 				EndIf
 			Case "map-stage"
-				If $bFoundMap = True Then
+				If $bFoundMap > 0 Then
 					Local $hTimer2 = TimerInit()
 					While isArray(findImage("misc-stage-" & StringLower($sDifficulty), 90, 0)) = False
 						If TimerDiff($hTimer2) > 5000 Then
@@ -43,13 +43,23 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 						If _Sleep(500) Then ExitLoop(2)
 					WEnd
 					
-					Local $aPoint = findLevel($sStage)
-					If isArray($aPoint) = True Then
-						clickPoint($aPoint)
-						waitLocation("map-battle", 10)
+					If StringLower($sStage) == "any" Then
+						For $y = 470 To 238 Step -2
+							If isPixel(CreateArr(709, $y, 0xFEF7C9), 10, CaptureRegion()) > 0 Then
+								clickPoint(CreateArr(709, $y))
+								waitLocation("map-battle", 10)
+								ExitLoop
+							EndIf
+						Next
 					Else
-						If isArray(findLevel(1)) = True Then ExitLoop
-						clickDrag($g_aSwipeDown)
+						Local $aPoint = findLevel($sStage)
+						If isArray($aPoint) > 0 Then
+							clickPoint($aPoint)
+							waitLocation("map-battle", 10)
+						Else
+							If isArray(findLevel(1)) > 0 Then ExitLoop
+							clickDrag($g_aSwipeDown)
+						EndIf
 					EndIf
 				Else
 					navigate("map")
@@ -57,7 +67,7 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 			Case "refill"
 				ExitLoop
 			Case "map-battle"
-				If isPixel(getPixelArg("map-battle-autofill-on"), 20) = False Then
+				If isPixel(getPixelArg("map-battle-autofill-on"), 20, CaptureRegion()) <= 0 Then
 					clickPoint(getPointArg("astrochips-refill"))
 					ContinueLoop
 				EndIf
@@ -73,7 +83,7 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 				$bOutput = True
 				ExitLoop
 			Case Else
-				If HandleCommonLocations($sLocation) = False And navigate("map", True, 3) = False Then ExitLoop
+				If HandleCommonLocations($sLocation) = 0 And navigate("map", True, 3) = 0 Then ExitLoop
 				$bFoundMap = False
 		EndSwitch
 	WEnd

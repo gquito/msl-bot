@@ -19,56 +19,29 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
     While $iAttempt > 0
         $iAttempt -= 1
 
-        If _Sleep(0) Then ExitLoop
-        If $sFind = getLocation() Then ExitLoop
-        
         Local $hTimer = TimerInit()
         While TimerDiff($hTimer) < $Delay_Navigation_Timeout*1000
-            If _Sleep(300) Or $sFind = getLocation() Then ExitLoop
-            If HandleCommonLocations(getLocation()) = True Then ContinueLoop
-
+            If $sFind == getLocation() Or _Sleep(300) Then ExitLoop(2)
+            If HandleCommonLocations(getLocation()) > 0 Then ContinueLoop
+                
             Switch getLocation()
-                Case "another-device"
-                    Log_Add("Another device detected!", $LOG_INFORMATION)
-
-                    Switch $Config_Another_Device_Timeout
-                        Case -1
-                            Log_Add("Restart time set to Never, Stopping script.", $LOG_INFORMATION)
-                            Stop()
-                        Case 0
-                            Log_Add("Restart time set to Immediately", $LOG_INFORMATION)
-                            RestartGame()
-                        Case Else
-                            Local $iMinutes = $Config_Another_Device_Timeout
-                            Log_Add("Restart time set to " & $iMinutes & " minutes.", $LOG_INFORMATION)
-                            
-                            Local $hTimer = TimerInit()
-                            $g_bAntiStuck = False
-                            While TimerDiff($hTimer) < ($iMinutes*60000)
-                                Local $iSeconds = Int(($iMinutes*60) - (TimerDiff($hTimer)/1000))
-                                Status("Restarting in: " & getTimeString($iSeconds))
-                                If (_Sleep(1000)) Then ExitLoop
-                            WEnd
-                            $g_bAntiStuck = True
-                            RestartGame()
-                    EndSwitch
                 Case "defeat" 
                     clickPoint(getPointArg("battle-give-up"))
                     ContinueLoop
                 Case "catch-success"
-                    If $bForceSurrender = True Then
+                    If $bForceSurrender > 0 Then
                         SendBack()
                         ContinueLoop
                     EndIf
                     If $sFind <> "catch-mode" Then ExitLoop(2)
                 Case "battle", "battle-auto"
-                    If $bForceSurrender = True Then
+                    If $bForceSurrender > 0 Then
                         clickPoint(getPointArg("battle-pause"))
                         ContinueLoop
                     EndIf
                     If $sFind <> "catch-mode" Then ExitLoop(2)
                 Case "pause"
-                    If $bForceSurrender = True Then
+                    If $bForceSurrender > 0 Then
                         clickWhile(getPointArg("battle-give-up"), "isLocation", "pause,unknown,popup-window", 60, 500)
                         ContinueLoop
                     EndIf
@@ -85,9 +58,9 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                     If Mod(Int(TimerDiff($hTimer)/1000)+1, 5) = 0 Then clickPoint(getPointArg("tap"))
                     ContinueLoop
             EndSwitch
-            
+
             Local $sLocation = getLocation()
-            If $sFind = $sLocation Then ContinueLoop
+            If $sFind == $sLocation Then ContinueLoop
             
             ;Handles normal locations
             Switch $sFind
@@ -126,7 +99,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                     Switch $sLocation
                         Case "map"
                             Local $aPoint = findMap("Ancient Dungeon")
-                            If isArray($aPoint) = True Then 
+                            If isArray($aPoint) > 0 Then 
                                 clickPoint($aPoint)
                                 waitLocation("ancient-colossus-dungeon", 5)
                             EndIf
@@ -136,7 +109,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                         Case "map-battle", "autobattle-prompt", "dialogue", "monsters-astromon", "popup-window"
                             goBack()
                         Case Else
-                            If navigate("map", $bForceSurrender) = False Then ExitLoop
+                            If navigate("map", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
                 Case "quests"
                     Switch $sLocation
@@ -146,20 +119,20 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                         Case "autobattle-prompt", "popup-window", "dialogue"
                             goBack()
                         Case Else
-                            If navigate("village", $bForceSurrender) = False Then ExitLoop
+                            If navigate("village", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
                 Case "catch-mode"
-                    If isArray(findImage("misc-no-astrochips")) = True Then ExitLoop
+                    If isArray(findImage("misc-no-astrochips")) > 0 Then ExitLoop
                     
                     Switch $sLocation
                         Case "battle-auto"
                             Local $aRound = getRound()
-                            clickPoint(getPointArg("battle-auto"))
+                            clickBattle()
                             clickPoint(getPointArg("battle-catch"))
 
-                            If waitLocation("unknown,catch-mode,battle", 5, False) = "unknown" Then
+                            If waitLocation("unknown,catch-mode,battle", 5, False) == "unknown" Then
                                 Local $aRound2 = getRound()
-                                If isArray($aRound) = True And isArray($aRound2) = True Then
+                                If isArray($aRound) > 0 And isArray($aRound2) > 0 Then
                                     If $aRound[0] <> $aRound2[0] Then
                                         waitLocation("battle-auto,battle", 5)
                                         clickPoint(getPointArg("battle-catch"))
@@ -188,7 +161,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                                 "gem-consecutive-upgrades", "release-confirm", "release-reward"
                             goBack()
                         Case Else
-                            If navigate("village", $bForceSurrender) = False Then ExitLoop
+                            If navigate("village", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
                 Case "manage"
                     Switch $sLocation
@@ -197,18 +170,18 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                         Case "gem-upgrade-not-upgrading", "gem-consecutive-upgrades"
                             goBack()
                         Case "popup-window"
-                            If isPixel("748,151,0xFFD428", 10, CaptureRegion()) = True Then
+                            If isPixel("748,151,0xFFD428", 10, CaptureRegion()) > 0 Then
                                 clickPoint(CreateArr(362, 117))
                             Else
                                 ContinueCase
                             EndIf
                         Case Else
-                            If navigate("monsters", $bForceSurrender) = False Then ExitLoop
+                            If navigate("monsters", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
                 Case "dungeons"
                     Switch $sLocation
                         Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons", "extra-dungeons", "dungeon-info"
-                            If $sLocation = "special-guardian-dungeons" Then clickDrag($g_aDungeonsSwipeDown)
+                            If $sLocation == "special-guardian-dungeons" Then clickDrag($g_aDungeonsSwipeDown)
                             $sFind = $sLocation
                         Case "map"
                             Local $aPoint = findMap("Dungeons")
@@ -219,13 +192,13 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                         Case "map-battle", "popup-window", "autobattle-prompt"
                             goBack()
                         Case Else
-                            If navigate("map", $bForceSurrender) = False Then ExitLoop
+                            If navigate("map", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
                 Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons"
                     Switch $sLocation
                         Case "starstone-dungeons", "extra-dungeons"
                             Local $aPoint = StringSplit(getPointArg("dungeons-" & StringSplit($sFind, "-", 2)[0]), ",", 2)
-                            If $sLocation = "extra-dungeons" Then $aPoint[1] += 64
+                            If $sLocation == "extra-dungeons" Then $aPoint[1] += 64
 
                             Switch $sFind
                                 Case "special-guardian-dungeons"
@@ -234,7 +207,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
 
                                     $aPoint = findImage("map-special-dungeon",95,0,70,335,215,150,True,True)
 
-                                    If isArray($aPoint) = False Then ExitLoop
+                                    If isArray($aPoint) = 0 Then ExitLoop
                                     clickPoint($aPoint)
                                 Case Else
                                     clickPoint($aPoint)
@@ -242,7 +215,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                         Case "guardian-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons", "dungeon-info"
                             clickPoint(getPointArg("dungeons-starstone"))
                         Case Else
-                            If navigate("dungeons", $bForceSurrender) = False Then ExitLoop
+                            If navigate("dungeons", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
                 Case Else
                     Log_Add($sFind & " is not navigable.", $LOG_ERROR)

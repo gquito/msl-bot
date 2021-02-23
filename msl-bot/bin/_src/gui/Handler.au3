@@ -56,6 +56,195 @@ Func GUI_HANDLE_MESSAGE($iCode)
                     WinMove($g_sAppTitle, "", $aWinPos[0], $aWinPos[1], $aWinPos[2], $aWinPos[3])
 
                     CreateLogWindow()
+                Case $g_idBtn_Add
+                    ControlDisable("", "", $g_idBtn_Add)
+                    ControlDisable("", "", $g_idBtn_Remove)
+                    ControlDisable("", "", $g_idBtn_Save)
+                    ControlDisable("", "", $g_idBtn_Edit)
+                    CreateScheduleAdd()
+
+                Case $g_idBtn_Remove
+                    Local $aSelectedIndices = _GUICtrlListView_GetSelectedIndices($g_hLV_Schedule, True)
+                    For $i = $aSelectedIndices[0] To 1 Step -1
+                        Local $sName = StringReplace(StringReplace(_GUICtrlListView_GetItemText($g_hLV_Schedule, $aSelectedIndices[$i]), "[ON] ", ""), "[OFF] ", "")
+						Schedule_RemoveByName($sName)
+                    Next
+            
+                Case $g_idBtn_Edit
+                    Local $iIndex = _GUICtrlListView_GetSelectedCount($g_hLV_Schedule)
+                    If $iIndex = 1 Then
+                        $iIndex = _GUICtrlListView_GetSelectedIndices($g_hLV_Schedule, True)[1] ;LV Index
+
+                        Local $sName = StringReplace(StringReplace(_GUICtrlListView_GetItemText($g_hLV_Schedule, $iIndex), "[ON] ", ""), "[OFF] ", "")
+                        $iIndex = Schedule_IndexByName($sName) ;Schedule Array Index
+
+                        $g_iEdit_Index = $iIndex
+                        Local $iResult = -1
+                        Local $aFlags = _Schedule_GetFlagCombo($iIndex)
+                        Local $sCooldown = "|" & $g_aSchedules[$iIndex][$SCHEDULE_COOLDOWN]
+                        For $i = 0 To 5
+                            If $i <> $g_aSchedules[$iIndex][$SCHEDULE_COOLDOWN] Then
+                                $sCooldown &= "|" & $i
+                            EndIf
+                        Next
+                        $sCooldown = StringMid($sCooldown, 2)
+
+                        Switch $g_aSchedules[$iIndex][$SCHEDULE_TYPE]
+                            Case $SCHEDULE_TYPE_DATE
+                                Local $aDate = ($g_aSchedules[$iIndex][$SCHEDULE_STRUCTURE])[0]
+                                Local $aPreset = [$g_aSchedules[$iIndex][$SCHEDULE_NAME], _
+                                                  _ArrayToString($g_aSchedules[$iIndex][$SCHEDULE_ACTION], @CRLF), _
+                                                  $aDate[0], _
+                                                  $aDate[1], _
+                                                  $aDate[2], _
+                                                  $aDate[3], _
+                                                  $aDate[4], _
+                                                  $g_aSchedules[$iIndex][$SCHEDULE_ITERATIONS], _
+                                                  _ArrayToString($aFlags), _
+                                                  $sCooldown, _
+                                                  ($g_aSchedules[$iIndex][$SCHEDULE_ENABLED] = "True" ? "True|False" : "False|True")]
+                                $g_iScheduleType = $SCHEDULE_TYPE_DATE
+                                $iResult = GeneratePromptsWindow($g_hParent, "Schedule Edit Date", $g_sSCHEDULE_DATE_PROMPTS, $aPreset, $g_sSCHEDULE_DATE_HELP, False)
+                            Case $SCHEDULE_TYPE_TIMER
+                                Local $aTime = StringSplit(getTimeString(($g_aSchedules[$iIndex][$SCHEDULE_STRUCTURE])[1]), " ", $STR_NOCOUNT)
+                                Local $iHours = 0
+                                Local $iMinutes = 0
+                                Local $iSeconds = 0
+                                For $i = 0 To UBound($aTime)-1
+                                    Switch StringRight($aTime[$i], 1)
+                                        Case "D"
+                                            $iHours += StringMid($aTime[$i], 1, StringLen($aTime[$i])-1)*24
+                                        Case "H"
+                                            $iHours += StringMid($aTime[$i], 1, StringLen($aTime[$i])-1)
+                                        Case "M"
+                                            $iMinutes += StringMid($aTime[$i], 1, StringLen($aTime[$i])-1)
+                                        Case "S"
+                                            $iSeconds += StringMid($aTime[$i], 1, StringLen($aTime[$i])-1)
+                                    EndSwitch
+                                Next
+                                Local $aPreset = [$g_aSchedules[$iIndex][$SCHEDULE_NAME], _
+                                                  _ArrayToString($g_aSchedules[$iIndex][$SCHEDULE_ACTION], @CRLF), _
+                                                  $iHours, _
+                                                  $iMinutes, _
+                                                  $iSeconds, _
+                                                  $g_aSchedules[$iIndex][$SCHEDULE_ITERATIONS], _
+                                                  _ArrayToString($aFlags), _
+                                                  $sCooldown, _
+                                                  ($g_aSchedules[$iIndex][$SCHEDULE_ENABLED] = "True" ? "True|False" : "False|True")]
+
+                                $g_iScheduleType = $SCHEDULE_TYPE_TIMER
+                                $iResult = GeneratePromptsWindow($g_hParent, "Schedule Edit Timer", $g_sSCHEDULE_TIMER_PROMPTS, $aPreset, $g_sSCHEDULE_TIMER_HELP, False)
+                            Case $SCHEDULE_TYPE_DAY
+                                Local Const $DAYOFWEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                                Local $sDayOfWeekCombo = _DateDayOfWeek(($g_aSchedules[$iIndex][$SCHEDULE_STRUCTURE])[1])
+                                For $i = 0 To UBound($DAYOFWEEK)-1
+                                    If $DAYOFWEEK[$i] <> ($g_aSchedules[$iIndex][$SCHEDULE_STRUCTURE])[1] Then
+                                        $sDayOfWeekCombo &= "|" & $DAYOFWEEK[$i]
+                                    EndIf
+                                Next
+                                Local $aTime = ($g_aSchedules[$iIndex][$SCHEDULE_STRUCTURE])[0]
+                                Local $aPreset = [$g_aSchedules[$iIndex][$SCHEDULE_NAME], _
+                                                  _ArrayToString($g_aSchedules[$iIndex][$SCHEDULE_ACTION], @CRLF), _
+                                                  $sDayOfWeekCombo, _
+                                                  $aTime[0], _
+                                                  $aTime[1], _
+                                                  $aTime[2], _
+                                                  $g_aSchedules[$iIndex][$SCHEDULE_ITERATIONS], _
+                                                  _ArrayToString($aFlags), _
+                                                  $sCooldown, _
+                                                  ($g_aSchedules[$iIndex][$SCHEDULE_ENABLED] = "True" ? "True|False" : "False|True")]
+                                                  
+                                $g_iScheduleType = $SCHEDULE_TYPE_DAY
+                                $iResult = GeneratePromptsWindow($g_hParent, "Schedule Edit Day", $g_sSCHEDULE_DAY_PROMPTS, $aPreset, $g_sSCHEDULE_DAY_HELP, False)
+                            Case $SCHEDULE_TYPE_CONDITION
+                                Local $sConditions = __ArrayToString(($g_aSchedules[$iIndex][$SCHEDULE_STRUCTURE])[0])
+                                $sConditions = StringReplace($sConditions, "\1", @CRLF, 0)
+                                $sConditions = StringReplace($sConditions, "\2", " && ")
+                                Local $aPreset = [$g_aSchedules[$iIndex][$SCHEDULE_NAME], _
+                                                  _ArrayToString($g_aSchedules[$iIndex][$SCHEDULE_ACTION], @CRLF), _
+                                                  $sConditions, _
+                                                  (($g_aSchedules[$iIndex][$SCHEDULE_STRUCTURE])[1] = "True" ? "True|False" : "False|True"), _
+                                                  $g_aSchedules[$iIndex][$SCHEDULE_ITERATIONS], _
+                                                  _ArrayToString($aFlags), _
+                                                  $sCooldown, _
+                                                  ($g_aSchedules[$iIndex][$SCHEDULE_ENABLED] = "True" ? "True|False" : "False|True")]
+
+                                $g_iScheduleType = $SCHEDULE_TYPE_CONDITION
+                                $iResult = GeneratePromptsWindow($g_hParent, "Schedule Edit Condition", $g_sSCHEDULE_CONDITION_PROMPTS, $aPreset, $g_sSCHEDULE_CONDITION_HELP, False)
+                        EndSwitch
+
+                        If $iResult = -1 Then
+                            Log_Add("Error editing schedule.", $LOG_ERROR)
+                            Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hScheduleAdd]
+                            GUI_HANDLE_MESSAGE($t_iCode)
+                        EndIf
+                    Else ;0 or more than 1 selected
+                        MsgBox($MB_ICONWARNING, "Schedule Edit", "Select one item.", 5)
+                    EndIf
+                
+                Case $g_idBtn_Save
+                    Local $iIndex = _GUICtrlListView_GetSelectedCount($g_hLV_Schedule)
+                    If $iIndex > 0 Then
+                        Local $aIndexes = _GUICtrlListView_GetSelectedIndices($g_hLV_Schedule, True) ;First item is count
+
+                        ControlDisable("", "", $g_idBtn_Add)
+                        ControlDisable("", "", $g_idBtn_Remove)
+                        ControlDisable("", "", $g_idBtn_Save)
+                        ControlDisable("", "", $g_idBtn_Edit)
+                        
+                        Local $iScheduleIndex = Schedule_IndexByName(StringRegExpReplace(_GUICtrlListView_GetItemText($g_hLV_Schedule, $aIndexes[1]), "(\[ON\] |\[OFF\] )", ""))
+                        If $iScheduleIndex <> -1 Then
+                            Local $sNamePreset = $g_aSchedules[$iScheduleIndex][$SCHEDULE_NAME]
+                            If $aIndexes[0] > 1 Then
+                                Local $iCustomPreset = 1
+                                While FileExists($g_sProfileFolder & "\schedule_presets\Multi Preset " & $iCustomPreset & ".json")
+                                    $iCustomPreset += 1
+                                Wend
+
+                                $sNamePreset = "Multi Preset " & $iCustomPreset
+                            EndIf
+
+                            Local $hInput = InputBox("Schedule Save", "Enter schedule preset name." & @CRLF & @CRLF & "Characters must be valid for a filename." & @CRLF & @CRLF & "Preset will be saved in \profiles\schedule_presets\", $sNamePreset, "", -1, -1, Default, Default, 30)
+                            Local $hFile = FileOpen($g_sProfileFolder & "\schedule_presets\" & $hInput & ".json", $FO_OVERWRITE+$FO_CREATEPATH)
+                            Local $sFinal ;Json file data
+                            For $i = 1 To $aIndexes[0] 
+                                Local $iTemp = Schedule_IndexByName(StringRegExpReplace(_GUICtrlListView_GetItemText($g_hLV_Schedule, $aIndexes[$i]), "(\[ON\] |\[OFF\] )", ""))
+                                $sFinal &= @CRLF & "||" & @CRLF & _Schedule_ToJson($iTemp)
+                            Next
+                            $sFinal = StringMid($sFinal, 5)
+                            Local $iResult = FileWrite($hFile, $sFinal)
+                        
+                            If $iResult = 0 Or $hInput == "" Then
+                                MsgBox($MB_ICONERROR, "Schedule Save", "Could not write to file.", 5)
+                            Else
+                                MsgBox($MB_ICONINFORMATION, "Schedule Save", "Preset: " & $hInput & " has been created.", 5)
+                            EndIf
+                        Else
+                            MsgBox($MB_ICONWARNING, "Schedule Save", "Could not get listview item index.", 5)
+                        EndIf
+
+                        ControlEnable("", "", $g_hBtn_Add)
+                        ControlEnable("", "", $g_hBtn_Remove)
+                        ControlEnable("", "", $g_hBtn_Save)
+                        ControlEnable("", "", $g_hBtn_Edit)
+                    Else
+                        MsgBox($MB_ICONWARNING, "Schedule Save", "Select at least one item.", 5)
+                    EndIf
+
+                Case $PROMPTWINDOW_CLOSE
+                    If $g_aPromptsWindow_Answers <> Null Then
+                        Local $aScheduleStructure[8]
+                        _Schedule_HandleAnswers($aScheduleStructure)
+                        Schedule_Edit($g_iEdit_Index, _
+                                      $aScheduleStructure[$SCHEDULE_NAME], _
+                                      $aScheduleStructure[$SCHEDULE_ACTION], _
+                                      $aScheduleStructure[$SCHEDULE_TYPE], _
+                                      $aScheduleStructure[$SCHEDULE_ITERATIONS], _
+                                      $aScheduleStructure[$SCHEDULE_STRUCTURE], _
+                                      Int(StringLeft($aScheduleStructure[$SCHEDULE_FLAG], 1)), _
+                                      $aScheduleStructure[$SCHEDULE_COOLDOWN], _
+                                      $aScheduleStructure[$SCHEDULE_ENABLED-1])
+                    EndIf
                 Case $GUI_EVENT_CLOSE, $M_File_Quit
                     GUISetState(@SW_HIDE, $g_hParent)
                     CloseApp()
@@ -99,6 +288,153 @@ Func GUI_HANDLE_MESSAGE($iCode)
 
                     $g_sLogFilter = $sFilter
                     Log_Display_Reset()
+            EndSwitch
+        Case $g_hScheduleAdd
+            Switch $iCode[0]
+                Case $GUI_EVENT_CLOSE, $g_idScheduleAdd_Cancel
+                    GUISwitch($g_hParent)
+
+                    ControlEnable("", "", $g_hBtn_Add)
+                    ControlEnable("", "", $g_hBtn_Remove)
+                    ControlEnable("", "", $g_hBtn_Save)
+                    ControlEnable("", "", $g_hBtn_Edit)
+
+                    GUIDelete($g_hScheduleAdd)
+                Case $g_idScheduleAdd_Date
+                    Local $iResult = GeneratePromptsWindow($g_hScheduleAdd, "Schedule Add Date", $g_sSCHEDULE_DATE_PROMPTS, $g_sSCHEDULE_DATE_PRESET, $g_sSCHEDULE_DATE_HELP)
+                    $g_iPromptsWindow_AnswersID = "Schedule Add"
+
+                    If $iResult = -1 Then
+                        Log_Add("Error adding schedule.", $LOG_ERROR)
+                        Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hScheduleAdd]
+                        GUI_HANDLE_MESSAGE($t_iCode)
+                    EndIf
+
+                    $g_iScheduleType = $SCHEDULE_TYPE_DATE
+
+                Case $g_idScheduleAdd_Timer           
+                    Local $iResult = GeneratePromptsWindow($g_hScheduleAdd, "Schedule Add Timer", $g_sSCHEDULE_TIMER_PROMPTS, $g_sSCHEDULE_TIMER_PRESET, $g_sSCHEDULE_TIMER_HELP)
+                    $g_iPromptsWindow_AnswersID = "Schedule Add"
+
+                    If $iResult = -1 Then
+                        Log_Add("Error adding schedule.", $LOG_ERROR)
+                        Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hScheduleAdd]
+                        GUI_HANDLE_MESSAGE($t_iCode)
+                    EndIf
+
+                    $g_iScheduleType = $SCHEDULE_TYPE_TIMER
+
+                Case $g_idScheduleAdd_Day
+                    Local $iResult = GeneratePromptsWindow($g_hScheduleAdd, "Schedule Add Day", $g_sSCHEDULE_DAY_PROMPTS, $g_sSCHEDULE_DAY_PRESET, $g_sSCHEDULE_DAY_HELP)
+                    $g_iPromptsWindow_AnswersID = "Schedule Add"
+
+                    If $iResult = -1 Then
+                        Log_Add("Error adding schedule.", $LOG_ERROR)
+                        Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hScheduleAdd]
+                        GUI_HANDLE_MESSAGE($t_iCode)
+                    EndIf
+
+                    $g_iScheduleType = $SCHEDULE_TYPE_DAY
+
+                Case $g_idScheduleAdd_Condition
+                    Local $iResult = GeneratePromptsWindow($g_hScheduleAdd, "Schedule Add Condition", $g_sSCHEDULE_CONDITION_PROMPTS, $g_sSCHEDULE_CONDITION_PRESET, $g_sSCHEDULE_CONDITION_HELP)
+                    $g_iPromptsWindow_AnswersID = "Schedule Add"
+
+                    If $iResult = -1 Then
+                        Log_Add("Error adding schedule.", $LOG_ERROR)
+                        Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hScheduleAdd]
+                        GUI_HANDLE_MESSAGE($t_iCode)
+                    EndIf
+
+                    $g_iScheduleType = $SCHEDULE_TYPE_CONDITION
+
+                Case $g_idScheduleAdd_Preset
+                    Local $aPrompts = ["!Enter preset name"]
+                    Local $sHelp = "Presets can be found in:" & @CRLF & $g_sProfileFolder & "\schedule_presets\" & @CRLF & @CRLF
+                    Local $aFileList = _FileListToArray($g_sProfileFolder & "\schedule_presets")
+                    Local $aPresets[1]
+
+                    If isArray($aFileList) Then
+                        _ArrayDelete($aFileList, 0)
+
+                        $sHelp &= "Available preset list:" & @CRLF & _ArrayToString($aFileList, @CRLF)
+                        $aPresets[0] = _ArrayToString($aFileList)
+                    Else
+                        $aPrompts[0] = "Enter preset name"
+                    EndIf
+
+                    Local $iResult = GeneratePromptsWindow($g_hScheduleAdd, "Schedule Add Preset", $aPrompts, $aPresets, $sHelp)
+                    $g_iPromptsWindow_AnswersID = "Schedule Preset"
+
+                    If $iResult = -1 Then
+                        Log_Add("Error adding schedule.", $LOG_ERROR)
+                        Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hScheduleAdd]
+                        GUI_HANDLE_MESSAGE($t_iCode)
+                    EndIf
+
+                Case $PROMPTWINDOW_CLOSE
+                    If $g_aPromptsWindow_Answers <> Null Then
+                        Switch $g_iPromptsWindow_AnswersID
+                            Case "Schedule Add"
+                                Local $aScheduleStructure[8]
+                                _Schedule_HandleAnswers($aScheduleStructure)
+                                Schedule_Add($aScheduleStructure[$SCHEDULE_NAME], _
+                                             $aScheduleStructure[$SCHEDULE_ACTION], _
+                                             $aScheduleStructure[$SCHEDULE_TYPE], _
+                                             $aScheduleStructure[$SCHEDULE_ITERATIONS], _
+                                             $aScheduleStructure[$SCHEDULE_STRUCTURE], _
+                                             Int(StringLeft($aScheduleStructure[$SCHEDULE_FLAG], 1)), _
+                                             $aScheduleStructure[$SCHEDULE_COOLDOWN], _
+                                             $aScheduleStructure[$SCHEDULE_ENABLED-1])
+
+                            Case "Schedule Preset"
+                                Schedule_AddPreset($g_aPromptsWindow_Answers[0])
+
+                        EndSwitch
+                    EndIf
+                    $g_iPromptsWindow_AnswersID = Null
+
+                    Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hScheduleAdd]
+                    GUI_HANDLE_MESSAGE($t_iCode)
+            EndSwitch
+        Case $g_hPromptsWindow
+            Switch $iCode[0]
+                Case $GUI_EVENT_CLOSE, $g_idPromptsWindow_Cancel
+                    $g_aPromptsWindow_Answers = Null
+                    GUISetState(@SW_SHOW, $g_hPromptsWindow_Parent)
+
+                    If $g_hPromptsWindow_HelpWindow <> Null Then
+                        Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hPromptsWindow_HelpWindow]
+                        GUI_HANDLE_MESSAGE($t_iCode)
+                    EndIf
+
+                    GUIDelete($g_hPromptsWindow)
+                Case $g_idPromptsWindow_Done
+                    Local $iSize = UBound($g_aPromptsWindow_txtPrompts)
+                    Local $t_aAnswers[$iSize]
+                    For $i = 0 To $iSize-1
+                        Local $hText = $g_aPromptsWindow_txtPrompts[$i]
+                        Local $sString = GUICtrlRead($hText)
+
+                        $t_aAnswers[$i] = $sString
+                    Next
+                    $g_aPromptsWindow_Answers = $t_aAnswers
+
+                    Local $t_iCode = [$PROMPTWINDOW_CLOSE, $g_hPromptsWindow_Parent]
+                    GUI_HANDLE_MESSAGE($t_iCode)
+                    
+                    Local $t_iCode = [$GUI_EVENT_CLOSE, $g_hPromptsWindow]
+                    GUI_HANDLE_MESSAGE($t_iCode)
+                Case $g_idPromptsWindow_Help
+                    If $g_hPromptsWindow_HelpWindow <> Null Then GUIDelete($g_hPromptsWindow_HelpWindow)
+                    Local $aWinPos = WinGetPos($g_hPromptsWindow)
+                    $g_hPromptsWindow_HelpWindow = CreateMessageBox("Schedule Add Help", $g_sPromptsWindow_Help, $aWinPos[0]+$aWinPos[2], $aWinPos[1]+(($aWinPos[3]-300)/2))
+            EndSwitch
+        Case $g_hMessageBox
+            Switch $iCode[0]
+                Case $GUI_EVENT_CLOSE
+                    $g_hMessageBox = Null
+                    GUIDelete($g_hMessageBox)
             EndSwitch
     EndSwitch
 
@@ -170,7 +506,7 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
                     Local $iIndex = DLLStructGetData($tScriptConfigInfo, "Index")
                     Local $sText = _GUICtrlListView_GetItemText($g_hLV_ScriptConfig, $iIndex, 2)
 
-                    If ($sText = "") Then
+                    If ($sText == "") Then
                         GUICtrlSetData($g_hLbl_ConfigDescription, "Click on a setting for a description.")
                     Else
                         GUICtrlSetData($g_hLbl_ConfigDescription, $sText)
@@ -262,13 +598,25 @@ Func CreateLogWindow()
     Log_Display_Reset()
 EndFunc
 
+Func CreateScheduleAdd()
+    $g_hScheduleAdd = GUICreate("Add Schedule", 335, 50)
+    $g_idScheduleAdd_Date = GUICtrlCreateButton("Date", 5, 5, 50, 40)
+    $g_idScheduleAdd_Day = GUICtrlCreateButton("Day", 60, 5, 50, 40)
+    $g_idScheduleAdd_Timer = GUICtrlCreateButton("Timer", 115, 5, 50, 40)
+    $g_idScheduleAdd_Condition = GUICtrlCreateButton("Condition", 170, 5, 50, 40)
+    $g_idScheduleAdd_Preset = GUICtrlCreateButton("Preset...", 225, 5, 50, 40)
+    $g_idScheduleAdd_Cancel = GUICtrlCreateButton("Cancel", 280, 5, 50, 40)
+
+    GUISetState(@SW_SHOW, $g_hScheduleAdd)
+EndFunc
+
 ;Generates window for prompts.
 ;aPrompts and aPreset must have the same number of elements
 ;To prompt a multiline: Add $ as the first character in the prompt
 ;To prompt a combobox: Add ! as the first character in the prompt. Preset must be separated by "|"
 ;Answers are put into $g_aPromptsWindow_Answers
 Func GeneratePromptsWindow(ByRef $hParent, $sTitle, $aPrompts, $aPreset, $sHelp = "", $bHide = True)
-    If $bHide = True Then GUISetState(@SW_HIDE, $hParent)
+    If $bHide > 0 Then GUISetState(@SW_HIDE, $hParent)
     $g_hPromptsWindow_Parent = $hParent
 
     Local $iSize = UBound($aPrompts)
@@ -278,7 +626,7 @@ Func GeneratePromptsWindow(ByRef $hParent, $sTitle, $aPrompts, $aPreset, $sHelp 
 
     Local $iWindowSize = 0
     For $i = 0 To $iSize-1
-        If StringLeft($aPrompts[$i], 1) = "$" Then
+        If StringLeft($aPrompts[$i], 1) == "$" Then
             $iWindowSize += 2
         Else
             $iWindowSize += 1
@@ -310,7 +658,7 @@ Func GeneratePromptsWindow(ByRef $hParent, $sTitle, $aPrompts, $aPreset, $sHelp 
             Case Else ;Edit
                 Local $iFlags = 0
                 Local $iMultiline = 0
-                If StringLeft($aPrompts[$i], 1) = "$" Then
+                If StringLeft($aPrompts[$i], 1) == "$" Then
                     $iFlags = $ES_MULTILINE+$WS_VSCROLL+$ES_WANTRETURN+$ES_AUTOVSCROLL
                     $iMultiline = 33
                 EndIf
@@ -380,7 +728,7 @@ Func handleEdit(ByRef $hEdit, ByRef $iIndex, $hListView)
     If ($sNew <> "") Then _GUICtrlListView_SetItemText($hListView, $iIndex, $sNew, 1)
     _GUICtrlEdit_Destroy($hEdit)
 
-    If _GUICtrlListView_GetItemText($hListView, $iIndex) = "Profile Name" Then
+    If _GUICtrlListView_GetItemText($hListView, $iIndex) == "Profile Name" Then
         Script_ChangeProfile($sNew)
     Else
         Config_Save()
@@ -526,7 +874,7 @@ Func ListEditor_btnRemove()
     If ($aData[0] > 0) Then
         $g_aListEditor[3] &= "|" &  _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1])
 
-        If (StringMid($g_aListEditor[3], 1, 1) = "|") Then $g_aListEditor[3] = StringMid($g_aListEditor[3], 2)
+        If (StringMid($g_aListEditor[3], 1, 1) == "|") Then $g_aListEditor[3] = StringMid($g_aListEditor[3], 2)
 
         GUICtrlSetData($g_aListEditor[2], "")
         GUICtrlSetData($g_aListEditor[2], $g_aListEditor[3])

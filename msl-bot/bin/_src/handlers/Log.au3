@@ -27,8 +27,8 @@
 #ce
 
 Func Log_Add($sText, $sType = $LOG_PROCESS, $iTimeStamp = NowTimeStamp(), $sFunction = "", $iLevel = $g_aLOG_Function[0])
-    If ($Config_Log_Debug = False And $sType = $LOG_DEBUG) Or ($g_bLogEnabled = False) Then Return 0
-    If $sFunction = "" Then
+    If ($Config_Log_Debug = 0 And $sType = $LOG_DEBUG) Or ($g_bLogEnabled = 0) Then Return 0
+    If $sFunction == "" Then
         If $g_aLOG_Function[0] > 1 Then
             $sFunction = $g_aLOG_Function[$g_aLOG_Function[0]] & " <- " & $g_aLOG_Function[$g_aLOG_Function[0]-1]
         Else
@@ -104,12 +104,12 @@ Func Log_Display($sFilter = $g_sLogFilter, $aLog = $g_aLog, $hListView = $g_hLV_
 
         If (StringInStr($sFilter, $aLog[$g_iLOG_Processed][2]) Or $sFilter = $aLog[$g_iLOG_Processed][2]) Then
             Local $sTime = $aLog[$g_iLOG_Processed][0]
-            If (StringLeft($sTime, 1) = ".") Then $sTime = StringMid($sTime, 2)
+            If (StringLeft($sTime, 1) == ".") Then $sTime = StringMid($sTime, 2)
             _GUICtrlListView_InsertItem($hListView, formatTime($sTime) & "      (" & _GUICtrlListView_GetItemCount($hListView)+1 & ")", 0)
             
             Local $sLevel = ""
             Local $sDebug = ""
-            If ($aLog[$g_iLOG_Processed][2] = "Debug") Then $sDebug = " \\ "
+            If ($aLog[$g_iLOG_Processed][2] == "Debug") Then $sDebug = " \\ "
             For $i = 2 To $aLog[$g_iLOG_Processed][5]
                 $sLevel &= ">"
             Next
@@ -137,7 +137,7 @@ Func Log_Display_Reset($sFilter = $g_sLogFilter, $hListView = $g_hLV_Log)
 EndFunc
 
 Func Log_WriteLine($iLogLine, $bClear = False)
-    If $Config_Save_Logs = False Then 
+    If $Config_Save_Logs = 0 Then 
         If ($bClear) Then Log_Clear($g_aLog)
         Return False
     EndIf
@@ -171,7 +171,7 @@ Func FormatDateForFile()
 EndFunc
 
 Func Log_Save(ByRef $aLog, $bClear = False)
-    If $Config_Save_Logs = False Then 
+    If $Config_Save_Logs = 0 Then 
         If ($bClear) Then Log_Clear($aLog)
         Return False
     EndIf
@@ -212,7 +212,7 @@ Func Log_Clear(ByRef $aLog, $bClearInfo = False)
     If (Not($bClearInfo)) Then
         ;Limit for number of information log: 1000 ($g_iLogInfoLimit)
         For $i = 0 To UBound($aLog)-1
-            If ($aLog[$i][2] = "Information") Then
+            If ($aLog[$i][2] == "Information") Then
                 ReDim $aEmpty[UBound($aEmpty)+1][6]
                 For $x = 0 To 5
                     $aEmpty[UBound($aEmpty)-1][$x] = $aLog[$i][$x]

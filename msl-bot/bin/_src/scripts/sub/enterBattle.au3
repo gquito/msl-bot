@@ -16,8 +16,14 @@ Func enterBattle()
 				clickPoint(getPointArg("map-battle-play"))
 				waitLocation("loading,unknown,refill", 5)
 			Case "battle-end"
+				If TimerDiff($hTimer) > 15000 Then
+					clickPoint("99,261")
+					If _Sleep(500) Then ExitLoop
+					ADB_SendESC(2)
+				EndIf
+
 				Local $aRestart = findImage("misc-restart")
-				If isArray($aRestart) = True Then 
+				If isArray($aRestart) > 0 Then 
 					clickPoint($aRestart, 3)
 					waitLocation("loading,unknown,refill", 5)
 				EndIf

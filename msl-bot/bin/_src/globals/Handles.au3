@@ -5,7 +5,6 @@ Global $g_hHBitmap = Null ;WINAPI bitmap handle.
 Global $g_hBitmap = Null ;GDIPlus bitmap handle.
 Global $g_hWindow = Null ;Handle for emulator window
 Global $g_hControl = Null ;Handle for control window
-Global $g_hToolbox = Null ;Handle for tools window
 Global $g_hLogWindow = Null
 Global $g_hParent = Null
 
@@ -98,3 +97,7 @@ Global $g_hGetLocationCoolDown = TimerInit() ;Cooldown for getLocation function
 Global $g_hTimerScheduledRestart = Null ;Global timer for schedules restart.
 
 Global $g_hGameCheckCD = TimerInit()
+
+;ADB Shell
+Global $g_iADBShellPID = Null
+Global $g_sADBSerial = "" ;ADB Serial Number

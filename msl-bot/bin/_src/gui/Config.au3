@@ -2,9 +2,9 @@
 
 Func Config_Save($sConfig = "", $sPath = "")
     Local $iIndex = -1
-    If $sConfig = "" Then _GUICtrlComboBox_GetLBText($g_hCmb_Scripts, _GUICtrlComboBox_GetCurSel($g_hCmb_Scripts), $sConfig)
+    If $sConfig == "" Then _GUICtrlComboBox_GetLBText($g_hCmb_Scripts, _GUICtrlComboBox_GetCurSel($g_hCmb_Scripts), $sConfig)
     $sConfig = StringReplace($sConfig, " ", "_")
-    If $sPath = "" Then $sPath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\" & StringReplace($sConfig, " ", "_")
+    If $sPath == "" Then $sPath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\" & StringReplace($sConfig, " ", "_")
 
     $iIndex = Script_IndexByName($sConfig)
     If $iIndex = -1 Then Return False
@@ -35,7 +35,7 @@ Func Config_Save($sConfig = "", $sPath = "")
     Config_Update()
 EndFunc
 
-Func Config_Update() ;UpdateSettings()
+Func Config_Update()
     Local $aConfigSettings = formatArgs(Script_DataByName("_Config")[2]) 
     Local $aDelaySettings = formatArgs(Script_DataByName("_Delays")[2])
     Local $aGeneralSettings = formatArgs(Script_DataByName("_General")[2])
@@ -49,6 +49,23 @@ Func Config_Update() ;UpdateSettings()
     Config_CreateGlobals($aHourlySettings, "Hourly")
     Config_CreateGlobals($aGuardianSettings, "Guardian")
     Config_CreateGlobals($aFilterSettings, "Filter")
+
+    ;Emulator Console ADB and Shared folder
+    Global $Config_Console_ADB, $Config_ADB_Shared_Folder1, $Config_ADB_Shared_Folder2
+    Switch Stringlower($Config_Emulator_Console)
+        Case "ldconsole", "dnconsole"
+            $Config_Console_ADB = 'ldconsole adb --name ' & $Config_Emulator_Title & ' --command '
+            $Config_ADB_Shared_Folder1 = "/mnt/sdcard/Pictures/Screenshots/"
+            $Config_ADB_Shared_Folder2 = "C:\Users\" & @ComputerName & "\Documents\XuanZhi\Pictures\Screenshots\"
+        Case "noxconsole"
+            $Config_Console_ADB = 'NoxConsole adb -name:' & $Config_Emulator_Title & ' -command:'
+            $Config_ADB_Shared_Folder1 = "/mnt/sdcard/Pictures/"
+            $Config_ADB_Shared_Folder2 = "C:\Users\" & @ComputerName & "\Nox_share\Pictures\"
+        Case "memuc"
+            $Config_Console_ADB = 'memuc adb -n ' & $Config_Emulator_Title & ' '
+            $Config_ADB_Shared_Folder1 = "/mnt/sdcard/Pictures/"
+            $Config_ADB_Shared_Folder2 = "C:\Users\" & @ComputerName & "\Pictures\MEmu Photo"
+    EndSwitch
 
     ;parsing settings
     Switch $Config_Location_Stuck_Timeout
@@ -75,12 +92,16 @@ Func Config_Update() ;UpdateSettings()
     $Config_Back_Mode = Eval("BACK_" & $Config_Back_Mode)
 
     $Guardian_Check_Intervals = Int(StringMid($Guardian_Check_Intervals, 1, StringLen($Guardian_Check_Intervals) - StringLen(" Minutes")))
-    ResetHandles()
+
+    ;Cumulative
+    If FileExists($g_sProfileFolder & "\" & $Config_Profile_Name & "\Cumulative") > 0 And $g_hLV_OverallStats <> Null Then
+        Cumulative_Load()
+    EndIf
 EndFunc
 
 Func Config_Display(ByRef $hListView, $aScript) ;displayScriptData
     ;Must be in format: [[script, description, [[config, value, description], [..., ..., ...]]], ...]
-    If isArray($aScript) = False Or UBound($aScript, $UBOUND_ROWS) <> 3 Then Return -1
+    If isArray($aScript) = 0 Or UBound($aScript, $UBOUND_ROWS) <> 3 Then Return -1
     
     Local $aConfigList = $aScript[2] ;[[config, value, description], [..., ..., ...]]
     Local $iSize = UBound($aConfigList, $UBOUND_ROWS)
@@ -103,7 +124,7 @@ EndFunc
 Func Config_Parse($sValue)
     Switch $sValue
         Case "Enabled", "Disabled"
-            Return $sValue = "Enabled"
+            Return $sValue == "Enabled"
         Case Else
             Return $sValue
     EndSwitch
@@ -111,9 +132,9 @@ EndFunc
 
 Func Config_CreateGlobals($aSetting, $sName)
     For $i = 0 To UBound($aSetting)-1
-        If $aSetting[$i][1] = "~" Then ContinueLoop
+        If $aSetting[$i][1] == "~DEFAULT" Then ContinueLoop
 
-        ;If isDeclared($sName & "_" & $aSetting[$i][0]) = False Then Log_Add($sName & "_" & $aSetting[$i][0] & " was not declared.", $LOG_ERROR)
+        ;If isDeclared($sName & "_" & $aSetting[$i][0]) = 0 Then Log_Add($sName & "_" & $aSetting[$i][0] & " was not declared.", $LOG_ERROR)
         ;Log_Add($sName & "_" & $aSetting[$i][0] & " = " & Config_Parse($aSetting[$i][1]), $LOG_DEBUG)
 
         Assign($sName & "_" & $aSetting[$i][0], Config_Parse($aSetting[$i][1]), $ASSIGN_FORCEGLOBAL)

@@ -67,7 +67,7 @@ Func getGemData($bCapture = True)
 		EndIf
 
 		;Handles if gem is unknown
-		If (($aGemData[0] = "-") Or ($aGemData[1] = "-") Or ($aGemData[2] = "-") Or ($aGemData[3] = "-") Or ($aGemData[4] = "-")) Then
+		If (($aGemData[0] == "-") Or ($aGemData[1] == "-") Or ($aGemData[2] == "-") Or ($aGemData[3] == "-") Or ($aGemData[4] == "-")) Then
 			$g_sErrorMessage = "getGemData() => Something is missing: " & _ArrayToString($aGemData)
 			Return -1
 		EndIf
@@ -164,7 +164,7 @@ Func stringGem($aGemData)
 		Local $t_aSplit = StringSplit($aGemData[3], ".", $STR_NOCOUNT)
 
 		$sStat = "+"
-		If ($t_aSplit[0] = "P") Then $sStat = "%"
+		If ($t_aSplit[0] == "P") Then $sStat = "%"
 
 		$sStat &= _StringProper($t_aSplit[1])
 	Else
@@ -188,23 +188,25 @@ EndFunc
 Func findLevel($iLevel)
 	Local $aPoint[2]
 	Local $sLevel = StringLower($iLevel)
-	If $sLevel = "boss" Then $sLevel = "any"
+	If $sLevel == "boss" Then $sLevel = "any"
 	
-	If getLocation() = "map-stage" Then
-		If StringIsDigit($sLevel) = True Then 
+	If getLocation() == "map-stage" Then
+		If StringIsDigit($sLevel) > 0 Then 
 			If ($sLevel < 10) Then $sLevel = "0" & $sLevel ;Must be in format ##
 			$sLevel = "n" & $sLevel
 		EndIf		 
 
 		Local $t_sImageName = "level-" & $sLevel
-		Local $t_aPoint = findImage($t_sImageName, 90, 0, 400, 220, 380, 260, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
+		Local $t_aPoint = findImageMultiple($t_sImageName, 95, 5, 5, 0, 400, 220, 380, 260, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
+		;Sort lowest
+		_ArraySort($t_aPoint, 1, 0, 0, 1) ;Sort highest level
+		;_ArrayDisplay($t_aPoint)
 
-		If $t_aPoint = -1 Then Return -1
+		If isArray($t_aPoint) = False Or UBound($t_aPoint) <= 0 Then Return -1
 		;Found point
 		
-		$aPoint[0] = 725
-		$aPoint[1] = $t_aPoint[1]
-		Return $aPoint
+		Local $aReturn[2] = [725, $t_aPoint[0][1]]
+		Return $aReturn
 	EndIf
 
 	Return -2
@@ -213,7 +215,7 @@ EndFunc
 Func findBLevel($iLevel)
 	Local $aPoint[2]
 	Local $aPoint = findImage("level-b" & ($iLevel<10?"0":"") & $iLevel , 95, 0, 310, 160, 50, 330, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
-	If isArray($aPoint) = False Then Return -1
+	If isArray($aPoint) = 0 Then Return -1
 
 	$aPoint[0] = 626 ;x coordinate for left side of button
 	Return $aPoint
@@ -227,26 +229,19 @@ EndFunc
 #ce
 Func findGuardian($sMode)
 	$sMode = StringLower(StringStripWS($sMode, $STR_STRIPALL))
+	If isArray(findImage("level-any", 70, 0, 614, 266, 100, 220)) <= 0 Then Return -2
 
 	CaptureRegion("\bin\images\misc\misc-guardian-left", 335, 191, 15, 15)
 	CaptureRegion("\bin\images\misc\misc-guardian-right", 398, 191, 15, 15)
-	Local $sImagePath, $aResult = False
-	Local Const $iX = 650
+	Local $aResult = False
 	Switch $sMode
 		Case "left", "right"
-			$sImagePath = "misc-guardian-" & $sMode
-			$aResult = findImage($sImagePath, 70, 0, 550, 250, 60, 250, True, True)
-			If (Not(isArray($aResult))) Then Return -1
+			$aResult = findImage("misc-guardian-" & $sMode, 70, 0, 550, 250, 60, 250, True, True)
 		Case Else
-			$sImagePath = "misc-guardian-left"
-			$aResult = findImage($sImagePath, 70, 0, 550, 250, 60, 250, True, True)
-			If (Not(isArray($aResult))) Then 
-				$sImagePath = "misc-guardian-right"
-				$aResult = findImage($sImagePath, 70, 0, 550, 250, 60, 250, True, True)
-				If (Not(isArray($aResult))) Then Return -1
-			EndIf
+			Return findImage("level-any", 70, 0, 614, 266, 100, 220)
 	EndSwitch
-	$aResult[0] = $iX
+	If isArray($aResult) <= 0 Then Return -1
+	$aResult[0] = 650
 
 	Return $aResult
 EndFunc
@@ -277,7 +272,7 @@ EndFunc
 #ce
 Func hasAstrochips()
 	If Not(isLocation("battle")) Then Return -1
-	If (isPixel("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22")) = True Then
+	If (isPixel("162,509,0x612C22/340,507,0x612C22/513,520,0x612C22/683,520,0x612C22")) > 0 Then
 		If (isPixel("743,279,0x53100C|746,266,0xBD3229")) Then Return 0
 
 		Return 1
@@ -308,8 +303,8 @@ Func getStone()
 	Local $aGrades = ["low", "mid", "high"]
 	For $sCurElement In $aElements
 		For $sCurGrade In $aGrades
-			If isPixel(getPixelArg("stone-" & $sCurElement & "-" & $sCurGrade), 50, CaptureRegion()) = True Or findImage("stone-" & $sCurElement & "-" & $sCurGrade, 90, 0, 359, 131, 80, 80) <> -1 Then
-				If FileExists(@ScriptDir & "\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade) = False Then
+			If isPixel(getPixelArg("stone-" & $sCurElement & "-" & $sCurGrade), 50, CaptureRegion()) > 0 Or findImage("stone-" & $sCurElement & "-" & $sCurGrade, 90, 0, 359, 131, 80, 80) <> -1 Then
+				If FileExists(@ScriptDir & "\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade) = 0 Then
 					CaptureRegion("\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade, 382, 145, 35, 45)
 				EndIf
 				$sElement = $sCurElement
@@ -320,7 +315,7 @@ Func getStone()
 		Next
 	Next
 
-	If ($sElement = "" Or $sGrade = "") Then
+	If ($sElement == "" Or $sGrade == "") Then
 		Local $iCounter = 0
 		While FileExists(@ScriptDir & "\bin\images\stone\stone-unknown" & $iCounter & ".bmp")
 			$iCounter += 1
@@ -376,7 +371,7 @@ EndFunc
 
 Func checkRoundPixels($sPixelArg)
 	Local $t_sArgument = getPixelArg($sPixelArg)
-	If ($t_sArgument = "" Or $t_sArgument = -1) Then Return False
+	If ($t_sArgument == "" Or $t_sArgument = -1) Then Return False
 
 	Return isPixel($t_sArgument)
 EndFunc
@@ -464,7 +459,7 @@ Func __ArrayToString($aArray, $iLayer = 1)
     Local $sArray = ""
     For $i = 0 To UBound($aArray)-1
         Local $temp = $aArray[$i]
-        If isArray($temp) = True Then
+        If isArray($temp) > 0 Then
             $sArray &= "\" & $iLayer & __ArrayToString($temp, $iLayer+1)
         Else
             $sArray &= "\" & $iLayer & $temp
@@ -477,7 +472,7 @@ EndFunc
 Func __ArrayFromString($sString, $iLayer = 1)
     Local $aArray = StringSplit($sString, "\" & $iLayer, $STR_ENTIRESPLIT+$STR_NOCOUNT)
 	For $i = UBound($aArray)-1 To 0 Step -1
-		If $aArray[$i] = "" Then _ArrayDelete($aArray, $i)
+		If $aArray[$i] == "" Then _ArrayDelete($aArray, $i)
 	Next
 
     For $i = 0 To UBound($aArray)-1
@@ -506,74 +501,12 @@ Func CreateArr($o1 = Null, $o2 = Null, $o3 = Null, $o4 = Null, $o5 = Null, $o6 =
 	Return $arr
 EndFunc
 
-;Used to confirm if locations battle and battle-auto are correct
-Func inBattle($iDuration = 500)
-	;Log_Level_Add("inBattle")
-	Local $iOutput = 0
-	Local Const $aPixSet = [["175,519,0xA9643C|180,519,0xA9643C", "106,516,0x80918E"], _
-						["342,519,0xA9653E|350,519,0xA9653E", "275,516,0x80918E"], _
-						["510,519,0xAA653F|515,519,0xAA653F", "444,516,0x80918E"], _
-						["681,519,0xA9643C|686,519,0xA9643C", "613,516,0x80918E"]]
-	Local $hTimer = TimerInit()
-	Local $iCounter = 0
-	Do
-		CaptureRegion()
-		For $i = 0 To UBound($aPixSet)-1
-			If isPixel($aPixSet[$i][0], 5) = True And isPixel($aPixSet[$i][1]) = False Then
-				;Log_Add("Is not in battle.", $LOG_DEBUG)
-				;Log_Level_Remove()
-				$iOutput += 1
-				ExitLoop
-			EndIf
-		Next
-		If _Sleep(Int($iDuration/50)) Then ExitLoop
-		$iCounter += 1
-		If ($iOutput / $iCounter) <> 1 Then ExitLoop ;Comment out to debug
-	Until(TimerDiff($hTimer) > $iDuration)
+Func clickBattle()
+	Local $sLocation = getLocation()
+	clickPoint(getPointArg("battle-auto"))
+	$sLocation = ($sLocation=="battle")?"battle-auto":"battle"
 
-	;Log_Add("Is in battle.", $LOG_DEBUG)
-	;Log_Add("inBattle Result: " & ($iOutput / $iCounter) & " (" & (($iOutput / $iCounter) = 1) & ")", $LOG_DEBUG)
-	;Log_Level_Remove()
-	Return (($iOutput / $iCounter) = 1)
-EndFunc
-
-
-;types: normal, while, until
-Func clickBattle($sType = "", $sLocation = "", $iNum = 1, $iDelay = 200)
-	Local $bOutput = False
-	Switch $sType
-		Case ""
-			Local $hTimer = TimerInit()
-			clickPoint(getPointArg("battle-auto"))
-			clickDrag(CreateArr(33, 213, 33, 176), 1, 0) ;Prevent sticky button
-			If $iNum > 1 Then
-				While TimerDiff($hTimer) < $iDelay
-					If _Sleep(50) Then Return
-				WEnd
-			EndIf
-
-			$iNum -= 1
-			If $iNum > 0 Then clickBattle($sType, $iNum)
-
-			$bOutput = True
-		Case "while"
-			While waitLocation($sLocation, $iDelay/1000, 50)
-				If $iNum <= 0 Then ExitLoop
-				clickBattle()
-
-				$iNum -= 1
-			WEnd
-			$bOutput = (getLocation() <> $sLocation)
-		Case "until"
-			While waitLocation($sLocation, $iDelay/1000, 50) = False
-				If $iNum <= 0 Then ExitLoop
-				clickBattle()
-
-				$iNum -= 1
-			WEnd
-			$bOutput = (getLocation() = $sLocation)
-	EndSwitch
-	Return $bOutput
+	Return waitLocation($sLocation, 1)
 EndFunc
 
 Func findMap($sMap)
@@ -582,10 +515,10 @@ Func findMap($sMap)
 
 	Local $aPoint = findImage("map-" & $sMap, 90, 100, 0, 0, 800, 552, True, True)
 
-	If isArray($aPoint) = False Then clickDrag($g_aSwipeRightFast)
+	If isArray($aPoint) = 0 Then clickDrag($g_aSwipeRightFast)
 	While isArray($aPoint) = False
 		If _Sleep(200) Or getLocation() <> "map" Then ExitLoop
-		If $sMap = "astromon-league" Then
+		If $sMap == "astromon-league" Then
 			If findImage("map-astromon-league-disabled", 90, 100, 0, 0, 800, 552, True, True) Then
 				$aPoint = -1
 				ExitLoop
@@ -593,22 +526,76 @@ Func findMap($sMap)
 		EndIf
 
 		$aPoint = findImage("map-" & $sMap, 90, 100, 0, 0, 800, 552, True, True)
-		If isArray(findImage("map-terrestrial-rift", 90, 500, 0, 0, 800, 552, True, True)) = True Then ExitLoop
+		If isArray(findImage("map-terrestrial-rift", 90, 500, 0, 0, 800, 552, True, True)) > 0 Then ExitLoop
 		
-		If isArray($aPoint) = False Then 
+		If isArray($aPoint) = 0 Then 
 			clickDrag($g_aSwipeLeft)
 		EndIf
 	WEnd
 
-	If $sMap = "ancient-dungeon" And isArray($aPoint) = True Then $aPoint[1] -= 100
+	If $sMap == "ancient-dungeon" And isArray($aPoint) > 0 Then $aPoint[1] -= 100
 	Return $aPoint
 EndFunc
 
 Func goBack()
 	Log_Add("Sending back command", $LOG_DEBUG)
-	If isPixel(getPixelArg("back"), 20, CaptureRegion()) = True Then
+	If isPixel(getPixelArg("back"), 20, CaptureRegion()) > 0 Then
 		clickPoint(getPointArg("back"))
 	Else
-		If closeWindow() = False Then clickPoint(getPointArg("tap"))
+		If closeWindow() = 0 Then clickPoint(getPointArg("tap"))
 	EndIf
+EndFunc
+
+Func anotherDevice()
+	Log_Level_Add("anotherDevice")
+
+	If getLocation() == "another-device" Then
+		Log_Add("Another device detected!", $LOG_INFORMATION)
+
+		Switch $Config_Another_Device_Timeout
+			Case -1
+				Log_Add("Restart time set to Never, Stopping script.", $LOG_INFORMATION)
+				Stop()
+			Case 0
+				Log_Add("Restart time set to Immediately", $LOG_INFORMATION)
+			Case Else
+				Local $iMinutes = $Config_Another_Device_Timeout
+				Log_Add("Restart time set to " & $iMinutes & " minutes.", $LOG_INFORMATION)
+				
+				Local $hTimer = TimerInit()
+				$g_bAntiStuck = False
+				While TimerDiff($hTimer) < ($iMinutes*60000)
+					Local $iSeconds = Int(($iMinutes*60) - (TimerDiff($hTimer)/1000))
+					Status("Restarting in: " & getTimeString($iSeconds))
+					If _Sleep(1000) Then ExitLoop
+				WEnd
+				$g_bAntiStuck = True
+
+				Emulator_RestartGame()
+		EndSwitch
+	EndIf
+	
+	Log_Level_Remove()
+EndFunc
+
+Func appMaintenance()
+	Log_Level_Add("appMaintenance")
+
+	If getLocation() == "app-maintenance" Then
+		Local $iMinutes = $Config_Maintenance_Timeout
+		Log_Add("Maintenance found. Waiting " & ($Config_Maintenance_Timeout) & " minutes then restarting game.", $LOG_INFORMATION)
+
+		Local $hTimer = TimerInit()
+		$g_bAntiStuck = False
+		While TimerDiff($hTimer) < ($iMinutes*60000)
+			Local $iSeconds = Int(($iMinutes*60) - (TimerDiff($hTimer)/1000))
+			Status("Restarting in: " & getTimeString($iSeconds))
+			If _Sleep(1000) Then ExitLoop
+		WEnd
+		$g_bAntiStuck = True
+
+		Emulator_RestartGame()
+	EndIf
+	
+	Log_Level_Remove()
 EndFunc

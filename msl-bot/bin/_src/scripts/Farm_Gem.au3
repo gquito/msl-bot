@@ -1,7 +1,7 @@
 #include-once
 
 Func Farm_Gem($bParam = True, $aStats = Null)
-    If $bParam = True Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Gem")[2]), "Farm_Gem")
+    If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Gem")[2]), "Farm_Gem")
     ;Astrogems, Astromon, Release Evo3, Max Catch, Finish Round, Final Round, Map, Difficulty, Stage Level, Capture, Refill
 
     $Farm_Gem_Astrogems = (StringLeft($Farm_Gem_Astrogems, 1)="g"?Int(StringMid($Farm_Gem_Astrogems, 2)/330000)*100:($Farm_Gem_Astrogems))
@@ -24,7 +24,14 @@ Func Farm_Gem($bParam = True, $aStats = Null)
 
     navigate("village", True)
     While $g_bRunning = True
-        If _Sleep(200) Then ExitLoop
+        If $Farm_Gem_Check_Limit > 0 And isDeclared("g_bMaxIteration") > 0 Then
+            If Eval("g_bMaxIteration") > 0 Then
+                Log_Add("Evolution quest limit has been reached. Stopping script.", $LOG_INFORMATION)
+                ExitLoop
+            EndIf
+        EndIf
+
+        If _Sleep($Delay_Script_Loop) Then ExitLoop
         Local $sLocation = getLocation()
         Common_Stuck($sLocation)
 
@@ -36,6 +43,7 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                     clickPoint("48,429", 3)
                     $aAstromons = Farm_Gem_Count($Farm_Gem_Astromon)
                 EndIf
+
                 If $aAstromons[0] <> -1 Or $aAstromons[1] <> -1 Then
                     If UBound($aAstromons[0]) >= 4 Then $iEvo = 1
                     If UBound($aAstromons[1]) >= 4 Then $iEvo = 2
@@ -100,17 +108,20 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                 EndIf
 
                 Status(StringFormat("Awakening evo%d %s.", Number($iEvo), String($Farm_Gem_Astromon)), $LOG_PROCESS)
-                If Farm_Gem_Awaken() = True Then
+                If Farm_Gem_Awaken() > 0 Then
                     Status(StringFormat("Evolving evo%d %s.", Number($iEvo), String($Farm_Gem_Astromon)), $LOG_PROCESS)
-                    If Farm_Gem_Evolve() = True Then
+                    If Farm_Gem_Evolve() > 0 Then
                         Status(StringFormat("Successfully evolved evo%d %s.", Number($iEvo), String($Farm_Gem_Astromon)), $LOG_PROCESS)
                         If UBound($aAstromons[1]) <> 3 Then
-                            If $iEvo = 2 And $Farm_Gem_Release_Evo3 = True Then
-                                If navigate("monsters") = True And isPixel(getPixelArg("monsters-evolution-third"), 10, CaptureRegion()) = True Then
+                            If $iEvo = 2 And $Farm_Gem_Release_Evo3 > 0 Then
+                                If navigate("monsters") > 0 And isPixel(getPixelArg("monsters-evolution-third"), 10, CaptureRegion()) > 0 Then
                                     Farm_Gem_Release()
                                 EndIf
                             EndIf
-                            collectQuest(3)
+                            If collectQuest(3) <= 0 And $Farm_Gem_Check_Limit > 0 Then
+                                Log_Add("Evolution quest limit has been reached. Stopping script.", $LOG_INFORMATION)
+                                ExitLoop
+                            EndIf
                         EndIf
                         If $iEvo = 2 Then 
                             $Farmed_Gems += 100 ;10 and 60, but that causes some weird stuff
@@ -135,7 +146,7 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                 clickPoint(getPointArg("tap"))
                 ContinueCase
             Case Else
-                If HandleCommonLocations($sLocation) = False And $sLocation <> "unknown" Then
+                If HandleCommonLocations($sLocation) = 0 And $sLocation <> "unknown" Then
                     $aAstromons = Null
                     Status("Proceeding to monsters.")
                     navigate("monsters", True)
@@ -165,16 +176,16 @@ Func Farm_Gem_Awaken()
     Local $iX = 351
     Local $iY = 330
     While TimerDiff($hTimer) < 30000
-        If _Sleep(300) = True Then ExitLoop
+        If _Sleep(300) > 0 Then ExitLoop
         Local $sLocation = getLocation()
         Switch $sLocation
             Case "monsters-evolution"
-                If isPixel(getPixelArg("monsters-not-awakened-third"), 20, CaptureRegion()) = True Then ;Not selected
+                If isPixel(getPixelArg("monsters-not-awakened-third"), 20, CaptureRegion()) > 0 Then ;Not selected
                     clickPoint(CreateArr($iX, $iY))
                     $iX += 65
                     If $iX > 741 Then ExitLoop
                 Else
-                    If isPixel(getPixelArg("monsters-awakened-enabled"), 20, CaptureRegion()) = False Then 
+                    If isPixel(getPixelArg("monsters-awakened-enabled"), 20, CaptureRegion()) <= 0 Then 
                         $bOutput = True
                         ExitLoop
                     EndIf
@@ -208,11 +219,11 @@ Func Farm_Gem_Evolve()
 
     Local $hTimer = TimerInit()
     While TimerDiff($hTimer) < 30000
-        If _Sleep(300) = True Then ExitLoop
+        If _Sleep(300) > 0 Then ExitLoop
         Local $sLocation = getLocation()
         Switch $sLocation
             Case "monsters-evolution"
-                If isPixel(getPixelArg("monsters-evolve-enabled"), 20, CaptureRegion()) = False Then 
+                If isPixel(getPixelArg("monsters-evolve-enabled"), 20, CaptureRegion()) <= 0 Then 
                     $bOutput = True
                     ExitLoop
                 EndIf

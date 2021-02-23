@@ -1,7 +1,7 @@
 #include-once
 
 Func Farm_Starstone($bParam = True, $aStats = Null) 
-    If $bParam = True Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Starstone")[2]), "Farm_Starstone")
+    If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Starstone")[2]), "Farm_Starstone")
     ;Runs, Dungeon Type, Dungeon Level, Stone Element, High Stones, Mid Stones, Low Stones, Refill, Target Boss
 
     Log_Level_Add("Farm_Starstone")
@@ -29,14 +29,14 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
     Local $hAverage = Null
     navigate("map", True)
     While $g_bRunning = True
-        If _Sleep(200) Then ExitLoop
+        If _Sleep($Delay_Script_Loop) Then ExitLoop
         Local $sLocation = getLocation()
         Common_Stuck($sLocation)
 
         Switch $sLocation
             Case "map"
                 If $Farm_Starstone_Runs <> 0 And $Runs >= $Farm_Starstone_Runs Then ExitLoop
-                If (($Farm_Starstone_High_Stones = 0 And $Farm_Starstone_Mid_Stones = 0) And $Farm_Starstone_Low_Stones = 0) = False Then
+                If (($Farm_Starstone_High_Stones = 0 And $Farm_Starstone_Mid_Stones = 0) And $Farm_Starstone_Low_Stones = 0) = 0 Then
                     If $Farm_Starstone_High_Stones = 0 Or $High_Stones >= $Farm_Starstone_High_Stones Then
                         If $Farm_Starstone_Mid_Stones = 0 Or $Mid_Stones >= $Farm_Starstone_Mid_Stones Then
                             If $Farm_Starstone_Low_Stones = 0 Or $Low_Stones >= $Farm_Starstone_Low_Stones Then
@@ -52,7 +52,7 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
             Case "starstone-dungeons", "elemental-dungeons"
                 Status("Searching for dungeon level.")
                 Local $aLevel = findBLevel($Farm_Starstone_Dungeon_Level)
-                If isArray($aLevel) = True Then 
+                If isArray($aLevel) > 0 Then 
                     clickPoint($aLevel)
                     waitLocation("map-battle", 10)
                 Else
@@ -60,7 +60,7 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 EndIf
             Case "map-battle", "battle-end"
                 If $Farm_Starstone_Runs <> 0 And $Runs >= $Farm_Starstone_Runs Then ExitLoop
-                If (($Farm_Starstone_High_Stones = 0 And $Farm_Starstone_Mid_Stones = 0) And $Farm_Starstone_Low_Stones = 0) = False Then
+                If (($Farm_Starstone_High_Stones = 0 And $Farm_Starstone_Mid_Stones = 0) And $Farm_Starstone_Low_Stones = 0) = 0 Then
                     If $Farm_Starstone_High_Stones = 0 Or $High_Stones >= $Farm_Starstone_High_Stones Then
                         If $Farm_Starstone_Mid_Stones = 0 Or $Mid_Stones >= $Farm_Starstone_Mid_Stones Then
                             If $Farm_Starstone_Low_Stones = 0 Or $Low_Stones >= $Farm_Starstone_Low_Stones Then
@@ -71,7 +71,7 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 EndIf
 
                 Status("Entering battle x" & $Runs+1, $LOG_PROCESS)
-                If enterBattle() = True Then
+                If enterBattle() > 0 Then
                     $hAverage = TimerInit()
                     $Win_Rate += 1
                     $Runs += 1
@@ -93,7 +93,7 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 If $iRefill = 1 Then $Astrogems_Used += 30
             Case "battle", "battle-auto"
                 Status("Currently in battle.")
-                If $sLocation = "battle" And inBattle(350) = True Then clickBattle()
+                If $sLocation == "battle" And waitLocation("battle-auto", 0.3) <= 0 Then clickBattle()
             Case "pause"
                 Status("In pause screen, unpausing.")
                 clickPoint(getPointArg("battle-continue"))
@@ -120,7 +120,7 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                             Cumulative_AddNum("Resource Collected (Egg)", 1)
                         Case Else
                             Local $sElement = StringLower($Farm_Starstone_Stone_Element)
-                            If $sElement = "any" Or $sElement = $aStone[0] Then
+                            If $sElement == "any" Or $sElement = $aStone[0] Then
                                 Assign($aStone[1] & "_Stones", Eval($aStone[1] & "_Stones")+$aStone[2])
                             EndIf
                             Log_Add(StringFormat("Found %s %s x%s.", $aStone[1], $aStone[0], $aStone[2]), $LOG_INFORMATION)
@@ -132,14 +132,14 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 
                 navigate("battle-end", True)
             Case "battle-boss"
-                If $Farm_Starstone_Target_Boss = True Then
+                If $Farm_Starstone_Target_Boss > 0 Then
                     Status("Targeting boss.")
                     waitLocation("battle,battle-auto", 2)
                     If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
                     clickPoint("395, 317")
                 EndIf
             Case "battle-gem-full", "map-gem-full"
-                If $General_Sell_Gems = "" Then
+                If $General_Sell_Gems == "" Then
                     Status("Gem inventory is full, stopping script.", $LOG_INFORMATION)
                     ExitLoop
                 Else
@@ -150,8 +150,8 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 Status("Not enough astrogems, stopping script.", $LOG_ERROR)
                 ExitLoop
             Case Else
-                If HandleCommonLocations($sLocation) = False And $sLocation <> "unknown" Then 
-                    If waitLocation("battle,battle-auto,battle-boss", 5) = False Then
+                If HandleCommonLocations($sLocation) = 0 And $sLocation <> "unknown" Then 
+                    If waitLocation("battle,battle-auto,battle-boss", 5) = 0 Then
                         Status("Proceeding to Farm Starstone.")
                         navigate("map", True)
                     EndIf

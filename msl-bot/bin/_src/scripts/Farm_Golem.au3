@@ -1,7 +1,7 @@
 #include-once
 
 Func Farm_Golem($bParam = True, $aStats = Null) 
-    If $bParam = True Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Golem")[2]), "Farm_Golem")
+    If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Golem")[2]), "Farm_Golem")
     ;Runs, Dungeon Level, Refill, Gold Goal, Target Boss
 
     Log_Level_Add("Farm_Golem")
@@ -28,7 +28,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
     Local $hAverage = Null
     navigate("map", True)
     While $g_bRunning = True
-        If _Sleep(200) Then ExitLoop
+        If _Sleep($Delay_Script_Loop) Then ExitLoop
         Local $sLocation = getLocation()
         Common_Stuck($sLocation)
 
@@ -42,7 +42,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
             Case "golem-dungeons"
                 Status("Searching for golem level.")
                 Local $aLevel = findBLevel($Farm_Golem_Dungeon_Level)
-                If isArray($aLevel) = True Then 
+                If isArray($aLevel) > 0 Then 
                     clickPoint($aLevel)
                     waitLocation("map-battle", 10)
                 Else
@@ -53,7 +53,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                 If $Farm_Golem_Gold_Goal <> 0 And $Gold_Earned >= $Farm_Golem_Gold_Goal Then ExitLoop
 
                 Status("Entering battle x" & $Runs+1, $LOG_PROCESS)
-                If enterBattle() = True Then
+                If enterBattle() > 0 Then
                     $hAverage = TimerInit()
                     $Win_Rate += 1
                     $Runs += 1
@@ -75,7 +75,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                 If $iRefill = 1 Then $Astrogems_Used += 30
             Case "battle", "battle-auto"
                 Status("Currently in battle.")
-                If $sLocation = "battle" And inBattle(100) = True Then clickBattle()
+                If $sLocation == "battle" Then clickBattle()
             Case "pause"
                 Status("In pause screen, unpausing.")
                 clickPoint(getPointArg("battle-continue"))
@@ -102,12 +102,12 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                             Status("Found egg x" & $Eggs_Found)
                             Cumulative_AddNum("Resource Collected (Egg)", 1)
                         Case Else
-                            If filterGem($aGem) = False Then
+                            If filterGem($aGem) <= 0 Then
                                 $bSold = True
                                 clickPoint(getPointArg("battle-sell-item-sell"))
                             EndIf
 
-                            If $bSold = False Then 
+                            If $bSold = 0 Then 
                                 $Gems_Kept += 1
                                 Cumulative_AddNum("Resource Collected (Gem)", 1)
                             Else
@@ -122,14 +122,14 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                 
                 navigate("battle-end", True)
             Case "battle-boss"
-                If $Farm_Golem_Target_Boss = True Then
+                If $Farm_Golem_Target_Boss > 0 Then
                     Status("Targeting boss.")
                     waitLocation("battle,battle-auto", 2)
                     If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
                     clickPoint("395, 317")
                 EndIf
             Case "map-gem-full", "battle-gem-full"
-                If $General_Sell_Gems = "" Then
+                If $General_Sell_Gems == "" Then
                     Status("Gem inventory is full, stopping script.", $LOG_INFORMATION)
                     ExitLoop
                 Else
@@ -140,8 +140,8 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                 Status("Not enough astrogems, stopping script.", $LOG_ERROR)
                 ExitLoop
             Case Else
-                If HandleCommonLocations($sLocation) = False And $sLocation <> "unknown" Then 
-                    If waitLocation("battle,battle-auto,battle-boss", 5) = False Then
+                If HandleCommonLocations($sLocation) = 0 And $sLocation <> "unknown" Then 
+                    If waitLocation("battle,battle-auto,battle-boss", 5) = 0 Then
                         Status("Proceeding to Farm Golem.")
                         navigate("map", True)
                     EndIf

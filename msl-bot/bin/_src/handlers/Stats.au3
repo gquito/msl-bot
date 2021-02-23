@@ -6,7 +6,7 @@
 ;$g_aStats
 
 Func Status($sText, $iLogType = $LOG_DEBUG)
-    If $sText = $g_sStatus Then Return False
+    If $sText == $g_sStatus Then Return False
     Log_Add($sText, $iLogType)
     If isDeclared("Status") = True Then $Status = $sText
 
@@ -36,7 +36,7 @@ Func Stats_Add($aVariables)
 EndFunc
 
 Func Stats_Handle()
-    If $g_bRunning = True And TimerDiff($g_aStatsCD) > 1000 Then
+    If $g_bRunning > 0 And TimerDiff($g_aStatsCD) > 1000 Then
         $g_aStatsCD = TimerInit()
         Stats_Update()
     EndIf
@@ -145,14 +145,14 @@ EndFunc
 
 Func Stats_GetLVIndexByName($sName)
     For $i = 0 To _GUICtrlListView_GetItemCount($g_hLV_Stat)-1
-        If _GUICtrlListView_GetItemText($g_hLV_Stat, $i) = $sName Then Return $i
+        If _GUICtrlListView_GetItemText($g_hLV_Stat, $i) == $sName Then Return $i
     Next
     Return -1
 EndFunc
 
 Func Stats_GetIndexByName($sName)
     For $i = 0 To UBound($g_aStats)-1
-        If ($g_aStats[$i])[1] = $sName Then Return $i
+        If ($g_aStats[$i])[1] == $sName Then Return $i
     Next    
     Return -1
 EndFunc

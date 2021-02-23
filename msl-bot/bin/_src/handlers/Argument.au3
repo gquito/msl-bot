@@ -10,13 +10,13 @@
 Func getArg($aArgs, $sName, $bSorted = False)
 	If ($aArgs = -1) Then Return -1
 	
-	If isArray($aArgs) = False Or UBound($aArgs) = 0 Then 
+	If isArray($aArgs) = 0 Or UBound($aArgs) = 0 Then 
 		$g_sErrorMessage = "getArg() => Array argument not valid."
 		Return -1
 	EndIf
 
 	Local $iFind = -1
-	If $bSorted = False Then
+	If $bSorted = 0 Then
 		$iFind = _ArraySearch($aArgs , $sName)
 	Else
 		$iFind = _ArrayBinarySearch($aArgs, $sName, 0, 0, 0)
@@ -103,7 +103,7 @@ EndFunc
 Func setArg(ByRef $aArgs, $sName, $sValue)
 	Local $iIndex = -1 ;index of argument
 	For $i = 0 To UBound($aArgs)-1
-		If ($aArgs[$i][0] = $sName) Then 
+		If ($aArgs[$i][0] == $sName) Then 
 			$iIndex = $i
 			ExitLoop
 		EndIf
@@ -120,7 +120,7 @@ Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
 	If $sArgs = -1 Then Return -1
 	Local $aArgs[0][2]
 
-	If isArray($sArgs) = False Then
+	If isArray($sArgs) = 0 Then
 		Local $aArguments = StringSplit($sArgs, $sArgSeparator)
 		ReDim $aArgs[$aArguments[0]][2]
 
@@ -189,7 +189,7 @@ Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":", $sCache
 		FileClose($hFile)
 	EndIf
 
-	If ($sData = "") Then ;Error handle
+	If ($sData == "") Then ;Error handle
 		$g_sErrorMessage = "getArgFromURL() => No information was found URL: " & $sUrl
 		Return -1
 	EndIf
@@ -221,7 +221,7 @@ EndFunc
 Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
 	Local $sData = FileRead($sPath)
 
-	If ($sData = "") Then ;Error handle
+	If ($sData == "") Then ;Error handle
 		$g_sErrorMessage = "getArgFromFile() => No information was found in path: " & $sPath
 		Return -1
 	EndIf

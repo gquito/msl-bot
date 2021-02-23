@@ -190,7 +190,7 @@ Func Json_Encode_Compact($Data, $Option = 0)
 			For $i = 0 To UBound($Data) - 1
 				$Json &= Json_Encode_Compact($Data[$i], $Option) & ","
 			Next
-			If StringRight($Json, 1) = "," Then $Json = StringTrimRight($Json, 1)
+			If StringRight($Json, 1) == "," Then $Json = StringTrimRight($Json, 1)
 			Return $Json & "]"
 
 		Case Json_IsObject($Data)
@@ -199,7 +199,7 @@ Func Json_Encode_Compact($Data, $Option = 0)
 			For $i = 0 To UBound($Keys) - 1
 				$Json &= '"' & Json_StringEncode($Keys[$i], $Option) & '":' & Json_Encode_Compact($Data.Item($Keys[$i]), $Option) & ","
 			Next
-			If StringRight($Json, 1) = "," Then $Json = StringTrimRight($Json, 1)
+			If StringRight($Json, 1) == "," Then $Json = StringTrimRight($Json, 1)
 			Return $Json & "}"
 
 		Case IsBool($Data)
@@ -523,7 +523,7 @@ Func _Json_TokenDump(ByRef $Json, $Ptr, ByRef $Next, $ObjPath = "")
 				Local $Key = _Json_TokenDump($Json, $Ptr, $Next)
 				Local $cObjPath = $ObjPath & "." & $Key
 				$Value = _Json_TokenDump($Json, $Ptr, $Next, $ObjPath & "." & $Key)
-				If Not (IsBool($Value) And $Value = False) Then
+				If Not (IsBool($Value) And $Value = 0) Then
 					If Not IsString($Key) Then
 						$Key = Json_Encode($Key)
 					EndIf
@@ -537,7 +537,7 @@ Func _Json_TokenDump(ByRef $Json, $Ptr, ByRef $Next, $ObjPath = "")
 			For $i = 0 To $Size - 1
 				$sObjPath = $ObjPath & "[" & $i & "]"
 				$Value = _Json_TokenDump($Json, $Ptr, $Next, $sObjPath)
-				If Not (IsBool($Value) And $Value = False) Then ;XC - Changed line
+				If Not (IsBool($Value) And $Value = 0) Then ;XC - Changed line
 					; show the key and its value
 					ConsoleWrite("+=> " & $sObjPath & "=>" & $Value & @CRLF)
 				EndIf

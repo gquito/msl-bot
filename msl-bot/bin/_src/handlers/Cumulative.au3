@@ -3,7 +3,7 @@
 Global $g_hCumulativeTimer = Null
 Func Cumulative_Handle()
     If $g_hCumulativeTimer = Null Then $g_hCumulativeTimer = TimerInit()
-    If ($g_bRunning = True And $g_bPaused = False) Then
+    If ($g_bRunning > 0 And $g_bPaused = 0) Then
         If TimerDiff($g_hCumulativeTimer) > 5000 Then
             
             Cumulative_AddTime("Time Spent (" & $g_sScript & ")", 5)
@@ -17,7 +17,7 @@ Func Cumulative_Load($sFile = $g_sProfileFolder & "\" & $Config_Profile_Name & "
     Local $t_a[0]
     $g_aCumulative = $t_a
 
-    If FileExists($sFile) = True Then
+    If FileExists($sFile) > 0 Then
         Local $sCumulative = FileRead($sFile)
         Local $aCumulative = StringSplit($sCumulative, @CRLF, 2)
         GUICtrlSetData($g_idLbl_Stat, "Cumulative stats (Last reset: " & formatDateTime(FileGetTime($sFile, 1, 1)) & ")")
@@ -56,7 +56,7 @@ Func Cumulative_Update($hListView)
     For $i = 0 To $iSize-1
         Local $aData = StringSplit($g_aCumulative[$i], ":", 2)
         If UBound($aData) = 2 Then
-            If $bAddItems = True Then _GUICtrlListView_AddItem($hListView, $aData[0])
+            If $bAddItems > 0 Then _GUICtrlListView_AddItem($hListView, $aData[0])
 
             _GUICtrlListView_SetItemText($hListView, $i, $aData[0], 0)
             _GUICtrlListView_SetItemText($hListView, $i, $aData[1], 1)
@@ -68,7 +68,7 @@ EndFunc
 Func Cumulative_Find($sName)
     Local $iLength = StringLen($sName)
     For $i = 0 To UBound($g_aCumulative)-1
-        If StringMid($g_aCumulative[$i], 1, $iLength) = $sName Then
+        If StringMid($g_aCumulative[$i], 1, $iLength) == $sName Then
             Return $i
         EndIf
     Next

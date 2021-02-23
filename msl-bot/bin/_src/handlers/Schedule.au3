@@ -1,16 +1,59 @@
 #include-once
 
+#cs
+Schedule structure:
+[
+    ["Schedule Name", "Action", "Type", "Iteration", [SEE TYPE STRUCTURE], OPTIONAL_FLAGS],
+]
+
+Action notes:
+    Actions must be performed using Execute("") function.
+    This is similar to Debug Input. If it can run in Debug Input
+     it should work.
+
+===Type sctructure:===
+Date:
+[[MONTH, DAY, HH, MM, SS]]
+
+Date notes:
+    Uses systems:
+    _NowDate mm/dd/yyyy
+    _NowTime(5) HH:MM:SS
+
+Day:
+[[HH, MM, SS], "DayOfTheWeek"]
+
+Timer:
+[TimerInit, Interval (Seconds)]
+
+Condition:
+[[[Condition #1, Condition #2], #Condition #3], Boolean]
+
+Condition notes:
+    Conditions within the first layer of the array are bound by OR operator.
+    Conditions within the second layer of the array are bound by the AND operator.
+    Example: [[Condition #1, Condition #2], Condition #3]
+        This reads: If ((Condition #1 AND Condition #2) OR Condition #3) Then
+
+    Conditions must be executable using the function Execute("")
+=======================
+
+Schedules Queue Notes:
+    Structure: ["ACTION", FLAG]
+#ce
+
+;==HANDLES==
 Func Schedule_Handle()
-    If TimerDiff($g_hScheduleCooldown) < 250 Or $g_bScheduleHandleBusy = True Then Return
+    If TimerDiff($g_hScheduleCooldown) < 250 Or $g_bScheduleHandleBusy > 0 Then Return
     $g_hScheduleCooldown = TimerInit()
 
     $g_bScheduleHandleBusy = True
     For $i = $g_iSchedulesSize-1 To 0 Step -1
         If GUICtrlRead($g_idCheck_Enable) <> $GUI_CHECKED And StringLeft($g_aSchedules[$i][$SCHEDULE_NAME], 1) <> "_" Then ContinueLoop
 
-        If $g_aSchedules[$i][$SCHEDULE_ENABLED] = True Then
+        If $g_aSchedules[$i][$SCHEDULE_ENABLED] > 0 Then
             If TimerDiff($g_aSchedules[$i][$SCHEDULE_COOLDOWNHANDLE]) > $g_aSchedules[$i][$SCHEDULE_COOLDOWN]*1000 Then
-                If $g_aSchedules[$i][$SCHEDULE_ITERATIONS] > 0 Or String($g_aSchedules[$i][$SCHEDULE_ITERATIONS]) = "*" Then
+                If $g_aSchedules[$i][$SCHEDULE_ITERATIONS] > 0 Or String($g_aSchedules[$i][$SCHEDULE_ITERATIONS]) == "*" Then
                     Switch $g_aSchedules[$i][$SCHEDULE_TYPE]
                         Case $SCHEDULE_TYPE_DATE
                             Schedule_HandleDate($i)
@@ -25,18 +68,18 @@ Func Schedule_Handle()
             EndIf
         EndIf
     Next
-    If $g_bScheduleBusy = False Then Schedule_HandleQueue()
+    If $g_bScheduleBusy = 0 Then Schedule_HandleQueue()
     $g_bScheduleHandleBusy = False
 EndFunc
 
 Func Schedule_HandleQueue()
-    If $g_bScheduleBusy = True Then Return
+    If $g_bScheduleBusy > 0 Then Return
 
     For $i = $g_iSchedulesQueueSize-1 To 0 Step -1
-        If $g_bScheduleBusy = True Then ExitLoop
+        If $g_bScheduleBusy > 0 Then ExitLoop
         Local $iFlag = $g_aSchedulesQueue[$i][$SCHEDULE_QUEUE_FLAG]
 
-        If BitAND($iFlag, $SCHEDULE_FLAG_RunImmediately) And $g_bRunning = False Then
+        If BitAND($iFlag, $SCHEDULE_FLAG_RunImmediately) And $g_bRunning = 0 Then
             Schedule_PerformAction($i)
         Else
             If isLocation("battle-end,village,map") Then 
@@ -75,7 +118,7 @@ Func Schedule_PerformAction(ByRef $iQueueIndex)
     Schedule_RemoveQueue($iQueueIndex)
 
     Local $hCooldown = TimerInit()
-    If BitAND($iFlag, $SCHEDULE_FLAG_RestartBeforeAction) Then RestartGame()
+    If BitAND($iFlag, $SCHEDULE_FLAG_RestartBeforeAction) Then Emulator_RestartGame()
     
     _ProcessLines($aAction, False, False)
     If TimerDiff($hCooldown) < 1000 Then _Sleep(1000-TimerDiff($hCooldown))
@@ -151,20 +194,20 @@ Func Schedule_HandleCondition(ByRef $iIndex)
             Local $bResult_And = True
             For $x = 0 To UBound($aAnd)-1
                 Local $result = Execute($aAnd[$x])
-                If $result = False Or $result = 0 Then
+                If $result <= 0 Then
                     $bResult_And = False
                     ExitLoop
                 EndIf
             Next
-            If $bResult_And = True Then $bResult_Or = True
+            If $bResult_And > 0 Then $bResult_Or = True
         Else
             Local $result = Execute($aOr[$i])
-            If $result = True Or $result = 1 Then $bResult_Or = True
+            If $result > 0 Or $result = 1 Then $bResult_Or = True
         EndIf
-        If $bResult_Or = True Then ExitLoop
+        If $bResult_Or > 0 Then ExitLoop
     Next
 
-    If $bResult_Or = True Then
+    If $bResult_Or > 0 Then
         Schedule_AddQueue($iIndex)
         _Schedule_HandleIteration($iIndex)
     EndIf
@@ -190,7 +233,7 @@ Func Schedule_Add($sName, $aAction, $iType, $iIteration, $aStructure, $iFlag = $
     Local $iIndex = UBound($g_aSchedules)
     _ArrayAdd($g_aSchedules, "")
     For $i = UBound($aAction)-1 To 0 Step -1
-        If $aAction[$i] = "" Then _ArrayDelete($aAction, $i)
+        If $aAction[$i] == "" Then _ArrayDelete($aAction, $i)
     Next
     $g_aSchedules[$iIndex][$SCHEDULE_NAME] = $sName
     $g_aSchedules[$iIndex][$SCHEDULE_ACTION] = $aAction
@@ -203,7 +246,7 @@ Func Schedule_Add($sName, $aAction, $iType, $iIteration, $aStructure, $iFlag = $
     $g_aSchedules[$iIndex][$SCHEDULE_ENABLED] = $bEnabled
     $g_iSchedulesSize += 1
 
-    If $bDisplay = True Then
+    If $bDisplay > 0 Then
         $iIndex = _GUICtrlListView_AddItem($g_hLV_Schedule, "[" & ($bEnabled = "True" ? "ON" : "OFF") & "] " & $sName)
         _GUICtrlListView_AddSubItem($g_hLV_Schedule, $iIndex, _ArrayToString($aAction), 1)
         Local $sType = _Schedule_GetTypeString($iType)
@@ -219,7 +262,7 @@ Func Schedule_Edit(ByRef $iIndex, $sName, $aAction, $iType, $iIteration, $aStruc
 
     $g_aSchedules[$iIndex][0] = $sName
     For $i = UBound($aAction)-1 To 0 Step -1
-        If $aAction[$i] = "" Then _ArrayDelete($aAction, $i)
+        If $aAction[$i] == "" Then _ArrayDelete($aAction, $i)
     Next
     $g_aSchedules[$iIndex][$SCHEDULE_ACTION] = $aAction
     $g_aSchedules[$iIndex][$SCHEDULE_TYPE] = $iType
@@ -251,7 +294,7 @@ EndFunc
 
 Func Schedule_RemoveByName($sString)
     For $i = 0 To $g_iSchedulesSize-1
-        If $g_aSchedules[$i][0] = $sString Then
+        If $g_aSchedules[$i][0] == $sString Then
             Schedule_Remove($i)
             Return True
         EndIf
@@ -262,9 +305,7 @@ EndFunc
 
 Func Schedule_IndexByName($sString)
     For $i = 0 To $g_iSchedulesSize-1
-        If $g_aSchedules[$i][0] = $sString Then
-            Return $i
-        EndIf
+        If $g_aSchedules[$i][$SCHEDULE_NAME] == $sString Then Return $i
     Next
 
     Return -1
@@ -273,7 +314,7 @@ EndFunc
 Func Schedule_LVIndexByName($sString)
     For $i = 0 To _GUICtrlListView_GetItemCount($g_hLV_Schedule)-1
         Local $sName = StringReplace(StringReplace(_GUICtrlListView_GetItemText($g_hLV_Schedule, $i), "[ON] ", ""), "[OFF] ", "")
-        If $sName = $sString Then
+        If $sName == $sString Then
             Return $i
         EndIf
     Next
@@ -283,7 +324,7 @@ EndFunc
 
 Func Schedule_Enable($sString)
     For $i = 0 To $g_iSchedulesSize-1
-        If $g_aSchedules[$i][$SCHEDULE_NAME] = $sString Then
+        If $g_aSchedules[$i][$SCHEDULE_NAME] == $sString Then
             $g_aSchedules[$i][$SCHEDULE_COOLDOWNHANDLE] = TimerInit()
             $g_aSchedules[$i][$SCHEDULE_ENABLED] = True
             _GUICtrlListView_SetItemText($g_hLV_Schedule, $i, "[ON] " & $sString)
@@ -297,7 +338,7 @@ EndFunc
 
 Func Schedule_Disable($sString)
     For $i = 0 To $g_iSchedulesSize-1
-        If $g_aSchedules[$i][$SCHEDULE_NAME] = $sString Then
+        If $g_aSchedules[$i][$SCHEDULE_NAME] == $sString Then
             $g_aSchedules[$i][$SCHEDULE_ENABLED] = False
             _GUICtrlListView_SetItemText($g_hLV_Schedule, $i, "[OFF] " & $sString)
             Return True
@@ -338,7 +379,7 @@ Func _Schedule_GetStructureString(ByRef $aStructure, ByRef $iType)
             Local $aOr = $aStructure[0]
             For $i = 0 To UBound($aOr)-1
                 $sCondition &= " OR ("
-                If isArray($aOr[$i]) = True Then
+                If isArray($aOr[$i]) > 0 Then
                     $sCondition &= _ArrayToString($aOr[$i], " AND ")
                 Else
                     $sCondition &= $aOr[$i]
@@ -349,6 +390,24 @@ Func _Schedule_GetStructureString(ByRef $aStructure, ByRef $iType)
             $sStructure = "[If (" & $sCondition & ") = " & $aStructure[1] & "]"
     EndSwitch
     Return $sStructure
+EndFunc
+
+Func _Schedule_GetFlagCombo(ByRef $iIndex)
+    Local $aFlags = StringSplit($g_sSCHEDULE_DATE_PRESET[8], "|", $STR_NOCOUNT)
+    For $i = 0 To UBound($aFlags)-1
+        If Int(StringLeft($aFlags[$i], 1)) = $g_aSchedules[$iIndex][$SCHEDULE_FLAG] Then
+            While $i <> 0
+                Local $temp = $aFlags[$i-1]
+                $aFlags[$i-1] = $aFlags[$i]
+                $aFlags[$i] = $temp
+
+                $i -= 1
+            WEnd
+            ExitLoop
+        EndIf
+    Next
+
+    Return $aFlags
 EndFunc
 
 Func _Schedule_HandleAnswers(ByRef $aScheduleStructure)
@@ -413,7 +472,7 @@ Func _Schedule_HandleAnswers(ByRef $aScheduleStructure)
             Local $sConditionRaw = $g_aPromptsWindow_Answers[2]
             Local $aOR = StringSplit($sConditionRaw, @CRLF, $STR_NOCOUNT)
             For $i = UBound($aOR)-1 To 0 Step -1
-                If StringStripWS($aOR[$i], $STR_STRIPLEADING+$STR_STRIPTRAILING) = "" Then
+                If StringStripWS($aOR[$i], $STR_STRIPLEADING+$STR_STRIPTRAILING) == "" Then
                     _ArrayDelete($aOR, $i)
                 EndIf
             Next
@@ -424,7 +483,7 @@ Func _Schedule_HandleAnswers(ByRef $aScheduleStructure)
                     Local $aAND = StringSplit($aOR[$i], "&&", $STR_NOCOUNT)
                     For $x = UBound($aAND)-1 To 0 Step -1
                         $aAND[$x] = StringStripWS($aAND[$x], $STR_STRIPLEADING+$STR_STRIPTRAILING)
-                        If $aAnd[$x] = "" Then _ArrayDelete($aAnd, $x)
+                        If $aAnd[$x] == "" Then _ArrayDelete($aAnd, $x)
                     Next
                     $aCondition[$i] = $aAND
                 Else
@@ -442,9 +501,70 @@ Func _Schedule_HandleAnswers(ByRef $aScheduleStructure)
             $aScheduleStructure[$SCHEDULE_ENABLED-1] = $g_aPromptsWindow_Answers[7]
     EndSwitch
 
-    If $aScheduleStructure[$SCHEDULE_ENABLED-1] = "True" Then 
+    If $aScheduleStructure[$SCHEDULE_ENABLED-1] == "True" Then 
         $aScheduleStructure[$SCHEDULE_ENABLED-1] = True
     Else
         $aScheduleStructure[$SCHEDULE_ENABLED-1] = False
     EndIf
+EndFunc
+
+Func Schedule_AddPreset($sPreset)
+    If FileExists($g_sProfileFolder & "\schedule_presets\" & StringReplace($sPreset, ".json", "") & ".json") Then
+        Local $sRaw = StringSplit(FileRead($g_sProfileFolder & "\schedule_presets\" & StringReplace($sPreset, ".json", "") & ".json"), @CRLF & "||" & @CRLF, 3)
+        For $i = 0 To UBound($sRaw)-1
+            Local $aArray = _Schedule_FromJson($sRaw[$i])
+            If $aArray[$SCHEDULE_TYPE] == $sCHEDULE_TYPE_TIMER Then
+                Local $temp = $aArray[$SCHEDULE_STRUCTURE]
+                $temp[0] = TimerInit()
+                $aArray[$SCHEDULE_STRUCTURE] = $temp
+            EndIf
+            Schedule_Add($aArray[0], $aArray[1], $aArray[2], $aArray[3], $aArray[4], $aArray[5], $aArray[6], $aArray[7])
+        Next
+    EndIf
+EndFunc
+
+Func _Schedule_ToString($iIndex)
+    If $iIndex < UBound($g_aSchedules) Then
+        Local $aArray = [$g_aSchedules[$iIndex][0], _
+                         $g_aSchedules[$iIndex][1], _
+                         $g_aSchedules[$iIndex][2], _
+                         $g_aSchedules[$iIndex][3], _
+                         $g_aSchedules[$iIndex][4], _
+                         $g_aSchedules[$iIndex][5], _
+                         $g_aSchedules[$iIndex][6], _
+                         $g_aSChedules[$iIndex][7]]
+
+        Return __ArrayToString($aArray)
+    EndIf
+EndFunc
+
+Func _Schedule_ToJson($iIndex, $bPretty = True)
+    Local $Json
+    Json_Put($Json, ".Name", $g_aSchedules[$iIndex][$SCHEDULE_NAME])
+    Json_Put($Json, ".Action", $g_aSchedules[$iIndex][$SCHEDULE_ACTION])
+    Json_Put($Json, ".Type", $g_aSchedules[$iIndex][$SCHEDULE_TYPE])
+    Json_Put($Json, ".Iterations", $g_aSchedules[$iIndex][$SCHEDULE_ITERATIONS])
+    Json_Put($Json, ".Structure", $g_aSchedules[$iIndex][$SCHEDULE_STRUCTURE])
+    Json_Put($Json, ".Flag", $g_aSchedules[$iIndex][$SCHEDULE_FLAG])
+    Json_Put($Json, ".Cooldown", $g_aSchedules[$iIndex][$SCHEDULE_COOLDOWN])
+    Json_Put($Json, ".Enabled", $g_aSchedules[$iIndex][$SCHEDULE_ENABLED])
+
+    Local $iFlag = $JSON_PRETTY_PRINT
+    If $bPretty = 0 Then $iFlag = 0
+    Local $Encoded = Json_Encode($Json, $iFlag)
+    Return $Encoded
+EndFunc
+
+Func _Schedule_FromJson($Json)
+    Local $Decoded = Json_Decode($Json)
+    Local $aArray = [Json_Get($Decoded, ".Name"), _
+                     Json_Get($Decoded, ".Action"), _
+                     Json_Get($Decoded, ".Type"), _
+                     Json_Get($Decoded, ".Iterations"), _
+                     Json_Get($Decoded, ".Structure"), _
+                     Json_Get($Decoded, ".Flag"), _
+                     Json_Get($Decoded, ".Cooldown"), _
+                     Json_Get($Decoded, ".Enabled")]
+
+    Return $aArray
 EndFunc

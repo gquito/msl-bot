@@ -220,7 +220,7 @@ Func _BinaryCall_CodePrepare($Code)
 	If IsBinary($Code) Then Return $Code
 
 	$Code = String($Code)
-	If StringLeft($Code, 2) = "0x" Then Return Binary($Code)
+	If StringLeft($Code, 2) == "0x" Then Return Binary($Code)
 	If StringIsXDigit($Code) Then Return Binary("0x" & $Code)
 
 	Return _BinaryCall_LzmaDecompress(_BinaryCall_Base64Decode($Code))

@@ -23,6 +23,12 @@ Func FormatNumber($sNumber)
     Return $sNumber
 EndFunc
 
+Func GetWorkingDirectory($sFullPath)
+    If $sFullPath == "" Then Return -1
+    If StringRight($sFullPath, 1) == "\" Then Return $sFullPath
+    Return GetWorkingDirectory(StringLeft($sFullPath, StringLen($sFullPath)-1))
+EndFunc
+
 Func TestFunction()
     Local $MousePos = MouseGetPos()
     Local $GamePos = WinGetPos(ControlGetHandle(WinGetHandle($Config_Emulator_Title), "", $Config_Emulator_Property))

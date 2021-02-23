@@ -13,7 +13,7 @@
 	On image found - Returns array
 	On image not found - Returns -1
 #ce
-Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552, $bUpdate = True, $bUseColor = True)
+Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = $EMULATOR_WIDTH, $iHeight = $EMULATOR_HEIGHT, $bUpdate = True, $bUseColor = True)
 	If (StringInStr($sImage, "-")) Then $sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage ;image with specified folder
 
 	Local $aImages[0] ;images list to find
@@ -39,6 +39,7 @@ Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 
 			$aPoint = $vResult
 			Local $aFinal = [$aPoint[0], $aPoint[1], $iIndex, StringReplace($aImages[$iIndex], $g_sImagesPath & StringSplit($sImage, "-", 2)[0] & "\", "")]
 			Log_Add("Found " & $sImage & " at (" & $aPoint[0] & ", " & $aPoint[1] & ").", $LOG_DEBUG)
+
 			Return $aFinal
 		Else
 			;There is an error

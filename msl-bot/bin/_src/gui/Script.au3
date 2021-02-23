@@ -3,9 +3,9 @@
 Func Script_ChangeConfig()
     Local $sItem = ""
     _GUICtrlComboBox_GetLBText($g_hCmb_Scripts, _GUICtrlComboBox_GetCurSel($g_hCmb_Scripts), $sItem)
-    If $sItem = "" Then Return False
+    If $sItem == "" Then Return False
 
-    If (StringLeft($sItem, 1) = "_") Then
+    If (StringLeft($sItem, 1) == "_") Then
         ControlDisable("", "", $g_hBtn_Start)
     Else
         ControlEnable("", "", $g_hBtn_Start)
@@ -13,7 +13,7 @@ Func Script_ChangeConfig()
 
     $sItem = StringReplace($sItem, " ", "_")
     Local $aConfig = Script_DataByName($sItem)
-    If isArray($aConfig) = True Then
+    If isArray($aConfig) > 0 Then
         Config_Display($g_hLV_ScriptConfig, $aConfig)
         GUICtrlSetData($g_hLbl_ScriptDescription, $aConfig[1])
     EndIf
@@ -24,16 +24,20 @@ Func Script_ChangeProfile($sName)
 
     $g_aScripts = CreateArr()
     Script_SetData($g_sLocalFolder &  $g_sScriptsSettings)
-    Script_SetData($g_sLocalCacheFolder & $g_sScriptsSettings)
+    
+    If FileGetSize($g_sLocalFolder &  $g_sScriptsSettings) = 0 Then
+        Script_SetData($g_sLocalCacheFolder & $g_sScriptsSettings)
+    EndIf
+    
 
     For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
         Local $aConfig = $g_aScripts[$i]
-        If FileExists($g_sProfileFolder & "\" & $sName & "\" & $aConfig[$CONFIG_NAME]) = True Then 
+        If FileExists($g_sProfileFolder & "\" & $sName & "\" & $aConfig[$CONFIG_NAME]) > 0 Then 
             Script_SetConfigByFile($aConfig[$CONFIG_NAME], $g_sProfileFolder & "\" & $sName & "\")
         EndIf
     Next
 
-    If FileExists($g_sProfileFolder & "\" & $sName & "\") = False Then
+    If FileExists($g_sProfileFolder & "\" & $sName & "\") = 0 Then
         Script_SetSetting("_Config", "Profile_Name", $sName)
     EndIf
 
@@ -61,7 +65,7 @@ Func Script_SetSetting($sConfig, $sSetting, $sValue)
 
     Local $iSetting = -1
     For $i = 0 to UBound($aSettingList)-1
-        If ($aSettingList[$i])[$SETTING_NAME] = $sSetting Then
+        If ($aSettingList[$i])[$SETTING_NAME] == $sSetting Then
             $iSetting = $i
             ExitLoop
         EndIf
@@ -80,7 +84,7 @@ Func Script_DataByName($sName)
     Local $iSize = UBound($g_aScripts)
     For $i = 0 To $iSize-1
         Local $aConfig = $g_aScripts[$i]
-        If ($aConfig[0] = $sName) Then Return $aConfig
+        If ($aConfig[0] == $sName) Then Return $aConfig
     Next
     Return ""
 EndFunc
@@ -88,7 +92,7 @@ EndFunc
 Func Script_IndexByName($sName)
     Local $iSize = UBound($g_aScripts, $UBOUND_ROWS)
     For $i = 0 To $iSize-1
-        If ($g_aScripts[$i])[0] = $sName Then Return $i
+        If ($g_aScripts[$i])[0] == $sName Then Return $i
     Next
     Return -1
 EndFunc
@@ -106,7 +110,7 @@ Func Script_SetData($sPath, $sCachePath = "")
             FileClose($hFile)
         EndIf
     EndIf
-    If ($sData = "") Then Return -1
+    If ($sData == "") Then Return -1
 
     Local $c = StringSplit($sData, "", $STR_NOCOUNT)
 
@@ -120,7 +124,7 @@ Func Script_SetData($sPath, $sCachePath = "")
     For $i = -1 To UBound($c)-1
         If (_Script_NextValidChar($c, $i) = -1) Then ExitLoop
         If (Not($bScript)) Then
-            If ($c[$i] = "[") Then
+            If ($c[$i] == "[") Then
                 _Script_NextValidChar($c, $i)
                 $t_aScript[0] = _Script_GetNextField($c, $i)
                 $bScript = True
@@ -153,7 +157,7 @@ Func Script_SetData($sPath, $sCachePath = "")
                                 EndSwitch
                             WEnd
 
-                            If ($c[$i] = "]") Then
+                            If ($c[$i] == "]") Then
                                 ReDim $t_aConfigs[UBound($t_aConfigs)+1]
                                 $t_aConfigs[UBound($t_aConfigs)-1] = $t_aConfig
                             EndIf
@@ -200,7 +204,7 @@ Func _Script_GetNextField($aChar, ByRef $iIndex)
     Local $sText = ""
 
     While $aChar[$iIndex] <> ':'
-        If StringIsSpace($aChar[$iIndex]) = False Then $sText &= $aChar[$iIndex]
+        If StringIsSpace($aChar[$iIndex]) = 0 Then $sText &= $aChar[$iIndex]
         $iIndex += 1
     WEnd
 

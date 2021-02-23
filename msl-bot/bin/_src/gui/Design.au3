@@ -34,7 +34,7 @@ Func CreateGUI()
 
     Global $Menu_Debug =                GUICtrlCreateMenu("Debug")
     Global $Menu_General =                  GUICtrlCreateMenu("General", $Menu_Debug)
-    Global $M_General_Restart_Nox =             GUICtrlCreateMenuItem("Restart Nox", $Menu_General)
+    Global $M_General_Restart_Emulator =        GUICtrlCreateMenuItem("Restart Emulator", $Menu_General)
     Global $M_General_Restart_Game =            GUICtrlCreateMenuItem("Restart Game", $Menu_General)
                                                 GUICtrlCreateMenuItem("", $Menu_General)
     Global $M_General_Debug_Input =             GUICtrlCreateMenuItem("Debug Input...", $Menu_General)
@@ -159,6 +159,47 @@ Func CreateGUI()
     GUICtrlSetResizing($g_idBtn_Pause, $GUI_DOCKTOP+$GUI_DOCKHCENTER+$GUI_DOCKVCENTER+$GUI_DOCKSIZE)
 
 ;################################################## END LOG TAB ##################################################
+
+;################################################## SCHEDULE TAB ##################################################
+    GUICtrlCreateTabItem("Schedule")
+    GUISetFont(11)
+    $g_idLbl_Schedule = GUICtrlCreateLabel("Schedule List (Note: time uses 24h system)", 0, 28, 400, -1, $SS_CENTER)
+    GUISetFont(8.5)
+
+    $g_idCheck_Enable = GUICtrlCreateCheckbox("Enable", 20, 50, 70, 23)
+
+    $g_idBtn_Add = GUICtrlCreateButton("Add...", 104, 50, 70, 23)
+    $g_hBtn_Add = GUICtrlGetHandle($g_idBtn_Add)
+
+    $g_idBtn_Save = GUICtrlCreateButton("Save...", 177, 50, 70, 23)
+    $g_hBtn_Save = GUICtrlGetHandle($g_idBtn_Save)
+
+    $g_idBtn_Edit = GUICtrlCreateButton("Edit...", 250, 50, 70, 23)
+    $g_hBtn_Edit = GUICtrlGetHandle($g_idBtn_Edit)
+
+    $g_idBtn_Remove = GUICtrlCreateButton("Remove", 323, 50, 70, 23)
+    $g_hBtn_Remove = GUICtrlGetHandle($g_idBtn_Remove)
+
+    $g_idLV_Schedule = GUICtrlCreateListview("", 5, 75, 389, 295, $LVS_SHOWSELALWAYS)
+    $g_hLV_Schedule = GUICtrlGetHandle($g_idLV_Schedule)
+    _GUICtrlListView_SetExtendedListViewStyle($g_hLV_Schedule, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+    _GUICtrlListView_AddColumn($g_hLV_Schedule, "Name", 100, 0)
+    _GUICtrlListView_AddColumn($g_hLV_Schedule, "Action", 100, 0)
+    _GUICtrlListView_AddColumn($g_hLV_Schedule, "Type", 50, 0)
+    _GUICtrlListView_AddColumn($g_hLV_Schedule, "Interation", 50, 0)
+    _GUICtrlListView_AddColumn($g_hLV_Schedule, "Structure", 1000, 0)
+
+    GUICtrlSetResizing($g_idLbl_Schedule, $GUI_DOCKTOP+$GUI_DOCKHCENTER+$GUI_DOCKSIZE)
+
+    GUICtrlSetResizing($g_idCheck_Enable, $GUI_DOCKTOP+$GUI_DOCKLEFT+$GUI_DOCKSIZE)
+    GUICtrlSetResizing($g_idBtn_Add, $GUI_DOCKTOP+$GUI_DOCKRIGHT+$GUI_DOCKSIZE)
+    GUICtrlSetResizing($g_idBtn_Save, $GUI_DOCKTOP+$GUI_DOCKRIGHT+$GUI_DOCKSIZE)
+    GUICtrlSetResizing($g_idBtn_Edit, $GUI_DOCKTOP+$GUI_DOCKRIGHT+$GUI_DOCKSIZE)
+    GUICtrlSetResizing($g_idBtn_Remove, $GUI_DOCKTOP+$GUI_DOCKRIGHT+$GUI_DOCKSIZE)
+
+    GUICtrlSetResizing($g_idLV_Schedule, $GUI_DOCKBORDERS)
+
+;################################################## END SCHEDULE TAB ##################################################
 
 ;################################################## STATS TAB ##################################################
     GUICtrlCreateTabItem("Stats")

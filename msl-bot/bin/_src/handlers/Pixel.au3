@@ -24,7 +24,7 @@ EndFunc
 Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap, $bDebug = False)
     Local $aPixels[0] ;pixels to check
 
-    If ($vArg = "" Or $vArg = -1) Then ;returns early if vArg is empty
+    If ((isArray($vArg) <= 0 And $vArg == "") Or (isArray($vArg) > 0 And UBound($vArg) <= 0) Or $vArg = -1) Then ;returns early if vArg is empty
         $g_sErrorMessage = "isPixel() => No Arguments Found."
         Return -1
     EndIf
@@ -33,7 +33,7 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap, $bDebug = False)
     $g_vDebug = $aDebug
     _ArrayAdd($g_vDebug, "Point|Color 1|Color 2|Variation")
 
-    If (Not(isArray($vArg)) And StringLeft($vArg,1) = "%") Then $vArg = getPixelArg(StringTrimLeft($vArg,1))
+    If (Not(isArray($vArg)) And StringLeft($vArg,1) == "%") Then $vArg = getPixelArg(StringTrimLeft($vArg,1))
     ;Fixing argument format to [[x, y, color], [...]]
     If (isArray($vArg)) Then
         If (isArray($vArg[0])) Then
@@ -82,8 +82,8 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap, $bDebug = False)
                 $aPixels = splitPixelString($t_aPixelOrSet[$i])
                 Local $bCompared = comparePixels($aPixels, $iVariation, $hBitmap, $bDebug)
                 _ArrayAdd($g_vDebug, "-|-|-|-")
-                If $bCompared = True Then $bOutput = True
-                If $bDebug = False And $bOutput = True Then Return True
+                If $bCompared > 0 Then $bOutput = True
+                If $bDebug = 0 And $bOutput > 0 Then Return True
             Next
             Return $bOutput
         Else
@@ -124,7 +124,7 @@ Func comparePixels($aPixels, $iVariation, $hBitmap, $bDebug = False)
         ;====================================================
 
         If ($t_iColorDifference > $iVariation) Then $bOutput = False
-        If $bDebug = False And $bOutput = False Then Return False
+        If $bDebug = 0 And $bOutput = 0 Then Return False
     Next
 
     Return $bOutput
@@ -310,7 +310,7 @@ Func setPixel($sPixels, $aData = Null, $bUpdate = True)
 		Next
 	EndIf
 
-	If $bUpdate = True Then CaptureRegion()
+	If $bUpdate > 0 Then CaptureRegion()
 
 	Local $sNewPixels = "" ;Will store new pixel set
 	For $i = 0 To UBound($aPoints)-1

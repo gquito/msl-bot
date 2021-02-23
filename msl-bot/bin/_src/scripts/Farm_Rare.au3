@@ -1,12 +1,11 @@
 #include-once
 
 Func Farm_Rare($bParam = True, $aStats = Null)
-    If $bParam = True Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Rare")[2]), "Farm_Rare")
+    If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Rare")[2]), "Farm_Rare")
     ;Runs, Map, Difficulty, Stage Level, Capture, Refill, Target Boss
 
     Log_Level_Add("Farm_Rare")
-
-    $Farm_Rare_Capture = StringSplit($Farm_Rare_Capture, ",", 2)
+    Local $aCapture = StringSplit($Farm_Rare_Capture, ",", 2)
 
     Global $Status, $Runs, $Win_Rate, $Average_Time, $Astrogems_Used, $Legendary, $Super_Rare, $Exotic, $Rare, $Variant, $Total_Legendary, $Total_Super_Rare, $Total_Exotic, $Total_Rare, $Total_Variant
     Stats_Add(  CreateArr( _
@@ -39,25 +38,27 @@ Func Farm_Rare($bParam = True, $aStats = Null)
 
     navigate("map", True)
     While $g_bRunning = True
-        If _Sleep(200) Then ExitLoop
+        If _Sleep($Delay_Script_Loop) Then ExitLoop
         Local $sLocation = getLocation()
         Common_Stuck($sLocation)
 
         Switch $sLocation
-            Case "battle", "battle-auto"
-                If $sLocation = "battle-auto" Then
-                    Status("Currently in battle.")
-                    ContinueLoop
+            Case "battle"
+                If waitLocation("battle-auto", 1) <= 0 Then 
+                    ;CaptureRegion(StringRegExpReplace(_NowCalc() , "(\/|\s|\:)", ""))
+                    If navigate("catch-mode") <= 0 Then clickBattle()
                 EndIf
-
-                If inBattle(500) = True And navigate("catch-mode") = False Then clickBattle()
+                
+            Case "battle-auto"
+                Status("Currently in battle.")
+                ContinueLoop
             Case "catch-mode"
-                    Local $aResult = catch($Farm_Rare_Capture, ($General_Max_Exotic_Chips < 3)?$General_Max_Exotic_Chips:3)
+                    Local $aResult = catch($aCapture, ($General_Max_Exotic_Chips < 3)?$General_Max_Exotic_Chips:3)
                     Local $iSize = UBound($aResult)
 
                     For $i = 0 To $iSize-1
                         Local $sMonster = StringReplace($aResult[$i], "-", "_")
-                        If StringLeft($sMonster, 1) = "_" Then $sMonster = StringMid($sMonster, 2)
+                        If StringLeft($sMonster, 1) == "_" Then $sMonster = StringMid($sMonster, 2)
                         Local $iMonster = Eval($sMonster)
 
                         Assign("Total_" & $sMonster, Eval("Total_" & $sMonster)+1)
@@ -70,8 +71,8 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                         EndIf
                     Next
 
-                    If $iSize = 0 Or $bSkip = True Then
-                        If getLocation() = "catch-mode" Then clickPoint(getPointArg("catch-mode-cancel"), 3)
+                    If $iSize = 0 Or $bSkip > 0 Then
+                        If getLocation() == "catch-mode" Then clickPoint(getPointArg("catch-mode-cancel"), 3)
                         waitLocation("battle,battle-auto", 5)
                         clickBattle()
 
@@ -81,7 +82,7 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                 If $Farm_Rare_Runs <> 0 And $Runs >= $Farm_Rare_Runs Then ExitLoop
 
                 Status("Entering battle x" & $Runs+1, $LOG_PROCESS)
-                If enterBattle() = True Then
+                If enterBattle() > 0 Then
                     $hAverage = TimerInit()
                     $Win_Rate += 1
                     $Runs += 1
@@ -89,7 +90,7 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                 EndIf
             Case "map"
                 Status(StringFormat("Looking for %s on Level %s %s.", $Farm_Rare_Map, $Farm_Rare_Stage_Level, $Farm_Rare_Difficulty))
-                If enterStage($Farm_Rare_Map, $Farm_Rare_Difficulty, $Farm_Rare_Stage_Level) = True Then
+                If enterStage($Farm_Rare_Map, $Farm_Rare_Difficulty, $Farm_Rare_Stage_Level) > 0 Then
                     $hAverage = TimerInit()
                     $Win_Rate += 1
                     $Runs += 1
@@ -119,7 +120,7 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                 Status("Match has ended, going to battle-end")
                 navigate("battle-end")
             Case "battle-boss"
-                If $Farm_Rare_Target_Boss = True Then
+                If $Farm_Rare_Target_Boss > 0 Then
                     Status("Targeting boss.")
                     waitLocation("battle,battle-auto", 2)
                     If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
@@ -129,7 +130,7 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                 Status("Astromon inventory is full, stopping script.")
                 ExitLoop
             Case "battle-gem-full", "map-gem-full"
-                If $General_Sell_Gems = "" Then
+                If $General_Sell_Gems == "" Then
                     Status("Gem inventory is full, stopping script.", $LOG_INFORMATION)
                     ExitLoop
                 Else
@@ -140,8 +141,8 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                 Status("Not enough astrogems, stopping script.", $LOG_ERROR)
                 ExitLoop
             Case Else
-                If HandleCommonLocations($sLocation) = False And $sLocation <> "unknown" Then 
-                    If waitLocation("battle,battle-auto,battle-boss", 5) = False Then
+                If HandleCommonLocations($sLocation) = 0 And $sLocation <> "unknown" Then 
+                    If waitLocation("battle,battle-auto,battle-boss", 5) = 0 Then
                         Status("Proceeding to Farm Rare.")
                         navigate("map", True)
                     EndIf

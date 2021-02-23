@@ -9,7 +9,7 @@ Func doHourly()
     Local $aTurn = ["Collect_Hiddens", "Click_Nezz"]
     For $i = 0 To UBound($aTurn)-1
         If _Sleep(100) Then ExitLoop
-        If Eval("Hourly_" & $aTurn[$i]) = False Then ContinueLoop
+        If Eval("Hourly_" & $aTurn[$i]) <= 0 Then ContinueLoop
         Local $bResult = Call("Hourly_" & $aTurn[$i])
         Log_Add($aTurn[$i] & " result: " & $bResult, $LOG_DEBUG)
     Next
@@ -25,9 +25,9 @@ EndFunc
 
 Func Hourly_Close_Village_Interface()
     If getLocation() <> "village" Then Return False
-    If clickWhile(getPointArg("village-missions-popup-close"), "isPixel", CreateArr(getPixelArg("village-missions-popup")), 5, 200, "CaptureRegion()") = False Then Return False
-    If clickWhile(getPointArg("village-events-close"), "isPixel", CreateArr(getPixelArg("village-events")), 5, 200, "CaptureRegion()") = False Then Return False
-    If clickWhile(getPointArg("village-pack-close"), "isPixel", CreateArr(getPixelArg("village-pack")), 5, 200, "CaptureRegion()") = False Then Return False
+    If clickWhile(getPointArg("village-missions-popup-close"), "isPixel", CreateArr(getPixelArg("village-missions-popup")), 5, 200, "CaptureRegion()") <= 0 Then Return False
+    If clickWhile(getPointArg("village-events-close"), "isPixel", CreateArr(getPixelArg("village-events")), 5, 200, "CaptureRegion()") <= 0 Then Return False
+    If clickWhile(getPointArg("village-pack-close"), "isPixel", CreateArr(getPixelArg("village-pack")), 5, 200, "CaptureRegion()") <= 0 Then Return False
     Return True
 EndFunc
 
@@ -60,7 +60,7 @@ EndFunc
 ;----------------------------------------------
 
 Func Hourly_Collect_Hiddens()
-    If isLocation("village,quests,monsters,monsters-evolution") = True Then navigate("map")
+    If isLocation("village,quests,monsters,monsters-evolution") > 0 Then navigate("map")
     Local $iPos = Hourly_Get_Village_Pos()
     If $iPos = -1 Then Return False
 
@@ -75,7 +75,7 @@ Func Hourly_Collect_Hiddens()
 
         Local $bLog = $g_bLogEnabled
         $g_bLogEnabled = False
-        While TimerDiff($hTimer) < 5000
+        While TimerDiff($hTimer) < 10000 ;Ten seconds max
             If _Sleep(200) Then Return False
             Switch getLocation()
                 Case "village"
@@ -86,10 +86,16 @@ Func Hourly_Collect_Hiddens()
                     navigate("village")
                     ExitLoop
                 Case Else
-                    If navigate("village", False, 3) = False Then Return False
+                    If navigate("village", False, 3) = 0 Then 
+                        $g_bLogEnabled = $bLog
+                        Return False
+                    Else
+                        $hTimer = TimerInit()
+                    EndIf
             EndSwitch
         WEnd
         $g_bLogEnabled = $bLog
+        If TimerDiff($hTimer) >= 10000 Then Return False
     Next
     Return True
 EndFunc
@@ -109,7 +115,7 @@ Func Hourly_Click_Nezz()
             Local $sLocation = getLocation()
             If $sLocation <> "village" Then 
 
-                If $sLocation = "dialogue-skip" Then
+                If $sLocation == "dialogue-skip" Then
                     Log_Add("Found nezz", $LOG_INFORMATION)
                     Cumulative_AddNum("Collected (Nezz)", 1)
                     navigate("village")

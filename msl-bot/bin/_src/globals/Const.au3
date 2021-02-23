@@ -1,5 +1,5 @@
 #include-once
-Global Const $NOX_WIDTH = 800, $NOX_HEIGHT = 552, $NOX_DPI = 160
+Global Const $EMULATOR_WIDTH = 800, $EMULATOR_HEIGHT = 552, $EMULATOR_DPI = 160
 
 #Region Config
     Global Const $CONFIG_NAME = 0
@@ -61,6 +61,8 @@ Global Const $g_sImageLocations =   "location-images.txt"
 Global Const $g_sAirshipPositions = "airship-positions.txt"
 Global Const $g_sAirshipTrees =     "airship-trees.txt"
 Global Const $g_sScripts =          "free_scripts_4.2.0.txt"
+
+Global Const $g_sPackageName =      "com.ftt.msleague_gl"
 
 Global Const $g_aGemRanks = ["LEECH,SIPHON,PUGILIST", "RUIN", "INTUITION", "CONVICTION,PROTECTION,VALOR,VITALITY,TENACITY,FORTITUDE,HEALING,FEROCITY", "LIFE"]
 Global Const $g_aGemGrade6Price = [[39600,37799,36000,34199], [24750,23624,22500,21374], [19800,18899,18000,17099]]
@@ -136,7 +138,5 @@ Global Const $g_aSwipeRightFast = [10, 550, 10000, 550, "right"]
 
 Global Const $g_aDungeonsSwipeDown =    [175, 186, 175, 452, "down"]
 Global Const $g_aDungeonsSwipeUp =      [175, 452, 175, 186, "up"]
-
-Global Const $g_sSendEvent = "0 0 0,1 330 1,3 58 1,3 53 %s,3 54 %s,0 2 0,0 0 0,0 2 0,0 0 0,1 330 0,3 58 0,3 53 0,3 54 32,0 2 0,0 0 0"
 
 Global Const $g_sLocationSearchRegex = "(^|,)%s($|,)"

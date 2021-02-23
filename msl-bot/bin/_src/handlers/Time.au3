@@ -94,7 +94,7 @@ Func getTimeString($iSeconds)
 EndFunc
 
 Func getSecondsFromString($sTime, $iIndex = 1, $iCount = 1)
-    If $sTime = "" Or $sTime = -1 Then Return -1
+    If $sTime == "" Or $sTime = -1 Then Return -1
     Local $sCur = StringMid(StringStripWS($sTime, 8), $iIndex, $iCount)
     Switch StringRight($sCur, 1)
         Case "D"

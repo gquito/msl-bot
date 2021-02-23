@@ -1,0 +1,686 @@
+[_Config:
+	[description: "These settings are responsible for how the bot interacts with the android emulator. Settings will be saved in the profiles folder once changes has been detected."]
+	
+	[text:
+		name: "Profile Name",
+		description: "Folder will be created using this name in profiles folder.",
+		default: "Default"
+	]
+	
+	[combo:
+		name: "Scheduled Restart",
+		description: "Restart game to prevent lagging overtime. MSL seems to lag after a long time. Game means just restart game process without restarting emulator. Nox means restarting the entire Nox process.",
+		default: "Game:3H",
+		data: "Never,Game:1H,Game:2H,Game:3H,Game:4H,Game:5H,Game:6H,Game:7H,Game:8H,Game:9H,Game:10H,Game:11H,Game:12H,Emulator:1H,Emulator:2H,Emulator:3H,Emulator:4H,Emulator:5H,Emulator:6H,Emulator:7H,Emulator:8H,Emulator:9H,Emulator:10H,Emulator:11H,Emulator:12H"
+	]
+
+	[combo:
+		name: "Location Stuck Timeout",
+		description: "Number of minutes it takes until bot app decides to restart emulator app when stuck in one location. Can be used to delay restart when logging in from a different location.",
+		default: "10 Minutes",
+		data: "Never,3 Minutes,5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
+	]
+    
+    [combo:
+		name: "Another Device Timeout",
+		description: "Number of minutes it takes until bot app decides to re-login to the game.",
+		default: "Immediately",
+		data: "Never,Immediately,1 Minutes,3 Minutes,5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
+	]
+
+	[combo:
+		name: "Maintenance Timeout",
+		description: "Number of minutes it takes until bot app decides to restart during maintenance to the game.",
+		default: "5 Minutes",
+		data: "5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
+	]
+	
+	[combo:
+		name: "Save Logs",
+		description: "Save log to file.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Log Debug",
+		description: "Log debug types.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Log Clicks",
+		description: "Log click types.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[text:
+		name: "Emulator Path",
+		description: "Path to emulator directory. Files inside directory include main emulator executable.",
+		default: "~AUTO"
+	]
+	
+	[combo:
+		name: "Emulator Console",
+		description: "'ldconsole' (LDPlayer), 'noxconsole' (NoxPlayer), 'memuc' (MEmu)",
+		default: "noxconsole",
+		data: "ldconsole,noxconsole,memuc"
+	]
+	
+	[text:
+		name: "Emulator Title",
+		description: "Emulator Title. Default 'LDPlayer' (LDPlayer), 'NoxPlayer' (NoxPlayer), 'MEmu' (MEmu)",
+		default: "NoxPlayer"
+	]
+	
+	[text:
+		name: "Emulator Property",
+		description: "Emulator Control Property. Example: [CLASS:SampleClass; TEXT:SampleText; INSTANCE:1]",
+		default: "~AUTO"
+	]
+
+	[text:
+		name: "Display Scaling",
+		description: "Display scaling found in display settings of Windows. Recommended set to 100%.",
+		default: "100"
+	]
+	
+	[combo:
+		name: "Capture Mode",
+		description: "WinAPI: Works in background (not minimized) and takes least amount of CPU. ADB: Works in background including minimized, slowest method and takes the most CPU. None: Does not work in background and must be present in foreground of the screen at all times.",
+		default: "WinAPI",
+		data: "WinAPI,ADB,None"
+	]
+	
+	[combo:
+		name: "Mouse Mode",
+		description: "Mode of sending clicks to emulators. Control: Sends click messages directly to emulator. ADB: Sends command to emulator ADB, generally slower. Real: Uses mouse cursor to click emulator screen.",
+		default: "Control",
+		data: "Control,ADB,Real"
+	]
+	
+	[combo:
+		name: "Swipe Mode",
+		description: "Mode of sending swipes to emulator. ADB: Sends command to emulator ADB, does not affect overall average speed. Keymap: Sends keystrokes to emulator to invoke pre-setup keymap, requires keymap setup. Real: Uses actual mouse to perform a swipe.",
+		default: "Control",
+		data: "ADB,Control,Real"
+	]
+	
+	[combo:
+		name: "Back Mode",
+		description: "Mode of sending back command to emulator.",
+		default: "ADB",
+		data: "ADB,Control,Real"
+	]
+]
+
+[_ADB:
+	[description: "ADB settings"]
+
+	[text:
+		name: "Device",
+		description: "ADB assigned IP and PORT to connect to ADB.",
+		default: "~AUTO"
+	]
+
+	[text:
+		name: "PC Shared",
+		description: "Folder to shared folder between Android and PC.",
+		default: "~AUTO"
+	]
+
+	[text:
+		name: "Android Shared",
+		description: "Folder to shared folder between Android and PC.",
+		default: "~AUTO"
+	]
+]
+
+[_Delays:
+	[description: "Delay settings"]
+
+	[text:
+		name: "Script Loop",
+		description: "Delay between each script loop in MILLISECONDS. Default is 200ms.",
+		default: "200"
+	]
+
+	[text:
+		name: "Swipe Delay",
+		description: "The amount of time in MILLISECONDS that the bot waits after swiping the screen to do anything.",
+		default: "300"
+	]
+
+	[text:
+		name: "Navigation Timeout",
+		description: "The amount of time in SECONDS until navigation times out.",
+		default: "30"
+	]
+
+	[text:
+		name: "Target Boss Delay",
+		description: "The amount of time in MILLISECONDS that the bot waits before clicking on the boss.",
+		default: "10"
+	]
+	
+	[text:
+		name: "ADB Timeout",
+		description: "How much time in MILLISECONDS the ADB function will wait for a response before timing out. Set higher for slower systems.",
+		default: "5000"
+	]
+	
+	[text:
+		name: "Console Timeout",
+		description: "How much time in MILLISECONDS the Emulator Console Command function will wait for a response before timing out. Set higher for slower systems.",
+		default: "5000"
+	]
+
+	[text:
+		name: "Restart Timeout",
+		description: "How much time in SECONDS the Emulator_RestartGame or Emulator_Restart will wait for the game to load before timing out.",
+		default: "300"
+	]
+]
+
+[_General:
+	[description: "General settings for certain algorithms."]
+	
+	[combo:
+		name: "Collect Quests",
+		description: "When a quest has been completed, the script will go to village after the round and collect the quest, then goes back to farming.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+  
+	[list:
+		name: "Sell Gems",
+		description: "When gem inventory is full, the script will go to inventory to sell gems from 1-5 stars.",
+		default: "1,2,3",
+		data: "1,2,3,4,5"
+	]
+
+	[text:
+		name: "Max Exotic Chips",
+		description: "The number of chip attempts to use on a single exotic monster.",
+		default: "20"
+	]
+]
+
+[_Hourly:
+	[description: "Settings for hourly tasks. These settings are shared among all the scripts and can be turned on or off in a setting called 'Hourly Scripts' which is a boolean setting."]
+	
+	[combo:
+		name: "Hourly Script",
+		description: "Enable or disable hourly schedule to run short scripts. Settings below will run if they are enabled.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Click Nezz",
+		description: "Attempts to click positions where nezz usually spawns. This system is not perfect, but is able to click on nezz most of the time. Note: newer ships might not have nezz positions.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Collect Hiddens",
+		description: "Collect hourly hidden rewards, commonly known as trees.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+]
+
+[_Guardian:
+	[description: "Search and attack guardian dungeons."]
+	
+	[combo:
+		name: "Guardian Script",
+		description: "Enable or disable the Guardian script using this setting.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Guardian Mode",
+		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons. Script will check every 30 minutes.",
+		default: "Both",
+		data: "Left,Right,Both"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Check Intervals",
+		description: "Bot will check for guardian dungeons at this interval.",
+		default: "30 Minutes",
+		data: "15 Minutes,30 Minutes,45 Minutes,60 Minutes,90 Minutes,120 Minutes"
+	]
+]
+
+[_Filter:
+	[description: "Gem filtering system. A function will be called with a gem data passed in and will output whether the gem meets the criteria or not."]
+	
+	[combo:
+		name: "4 Star Filter",
+		description: "If Filter is enabled, 4* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "4 Star Types",
+		description: "Types that are included meet the criteria.",
+		default: "",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "4 Star Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "4 Star Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "",
+		data: "1,2,3,4"
+	]
+	
+	[combo:
+		name: "5 Star Filter",
+		description: "If Filter is enabled, 5* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "5 Star Types",
+		description: "Types that are included meet the criteria.",
+		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "5 Star Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "P.HP,P.ATK,P.DEF,CRIT RATE",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "5 Star Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "3,4",
+		data: "1,2,3,4"
+	]
+	
+	[combo:
+		name: "6 Star Filter",
+		description: "If Filter is enabled, 6* gems will be put through the system. Otherwise, the gem will return that is does not meet the criteria.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[list:
+		name: "6 Star Types",
+		description: "Types that are included meet the criteria.",
+		default: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition",
+		data: "Ferocity,Valor,Tenacity,Vitality,Fortitude,Life,Healing,Protection,Ruin,Conviction,Intuition"
+	]
+	
+	[list:
+		name: "6 Star Stats",
+		description: "Main stats that are included meet the criteria.",
+		default: "P.HP,P.ATK,P.DEF,CRIT RATE",
+		data: "P.REC,P.HP,F.REC,F.HP,P.ATK,F.DEF,F.ATK,P.DEF,RESIST,CRIT RATE, CRIT DMG"
+	]
+	
+	[list:
+		name: "6 Star Substats",
+		description: "Number of substats that are included meet the criteria.",
+		default: "1,2,3,4",
+		data: "1,2,3,4"
+	]
+]
+
+[Farm_Rare:
+	[description: "Attacks a story map and catches rare astromons. Can be used for leveling monsters or farming for materials. You must set your astromons before starting the script."]
+	
+	[text:
+		name: "Runs",
+		description: "Number of runs the script should perform before stopping. Entering 0 will ignore this feature.",
+		default: "0"
+	]
+	
+	[combo:
+		name: "Map",
+		description: "Enter map which hosts the astromon.",
+		default: "Phantom Forest",
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+	]
+	
+	[combo:
+		name: "Difficulty",
+		description: "Enter the difficulty of the map selected.",
+		default: "Normal",
+		data: "Normal,Hard,Extreme"
+	]
+	
+	[combo:
+		name: "Stage Level",
+		description: "Enter the level of the stage selected.",
+		default: "1",
+		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
+	]
+	
+	[list:
+		name: "Capture",
+		description: "Capture the astromons on the list. Priority goes from left to right.",
+		default: "Legendary,Exotic,Super Rare,Rare,Variant",
+		data: "Legendary,Exotic,Super Rare,Rare,Variant"
+	]
+	
+  [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		default: "300"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+]
+
+[Farm_Golem:
+	[description: "Attacks golem dungeons and sells unwanted gems. Gems are filter settings is under _Filter."]
+	
+	[text:
+		name: "Runs",
+		description: "Number of runs the script should perform before stopping. Entering 0 will ignore this feature.",
+		default: "0"
+	]
+	
+	[combo:
+		name: "Dungeon Level",
+		description: "Enter golem dungeon level.",
+		default: "8",
+		data: "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"
+	]
+
+    [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		default: "300"
+	]
+    
+	[text:
+		name: "Gold Goal",
+		description: "Enter the amount of gold. Bot will stop once it reaches this amount. Entering 0 will ignore this feature.",
+		default: "0"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+]
+
+[Farm_Gem:
+	[description: "Convert gold into gems though 'slime' farming. Script will catch 16 astromons and evolve them to get 100 gems by spending 330k gold. *Gleems are at risk. Lock them and put them in your storage.*"]
+	
+	[text:
+		name: "Astrogems",
+		description: "Enter the number of astrogems you wish to convert. Using 'g' as the first character will convert the amount of gold to the corresponding number of astrogems.",
+		default: "300"
+	]
+	
+	[text:
+		name: "Astromon",
+		description: "Astromon to catch and make into evolution 3.",
+		default: "Slime"
+	]
+	
+	[combo:
+		name: "Release Evo3",
+		description: "When enabled, script will release the evolution 3 astromon to prevent space being used.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[text:
+		name: "Max Catch",
+		description: "Enter the maximum number of astromons the bot can catch per iteration. Any value below 16 is not recommended. Entering 0 will cause the script to fill inventory or catch remaining number of astromons to finish script.",
+		default: "16"
+	]
+	
+	[combo:
+		name: "Finish Round",
+		description: "When enabled, script will continue to finish rounds. When disabled, script will give up round.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Final Round",
+		description: "When enabled, script will only catch astromons in the last round. This setting will also finish the round.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Check Limit",
+		description: "Check for max interation limit which prevents farming more than 1000 astrogems a week. When enabled script will stop when quest is no longer giving rewards.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Map",
+		description: "Enter map which hosts the astromon.",
+		default: "Phantom Forest",
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+	]
+	
+	[combo:
+		name: "Difficulty",
+		description: "Enter the difficulty of the map selected.",
+		default: "Normal",
+		data: "Normal,Hard,Extreme"
+	]
+	
+	[combo:
+		name: "Stage Level",
+		description: "Enter the level of the stage selected.",
+		default: "1",
+		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
+	]
+	
+	[list:
+		name: "Capture",
+		description: "Capture the astromons on the list. Priority goes from left to right.",
+		default: "Legendary,Exotic,Super Rare,Rare,Variant",
+		data: "Legendary,Exotic,Super Rare,Rare,Variant"
+	]
+	
+  [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		default: "300"
+	]
+	
+]
+
+[Farm_Astromon:
+	[description: "Farms a specified amount of astromon in story mode."]
+	
+	[text:
+		name: "Amount",
+		description: "Amount of astromons to catch. Entering 0 will ignore this feature and will fill your astromon inventory.",
+		default: "16"
+	]
+	
+	[text:
+		name: "Astromon",
+		description: "Images of catch-[name].bmp must exist. Map should contain the astromon or else this script will act like Farm Rare, but slower.",
+		default: "one-star"
+	]
+	
+	[combo:
+		name: "Finish Round",
+		description: "When enabled, script will continue to finish rounds. When disabled, script will give up round.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Final Round",
+		description: "When enabled, script will only catch astromons in the last round. This setting will also finish the round.",
+		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Map",
+		description: "Enter map which hosts the astromon.",
+		default: "Phantom Forest",
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+	]
+	
+	[combo:
+		name: "Difficulty",
+		description: "Enter the difficulty of the map selected.",
+		default: "Normal",
+		data: "Normal,Hard,Extreme"
+	]
+	
+	[combo:
+		name: "Stage Level",
+		description: "Enter the level of the stage selected.",
+		default: "1",
+		data: "Any,Gold,Exp,Fruit,Boss,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"
+	]
+	
+	[list:
+		name: "Capture",
+		description: "Capture the astromons on the list. Priority goes from left to right.",
+		default: "Legendary,Exotic,Super Rare,Rare,Variant",
+		data: "Legendary,Exotic,Super Rare,Rare,Variant"
+	]
+	
+  [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		default: "300"
+	]
+	
+]
+
+[Farm_Guardian:
+	[description: "Attacks specific guardian dungeons until no more is found."]
+
+	[combo:
+		name: "Mode",
+		description: "On the guardian dungeon location, you will see the two guardian dungeon. Left: Corresponds with the astromon on the left side. Right: Corresponds with the astromon on the right side. Both: Script will farm all dungeons.",
+		default: "Both",
+		data: "Left,Right,Both"
+	]
+	
+    [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		default: "300"
+	]
+
+	[combo:
+		name: "Idle Time",
+		description: "Bot will remain idle to wait for more guardian dungeons.",
+		default: "30 minutes",
+		data: "Never,30 Minutes,60 Minutes,120 Minutes,240 Minutes"
+	]
+
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+]
+
+[Farm_Starstone:
+	[description: "Script will go to normal starstone or elemental dungeon to farm a number of stones. Script will keep farming until all quality stones have been farmed."]
+	
+	[text:
+		name: "Runs",
+		description: "Number of runs the script should perform before stopping. Entering 0 will ignore this feature.",
+		default: "0"
+	]
+	
+	[combo:
+		name: "Dungeon Type",
+		description: "Enter dungeon type. Normal is for starstones and elemental is for the current element starstone of the week.",
+		default: "Normal",
+		data: "Normal,Elemental"
+	]
+	
+	[combo:
+		name: "Dungeon Level",
+		description: "Enter the dungeon level.",
+		default: "10",
+		data: "1,2,3,4,5,6,7,8,9,10"
+	]
+	
+	[combo:
+		name: "Stone Element",
+		description: "Enter which element to count. This will count towards the High, Mid, Low stones stats.",
+		default: "Any",
+		data: "Any,Water,Fire,Wood,Light,Dark"
+	]
+	
+	[text:
+		name: "High Stones",
+		description: "Enter the number of Highstones to farm.",
+		default: "50"
+	]
+	
+	[text:
+		name: "Mid Stones",
+		description: "Enter number of Midstones to farm.",
+		default: "0"
+	]
+	
+	[text:
+		name: "Low Stones",
+		description: "Enter number of Lowstones to farm.",
+		default: "0"
+	]
+	
+    [text:
+		name: "Refill",
+		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		default: "300"
+	]
+	
+	[combo:
+		name: "Target Boss",
+		description: "During the final round, you can choose to target boss for efficiency.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+]
