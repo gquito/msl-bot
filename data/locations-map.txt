@@ -25,6 +25,7 @@ championleague-defeat:battle-end,pvp-battle-end
 championleague-victory:battle-end,pvp-battle-end
 clan-battle:map,titans
 clan-shop:buy-gold,buy-gem,titans
+colossus-dungeon:golem-dungeons,map,map-battle
 dragon-dungeons:map,map-battle
 dungeon-info:extra-dungeons,gold-dungeons,guardian-dungeons,map,special-guardian-dungeons,starstone-dungeons,wood-dungeons
 elemental-dungeons:dungeon-info,gold-dungeons,guardian-dungeons,map,map-battle,special-guardian-dungeons,starstone-dungeons
@@ -37,7 +38,7 @@ friends:friends-request,village
 friends-request:friends,village
 gem-upgrade-not-upgrading:manage
 gold-dungeons:dungeon-info,elemental-dungeons,extra-dungeons,guardian-dungeons,map,map-battle,special-guardian-dungeons,starstone-dungeons
-golem-dungeons:ancient-colossus-dungeon,map,map-battle
+golem-dungeons:colossus-dungeon,map,map-battle
 guardian-dungeons:dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,map,map-battle,special-guardian-dungeons,starstone-dungeons
 hero-dungeons:map,map-battle
 hourly-reward:monsters,monsters-evolution,monsters-level-up,village
