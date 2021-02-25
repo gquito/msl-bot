@@ -48,7 +48,7 @@ loading:astroleague,battle,battle-auto,map,titans-battle,village
 manage:gem-upgrade-not-upgrading,monsters,monsters-evolution,monsters-level-up,sell-gems-confirm
 map:association,astroleague,clan-battle,dialogue-skip,dialogue-skip,dragon-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,golem-dungeons,guardian-dungeons,hero-dungeons,leagues,loading,map-stage,refill,special-guardian-dungeons,starstone-dungeons,towers,village
 map-astromon-full:battle-end
-map-battle:astroleague,astromon-full,autobattle-prompt,battle,battle-auto,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc,towers,towers-elemental
+map-battle:astroleague,astromon-full,autobattle-prompt,battle,battle-auto,colossus-dungeon,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc,towers,towers-elemental
 map-battle-autofill:map-battle,refill-astrochips-popup
 map-stage:map,map-battle
 monsters:awakened-success,buy-gem,buy-gold,hourly-reward,manage,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,release-confirm,release-reward,village
