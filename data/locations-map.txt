@@ -51,7 +51,7 @@ map-astromon-full:battle-end
 map-battle:astroleague,astromon-full,autobattle-prompt,battle,battle-auto,colossus-dungeons,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc,towers,towers-elemental
 map-battle-autofill:map-battle,refill-astrochips-popup
 map-stage:map,map-battle
-monsters:awakened-success,buy-gem,buy-gold,hourly-reward,manage,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,release-confirm,release-reward,village
+monsters:awakened-success,buy-gem,buy-gold,hourly-reward,manage,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,monsters-level-up-max,release-confirm,release-reward,village
 monsters-astromon:awakened-success,buy-gem,buy-gold,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,release-confirm
 monsters-awaken:awakened-success,buy-gem,buy-gold,monsters-astromon,monsters-evolution,monsters-evolve,monsters-level-up,release-confirm
 monsters-evolution:awakened-success,buy-gem,buy-gold,manage,monsters,monsters-astromon,monsters-awaken,monsters-evolve,monsters-level-up,release-confirm,village
