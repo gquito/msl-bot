@@ -1,6 +1,11 @@
 #include-once
 
 Func HandleMenu($iCode)
+    If $iCode >= 5 Then 
+        Config_Update()
+        ResetHandles()
+    EndIf
+
     Switch $iCode 
         Case $M_File_Check_Version
             Local $aLatest[0] ;Will contain [Major,Minor,Build]

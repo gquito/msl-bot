@@ -6,32 +6,33 @@ Global $g_iADBInputDevice = ""
 
 ;Run CMD session to send ADB command.
 ;Output will be retrieved after command has been executed.
-Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sConsole_Command = $Config_Console_ADB)
+Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sDevice = "~AUTO")
 	Log_Level_Add("ADB_Command")
 	Log_Add("ADB command: " & $sCommand, $LOG_DEBUG)
 
-	;If StringLeft($sCommand, 5) == "shell" Then
-	;	Local $sShellResult = ADB_Shell(StringMid($sCommand, 6), $iTimeout, False)
-	;	Log_Level_Remove()
-	;	Return $sShellResult
-	;EndIf
-
 	If $Config_Emulator_Path <> "" Then
 		;MsgBox(0, "", $Config_Emulator_Path & "\" & $sConsole_Command & '"' & $sCommand & '"')
-			Local $iPID = Run($Config_Emulator_Path & "\" & $sConsole_Command & '"' & $sCommand & '"', "", @SW_HIDE, $STDERR_MERGED)
-			Local $sResult ;Holds ADB output
+		Local $iPID = -1
+		Local $sResult ;Holds ADB output
 
-			Local $hTimer = TimerInit()
-			While ProcessExists($iPID)
-				If _Sleep(10) Then ExitLoop
-				If TimerDiff($hTimer) > $iTimeout Then
-					$sResult = "Timed out."
-					ProcessClose($iPID)
-					ExitLoop
-				EndIf
-			WEnd
-			If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
-			StdioClose($iPID)
+		; get PID
+		If $sDevice == "~AUTO" Then
+			$iPID = Run($Config_Emulator_Path & "\" & $Config_Console_ADB & '"' & $sCommand & '"', "", @SW_HIDE, $STDERR_MERGED)
+		Else
+			$iPID = Run($Config_Emulator_Path & "\adb.exe -s " & $ADB_Device & '"' & $sCommand & '"', "", @SW_HIDE, $STDERR_MERGED)
+		EndIf
+
+		Local $hTimer = TimerInit()
+		While ProcessExists($iPID)
+			If _Sleep(10) Then ExitLoop
+			If TimerDiff($hTimer) > $iTimeout Then
+				$sResult = "Timed out."
+				ProcessClose($iPID)
+				ExitLoop
+			EndIf
+		WEnd
+		If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
+		StdioClose($iPID)
 	Else
 		$sResult = "Error could not access Emulator Path."
 	EndIf
@@ -41,59 +42,6 @@ Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sConsole_Command = 
     Log_Level_Remove()
     Return $sResult
 EndFunc   ;==>ADB_Command
-
-Func ADB_Shell($sCommand, $iTimeout = $Delay_ADB_Timeout, $bBinary = False)
-	If $g_hADBShellPID <= 0 Or ProcessExists($g_hADBShellPID) <= 0 Then
-		$g_hADBShellPID = _ADB_ShellConnect()
-
-		If $g_hADBShellPID <= 0 Or ProcessExists($g_hADBShellPID) <= 0 Then Return -1 ;Failed to connect
-	EndIf
-
-	_ADB_ShellRead() ;Clear current stream
-	_ADB_ShellWrite($sCommand)
-	Sleep(100)
-
-	Local $sReturn = ""
-	Do
-		$sReturn &= _ADB_ShellRead($bBinary)
-	Until(@error Or @extended = 0)
-
-	;ClipPut($sReturn)
-	Return $sReturn
-EndFunc
-
-Func _ADB_ShellConnect()
-	If $g_sSerialNumber == "" Then
-		If _ADB_GetSerialNumber() == "" Then Return -1
-	EndIf
-
-	$g_hADBShellPID = Run($Config_Emulator_Path & "adb -s " & $g_sSerialNumber & " shell", "", @SW_HIDE, $STDIN_CHILD + $STDOUT_CHILD)
-	If $g_hADBShellPID <> -1 Then StdinWrite($g_hADBShellPID, @CRLF & @CRLF)
-	Return $g_hADBShellPID
-EndFunc
-
-Func _ADB_GetSerialNumber()
-	Local $sRaw = ADB_Command("get-serialno")
-	If $sRaw == "Timed out." Then Return -1
-	If $sRaw == "unknown" Then Return -2
-	Local $aMatches = StringRegExp($sRaw, ".*:.*", $STR_REGEXPARRAYFULLMATCH)
-	If isArray($aMatches) > 0 And UBound($aMatches) > 0 Then
-		$g_sSerialNumber = $aMatches[UBound($aMatches)-1]
-	Else
-		$g_sSerialNumber = ""
-	EndIf
-	Return $g_sSerialNumber
-EndFunc
-
-Func _ADB_ShellWrite($sCommand)
-	If $g_hADBShellPID <= 0 Or ProcessExists($g_hADBShellPID) <= 0 Then Return -1
-	StdinWrite($g_hADBShellPID, $sCommand & @CRLF)
-EndFunc
-
-Func _ADB_ShellRead($bBinary = False)
-	If $g_hADBShellPID <= 0 Or ProcessExists($g_hADBShellPID) <= 0 Then Return -1
-	Return StdoutRead($g_hADBShellPID, False, $bBinary)
-EndFunc
 
 ;Send ESC through ADB.
 Func ADB_SendESC($iCount = 1)
@@ -148,7 +96,7 @@ Func ADB_isWorking()
 EndFunc   ;==>ADB_isWorking
 
 Func ADB_isGameRunning($sPackageName = $g_sPackageName)
-    If $g_bADBWorking = 0 Then Return -2
+    If $g_bADBWorking = 0 Then Return SetError(1, 0, False)
 
 	$g_bLogEnabled = False
 	Local $bRunning = (StringInStr(ADB_Command("shell ps"), $sPackageName) > 0)

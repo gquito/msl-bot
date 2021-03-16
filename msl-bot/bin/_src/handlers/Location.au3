@@ -130,8 +130,7 @@ EndFunc
 #ce
 Func isLocation($vLocations, $bReturnBool = True, $bSorted = False)
 	Local $aLocations = Null
-	Local $bPopupWindow = StringInStr($vLocations,"popup-window")
-	Local $sCurrLocation = getLocation(True, Not($bPopupWindow))
+	Local $sCurrLocation = getLocation()
 	If ($sCurrLocation = -1) Then Return False
 
 	If isArray($vLocations) = 0 Then
@@ -236,7 +235,7 @@ Func CreateLocationsMap(ByRef $aLocationsMap, ByRef $aLocations)
     Local $t_aMapped[$iSize][2] ;Contain final location map
     For $a = 0 To $iSize-1
         Local $sContent = getArg($aLocationsMap, $aLocations[$a][0]) ;Find corresponding mapped location from name
-        If $sContent <> -1 Then ;if exist
+        If Not(@error) Then ;if exist
             $sContent = $aLocations[$a][0] & "," & $sContent ;Add current location as first in search and other mapped locations
 
             Local $aContents = StringSplit($sContent, ",") 

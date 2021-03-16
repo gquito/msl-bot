@@ -21,6 +21,13 @@
 		data: "Never,3 Minutes,5 Minutes,10 Minutes,20 Minutes,30 Minutes,40 Minutes,50 Minutes,60 Minutes"
 	]
     
+	[combo:
+		name: "Screen Frozen Check",
+		description: "Check if the screen is frozen every interval. Restarts if it is frozen.",
+		default: "30 Seconds",
+		data: "Never,30 Seconds,60 Seconds,120 Seconds,180 Seconds"
+	]
+    
     [combo:
 		name: "Another Device Timeout",
 		description: "Number of minutes it takes until bot app decides to re-login to the game.",
@@ -121,19 +128,19 @@
 
 	[text:
 		name: "Device",
-		description: "ADB assigned IP and PORT to connect to ADB.",
+		description: "ADB assigned IP and PORT to connect to ADB. Leave at ~AUTO to use console to access ADB.",
 		default: "~AUTO"
 	]
 
 	[text:
 		name: "PC Shared",
-		description: "Folder to shared folder between Android and PC.",
+		description: "Folder to shared folder between Android and PC. Only used when Capture Mode is set to ADB.",
 		default: "~AUTO"
 	]
 
 	[text:
 		name: "Android Shared",
-		description: "Folder to shared folder between Android and PC.",
+		description: "Folder to shared folder between Android and PC. Only used when Capture Mode is set to ADB.",
 		default: "~AUTO"
 	]
 ]

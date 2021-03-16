@@ -42,12 +42,12 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                     If $sFind <> "catch-mode" Then ExitLoop(2)
                 Case "pause"
                     If $bForceSurrender > 0 Then
-                        clickWhile(getPointArg("battle-give-up"), "isLocation", "pause,unknown,popup-window", 60, 500)
+                        clickPoint(getPointArg("battle-give-up"), 5, 200)
                         ContinueLoop
                     EndIf
                     If $sFind <> "catch-mode" Then ExitLoop(2)
                 Case "battle-end-exp", "battle-sell", "astroleague-defeat", "astroleague-victory", "champion-defeat", "champion-victory"
-                    clickWhile(getPointArg("tap"), "isLocation", "battle-end-exp,battle-sell,astroleague-defeat,astroleague-victory,champion-defeat,champion-victory,unknown", 100, 100)
+                    clickUntil(getPointArg("tap"), "isLocation", "battle-end", 10, 200)
                     ContinueLoop
                 Case "battle-sell-item"
                     clickPoint(getPointArg("battle-sell-item-cancel"))
@@ -101,9 +101,9 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                             Local $aPoint = findMap("Ancient Dungeon")
                             If isArray($aPoint) > 0 Then 
                                 clickPoint($aPoint)
-                                waitLocation("ancient-colossus-dungeon", 5)
+                                waitLocation("colossus-dungeons", 5)
                             EndIf
-                        Case "ancient-colossus-dungeon"
+                        Case "colossus-dungeons"
                             clickPoint("200,250")
                             waitLocation("golem-dungeons", 5)
                         Case "map-battle", "autobattle-prompt", "dialogue", "monsters-astromon", "popup-window"
@@ -224,7 +224,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
         WEnd
     WEnd
 
-    Local $bOutput = (getLocation() = $sFind)
+    Local $bOutput = (getLocation() == $sFind)
     Log_Add("Navigating result: " & $bOutput, $LOG_DEBUG)
     Log_Level_Remove()
     Return $bOutput

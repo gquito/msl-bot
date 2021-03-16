@@ -5,6 +5,7 @@ Global $Config_Scheduled_Restart = -1
 Global $Config_Location_Stuck_Timeout = 10
 Global $Config_Another_Device_Timeout = 0
 Global $Config_Maintenance_Timeout = 5
+Global $Config_Screen_Frozen_Check = -1
 Global $Config_Save_Logs = True
 Global $Config_Log_Debug = True
 Global $Config_Log_Clicks = True

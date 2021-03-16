@@ -7,6 +7,7 @@ Global $g_sErrorMessage = "" ;Message when functions calls error code.
 Global $g_sScript = "" ;Current name of the running script.
 
 Global $g_sImageSearchPath = @ScriptDir & "\bin\dll\ImageSearchLibrary.dll" ;ImageSearchDLL default path
+Global $g_sMSLHelperPath = @ScriptDir & "\bin\dll\MSLHelper.dll" ;ImageSearchDLL default path
 Global $g_sImagesPath = @ScriptDir & "\bin\images\" ;Path to images
 
 Global $g_sOldTime = ""

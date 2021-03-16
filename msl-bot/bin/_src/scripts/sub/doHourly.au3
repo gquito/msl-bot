@@ -1,6 +1,5 @@
 #include-once
 
-
 Func doHourly()
     Log_Level_Add("doHourly")
     Log_Add("Performing hourly tasks")
@@ -9,13 +8,15 @@ Func doHourly()
     Local $aTurn = ["Collect_Hiddens", "Click_Nezz"]
     For $i = 0 To UBound($aTurn)-1
         If _Sleep(100) Then ExitLoop
-        If Eval("Hourly_" & $aTurn[$i]) <= 0 Then ContinueLoop
-        Local $bResult = Call("Hourly_" & $aTurn[$i])
-        Log_Add($aTurn[$i] & " result: " & $bResult, $LOG_DEBUG)
+
+        Local $sTask = $aTurn[$i]
+        If isBool(Eval("Hourly_" & $sTask)) = True And Eval("Hourly_" & $sTask) = False Then ContinueLoop
+
+        Local $bResult = Call($sTask)
+        Log_Add($sTask & " result: " & $bResult, $LOG_DEBUG)
     Next
 
     Cumulative_AddNum("Collected (Hourly)", 1)
-
     Log_Level_Remove()
     Return True
 EndFunc
@@ -23,7 +24,7 @@ EndFunc
 ;----------------------------------------------
 ;Helper functions
 
-Func Hourly_Close_Village_Interface()
+Func Close_Village_Interface()
     If getLocation() <> "village" Then Return False
     If clickWhile(getPointArg("village-missions-popup-close"), "isPixel", CreateArr(getPixelArg("village-missions-popup")), 5, 200, "CaptureRegion()") <= 0 Then Return False
     If clickWhile(getPointArg("village-events-close"), "isPixel", CreateArr(getPixelArg("village-events")), 5, 200, "CaptureRegion()") <= 0 Then Return False
@@ -31,13 +32,13 @@ Func Hourly_Close_Village_Interface()
     Return True
 EndFunc
 
-Func Hourly_Get_Village_Pos()
+Func Get_Village_Pos()
     Local $iPos = -1
     Local $iTries = 0
 
     If getLocation() <> "village" Then navigate("village")
     While $iPos = -1 And $iTries < 5
-        Hourly_Close_Village_Interface()
+        Close_Village_Interface()
 
         $iPos = getVillagePos()
         If ($iPos = -1) Then
@@ -48,7 +49,7 @@ Func Hourly_Get_Village_Pos()
             navigate("village")
 
             If _Sleep(2000) Then ExitLoop
-            Hourly_Close_Village_Interface()
+            Close_Village_Interface()
         Else
             Log_Add("Airship position detected: " & $iPos & ".", $LOG_DEBUG)
         EndIf
@@ -59,9 +60,9 @@ EndFunc
 
 ;----------------------------------------------
 
-Func Hourly_Collect_Hiddens()
+Func Collect_Hiddens()
     If isLocation("village,quests,monsters,monsters-evolution") > 0 Then navigate("map")
-    Local $iPos = Hourly_Get_Village_Pos()
+    Local $iPos = Get_Village_Pos()
     If $iPos = -1 Then Return False
 
     Log_Add("Collecting hidden rewards.")
@@ -79,7 +80,7 @@ Func Hourly_Collect_Hiddens()
             If _Sleep(200) Then Return False
             Switch getLocation()
                 Case "village"
-                    Hourly_Close_Village_Interface()
+                    Close_Village_Interface()
                     clickPoint($aPoints[$i])
                 Case "hourly-reward"
                     Cumulative_AddNum("Collected (Hidden Trees)", 1)
@@ -100,12 +101,12 @@ Func Hourly_Collect_Hiddens()
     Return True
 EndFunc
 
-Func Hourly_Click_Nezz()
-    Local $iPos = Hourly_Get_Village_Pos()
+Func Click_Nezz()
+    Local $iPos = Get_Village_Pos()
     If $iPos = -1 Then Return False
 
     Local $aNezzLoc = getArg($g_aNezzPos, "village-pos" & $iPos)
-    If ($aNezzLoc <> -1) Then
+    If Not(@error) Then
         Log_Add("Attempting to click nezz.")
         For $aNezz In StringSplit($aNezzLoc, "|", $STR_NOCOUNT)
             clickPoint($aNezz, 1)

@@ -122,7 +122,7 @@ Func Stop()
     HotKeySet("{Esc}") ;unbinds hotkey
 
 ;Resets variables
-    If (FileExists($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")) Then FileDelete($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")
+    If (FileExists($ADB_PC_Shared & "\" & $Config_Emulator_Title & ".rgba")) Then FileDelete($ADB_PC_Shared & "\" & $Config_Emulator_Title & ".rgba")
     $g_hTimerLocation = Null
     $g_hScriptTimer = Null
     $g_sScript = ""
@@ -165,7 +165,7 @@ EndFunc
 
 Func CloseApp()
     Cumulative_Save()
-    FileDelete($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")
+    FileDelete($ADB_PC_Shared & "\" & $Config_Emulator_Title & ".rgba")
     _GDIPlus_Shutdown()
     ProcessClose($g_hADBShellPID)
     Exit

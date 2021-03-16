@@ -594,8 +594,44 @@ Func appMaintenance()
 		WEnd
 		$g_bAntiStuck = True
 
-		Emulator_RestartGame()
+		If $g_bRestarting = False Then Emulator_RestartGame()
 	EndIf
 	
 	Log_Level_Remove()
+EndFunc
+
+Func appUpdate()
+	Log_Level_Add("appUpdate")
+
+	Local $bOutput = True
+	Local $hTimer = Null
+	$g_bAntiStuck = False
+	While $g_bRunning
+		If _Sleep(2000) Then ExitLoop
+
+		Local $sLocation = getLocation()
+		If $sLocation <> "unknown" Then $hTimer = Null
+		Switch $sLocation
+			Case "app-update"
+				clickPoint(findImage("misc-update"))
+			Case "app-google-update"
+				clickPoint(findImage("misc-google-update"))
+			Case "app-google-open"
+				clickPoint(findImage("misc-google-open"))
+			Case "app-update-ok"
+				clickPoint(findImage("misc-ok"))
+			Case "unknown"
+				If $hTimer = Null Then $hTimer = TimerInit()
+				If TimerDiff($hTimer) > 300000 Then
+					$bOutput = False
+					Log_Add("Could not download update from google play.", $LOG_ERROR)
+					ExitLoop
+				EndIf
+		EndSwitch
+	WEnd
+	$g_bAntiStuck = True
+
+	Log_Level_Remove()
+	If $bOutput = False Then Stop()
+	Return $bOutput
 EndFunc

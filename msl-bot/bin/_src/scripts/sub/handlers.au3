@@ -4,13 +4,12 @@ Func HandleCommonLocations($sCurrLocation)
     ;Log_Add("Handling Common Locations. Curr Location = " & $sCurrLocation, $LOG_DEBUG)
     Switch ($sCurrLocation)
         Case "tap-to-start"
-            If (Not(clickWhile(getPointArg("tap-to-start"), "isLocation", "tap-to-start", 10, 2000))) Then 
-                Log_Add("Emulator is not detecting the commands. Restarting Emulator.", $LOG_ERROR)
-                Emulator_Restart(1)
-            EndIf
+            clickPoint(getPointArg("tap-to-start"))
+            waitLocation("event-list", 5)
             Return True
         Case "event-list"
-            If (Not(clickUntil(getPointArg("event-list-close"), "isLocation", "loading,unknown", 10, 2000))) Then Return False
+            clickPoint(getPointArg("event-list-close"))
+            waitLocation("village", 5)
             Return True
         case "super-fest-popup", "village-summon", "anvil"
             clickPoint(getPointArg("back"))
@@ -24,11 +23,11 @@ Func HandleCommonLocations($sCurrLocation)
         Case "loading"
             _Sleep(100)
             Return True
-        Case "app-update","data-update-download"
-            Emulator_RestartGame()
-            Return True
         Case "app-maintenance"
             appMaintenance()
+            Return True
+        Case "app-update"
+            appUpdate()
             Return True
         Case "another-device0"
             anotherDevice()

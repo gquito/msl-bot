@@ -1,32 +1,31 @@
 #include-once
 
-#cs
-	Function: Gets value of argument from an array of arguments
-	Parameters:
-		$aArgs: Array => [[arg1, value1], [arg2, value2]]
-		$sName: String => "arg1"
-	Return: Value of the found argument => "value1"
-#ce
-Func getArg($aArgs, $sName, $bSorted = False)
-	If ($aArgs = -1) Then Return -1
-	
-	If isArray($aArgs) = 0 Or UBound($aArgs) = 0 Then 
-		$g_sErrorMessage = "getArg() => Array argument not valid."
-		Return -1
-	EndIf
+Func getArg($aArgs, $sName)
+	If isArray($aArgs) = False Or UBound($aArgs, $UBOUND_DIMENSIONS) <> 2 Then Return SetError(1, 0, "")
 
-	Local $iFind = -1
-	If $bSorted = 0 Then
-		$iFind = _ArraySearch($aArgs , $sName)
-	Else
-		$iFind = _ArrayBinarySearch($aArgs, $sName, 0, 0, 0)
-	EndIf
-	If $iFind <> -1 Then Return $aArgs [$iFind][1]
-	
-	$g_sErrorMessage = 'getArg() => Argument not found: "' & $sName & '"'
-	Return -1
+	Local $iFind = _ArraySearch($aArgs, $sName, 0, 0, 0, 0, 1, 0)
+	If @error And @error <> 6 Then Return SetError(2, 0, "")
+
+	If $iFind <> -1 Then Return $aArgs[$iFind][1]
+	Return SetError(3, 1, "")
 EndFunc
 
+Func setArg(ByRef $aArgs, $sName, $sValue)
+	If isArray($aArgs) = False Or UBound($aArgs, $UBOUND_DIMENSIONS) <> 2 Then Return SetError(1, 0, False)
+
+	Local $iIndex = _ArraySearch($aArgs, $sName, 0, 0, 0, 0, 1, 0)
+	If @error And @error <> 6 Then Return SetError(2, @error, False)
+
+	If $iIndex <> -1 Then
+		$aArgs[$iIndex][1] = $sValue
+	Else
+		_ArrayAdd($aArgs, $sName)
+		If @error Then Return SetError(3, 0, False)
+		$aArgs[UBound($aArgs)-1][1] = $sValue
+	EndIf
+	
+	Return True
+EndFunc
 
 Func getConfigArg($t_aConfig, $t_sConfig, $t_sDefaultChar, $t_DefaultParam)
     Local $t_sArg = getArg($t_aConfig, $t_sConfig)
@@ -35,153 +34,29 @@ Func getConfigArg($t_aConfig, $t_sConfig, $t_sDefaultChar, $t_DefaultParam)
 	Return $t_DefaultParam
 EndFunc
 
-Global $g_aPixels_SORTED = Null
 Func getPixelArg($sName)
-	;Log_Add("getPixelArg(" & $sName & ")", $LOG_DEBUG)
-	Local $t_sName = $sName
-	If (StringInStr($sName,"/")) Then
-		Local $t_aName = StringSplit($t_sName, "/")
-		Local $t_sVal = ""
-		For $i = 1 to $t_aName[0]
-			Local $t_sPixelVal = getArg($g_aPixels, $t_aName[$i])
-			If ($t_sPixelVal = -1) Then ContinueLoop
-
-			$t_sVal &= $t_sPixelVal
-			If ($i <> $t_aName[0]) Then $t_sVal &= "/"
-		Next
-		Return $t_sVal
-	ElseIf (StringInStr($sName,",")) Then
-		Local $t_aName = StringSplit($t_sName, ",")
-		Local $t_sVal = ""
-		For $i = 1 to $t_aName[0]
-			Local $t_sPixelVal = getArg($g_aPixels, $t_aName[$i])
-			If ($t_sPixelVal = -1) Then ContinueLoop
-
-			$t_sVal &= $t_sPixelVal
-			If ($i <> $t_aName[0]) Then $t_sVal &= "|"
-		Next
-		Return $t_sVal
-	Else
-		If $g_aPixels_SORTED = Null Then 
-			$g_aPixels_SORTED = $g_aPixels
-			_ArraySort($g_aPixels_SORTED)
-		EndIf
-
-		Return getArg($g_aPixels_SORTED, $sName, True)
-	EndIf
+	Return getArg($g_aPixels, $sName)
 EndFunc
 
-Global $g_aLocations_SORTED = Null
-Func getLocationArg($sName)
-	If $g_aLocations_Sorted = Null Then 
-		$g_aLocations_Sorted = $g_aLocations
-		_ArraySort($g_aLocations_Sorted)
-	EndIf
 
-    Return getArg($g_aLocations_Sorted, $sName, True)
-EndFunc
+Func getArgs($sData, $sDelimeter = ":")
+	Local $sPattern = "(.*)(?:\Q" & $sDelimeter & "\E)(.*)"
+	Local $aMatches = StringRegExp($sData, $sPattern, $STR_REGEXPARRAYGLOBALMATCH)
 
-Global $g_aPoints_SORTED = Null
-Func getPointArg($sName)
-	If $g_aPoints_SORTED = Null Then 
-		$g_aPoints_SORTED = $g_aPoints
-		_ArraySort($g_aPoints_SORTED)
-	EndIf
+	Local $iSize = UBound($aMatches) / 2
+	Local $aArgs[$iSize][2]
 
-    Return getArg($g_aPoints_SORTED, $sName)
-EndFunc
-
-#cs
-	Function: Sets value of argument from array of arguments
-	Parameters:
-		$aArgs: Array => [[arg1, value1], [arg2, value2]]
-		$sName: String => "arg1"
-		$sValue: New value to set arg to
-	Returns:
-		True if success, false if argument found.
-#ce
-Func setArg(ByRef $aArgs, $sName, $sValue)
-	Local $iIndex = -1 ;index of argument
-	For $i = 0 To UBound($aArgs)-1
-		If ($aArgs[$i][0] == $sName) Then 
-			$iIndex = $i
-			ExitLoop
-		EndIf
-	Next
-
-	;if not found returns early
-	If ($iIndex = -1) Then Return False
-
-	$aArgs[$iIndex][1] = $sValue
-	Return True
-EndFunc
-
-Func formatArgs($sArgs, $sArgSeparator = ",", $sValueSeparator = "=")
-	If $sArgs = -1 Then Return -1
-	Local $aArgs[0][2]
-
-	If isArray($sArgs) = 0 Then
-		Local $aArguments = StringSplit($sArgs, $sArgSeparator)
-		ReDim $aArgs[$aArguments[0]][2]
-
-		For $i = 1 To $aArguments[0]
-			Local $aData = StringSplit($aArguments[$i], $sValueSeparator, 2)
-			Local $iSize = UBound($aData)
-			If $iSize < 2 Then ContinueLoop
-			If $iSize > 2 Then
-				For $x = 2 To $iSize-1
-					$aData[1] &= $sValueSeparator & $aData[$x]
-				Next
-			EndIf
-
-			$aArgs[$i-1][0] = $aData[0]
-			$aArgs[$i-1][1] = (StringLeft($aData[1], 1) = '"')?StringMid($aData[1], 2, StringLen($aData[1])-2):$aData[1]
-		Next
-	Else
-		Local $iSize = UBound($sArgs)
-		ReDim $aArgs[$iSize][2]
-
+	If isArray($aMatches) = True Then
 		For $i = 0 To $iSize-1
-			Local $aArg = $sArgs[$i]
-			$aArgs[$i][0] = $aArg[0]
-			$aArgs[$i][1] = $aArg[1]
+			$aArgs[$i][0] = $aMatches[$i*2]
+			$aArgs[$i][1] = StringReplace($aMatches[$i*2+1], '"', "")
 		Next
 	EndIf
 
-	;_ArrayDisplay($aArgs)
 	Return $aArgs
 EndFunc
 
-#cs 
-	Function: Reads data from url or file and formats into a readable argument list.
-	Parameters:
-		$sPathOrUrl: Url or file path for data. Usually in a raw form of text file.
-		$sCachePath: Create cache file for remote data.
-		$sValueSeparator: The character used to separate value from identifier.
-#ce
-
-;~ Func getArgs($sPathOrUrl, $sCachePath = "", $sValueSeparator = ":")
-;~ 	Local $t_aData[0]
-;~ 	If (StringInStr($sPathOrUrl,"https://") Or StringInStr($sPathOrUrl, "http://")) Then
-;~ 		Local $sData = BinaryToString(InetRead($sUrl, $INET_FORCERELOAD))
-;~ 		If ($sCachePath <> "") Then
-;~ 			Local $hFile = FileOpen($sCachePath, $FO_OVERWRITE+$FO_CREATEPATH)
-;~ 			FileWrite($hFile, $sData)
-;~ 			FileClose($hFile)
-;~ 			$t_aData = _FileReadToArray($sCachePath,)
-;~ 		EndIf
-;~ 	EndIf
-;~ EndFunc
-
-#cs 
-	Function: Reads data from url and formats into a readable argument list.
-	Parameters:
-		$sUrl: Url for data. Usually in a raw form of text file.
-		$sArgSeparator: The character used to separate each argument and value.
-		$sValueSeparator: The character used to separate value from identifier.
-		$sCachePath: Create cache file for remote data.
-#ce
-Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":", $sCachePath = "")
+Func getArgsFromURL($sUrl, $sDelimeter = ":", $sCachePath = "")
 	Local $sData = BinaryToString(InetRead($sUrl, $INET_FORCERELOAD))
 	If ($sCachePath <> "") Then
 		Local $hFile = FileOpen($sCachePath, $FO_OVERWRITE+$FO_CREATEPATH)
@@ -189,94 +64,61 @@ Func getArgsFromURL($sUrl, $sArgSeparator = ">", $sValueSeparator = ":", $sCache
 		FileClose($hFile)
 	EndIf
 
-	If ($sData == "") Then ;Error handle
-		$g_sErrorMessage = "getArgFromURL() => No information was found URL: " & $sUrl
-		Return -1
-	EndIf
-
-	$sData = StringReplace(StringStripCR($sData), @LF, $sArgSeparator)
-
-	While StringLeft($sData, 1) = $sArgSeparator
-		$sData = StringMid($sData, 2)
-	WEnd
-
-	While StringRight($sData, 1) = $sArgSeparator
-		$sData = StringMid($sData, 1, StringLen($sData)-1)
-	WEnd
-
-	While StringInStr($sData, $sArgSeparator & $sArgSeparator)
-		$sData = StringReplace($sData, $sArgSeparator & $sArgSeparator, $sArgSeparator)
-	WEnd
-
-	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
+	Return getArgs($sData, $sDelimeter)
 EndFunc
 
-#cs 
-	Function: Reads data from file and formats into a readable argument list.
-	Parameters:
-		$sPath: Path to file for for data. Usually in a raw form of text file.
-		$sArgSeparator: The character used to separate each argument and value.
-		$sValueSeparator: The character used to separate value from identifier.
-#ce
-Func getArgsFromFile($sPath, $sArgSeparator = ">", $sValueSeparator = ":")
+Func getArgsFromFile($sPath, $sDelimeter = ":")
 	Local $sData = FileRead($sPath)
+	If @error Then Return SetError(1, 0, 0)
 
-	If ($sData == "") Then ;Error handle
-		$g_sErrorMessage = "getArgFromFile() => No information was found in path: " & $sPath
-		Return -1
-	EndIf
-
-	$sData = StringReplace(StringStripCR($sData), @LF, $sArgSeparator)
-	While StringLeft($sData, 1) = $sArgSeparator
-		$sData = StringMid($sData, 2)
-	WEnd
-
-	While StringRight($sData, 1) = $sArgSeparator
-		$sData = StringMid($sData, 1, StringLen($sData)-1)
-	WEnd
-
-	While StringInStr($sData, $sArgSeparator & $sArgSeparator)
-		$sData = StringReplace($sData, $sArgSeparator & $sArgSeparator, $sArgSeparator)
-	WEnd
-	
-	Return formatArgs($sData, $sArgSeparator, $sValueSeparator)
+	Return getArgs($sData, $sDelimeter)
 EndFunc
 
-#cs 
-	Function: Merges two sets of arguments
-	Parameters:
-		$aFrom: Argument that will be merged to $aTo
-		$aTo: Main argument that will be merged.
-		$cAppend: Character to separate two values. A blank string will overwrite data.
-#ce
-Func mergeArgFromTo($aFrom, ByRef $aTo, $cAppend = '')
+Func mergeArgFromTo($aFrom, ByRef $aTo, $cAppend = '/')
+	If (isArray($aFrom) = False Or isArray($aTo) = False) Or _
+	   (UBound($aFrom, $UBOUND_DIMENSIONS) <> 2) Then
+
+		Return SetError(1, 0, False)
+	EndIf
+
 	For $i = 0 To UBound($aFrom)-1
-		Local $sArgValue = $aFrom[$i][1]
-		Local $sToArg = getArg($aTo, $aFrom[$i][0])
-		If ($sToArg <> -1) Then
-			If ($cAppend = '') Then
-				setArg($aTo, $aFrom[$i][0], $sArgValue)
-			Else
-				setArg($aTo, $aFrom[$i][0], $sToArg & $cAppend & $sArgValue)
-			EndIf
+		Local $sName = $aFrom[$i][0]
+		Local $sValue = $aFrom[$i][1]
+
+		Local $sCurrent = getArg($aTo, $sName)
+		If @error And Not(@extended) Then Return SetError(2, 0, False)
+		If @extended Then ;Not found
+			setArg($aTo, $sName, $sValue)
 		Else
-			ReDim $aTo[UBound($aTo)+1][2]
-			$aTo[UBound($aTo)-1][0] = $aFrom[$i][0]
-			$aTo[UBound($aTo)-1][1] = $aFrom[$i][1]
+			setArg($aTo, $sName, $sCurrent & $cAppend & $sValue)
 		EndIf
 	Next
+
+	Return True
 EndFunc
 
-Func saveAndReloadArgs(ByRef $aArgs)
-
+Func getLocationArg($sName)
+    Return getArg($g_aLocations, $sName)
 EndFunc
 
-Func isEnabled($sArg)
-	$sArg = StringStripWS($sArg, $STR_STRIPALL)
-	Return ($sArg = "enabled")
+Func getPointArg($sName)
+    Return getArg($g_aPoints, $sName)
 EndFunc
 
-Func isDisabled($sArg)
-	$sArg = StringStripWS($sArg, $STR_STRIPALL)
-	Return ($sArg = "disabled")
+; Format Script Arguments
+Func formatArgs($aScript)
+	If isArray($aScript) = False Then Return SetError(1, 0, -1)
+
+	Local $iSize = UBound($aScript)
+	Local $aArgs[$iSize][2]
+
+	For $i = 0 To $iSize-1
+		Local $aSetting = $aScript[$i]
+		If isArray($aSetting) = False Or UBound($aSetting) < 2 Then Return SetError(2, 0, -1)
+
+		$aArgs[$i][0] = $aSetting[0]
+		$aArgs[$i][1] = StringReplace($aSetting[1], '"', "")
+	Next
+
+	Return $aArgs
 EndFunc

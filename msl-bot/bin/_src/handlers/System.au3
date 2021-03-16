@@ -43,16 +43,27 @@ Func _AntiStuck()
     Log_Level_Add("_AntiStuck")
     Local $bOutput = False
 
+    If $Config_Screen_Frozen_Check > 0 Then
+        If Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, $Config_Screen_Frozen_Check) = 0 And TimerDiff($g_hGameCheckCD) > 2000 Then
+            $g_hGameCheckCD = TimerInit()
+            If _AntiStuck_Frozen() = True Then
+                Log_Add("AntiStuck: Game is frozen. Restarting Game.", $LOG_ERROR)
+    
+                $bOutput =_AntiStuck_Restart()
+                If $bOutput <= 0 Then Stop()
+            EndIf
+        EndIf
+    EndIf
+    
     If Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, 30) = 0 And TimerDiff($g_hGameCheckCD) > 2000 Then
         $g_hGameCheckCD = TimerInit()
-
-        If _AntiStuck_Frozen() > 0 Or (ADB_isWorking() > 0 And ADB_IsGameRunning() <= 0) Then
-            Log_Add("AntiStuck: Game is not running or frozen. Restarting Game.", $LOG_ERROR)
+        If ADB_isWorking() > 0 And ADB_IsGameRunning() <= 0 Then
+            Log_Add("AntiStuck: Game is not running. Restarting Game.", $LOG_ERROR)
 
             $bOutput =_AntiStuck_Restart()
             If $bOutput <= 0 Then Stop()
-
         EndIf
+
     EndIf
 
     ;AntiStuck sequence
@@ -74,32 +85,30 @@ Func _AntiStuck()
     Return $bOutput
 EndFunc
 
-Global $_AntiStuck_Frozen_FirstBMP = Null
+Global $_AntiStuck_Frozen = Null
 Func _AntiStuck_Frozen()
-    If $_AntiStuck_Frozen_FirstBMP = Null Then
-        $_AntiStuck_Frozen_FirstBMP = _GDIPlus_BitmapCloneArea(CaptureRegion(), 0, 0, $EMULATOR_WIDTH, $EMULATOR_HEIGHT, $GDIP_PXF32ARGB)
-        Return -1
+    If $_AntiStuck_Frozen = Null Then
+        CaptureRegion()
+        $_AntiStuck_Frozen = GetPixelSum()
+        If @error Then $_AntiStuck_Frozen = Null
+
+        Return False
     EndIf
 
-    Local $tBitmapData1 = _GDIPlus_BitmapLockBits($_AntiStuck_Frozen_FirstBMP, 0, 0, $EMULATOR_WIDTH, $EMULATOR_HEIGHT, $GDIP_ILMREAD, $GDIP_PXF32ARGB)
-    Local $tBitmapData2 = _GDIPlus_BitmapLockBits(CaptureRegion(), 0, 0, $EMULATOR_WIDTH, $EMULATOR_HEIGHT, $GDIP_ILMREAD, $GDIP_PXF32ARGB)
-    Local $hFirst = DllStructGetData($tBitmapData1, "Scan0")
-    Local $hSecond = DllStructGetData($tBitmapData2, "Scan0")
+    CaptureRegion()
+    Local $iSum = GetPixelSum()
+    If @error Then Return False
 
-    Local $iResult = DllCall("msvcrt.dll", "int:cdecl", "memcmp", "ptr", $hFirst, "ptr", $hSecond, "uint", $EMULATOR_WIDTH * $EMULATOR_HEIGHT)
+    Local $iResult = ($_AntiStuck_Frozen = $iSum)
+    $_AntiStuck_Frozen = Null
 
-    _GDIPlus_BitmapUnlockBits($_AntiStuck_Frozen_FirstBMP, $tBitmapData1)
-    _GDIPlus_BitmapUnlockBits($g_hBitmap, $tBitmapData2)
-    _GDIPlus_BitmapDispose($_AntiStuck_Frozen_FirstBMP)
-    $_AntiStuck_Frozen_FirstBMP = Null
-
-    Return $iResult[0] = 0
+    Return $iResult
 EndFunc
 
 Func _AntiStuck_Restart()
     Local $bOutput = True
-    If Emulator_RestartGame(2) <= 0 Then
-        If Emulator_Restart(2) <= 0 Then
+    If Emulator_RestartGame(3) <= 0 Then
+        If Emulator_Restart(3) <= 0 Then
             Log_Add("AntiStuck: Could not restart emulator.", $LOG_ERROR)
             $bOutput = False
         EndIf

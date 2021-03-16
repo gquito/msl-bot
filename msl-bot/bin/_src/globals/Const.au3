@@ -42,7 +42,7 @@ Global Const $CATCH_MODE_NORMAL = 1, $CATCH_MODE_EXOTIC = 2
 #EndRegion
 
 Global Const $g_sLocalFolder = @ScriptDir & "\bin\local\"
-Global Const $g_sLocalCacheFolder = $g_sLocalFolder & "cache\"
+Global Const $g_sLocalOriginalFolder = $g_sLocalFolder & "original\"
 Global Const $g_sLocalDataFolder = $g_sLocalFolder & "data\"
 Global Const $g_sProfileFolder = @ScriptDir & "\profiles\"
 Global Const $g_sRemoteUrl = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/data/"

@@ -1,4 +1,4 @@
-Global $aVersion = [4, 2, 2] ;Major, Minor, Build
+Global $aVersion = [4, 2, 3] ;Major, Minor, Build
 
 #pragma compile(Out, "msl-bot.exe")
 #pragma compile(x64, False)
@@ -6,8 +6,8 @@ Global $aVersion = [4, 2, 2] ;Major, Minor, Build
 #pragma compile(ProductName, "Monster Super League Bot")
 #pragma compile(FileDescription, "Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot")
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 4.2.2)
-#pragma compile(ProductVersion, 4.2.2)
+#pragma compile(FileVersion, 4.2.3)
+#pragma compile(ProductVersion, 4.2.3)
 #pragma compile(OriginalFilename, "msl-bot.exe")
 #pragma compile(AutoItExecuteAllowed, True)
 
@@ -22,48 +22,34 @@ Initialize()
 
 ;Function: Initialize GUI and data.
 Func Initialize()
-    ;If (@Compiled) Then
-    ;    MsgBox(0, "Not Supported", "Compiling is no longer supported until further notice")
-    ;    Exit
-    ;EndIf
+    If (@Compiled) Then
+        MsgBox(0, "Not Supported", "Compiling is no longer supported until further notice")
+        Exit
+    EndIf
 
     _GDIPlus_Startup()
 
     ; Default configs and constants
-    If _WinAPI_IsInternetConnected() = 0 Then
-        MsgBox($MB_ICONWARNING+$MB_OK, "Not connected.", "Could not retrieve script data from remote location." & @CRLF & "Using local files instead.")
-        If FileExists($g_sLocalCacheFolder & $g_sLocations) = 0 Then MsgBox($MB_ICONERROR+$MB_OK, "No cache found.", "There has not been any cache files made.")
-        $g_aNezzPos = getArgsFromFile($g_sLocalCacheFolder & $g_sNezzPositions)
-        $g_aLocations = getArgsFromFile($g_sLocalCacheFolder & $g_sLocations)
-        $g_aPixels = getArgsFromFile($g_sLocalCacheFolder & $g_sPixels)
-        $g_aPoints = getArgsFromFile($g_sLocalCacheFolder & $g_sPoints)
-        $g_aLocationsMap = getArgsFromFile($g_sLocalCacheFolder & $g_sLocationsMap)
+    $g_aNezzPos = getArgsFromFile($g_sLocalOriginalFolder & $g_sNezzPositions)
+    If @error Then MsgBox($MB_ICONERROR, "MSL-Bot Error", "Could not read file: " & $g_sLocalOriginalFolder & $g_sNezzPositions)
+    $g_aLocations = getArgsFromFile($g_sLocalOriginalFolder & $g_sLocations)
+    If @error Then MsgBox($MB_ICONERROR, "MSL-Bot Error", "Could not read file: " & $g_sLocalOriginalFolder & $g_sLocations)
+    $g_aPixels = getArgsFromFile($g_sLocalOriginalFolder & $g_sPixels)
+    If @error Then MsgBox($MB_ICONERROR, "MSL-Bot Error", "Could not read file: " & $g_sLocalOriginalFolder & $g_sPixels)
+    $g_aPoints = getArgsFromFile($g_sLocalOriginalFolder & $g_sPoints)
+    If @error Then MsgBox($MB_ICONERROR, "MSL-Bot Error", "Could not read file: " & $g_sLocalOriginalFolder & $g_sPoints)
+    $g_aLocationsMap = getArgsFromFile($g_sLocalOriginalFolder & $g_sLocationsMap)
+    If @error Then MsgBox($MB_ICONERROR, "MSL-Bot Error", "Could not read file: " & $g_sLocalOriginalFolder & $g_sLocationsMap)
+    $g_aImageLocations = getArgsFromFile($g_sLocalDataFolder & $g_sImageLocations)
+    If @error Then MsgBox($MB_ICONERROR, "MSL-Bot Error", "Could not read file: " & $g_sLocalDataFolder & $g_sImageLocations)
 
-        If FileGetSize($g_sLocalFolder & $g_sScriptsSettings) <= 0 Then
-            Script_SetData($g_sLocalCacheFolder & $g_sScriptsSettings)
-        Else
             Script_SetData($g_sLocalFolder & $g_sScriptsSettings)
-        EndIf
-    Else
-        $g_aNezzPos = getArgsFromURL($g_sRemoteUrl & $g_sNezzPositions, ">", ":", $g_sLocalCacheFolder & $g_sNezzPositions)
-        $g_aLocations = getArgsFromURL($g_sRemoteUrl & $g_sLocations, ">", ":", $g_sLocalCacheFolder & $g_sLocations)
-        $g_aPixels = getArgsFromURL($g_sRemoteUrl & $g_sPixels, ">", ":", $g_sLocalCacheFolder & $g_sPixels)
-        $g_aPoints = getArgsFromURL($g_sRemoteUrl & $g_sPoints, ">", ":", $g_sLocalCacheFolder & $g_sPoints)
-        $g_aLocationsMap = getArgsFromURL($g_sRemoteUrl & $g_sLocationsMap, ">", ":", $g_sLocalCacheFolder & $g_sLocationsMap)
-
-        If FileGetSize($g_sLocalFolder & $g_sScriptsSettings) <= 0 Then
-            Script_SetData($g_sRemoteUrl & $g_sScripts, $g_sLocalCacheFolder & $g_sScriptsSettings)
-        Else
-            Script_SetData($g_sLocalFolder & $g_sScriptsSettings)
-        EndIf
-    EndIf
     
-    mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sLocations), $g_aLocations, "/")
+    mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sLocations), $g_aLocations)
     mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sLocationsMap), $g_aLocationsMap)
     mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sNezzPositions), $g_aNezzPos)
     mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sPixels), $g_aPixels)
     mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sPoints), $g_aPoints)
-    mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sImageLocations), $g_aImageLocations, "|")
 
     CreateLocationsMap($g_aLocationsMap, $g_aLocations)
 
@@ -84,15 +70,6 @@ EndFunc
 
 Func MSLMain()
     If $g_bRunning > 0 Then
-        ;Other preconditions
-        If ($Config_Capture_Mode = $BKGD_ADB) Then
-            CaptureRegion()
-            If (Not(FileExists($Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png"))) Then
-                MsgBox($MB_ICONERROR+$MB_OK, "Shared folder not valid.", "Image file was not created: " & $Config_ADB_Shared_Folder2 & "\" & $Config_Emulator_Title & ".png")
-                Stop()
-            EndIf
-        EndIf
-
         WinSetTitle($g_hParent, "", $g_sAppTitle & ": " & StringReplace($g_sScript, "_", ""))
         Call(StringReplace($g_sScript, " ", "_"))
         If (@error = 0xDEAD And @extended = 0xBEEF) Then MsgBox($MB_ICONERROR+$MB_OK, "Function call error", "Could not call function: " & StringReplace($g_sScript, " ", "_"))

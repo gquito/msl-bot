@@ -37,6 +37,7 @@ EndFunc
 
 Func Config_Update()
     Local $aConfigSettings = formatArgs(Script_DataByName("_Config")[2]) 
+    Local $aADBSettings = formatArgs(Script_DataByName("_ADB")[2])
     Local $aDelaySettings = formatArgs(Script_DataByName("_Delays")[2])
     Local $aGeneralSettings = formatArgs(Script_DataByName("_General")[2])
     Local $aHourlySettings = formatArgs(Script_DataByName("_Hourly")[2])
@@ -44,6 +45,7 @@ Func Config_Update()
     Local $aFilterSettings = formatArgs(Script_DataByName("_Filter")[2])
 
     Config_CreateGlobals($aConfigSettings, "Config")
+    Config_CreateGlobals($aADBSettings, "ADB")
     Config_CreateGlobals($aDelaySettings, "Delay")
     Config_CreateGlobals($aGeneralSettings, "General")
     Config_CreateGlobals($aHourlySettings, "Hourly")
@@ -51,20 +53,20 @@ Func Config_Update()
     Config_CreateGlobals($aFilterSettings, "Filter")
 
     ;Emulator Console ADB and Shared folder
-    Global $Config_Console_ADB, $Config_ADB_Shared_Folder1, $Config_ADB_Shared_Folder2
+    Global $Config_Console_ADB
     Switch Stringlower($Config_Emulator_Console)
         Case "ldconsole", "dnconsole"
             $Config_Console_ADB = 'ldconsole adb --name ' & $Config_Emulator_Title & ' --command '
-            $Config_ADB_Shared_Folder1 = "/mnt/sdcard/Pictures/Screenshots/"
-            $Config_ADB_Shared_Folder2 = "C:\Users\" & @ComputerName & "\Documents\XuanZhi\Pictures\Screenshots\"
+            If $ADB_Android_Shared == "~AUTO" Then $ADB_Android_Shared = "/mnt/sdcard/Pictures/Screenshots/"
+            If $ADB_PC_Shared == "~AUTO" Then $ADB_PC_Shared = @HomePath & "\Documents\XuanZhi\Pictures\Screenshots\"
         Case "noxconsole"
             $Config_Console_ADB = 'NoxConsole adb -name:' & $Config_Emulator_Title & ' -command:'
-            $Config_ADB_Shared_Folder1 = "/mnt/sdcard/Pictures/"
-            $Config_ADB_Shared_Folder2 = "C:\Users\" & @ComputerName & "\Nox_share\Pictures\"
+            If $ADB_Android_Shared == "~AUTO" Then $ADB_Android_Shared = "/mnt/sdcard/Pictures/"
+            If $ADB_PC_Shared == "~AUTO" Then $ADB_PC_Shared = @HomePath & "\Nox_share\Pictures\"
         Case "memuc"
             $Config_Console_ADB = 'memuc adb -n ' & $Config_Emulator_Title & ' '
-            $Config_ADB_Shared_Folder1 = "/mnt/sdcard/Pictures/"
-            $Config_ADB_Shared_Folder2 = "C:\Users\" & @ComputerName & "\Pictures\MEmu Photo"
+            If $ADB_Android_Shared == "~AUTO" Then $ADB_Android_Shared = "/mnt/sdcard/Pictures/"
+            If $ADB_PC_Shared == "~AUTO" Then $ADB_PC_Shared = @HomePath & "\Pictures\MEmu Photo"
     EndSwitch
 
     ;parsing settings
@@ -73,6 +75,13 @@ Func Config_Update()
             $Config_Location_Stuck_Timeout = -1
         Case Else
             $Config_Location_Stuck_Timeout = Int(StringMid($Config_Location_Stuck_Timeout, 1, StringLen($Config_Location_Stuck_Timeout) - StringLen(" Minutes")))
+    EndSwitch
+
+    Switch $Config_Screen_Frozen_Check
+        Case "Never"
+            $Config_Screen_Frozen_Check = -1
+        Case Else
+            $Config_Screen_Frozen_Check = Int(StringMid($Config_Screen_Frozen_Check, 1, StringLen($Config_Screen_Frozen_Check) - StringLen(" Seconds")))
     EndSwitch
 
     Switch $Config_Another_Device_Timeout
