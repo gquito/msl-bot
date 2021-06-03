@@ -9,6 +9,7 @@ Global $Config_Screen_Frozen_Check = -1
 Global $Config_Save_Logs = True
 Global $Config_Log_Debug = True
 Global $Config_Log_Clicks = True
+Global $Config_Ask_For_Updates = True
 Global $Config_Emulator_Path = "~AUTO"
 Global $Config_Emulator_Console = "ldconsole"
 Global $Config_Emulator_Title = "LDPlayer"
