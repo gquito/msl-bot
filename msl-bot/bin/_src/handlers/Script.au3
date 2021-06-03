@@ -259,7 +259,7 @@ Func ScriptTest()
 
     If $bAdbWorking > 0 And $bCaptureWorking > 0 Then
         If isLocation("map") > 0 Then
-            Local $bAdbResponse = clickWhile("414,16", "isPixel", CreateArr("0, 0" & getColor(0, 0)), 5, 2000, "CaptureRegion()", $MOUSE_ADB)
+            Local $bAdbResponse = clickWhile("414,16", "isPixel", CreateArr("0,0," & getColor(0, 0)), 5, 2000, "CaptureRegion()", $MOUSE_ADB)
             _ArrayAdd($aTempLOG, "  -ADB response status: " & $bAdbResponse) ; Opens refill window using ADB
             If $bAdbResponse = 0 Then $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
         Else
