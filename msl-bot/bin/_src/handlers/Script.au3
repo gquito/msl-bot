@@ -232,7 +232,7 @@ Func ScriptTest()
             $bCaptureWorking = True
 
             ;Opens refill window
-            If clickWhile("414,16", "isPixel", CreateArr(0, 0, $cFirst), 5, 2000, "CaptureRegion()") = 0 Then 
+            If clickWhile("414,16", "isPixel", CreateArr("0,0," & $cFirst), 5, 2000, "CaptureRegion()") = 0 Then 
                 $sError &= @CRLF & @CRLF & "- Click is not working. Make sure you have the correct DISPLAY SCALING. You can check by right clicking in your desktop and clicking Display Settings. You will see" & _
                     " the scaling. Set the setting DISPLAY SCALING in _Config as the same as the scaling in your display setting. You can also change the click method in _Config."
             
@@ -259,7 +259,7 @@ Func ScriptTest()
 
     If $bAdbWorking > 0 And $bCaptureWorking > 0 Then
         If isLocation("map") > 0 Then
-            Local $bAdbResponse = clickWhile("414,16", "isPixel", CreateArr(0, 0, getColor(0, 0)), 5, 2000, "CaptureRegion()", $MOUSE_ADB)
+            Local $bAdbResponse = clickWhile("414,16", "isPixel", CreateArr("0, 0" & getColor(0, 0)), 5, 2000, "CaptureRegion()", $MOUSE_ADB)
             _ArrayAdd($aTempLOG, "  -ADB response status: " & $bAdbResponse) ; Opens refill window using ADB
             If $bAdbResponse = 0 Then $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
         Else
