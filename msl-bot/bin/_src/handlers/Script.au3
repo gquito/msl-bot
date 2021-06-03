@@ -46,6 +46,8 @@ Func Start()
 
     If $g_bRunning > 0 And $bOutput > 0 Then
         If $g_sScript == "" Then _GUICtrlComboBox_GetLBText($g_hCmb_Scripts, _GUICtrlComboBox_GetCurSel($g_hCmb_Scripts), $g_sScript)
+        GUICtrlSetData($g_idLbl_RunningScript, "Running Script: " & $sUser & $g_sScript)
+
 
         ;DEBUG INFO=============================
         Local $aData = ($g_aScripts[0])[2] ;Config data
@@ -112,7 +114,7 @@ EndFunc
 
 Func _Schedule_Guardian()
     Local $aValues = Stats_Values_GetSpecific(Stats_GetValues($g_aStats), CreateArr("Guardians", "Astrogems_Used"))
-    Local $aParam = CreateArr($Guardian_Guardian_Mode, IsDeclared($g_sScript & "_Refill")?Eval($g_sScript & "_Refill"):0, 0, $Guardian_Target_Boss)
+    Local $aParam = CreateArr($Guardian_Guardian_Mode, IsDeclared($g_sScript & "_Refill")?Eval($g_sScript & "_Refill"):0, 0, $Guardian_Guided_Auto, $Guardian_Target_Boss)
     _RunScript("Farm_Guardian", $aParam, $aValues)
 
     navigate("map")
@@ -166,7 +168,6 @@ EndFunc
 Func CloseApp()
     Cumulative_Save()
     FileDelete($ADB_PC_Shared & "\" & $Config_Emulator_Title & ".rgba")
-    _GDIPlus_Shutdown()
     ProcessClose($g_hADBShellPID)
     Exit
 EndFunc
@@ -294,10 +295,9 @@ Func ScriptTest()
     
     ;Imagesearch test
     _ArrayAdd($aTempLOG, "Checking Imagesearch:")
-    Local $t_hBitmap = _GDIPlus_BitmapCreateFromFile(@ScriptDir & "\bin\images\misc\misc-test1.bmp")
+    Local $t_hBitmap = _WinAPI_LoadImage(0,  @ScriptDir & "\bin\images\misc\misc-test1.bmp", $IMAGE_BITMAP, 0, 0, $LR_LOADFROMFILE)
     If ($t_hBitmap <> 0) Then
-        Local $t_hHBitmap = _GDIPlus_BitmapCreateHBITMAPFromBitmap($t_hBitmap)
-        $g_hHBitmap = $t_hHBitmap
+        $g_hBitmap = $t_hBitmap
         If (isArray(findImage("misc-test2", 90, 0, 0, 0, 597, 348, False))) Then
             _ArrayAdd($aTempLOG, "  -Imagesearch working status: True")
         Else
@@ -308,8 +308,7 @@ Func ScriptTest()
         _ArrayAdd($aTempLOG, "  -Imagesearch working status: Unknown")
         $sError &= @CRLF & @CRLF & "- The file \bin\images\misc\misc-test1.bmp or \bin\images\misc\misc-test2.bmp is missing. Could not check imagesearch status."
     EndIf
-    _GDIPlus_BitmapDispose($t_hBitmap)
-    _WinAPI_DeleteObject($t_hHBitmap)
+    _WinAPI_DeleteObject($t_hBitmap)
 
     _ArrayAdd($aTempLOG, "== Finished Compatibility Test ==")
 
@@ -445,10 +444,10 @@ Func EditScript($sName, $sConfig, $sValue)
                         $aNew[2] = $aLayer
                         $g_aScripts[$iFound] = $aNew
 
-                        Log_Add($g_sScript & ", " & $sConfig & " has been changed to " & $sValue)
+                        Log_Add($sName & ", " & $sConfig & " has been changed to " & $sValue)
                     EndIf
 
-                Case "text"
+                Case "text", "list"
                     Local $aNew = $g_aScripts[$iFound]
                     Local $aLayer = $aNew[2]
                     Local $aLayer2 = $aLayer[$iFoundConfig]
@@ -458,10 +457,10 @@ Func EditScript($sName, $sConfig, $sValue)
                     $aNew[2] = $aLayer
                     $g_aScripts[$iFound] = $aNew
 
-                    Log_Add($g_sScript & ", " & $sConfig & " has been changed to " & $sValue)
+                    Log_Add($sName & ", " & $sConfig & " has been changed to " & $sValue)
 
-                Case "list"
-                    MsgBox($MB_ICONWARNING, "EditScript Warning", "List cannot be edited yet.")
+                ;Case "list"
+                ;    MsgBox($MB_ICONWARNING, "EditScript Warning", "List cannot be edited yet.")
             EndSwitch
             _GUICtrlComboBox_SetCurSel($g_hCmb_Scripts, _GUICtrlComboBox_FindStringExact($g_hCmb_Scripts, $sName))
 

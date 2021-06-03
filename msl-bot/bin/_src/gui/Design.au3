@@ -62,7 +62,7 @@ Func CreateGUI()
     Global $M_Scripts_Collect_Quest =       GUICtrlCreateMenuItem("Collect Quest", $Menu_Scripts)
     Global $M_Scripts_Guardian_Dungeon =    GUICtrlCreateMenuItem("Guardian Dungeon", $Menu_Scripts)
 
-    Global $Menu_Capture =              GuiCtrlCreateMenu("Capture")
+    Global $Menu_Capture =              GUICtrlCreateMenu("Capture")
     Global $M_Capture_Full_Screenshot =     GUICtrlCreateMenuItem("Full Screenshot", $Menu_Capture)
     Global $M_Capture_Partial_Screenshot =  GUICtrlCreateMenuItem("Partial Screenshot...", $Menu_Capture)
     Global $M_Capture_Open_Folder =         GUICtrlCreateMenuItem("Open Folder...", $Menu_Capture)
@@ -75,6 +75,7 @@ Func CreateGUI()
         ["^w", $Dummy_Test_Function]]
     GUISetAccelerators($aAccelKeys)
 ;################################################## END MENU ##################################################
+
 
 ;################################################## SCRIPT TAB ##################################################
     GUICtrlCreateTabItem("Script")
@@ -108,7 +109,7 @@ Func CreateGUI()
     $g_idLV_ScriptConfig = GUICtrlCreateListView("", 20, 106, 360, 200, $LVS_REPORT+$LVS_SINGLESEL+$LVS_NOSORTHEADER)
     $g_hLV_ScriptConfig = GUICtrlGetHandle($g_idLV_ScriptConfig)
     _GUICtrlListView_SetExtendedListViewStyle($g_hLV_ScriptConfig, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
-    _GUICtrlListView_AddColumn($g_hLV_ScriptConfig, "Setting", 116, 0)
+    _GUICtrlListView_AddColumn($g_hLV_ScriptConfig, "Setting", 170, 0)
     _GUICtrlListView_AddColumn($g_hLV_ScriptConfig, "Value (Double click to edit)", 244, 0)
     ;hidden
     _GUICtrlListView_AddColumn($g_hLV_ScriptConfig, "Description", 0) 
@@ -227,6 +228,23 @@ Func CreateGUI()
 
 ;################################################## END STATS TAB ##################################################
 
+;################################################## VIEW TAB ##################################################
+    GUICtrlCreateTabItem("Vision")
+
+    $g_idPic = GUICtrlCreatePic("", 5, 55, 389, 389*(69/100), BitOR($GUI_SS_DEFAULT_PIC, $WS_BORDER))
+    $g_hPic = GUICtrlGetHandle($g_idPic)
+
+    $g_idBtn_CaptureRegion = GUICtrlCreateButton("Capture Region", 310, 25, -1, -1)
+    $g_hBtn_CaptureRegion = GUICtrlGetHandle($g_idBtn_CaptureRegion)
+
+    $g_idLbl_BotView = GUICtrlCreateLabel("Bot Vision:" & $g_sScript, 15, 32, 400, -1, $SS_LEFT)
+
+    GUICtrlSetResizing($g_idLbl_BotView, $GUI_DOCKTOP+$GUI_DOCKLEFT)
+    GUICtrlSetResizing($g_idBtn_CaptureRegion, $GUI_DOCKTOP+$GUI_DOCKRIGHT+$GUI_DOCKSIZE)
+    GUICtrlSetResizing($g_idPic, $GUI_DOCKTOP+$GUI_DOCKLEFT+$GUI_DOCKRIGHT+$GUI_DOCKSIZE)
+
+;################################################## END DONATE TAB ##################################################
+
 ;################################################## DONATE TAB ##################################################
     GUICtrlCreateTabItem("Donate")
 
@@ -259,7 +277,7 @@ Func CreateGUI()
     GUIRegisterMsg($WM_COMMAND, "WM_COMMAND")
     GUIRegisterMsg($WM_NOTIFY, "WM_NOTIFY")
 
-    WinMove($g_hParent, "", (@DesktopWidth / 2)-200, (@DesktopHeight / 2)-200, 400, 420)
+    WinMove($g_hParent, "", (@DesktopWidth / 2)-200, (@DesktopHeight / 2)-200, 438, 585)
     Cumulative_Load()
     GUIMain()
 EndFunc
@@ -362,4 +380,39 @@ Func BuildLogArea($bSeperateWindow = False)
     GUICtrlSetResizing($g_idLV_Log, $GUI_DOCKBOTTOM+$GUI_DOCKHEIGHT)
     GUICtrlSetResizing($g_idLV_Stat, $GUI_DOCKTOP+$GUI_DOCKBOTTOM)
     GUICtrlSetResizing($g_idBtn_Detach, $GUI_DOCKBOTTOM+$GUI_DOCKHEIGHT)
+EndFunc
+
+Global $g_aPoint_UpdatePicture_Cache = Null
+Func UpdatePicture($aCursor = $g_aPoint_UpdatePicture_Cache)
+    If $g_hBitmap = 0 Or $g_hBitmap = Null Then Return -1
+    If BitAnd(WinGetState($g_hParent), $WIN_STATE_MINIMIZED) = False And _GUICtrlTab_GetCurSel($g_hTb_Main) = 4 Then
+        Local $aSize = ControlGetPos("", "", $g_hPic)
+        Local $tagSize = _WinAPI_GetBitmapDimension($g_hBitmap)
+        Local $aImageSize = [DllStructGetData($tagSize, 'X'), DllStructGetData($tagSize, 'Y')]
+        If $aImageSize[0] = 0 Or $aImageSize[1] = 0 Then Return -1
+
+        Local $hBitmap = _WinAPI_AdjustBitmap($g_hBitmap, $aSize[2]-2, ($aSize[2])*($aImageSize[1]/$aImageSize[0])-2)
+
+        GUICtrlSetPos($g_idPic, $aSize[0], $aSize[1], $aSize[2], ($aSize[2])*($aImageSize[1]/$aImageSize[0]))
+        _WinAPI_DeleteObject(GUICtrlSendMsg($g_idPic, $STM_SETIMAGE, $IMAGE_BITMAP, $hBitmap))
+        _WinAPI_DeleteObject($hBitmap)
+
+        Local $aPointer[2] = [0, 0]
+        If isArray($aCursor) = True And isArray($aImageSize) = True Then
+            $g_aPoint_UpdatePicture_Cache = $aCursor
+            Local $iScaleX = $aImageSize[0]/($aSize[2]-2)
+            Local $iScaleY = $aImageSize[1]/($aSize[3]-2)
+            $aPointer[0] = Int(($aCursor[0]-($aSize[0]+1)) * $iScaleX)
+            $aPointer[1] = Int(($aCursor[1]-($aSize[1]+1)) * $iScaleY)
+        EndIf
+
+        Local $iColor = getColor($aPointer[0], $aPointer[1])
+        GUICtrlSetData($g_idLbl_BotView, "Bot Vision: (Control Handle: " & $g_hControl & _
+                                         ", Location: " & getLocation(False, True) & _
+                                         ", Size: " & $aImageSize[0] & "x" & $aImageSize[1] & _
+                                         ", Cursor:" & $aPointer[0] & "," & $aPointer[1] & _
+                                         ", Color: " & $iColor & ")")
+        
+        Return CreateArr($aPointer[0], $aPointer[1], $iColor)
+    EndIf
 EndFunc

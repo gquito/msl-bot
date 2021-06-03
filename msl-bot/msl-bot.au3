@@ -1,13 +1,13 @@
-Global $aVersion = [4, 2, 3] ;Major, Minor, Build
+Global $aVersion = [4, 3, 0] ;Major, Minor, Build
 
-#pragma compile(Out, "msl-bot.exe")
+#pragma compile(Out, "msl-donator.exe")
 #pragma compile(x64, False)
 #pragma compile(UPX, False)
 #pragma compile(ProductName, "Monster Super League Bot")
 #pragma compile(FileDescription, "Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot")
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 4.2.3)
-#pragma compile(ProductVersion, 4.2.3)
+#pragma compile(FileVersion, 4.3.0)
+#pragma compile(ProductVersion, 4.3.0)
 #pragma compile(OriginalFilename, "msl-bot.exe")
 #pragma compile(AutoItExecuteAllowed, True)
 
@@ -26,8 +26,6 @@ Func Initialize()
         MsgBox(0, "Not Supported", "Compiling is no longer supported until further notice")
         Exit
     EndIf
-
-    _GDIPlus_Startup()
 
     ; Default configs and constants
     $g_aNezzPos = getArgsFromFile($g_sLocalOriginalFolder & $g_sNezzPositions)

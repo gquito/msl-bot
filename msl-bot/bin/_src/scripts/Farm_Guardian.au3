@@ -9,6 +9,7 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
     Global $Status, $Guardians, $Astrogems_Used
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
+                    CreateArr("Text",       "Location"), _
                     CreateArr("Number",     "Guardians"), _
                     CreateArr("Ratio",      "Astrogems_Used",       "Farm_Guardian_Refill") _
                 ))
@@ -59,7 +60,8 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
                     waitLocation("map-battle", 5)
                 Else
                     ;Check for more dungeons
-                    Local $aCount = findImageMultiple("level-any", 80, 5, 5, 3, 615, 263, 46, 207)
+                    CaptureRegion()
+                    Local $aCount = findImageMultiple("level-any", 80, 5, 5, 3, 615, 263, 46, 207, False)
                     If isArray($aCount) And UBound($aCount) < 3 Then
                         Log_Add("No guardian dungeons remaining.")
                                 $bIdle = True
@@ -116,7 +118,7 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
                     Status("Targeting boss.")
                     waitLocation("battle,battle-auto", 2)
                     If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
-                    clickPoint("395, 317")
+                    clickPoint(getPointArg("boss"))
                 EndIf
             Case "map-gem-full", "battle-gem-full"
                 If $General_Sell_Gems == "" Then

@@ -24,7 +24,7 @@
 	[combo:
 		name: "Screen Frozen Check",
 		description: "Check if the screen is frozen every interval. Restarts if it is frozen.",
-		default: "30 Seconds",
+		default: "60 Seconds",
 		data: "Never,30 Seconds,60 Seconds,120 Seconds,180 Seconds"
 	]
     
@@ -72,14 +72,14 @@
 	[combo:
 		name: "Emulator Console",
 		description: "'ldconsole' (LDPlayer), 'noxconsole' (NoxPlayer), 'memuc' (MEmu)",
-		default: "noxconsole",
+		default: "ldconsole",
 		data: "ldconsole,noxconsole,memuc"
 	]
 	
 	[text:
 		name: "Emulator Title",
 		description: "Emulator Title. Default 'LDPlayer' (LDPlayer), 'NoxPlayer' (NoxPlayer), 'MEmu' (MEmu)",
-		default: "NoxPlayer"
+		default: "LDPlayer"
 	]
 	
 	[text:
@@ -111,7 +111,7 @@
 	[combo:
 		name: "Swipe Mode",
 		description: "Mode of sending swipes to emulator. ADB: Sends command to emulator ADB, does not affect overall average speed. Keymap: Sends keystrokes to emulator to invoke pre-setup keymap, requires keymap setup. Real: Uses actual mouse to perform a swipe.",
-		default: "Control",
+		default: "ADB",
 		data: "ADB,Control,Real"
 	]
 	
@@ -226,16 +226,16 @@
 	]
 
 	[combo:
-		name: "Click Nezz",
-		description: "Attempts to click positions where nezz usually spawns. This system is not perfect, but is able to click on nezz most of the time. Note: newer ships might not have nezz positions.",
-		default: "Disabled",
-		data: "Enabled,Disabled"
-	]
-
-	[combo:
 		name: "Collect Hiddens",
 		description: "Collect hourly hidden rewards, commonly known as trees.",
 		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+	
+	[combo:
+		name: "Click Nezz",
+		description: "Attempts to click positions where nezz usually spawns. This system is not perfect, but is able to click on nezz most of the time. Note: newer ships might not have nezz positions.",
+		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
 ]
@@ -445,7 +445,6 @@
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
-
 ]
 
 [Farm_Gem:
@@ -493,7 +492,7 @@
 	[combo:
 		name: "Check Limit",
 		description: "Check for max interation limit which prevents farming more than 1000 astrogems a week. When enabled script will stop when quest is no longer giving rewards.",
-		default: "Enabled",
+		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
 	
@@ -530,7 +529,6 @@
 		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
 		default: "300"
 	]
-	
 ]
 
 [Farm_Astromon:
@@ -595,7 +593,6 @@
 		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
 		default: "300"
 	]
-	
 ]
 
 [Farm_Guardian:
@@ -627,7 +624,6 @@
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
-
 ]
 
 [Farm_Starstone:
@@ -644,6 +640,13 @@
 		description: "Enter dungeon type. Normal is for starstones and elemental is for the current element starstone of the week.",
 		default: "Normal",
 		data: "Normal,Elemental"
+	]
+	
+	[combo:
+		name: "Special Dungeon",
+		description: "Special Elemental Dungeon during the weekend.",
+		default: "Dark",
+		data: "Dark,Fire,Water,Wood,Light"
 	]
 	
 	[combo:

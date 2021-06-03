@@ -180,40 +180,62 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                     EndSwitch
                 Case "dungeons"
                     Switch $sLocation
-                        Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons", "extra-dungeons", "dungeon-info"
-                            If $sLocation == "special-guardian-dungeons" Then clickDrag($g_aDungeonsSwipeDown)
+                        Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons", "extra-dungeons", "dungeon-info", "clan-dungeons"
+                            clickDrag($g_aDungeonsSwipeDown)
                             $sFind = $sLocation
                         Case "map"
                             Local $aPoint = findMap("Dungeons")
                             If isArray($aPoint) Then 
                                 clickPoint($aPoint)
-                                waitLocation("startstone-dungeons,extra-dungeons", 2)
+                                waitLocation("starstone-dungeons,extra-dungeons", 2)
                             EndIf
                         Case "map-battle", "popup-window", "autobattle-prompt"
                             goBack()
                         Case Else
                             If navigate("map", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
-                Case "guardian-dungeons", "starstone-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons"
+                Case "elemental-dungeons"
+                    If isArray(findImage("misc-sunday", 90, 0, 70, 125, 130-70, 471-125)) = False Then ContinueCase
                     Switch $sLocation
-                        Case "starstone-dungeons", "extra-dungeons"
-                            Local $aPoint = StringSplit(getPointArg("dungeons-" & StringSplit($sFind, "-", 2)[0]), ",", 2)
-                            If $sLocation == "extra-dungeons" Then $aPoint[1] += 64
-
-                            Switch $sFind
-                                Case "special-guardian-dungeons"
+                        Case "starstone-dungeons", "extra-dungeons" ,"guardian-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons", "dungeon-info", "clan-dungeons"
+                            Local $aDungeon = findImage("level-" & $Farm_Starstone_Special_Dungeon, 90, 0, 155, 121, 233-155, 475-121)
+                            If isArray($aDungeon) = True Then
+                                clickPoint($aDungeon, 5, 100)
+                                waitLocation("elemental-dungeons", 2)
+                            Else
+                                Local $iFirst = getColor(105, 428, CaptureRegion()) + getColor(105, 356) + getColor(105, 285)
                                     clickDrag($g_aDungeonsSwipeUp)
                                     If _Sleep(1000) Then ExitLoop
+                                Local $iSecond = getColor(105, 428, CaptureRegion()) + getColor(105, 356) + getColor(105, 285)
+                                If $iFirst = $iSecond Then ExitLoop
+                            EndIf
+                        Case Else
+                            If navigate("dungeons", $bForceSurrender) = 0 Then ExitLoop
+                    EndSwitch
+                Case "guardian-dungeons", "starstone-dungeons", "special-guardian-dungeons", "gold-dungeons", "clan-dungeons"
+                    If isDeclared("NegativeY") = False Then Local $NegativeY = False
+                    If isDeclared("CurrentY") = False Then Local $CurrentY = 180
 
-                                    $aPoint = findImage("map-special-dungeon",95,0,70,335,215,150,True,True)
+                    Switch $sLocation
+                        Case "starstone-dungeons", "extra-dungeons" ,"guardian-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons", "dungeon-info", "clan-dungeons"
+                            If $CurrentY < 154 Then ExitLoop ;Could not find
 
-                                    If isArray($aPoint) = 0 Then ExitLoop
-                                    clickPoint($aPoint)
-                                Case Else
-                                    clickPoint($aPoint)
-                            EndSwitch
-                        Case "guardian-dungeons", "elemental-dungeons", "special-guardian-dungeons", "gold-dungeons", "dungeon-info"
-                            clickPoint(getPointArg("dungeons-starstone"))
+                            If $CurrentY > 468 And $NegativeY = False Then ;Reverse
+                                clickDrag($g_aDungeonsSwipeUp)
+                                $NegativeY = True
+                                $CurrentY = 442
+
+                                ContinueLoop
+                            EndIf
+
+                            clickPoint(CreateArr(105, $CurrentY))
+                            If waitLocation($sFind, 0.5) Then ExitLoop
+
+                            If $NegativeY = False Then 
+                                $CurrentY += 72 
+                            Else
+                                $CurrentY -= 72
+                            EndIf
                         Case Else
                             If navigate("dungeons", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch

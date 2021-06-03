@@ -1,6 +1,6 @@
 #include-once
 
-Global $Config_Profile_Name = "Default" 
+Global $Config_Profile_Name = "Default"
 Global $Config_Scheduled_Restart = -1
 Global $Config_Location_Stuck_Timeout = 10
 Global $Config_Another_Device_Timeout = 0
@@ -97,6 +97,7 @@ Global $Farm_Guardian_Target_Boss = True
 
 Global $Farm_Starstone_Runs = 0
 Global $Farm_Starstone_Dungeon_Type = "Normal"
+Global $Farm_Starstone_Special_Dungeon = "Dark"
 Global $Farm_Starstone_Dungeon_Level = 10
 Global $Farm_Starstone_Stone_Element = "Any"
 Global $Farm_Starstone_High_Stones = 50

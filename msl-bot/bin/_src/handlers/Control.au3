@@ -29,7 +29,11 @@ Func clickDrag($aPoints, $iAmount = 1, $iDelay = $Delay_Swipe_Delay, $iSwipeMode
             $aPoints[1] = $aPoints[1]/($Config_Display_Scaling/100)
 
             Local $aOffset = WinGetPos($g_hControl)
-            MouseClickDrag("left", ($aPoints[0]+$aOffset[0]), ($aPoints[1]+$aOffset[1]), ($aPoints[2]+$aOffset[0]), ($aPoints[3]+$aOffset[1]))
+            If isArray($aOffset) = True Then
+                MouseClickDrag("left", ($aPoints[0]+$aOffset[0]), ($aPoints[1]+$aOffset[1]), ($aPoints[2]+$aOffset[0]), ($aPoints[3]+$aOffset[1]))
+            Else
+                Log_Add("Could not find emulator position.", $LOG_ERROR)
+            EndIf
         Case $SWIPE_CONTROL
             ControlClickDrag($g_hControl, CreateArr($aPoints[0], $aPoints[1]), $aPoints[2]-$aPoints[0], $aPoints[3]-$aPoints[1], 100)
         EndSwitch
@@ -109,8 +113,12 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mou
                     $aPoint[1] = $aPoint[1]/($Config_Display_Scaling/100)
 
                     Local $t_aDesktopPoint = WinGetPos($hControl)
-                    $aPoint[0] += $t_aDesktopPoint[0]
-                    $aPoint[1] += $t_aDesktopPoint[1]
+                    If isArray($t_aDesktopPoint) = True Then
+                        $aPoint[0] += $t_aDesktopPoint[0]
+                        $aPoint[1] += $t_aDesktopPoint[1]
+                    Else
+                        Log_Add("Could not find emulator position.", $LOG_ERROR)
+                    EndIf
 
                     Log_Add("Click point: " & _ArrayToString($aPoint), $LOG_DEBUG)
                     MouseClick("left", $aPoint[0], $aPoint[1], 1, 0)
@@ -186,91 +194,35 @@ EndFunc
 Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $sExecute = "", $iMouseMode = $Config_Mouse_Mode, $hWindow = $g_hWindow, $hControl = $g_hControl)
     Log_Level_Add("clickUntil")
 
+    If isArray($vArg) = False Then $vArg = CreateArr($vArg)
+    Local $sPointString = (isArray($aPoint)?_ArrayToString($aPoint, ","):$aPoint)
+    Log_Add("Clicking until (" & $sPointString & ") => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($vArg, ";"), $LOG_DEBUG)
+
+    _ArrayInsert($vArg, 0, "CallArgArray")
     Local $bOutput = False
-    Local $aArg = parseVArg($vArg)
 
-    If (Not(isArray($aPoint))) Then $aPoint = StringSplit(StringStripWS($aPoint, $STR_STRIPALL), ",", $STR_NOCOUNT)
-
-    Log_Add("Clicking until (" & _ArrayToString($aPoint) & ") => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg, ";"), $LOG_DEBUG)
-
-    Local $bResult = False
-    If $aArg = Null Then
-        $bResult = Call($sBooleanFunction)
-    Else
-        $bResult = Call($sBooleanFunction, $aArg)
-    EndIf
-    If $bResult > 0 Then
-        $bOutput = True
-        Log_Add("Clicking until result: " & $bOutput & " (# Clicks: 0)", $LOG_DEBUG)
-        Log_Level_Remove()
-        Return $bOutput
-    EndIf
-
-    Local $t_bLogClicks = $Config_Log_Clicks
+    Local $bLogClicks = $Config_Log_Clicks
     $Config_Log_Clicks = False
-    For $i = 1 To $iAmount
-        Local $t_vTimerStart = TimerInit()
-        clickPoint($aPoint, 1, 0, $iMouseMode, $hWindow, $hControl)
+    Local $iClicked = 0
+    Local $hTimer = TimerInit()
+    While ($iClicked < $iAmount)
+        If $sExecute <> "" Then Execute($sExecute)
+        $bOutput = Call($sBooleanFunction, $vArg)
+        If $bOutput > 0 Or (@error Or @extended) Then ExitLoop
 
-        While TimerDiff($t_vTimerStart) < $iInterval
-            If (_Sleep(100)) Then ExitLoop(2)
+        If TimerDiff($hTimer) > $iInterval Then
+            $hTimer = TimerInit()
+            clickPoint($aPoint, 1, 0, $iMouseMode, $hWindow, $hControl)
+            $iClicked += 1
+        Else
+            If _Sleep(50) Then ExitLoop
+        EndIf
+    WEnd
+    $Config_Log_Clicks = $bLogClicks
 
-            If $sExecute <> "" Then Execute($sExecute)
-            If $aArg = Null Then
-                $bResult = Call($sBooleanFunction)
-            Else
-                $bResult = Call($sBooleanFunction, $aArg)
-            EndIf
-            If $bResult > 0 Then
-                $bOutput = True
-                ExitLoop(2)
-            EndIf
-        WEnd
-    Next
-    $Config_Log_Clicks = $t_bLogClicks
-
-    Log_Add("Clicking until result: " & $bOutput & " (# Clicks: " & $i & ")", $LOG_DEBUG)
+    Log_Add("Clicking until result: " & ($bOutput<>False) & " (# Clicks: " & $iClicked & ")", $LOG_DEBUG)
     Log_Level_Remove()
 	Return $bOutput
-EndFunc
-
-Func parseVArg($vArg)
-    If isArray($vArg) > 0 Then
-        If $vArg[0] <> "CallArgArray" Then
-            _ArrayInsert($vArg, 0, "CallArgArray")
-        EndIf
-        Return $vArg
-    EndIf
-    If $vArg = Null Then Return $vArg
-
-    Local $t_sStartChar, $t_sIdChar, $t_sArg
-    Local $t_aArg = ["CallArgArray"]
-    $t_sStartChar = StringLeft($vArg, 1)
-    $t_sIdChar = StringMid($vArg, 1, 1)
-    $t_sArg = StringMid($vArg, 2)
-    Switch $t_sStartChar
-        Case "$"
-            Local $aRaw[1];
-            $aRaw[0] = $t_sArg
-            $t_aArg = $aRaw
-        Case "%"
-            CaptureRegion()
-            Switch $t_sIdChar
-                Case "!" ;point
-                    _ArrayAdd($t_aArg, getPointArg($t_sArg), 0, null, null, 1)
-                Case "@" ;Location
-                    _ArrayAdd($t_aArg, getLocationArg($t_sArg), 0, null, null, 1)
-                Case "^" ;Treat as pixels
-                    _ArrayAdd($t_aArg, getPixelArg($t_sArg), 0, null, null, 1)
-                Case Else ;Treat as pixels
-                    ;$t_sArg = StringMid($vArg,1)
-                    _ArrayAdd($t_aArg, getPixelArg($t_sArg), 0, null, null, 1)
-            EndSwitch
-        Case Else
-            $t_aArg = StringSplit($vArg, ",", $STR_NOCOUNT)
-    EndSwitch
-    ;_ArrayDisplay($t_aArg)
-    Return $t_aArg
 EndFunc
 
 #cs
@@ -290,53 +242,34 @@ EndFunc
 Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterval = 500, $sExecute = "", $iMouseMode = $Config_Mouse_Mode, $hWindow = $g_hWindow, $hControl = $g_hControl)
     Log_Level_Add("clickWhile")
 
+    Local $sPointString = (isArray($aPoint)?_ArrayToString($aPoint, ","):$aPoint)
+    Log_Add("Clicking while (" & $sPointString & ") => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($vArg, ";"), $LOG_DEBUG)
+
+    _ArrayInsert($vArg, 0, "CallArgArray")
     Local $bOutput = False
-    Local $aArg = parseVArg($vArg)
 
-    If (Not(isArray($aPoint))) Then $aPoint = StringSplit(StringStripWS($aPoint, $STR_STRIPALL), ",", $STR_NOCOUNT)
-
-    Log_Add("Clicking while (" & _ArrayToString($aPoint) & ") => Function: " & $sBooleanFunction & ", Arguments: " & _ArrayToString($aArg, ";"), $LOG_DEBUG)
-
-    Local $bResult = False
-    If $aArg = Null Then
-        $bResult = Call($sBooleanFunction)
-    Else
-        $bResult = Call($sBooleanFunction, $aArg)
-    EndIf
-    If $bResult = 0 Then 
-        $bOutput = True
-        Log_Add("Clicking while result: " & $bOutput & " (# Clicks: 0)", $LOG_DEBUG)
-        Log_Level_Remove()
-        Return $bOutput
-    EndIf
-
-    Local $t_bLogClicks = $Config_Log_Clicks
+    Local $bLogClicks = $Config_Log_Clicks
     $Config_Log_Clicks = False
-    For $i = 1 To $iAmount
-        Local $t_vTimerStart = TimerInit()
-        clickPoint($aPoint, 1, 0, $iMouseMode, $hWindow, $hControl)
+    Local $iClicked = 0
+    Local $hTimer = TimerInit()
+    While ($iClicked < $iAmount)
+        If $sExecute <> "" Then Execute($sExecute)
+        $bOutput = Call($sBooleanFunction, $vArg)
+        If $bOutput <= 0 Or (@error Or @extended) Then ExitLoop
 
-        While TimerDiff($t_vTimerStart) < $iInterval
-            If (_Sleep(100)) Then ExitLoop(2)
+        If TimerDiff($hTimer) > $iInterval Then
+            $hTimer = TimerInit()
+            clickPoint($aPoint, 1, 0, $iMouseMode, $hWindow, $hControl)
+            $iClicked += 1
+        Else
+            If _Sleep(50) Then ExitLoop
+        EndIf
+    WEnd
+    $Config_Log_Clicks = $bLogClicks
 
-            If $sExecute <> "" Then Execute($sExecute)
-
-            If $aArg = Null Then
-                $bResult = Call($sBooleanFunction)
-            Else
-                $bResult = Call($sBooleanFunction, $aArg)
-            EndIf
-            If $bResult = 0 Then 
-                $bOutput = True
-                ExitLoop(2)
-            EndIf
-        WEnd
-    Next
-    $Config_Log_Clicks = $t_bLogClicks
-
-    Log_Add("Clicking while result: " & $bOutput & " (# Clicks: " & $i & ")", $LOG_DEBUG)
+    Log_Add("Clicking while result: " & ($bOutput=False) & " (# Clicks: " & $iClicked & ")", $LOG_DEBUG)
     Log_Level_Remove()
-	Return $bOutput
+	Return $bOutput=False
 EndFunc
 
 #cs 

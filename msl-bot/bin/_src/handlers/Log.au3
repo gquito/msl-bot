@@ -95,6 +95,8 @@ Func Log_Level_Remove()
 EndFunc
 
 Func Log_Display($sFilter = $g_sLogFilter, $aLog = $g_aLog, $hListView = $g_hLV_Log)
+    If $g_hLogWindow = Null And (BitAnd(WinGetState($g_hParent), $WIN_STATE_MINIMIZED) Or _GUICtrlTab_GetCurSel($g_hTb_Main) <> 1) Then Return
+
     Local $iSize = UBound($aLog)
     If (($iSize - $g_iLOG_Processed) > 10) Then _GUICtrlListView_BeginUpdate($g_hLV_Log)
 

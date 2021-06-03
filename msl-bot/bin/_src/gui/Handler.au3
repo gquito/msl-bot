@@ -24,6 +24,18 @@ Func GUI_HANDLE_MESSAGE($iCode)
     Switch $iCode[1]
         Case $g_hParent
             Switch $iCode[0]
+                Case $g_idPic
+                    AutoItSetOption("MouseCoordMode", 2)
+                    Local $aCursor = MouseGetPos()
+                    AutoItSetOption("MouseCoordMode", 1)
+
+                    UpdatePicture($aCursor)
+                Case $g_idBtn_CaptureRegion
+                    ResetHandles()
+                    Local $bOldRunning = $g_bRunning
+                    $g_bRunning = True
+                    CaptureRegion()
+                    $g_bRunning = $bOldRunning
                 Case $g_idLbl_Donate
                     ShellExecute("https://paypal.me/GkevinOD/10")
                 Case $g_idLbl_Discord
@@ -230,7 +242,6 @@ Func GUI_HANDLE_MESSAGE($iCode)
                     Else
                         MsgBox($MB_ICONWARNING, "Schedule Save", "Select at least one item.", 5)
                     EndIf
-
                 Case $PROMPTWINDOW_CLOSE
                     If $g_aPromptsWindow_Answers <> Null Then
                         Local $aScheduleStructure[8]
@@ -263,6 +274,7 @@ Func GUI_HANDLE_MESSAGE($iCode)
                     WinMove($g_sAppTitle, "", $aWinPos[0], $aWinPos[1], 400, 420)
 
                     GUIDelete($g_hLogWindow)
+                    $g_hLogWindow = Null
                     
                     BuildLogArea(True)
 

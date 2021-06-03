@@ -10,6 +10,7 @@ Func Farm_Rare($bParam = True, $aStats = Null)
     Global $Status, $Runs, $Win_Rate, $Average_Time, $Astrogems_Used, $Legendary, $Super_Rare, $Exotic, $Rare, $Variant, $Total_Legendary, $Total_Super_Rare, $Total_Exotic, $Total_Rare, $Total_Variant
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
+                    CreateArr("Text",       "Location"), _
                     CreateArr("Ratio",      "Runs",                     "Farm_Rare_Runs"), _
                     CreateArr("Percent",    "Win_Rate",                 "Runs"), _
                     CreateArr("Time",       "Average_Time",             "Runs"), _
@@ -124,7 +125,7 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                     Status("Targeting boss.")
                     waitLocation("battle,battle-auto", 2)
                     If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
-                    clickPoint("395, 317")
+                    clickPoint(getPointArg("boss"))
                 EndIf
             Case "astromon-full"
                 Status("Astromon inventory is full, stopping script.")

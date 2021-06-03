@@ -5,6 +5,7 @@
 	Returns: String game location.
 	Extended: Location pixel data.
 #ce
+Global $g_hTimer_ImageLocation = TimerInit()
 Func getLocation($bUpdate = True, $bSkipImage = False)
 	If TimerDiff($g_hGetLocationCoolDown) < 100 Then Return $g_sLocation
 	$g_hGetLocationCoolDown = TimerInit()
@@ -14,7 +15,7 @@ Func getLocation($bUpdate = True, $bSkipImage = False)
 
 	Local $sOldLocation = $g_sLocation
 
-	If $bUpdate > 0 Then CaptureRegion()
+	If $bUpdate = True Then CaptureRegion()
 	If $g_iLocationIndex <> -1 And $g_aLocationsMap[$g_iLocationIndex][0] <> -1 Then
 		For $i = 0 To $g_aLocationsMap[$g_iLocationIndex][0]-1
 			Local $aIndices = $g_aLocationsMap[$g_iLocationIndex][1]
@@ -26,9 +27,11 @@ Func getLocation($bUpdate = True, $bSkipImage = False)
 				_ArrayAdd($g_vDebug, $LocationArray)
 
 				$g_sLocation = $sLocation
+				$Location = $sLocation & " (" & getTimeString(TimerDiff($g_hTimerLocation)/1000) & ")"
 				If ($g_sLocation <> $sOldLocation) Then $g_hTimerLocation = TimerInit()
 				$g_iLocationIndex = $aIndices[$i]
 
+				$g_hTimer_ImageLocation = TimerInit()
 				Return $g_sLocation
 			EndIf
 		Next
@@ -42,40 +45,52 @@ Func getLocation($bUpdate = True, $bSkipImage = False)
 				_ArrayAdd($g_vDebug, $LocationArray)
 
 				$g_sLocation = $sLocation
+				$Location = $sLocation & " (" & getTimeString(TimerDiff($g_hTimerLocation)/1000) & ")"
 				If ($g_sLocation <> $sOldLocation) Then $g_hTimerLocation = TimerInit()
 				$g_iLocationIndex = $i
 
+				$g_hTimer_ImageLocation = TimerInit()
 				Return $g_sLocation
 			EndIf
 		Next
 	EndIf
 
-	;Image locations
-	If $bSkipImage <= 0 And $g_iLocationIndex = -1 Then
-		;$g_aImageLocation = [[NAME, 'x,y,w,h,"image"|x,y,w,h,"image"|...'], [...]]
-		If isArray($g_aImageLocations) > 0 Then
-			For $i = 0 To UBound($g_aImageLocations)-1
-				If UBound($g_aImageLocations, 2) <> 2 Then ExitLoop
-
-				Local $sLocation = $g_aImageLocations[$i][0] ;name
-				Local $aLocationData_Set = StringSplit($g_aImageLocations[$i][1], "|", 2)
-				For $sLocationData In $aLocationData_Set
-					Local $aLocationData = StringSplit($sLocationData, ",", 2)
-					If isArray($aLocationData) <= 0 And UBound($aLocationData) <> 5 Then ExitLoop
-					
-					Local $sImage = StringReplace($aLocationData[4], '"', "")
-					Local $aImage = findImage($sImage, 90, 0, $aLocationData[0], $aLocationData[1], $aLocationData[2], $aLocationData[3], True, True)
-					If isArray($aImage) > 0 Then
-						$g_sLocation = $sLocation
-						Return $g_sLocation
-					EndIf
+	;Image locations, consumes lots of power
+	If TimerDiff($g_hTimer_ImageLocation) > 5000 Then
+		$g_hTimer_ImageLocation = TimerInit()
+		If $bSkipImage <= 0 And $g_iLocationIndex = -1 Then
+			;$g_aImageLocation = [[NAME, 'x,y,w,h,"image"|x,y,w,h,"image"|...'], [...]]
+			If isArray($g_aImageLocations) > 0 Then
+				For $i = 0 To UBound($g_aImageLocations)-1
+					If UBound($g_aImageLocations, 2) <> 2 Then ExitLoop
+	
+					Local $sLocation = $g_aImageLocations[$i][0] ;name
+					Local $aLocationData_Set = StringSplit($g_aImageLocations[$i][1], "|", 2)
+					For $sLocationData In $aLocationData_Set
+						Local $aLocationData = StringSplit($sLocationData, ",", 2)
+						If isArray($aLocationData) <= 0 And UBound($aLocationData) <> 5 Then ExitLoop
+						
+						Local $sImage = StringReplace($aLocationData[4], '"', "")
+						Local $aImage = findImage($sImage, 90, 0, $aLocationData[0], $aLocationData[1], $aLocationData[2], $aLocationData[3], False, True)
+	
+						If isArray($aImage) > 0 Then
+							$g_sLocation = $sLocation
+							$Location = $sLocation & " (" & getTimeString(TimerDiff($g_hTimerLocation)/1000) & ")"
+							Return $g_sLocation
+						EndIf
+					Next
 				Next
-			Next
+			EndIf
 		EndIf
-    EndIf
+	EndIf
 
 	$g_sLocation = "unknown"
-	If ($g_sLocation <> $sOldLocation) Then $g_hTimerLocation = TimerInit()
+	$Location = $g_sLocation & " (" & getTimeString(TimerDiff($g_hTimerLocation)/1000) & ")"
+	If ($g_sLocation <> $sOldLocation) Then 
+		$g_hTimerLocation = TimerInit()
+	Else
+		If BitAnd(WinGetState($g_hParent), $WIN_STATE_MINIMIZED) = False And _GUICtrlTab_GetCurSel($g_hTb_Main) = 1 Then Stats_Update()
+	EndIf
 
 	Return $g_sLocation ;If no location from database is found.
 EndFunc
@@ -125,43 +140,27 @@ EndFunc
 	Function: Checks if any one of the locations from the specified set of locations are
 	Parameters:
 		$vLocations: Array or stirng of locations. Format=["location", "..."] or "location,..."
-		$bReturnBool: If false, returns the location string found.
-	Returns: String or Boolean depending on $bReturnBool
+		$bBoolean: If false, returns the location string found.
+	Returns: String or Boolean depending on $bBoolean
 #ce
-Func isLocation($vLocations, $bReturnBool = True, $bSorted = False)
-	Local $aLocations = Null
-	Local $sCurrLocation = getLocation()
-	If ($sCurrLocation = -1) Then Return False
-
-	If isArray($vLocations) = 0 Then
-		If StringInStr($vLocations, ",") = 0 Then 
-			If $bReturnBool > 0 Then Return $sCurrLocation = $vLocations
-			If $sCurrLocation = $vLocations Then Return $vLocations
-			Return ""
-		EndIf
-
-		$vLocations = StringStripWS($vLocations, $STR_STRIPALL) ;Removes all whitespace.
-		$aLocations = StringSplit($vLocations, ",", $STR_NOCOUNT)
-	Else
-		$aLocations = $vLocations
-	EndIf
-
-	Local $iIndex = -1
-	If $bSorted = 0 Then
-		$iIndex = _ArraySearch($aLocations, $sCurrLocation)
-	Else
-		$iIndex = _ArrayBinarySearch($aLocations, $sCurrLocation)
-	EndIf
-
-	If $bReturnBool > 0 Then
-		Return ($iIndex <> -1)
-	Else
-		If $iIndex <> -1 Then 
-			Return $aLocations[$iIndex]
+Func isLocation($vLocations, $bBoolean = True)
+	If isArray($vLocations) = False Then 
+		If StringInStr($vLocations, ",") = False Then
+			$vLocations = CreateArr($vLocations)
 		Else
-			Return ""
+			$vLocations = StringSplit($vLocations, ",", $STR_NOCOUNT)
 		EndIf
 	EndIf
+
+	$g_iLocationIndex = -1
+	Local $sCurrent = getLocation()
+
+	For $sLocation In $vLocations
+		$sLocation = StringStripWS($sLocation, $STR_STRIPALL)
+		If $sLocation == $sCurrent Then Return ($bBoolean?(True):($sLocation))
+	Next
+
+	Return ($bBoolean?(False):(""))
 EndFunc
 
 #cs 
@@ -177,7 +176,7 @@ Func setLocation($sLocation, $aData = Null, $bUpdate = True)
 	Local $aLocation = getArg($g_aLocations, $sLocation)
 	Local $aPoints[0][2] ;Will store points to find colors for.
 	
-	If ($aLocation = -1) Then
+	If @error Then
 		;Creates new location.
 		If isArray($aData) = 0 Then $aData = StringSplit(StringStripWS($aData, 4), "|", $STR_NOCOUNT)
 
@@ -197,6 +196,7 @@ Func setLocation($sLocation, $aData = Null, $bUpdate = True)
 		ReDim $aPoints[UBound($aPixels)][2]
 		For $i = 0 To UBound($aPixels)-1
 			Local $aPixel = StringSplit($aPixels[$i], ",", $STR_NOCOUNT)
+			If UBound($aPixel) <> 2 Then Return -1
 
 			$aPoints[$i][0] = Int($aPixel[0])
 			$aPoints[$i][1] = Int($aPixel[1])

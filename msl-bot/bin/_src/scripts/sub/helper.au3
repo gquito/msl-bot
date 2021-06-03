@@ -11,10 +11,10 @@ Func getGemData($bCapture = True)
 	Local $aGemData[6] = ["-", "-", "-", "-", "-", "-"] ;Stores current gem data
 	If (isLocation("battle-sell-item")) Then
 		Select ;grade
-			Case isPixel("399,175,0xF39C72|399,164,0xF769BA|406,144,0x261612")
+			Case isPixel(getPixelArg("battle-item-egg"), 20)
 				$aGemData[0] = "EGG"
 				Return $aGemData
-			Case isPixel("399,175,0x9A450C|399,164,0xF5D444|406,144,0xFDF953", 20)
+			Case isPixel(getPixelArg("battle-item-gold"), 20)
 				$aGemData[0] = "GOLD"
 				Return $aGemData
 			Case isPixel("406,144,0x261612")
@@ -197,7 +197,7 @@ Func findLevel($iLevel)
 		EndIf		 
 
 		Local $t_sImageName = "level-" & $sLevel
-		Local $t_aPoint = findImageMultiple($t_sImageName, 95, 5, 5, 0, 400, 220, 380, 260, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
+		Local $t_aPoint = findImageMultiple($t_sImageName, 95, 5, 5, 4, 400, 220, 380, 260, False, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
 		;Sort lowest
 		_ArraySort($t_aPoint, 1, 0, 0, 1) ;Sort highest level
 		;_ArrayDisplay($t_aPoint)
@@ -213,12 +213,17 @@ Func findLevel($iLevel)
 EndFunc
 
 Func findBLevel($iLevel)
-	Local $aPoint[2]
-	Local $aPoint = findImage("level-b" & ($iLevel<10?"0":"") & $iLevel , 95, 0, 310, 160, 50, 330, True, True) ;tolerance 100, rectangle at (402,229) dim. 50x250
-	If isArray($aPoint) = 0 Then Return -1
+	Local $aPoint0 = findImage("level-b" & ($iLevel-1<10?"0":"") & $iLevel-1 , 90, 0, 310, 160, 50, 330, True, True)
+	Local $aPoint1 = findImage("level-b" & ($iLevel<10?"0":"") & $iLevel , 90, 0, 310, 160, 50, 330, ($iLevel <= 1), True)
 
-	$aPoint[0] = 626 ;x coordinate for left side of button
-	Return $aPoint
+	If isArray($aPoint1) = False Then Return -1
+	If ($iLevel > 1) Then
+		If isArray($aPoint0) = False Then Return -1
+		If Abs($aPoint0[1]-$aPoint1[1]) < 10 Then Return -1
+	EndIf
+	
+	$aPoint1[0] = 626 ;x coordinate for left side of button
+	Return $aPoint1
 EndFunc
 
 #cs
@@ -229,16 +234,17 @@ EndFunc
 #ce
 Func findGuardian($sMode)
 	$sMode = StringLower(StringStripWS($sMode, $STR_STRIPALL))
-	If isArray(findImage("level-any", 70, 0, 614, 266, 100, 220)) <= 0 Then Return -2
+	CaptureRegion()
+	If isArray(findImage("level-any", 70, 0, 614, 266, 100, 220, False)) <= 0 Then Return -2
 
 	CaptureRegion("\bin\images\misc\misc-guardian-left", 335, 191, 15, 15)
 	CaptureRegion("\bin\images\misc\misc-guardian-right", 398, 191, 15, 15)
 	Local $aResult = False
 	Switch $sMode
 		Case "left", "right"
-			$aResult = findImage("misc-guardian-" & $sMode, 70, 0, 550, 250, 60, 250, True, True)
+			$aResult = findImage("misc-guardian-" & $sMode, 70, 0, 550, 250, 60, 250, False, True)
 		Case Else
-			Return findImage("level-any", 70, 0, 614, 266, 100, 220)
+			Return findImage("level-any", 70, 0, 614, 266, 100, 220, False)
 	EndSwitch
 	If isArray($aResult) <= 0 Then Return -1
 	$aResult[0] = 650
@@ -255,7 +261,7 @@ Func getVillagePos()
 
 	;Traverse through idShip checking the pixel sets.
 	For $i = 0 To UBound($g_aVillagePos)-1
-		If (isPixel($g_aVillagePos[$i], 10)) Then Return $i
+		If isPixel($g_aVillagePos[$i], 20) Then Return $i
 	Next
 
 	;Return -1 if ship not found.
@@ -288,12 +294,13 @@ EndFunc
 Func getStone()
 	;Defining variables
 	Local $sElement = "", $sGrade = "", $iQuantity = -1
+	CaptureRegion()
 
 	;Check if egg or gold
-	If isPixel(getPixelArg("battle-item-egg"), 10, CaptureRegion()) Then
+	If isPixel(getPixelArg("battle-item-egg"), 20) Then
 		Local $t_aData = ["egg", "n/a", "1"]
 		Return $t_aData
-	ElseIf isPixel(getPixelArg("battle-item-gold"), 10, CaptureRegion()) Then
+	ElseIf isPixel(getPixelArg("battle-item-gold"), 20) Then
 		Local $t_aData = ["gold", "n/a", "n/a"]
 		Return $t_aData
 	EndIf
@@ -301,9 +308,10 @@ Func getStone()
 	;Getting element and grade
 	Local $aElements = ["normal", "water", "wood", "fire", "dark", "light"]
 	Local $aGrades = ["low", "mid", "high"]
+
 	For $sCurElement In $aElements
 		For $sCurGrade In $aGrades
-			If isPixel(getPixelArg("stone-" & $sCurElement & "-" & $sCurGrade), 50, CaptureRegion()) > 0 Or findImage("stone-" & $sCurElement & "-" & $sCurGrade, 90, 0, 359, 131, 80, 80) <> -1 Then
+			If isPixel(getPixelArg("stone-" & $sCurElement & "-" & $sCurGrade)) > 0 Or findImage("stone-" & $sCurElement & "-" & $sCurGrade, 90, 0, 359, 131, 80, 80, False) <> -1 Then
 				If FileExists(@ScriptDir & "\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade) = 0 Then
 					CaptureRegion("\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade, 382, 145, 35, 45)
 				EndIf
@@ -326,7 +334,6 @@ Func getStone()
 	EndIf
 
 	;Getting quantity
-	CaptureRegion("", 440, 214, 50, 20)
 	For $i = 1 To 5
 		If (isArray(findImage("misc-stone-x" & $i, 90, 0, 440, 214, 50, 20, False))) Then
 			$iQuantity = $i
@@ -392,7 +399,7 @@ Func closeWindow()
 		;Case "boutique"
 		;	Return clickWhile(getPointArg("boutique-close"), "isLocation", "boutique", 5, 1000)
 		;Case Else
-			Local $aPoints = findImageMultiple("location-dialogue-close", 90, 5, 5, 0, 0, 0, 800, 552, True, True)
+			Local $aPoints = findImageMultiple("location-dialogue-close", 90, 5, 5, 4, 0, 0, 800, 552, False, True)
 			If IsArray($aPoints) Then
 				For $i = 0 to UBound($aPoints)-1
 					Local $sLoc = getLocation()
@@ -513,20 +520,20 @@ Func findMap($sMap)
 	If getLocation() <> "map" Then Return -1
 	$sMap = StringReplace(StringLower($sMap)," ","-")
 
-	Local $aPoint = findImage("map-" & $sMap, 90, 100, 0, 0, 800, 552, True, True)
+	Local $aPoint = findImage("map-" & $sMap, 90, 0, 0, 100, 800, 430, False, True)
 
 	If isArray($aPoint) = 0 Then clickDrag($g_aSwipeRightFast)
 	While isArray($aPoint) = False
 		If _Sleep(200) Or getLocation() <> "map" Then ExitLoop
 		If $sMap == "astromon-league" Then
-			If findImage("map-astromon-league-disabled", 90, 100, 0, 0, 800, 552, True, True) Then
+			If findImage("map-astromon-league-disabled", 90, 0, 0, 100, 800, 430, False, True) Then
 				$aPoint = -1
 				ExitLoop
 			EndIf
 		EndIf
 
-		$aPoint = findImage("map-" & $sMap, 90, 100, 0, 0, 800, 552, True, True)
-		If isArray(findImage("map-terrestrial-rift", 90, 500, 0, 0, 800, 552, True, True)) > 0 Then ExitLoop
+		$aPoint = findImage("map-" & $sMap, 90, 0, 0, 100, 800, 430, False, True)
+		If isArray(findImage("map-terrestrial-rift", 90, 0, 0, 100, 800, 430, False, True)) > 0 Then ExitLoop
 		
 		If isArray($aPoint) = 0 Then 
 			clickDrag($g_aSwipeLeft)

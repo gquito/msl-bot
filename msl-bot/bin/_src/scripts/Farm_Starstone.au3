@@ -2,13 +2,14 @@
 
 Func Farm_Starstone($bParam = True, $aStats = Null) 
     If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Starstone")[2]), "Farm_Starstone")
-    ;Runs, Dungeon Type, Dungeon Level, Stone Element, High Stones, Mid Stones, Low Stones, Refill, Target Boss
+    ;Runs, Dungeon Type, Dungeon Level, Special Dungeon, Stone Element, High Stones, Mid Stones, Low Stones, Refill, Target Boss
 
     Log_Level_Add("Farm_Starstone")
 
     Global $Status, $Runs, $Win_Rate, $Average_Time, $Astrogems_Used, $High_Stones, $Mid_Stones, $Low_Stones, $Eggs_Found
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
+                    CreateArr("Text",       "Location"), _
                     CreateArr("Ratio",      "Runs",             "Farm_Starstone_Runs"), _
                     CreateArr("Percent",    "Win_Rate",         "Runs"), _
                     CreateArr("Time",       "Average_Time",     "Runs"), _
@@ -57,6 +58,7 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                     waitLocation("map-battle", 10)
                 Else
                     clickDrag($g_aSwipeDown)
+                    If _Sleep(500) Then ExitLoop
                 EndIf
             Case "map-battle", "battle-end"
                 If $Farm_Starstone_Runs <> 0 And $Runs >= $Farm_Starstone_Runs Then ExitLoop
@@ -113,6 +115,9 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                     Switch $aStone[0]
                         Case "gold"
                             clickPoint(getPointArg("battle-sell-item-okay"))
+                            If _Sleep(200) Then ExitLoop
+                            Status("Clicking third item.")
+                            clickPoint(getPointArg("battle-sell-item-third"))
                             ContinueLoop
                         Case "egg"
                             $Eggs_Found += 1
@@ -136,7 +141,7 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                     Status("Targeting boss.")
                     waitLocation("battle,battle-auto", 2)
                     If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
-                    clickPoint("395, 317")
+                    clickPoint(getPointArg("boss"))
                 EndIf
             Case "battle-gem-full", "map-gem-full"
                 If $General_Sell_Gems == "" Then

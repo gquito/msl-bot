@@ -8,8 +8,8 @@
 Func Status($sText, $iLogType = $LOG_DEBUG)
     If $sText == $g_sStatus Then Return False
     Log_Add($sText, $iLogType)
-    If isDeclared("Status") = True Then $Status = $sText
 
+    If isDeclared("Status") = True Then $Status = $sText
     $g_sStatus = $sText
     Return True
 EndFunc
@@ -36,7 +36,7 @@ Func Stats_Add($aVariables)
 EndFunc
 
 Func Stats_Handle()
-    If $g_bRunning > 0 And TimerDiff($g_aStatsCD) > 1000 Then
+    If (($g_bRunning > 0 And TimerDiff($g_aStatsCD) > 1000) And BitAnd(WinGetState($g_hParent), $WIN_STATE_MINIMIZED) = False) And _GUICtrlTab_GetCurSel($g_hTb_Main) = 1 Then
         $g_aStatsCD = TimerInit()
         Stats_Update()
     EndIf

@@ -11,6 +11,7 @@ Func Farm_Gem($bParam = True, $aStats = Null)
     Global $Status, $Farmed_Gems, $Astrogems_Used
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
+                    CreateArr("Text",       "Location"), _
                     CreateArr("Ratio",      "Farmed_Gems",      "Farm_Gem_Astrogems"), _
                     CreateArr("Ratio",      "Astrogems_Used",   "Farm_Gem_Refill") _
                 ))
@@ -56,9 +57,8 @@ Func Farm_Gem($bParam = True, $aStats = Null)
 
                                     If ($aMon[$i][0] > $aAwakened[$x][0]-30 And $aMon[$i][0] < $aAwakened[$x][0]+30) Then
                                         If ($aMon[$i][1] > $aAwakened[$x][1]-30 And $aMon[$i][1] < $aAwakened[$x][1]+30) Then
-                                            clickPoint(CreateArr($aMon[$i][0], $aMon[$i][1]), 3)
-                                            clickPoint(getPointArg("monsters-evolution"))
-                                            waitLocation("monsters-evolution", 3)
+                                            clickPoint(CreateArr($aMon[$i][0], $aMon[$i][1]), 3, 200)
+                                            clickUntil(getPointArg("monsters-evolution"), "isLocation", "monsters-evolution", 3, 200)
                                             ContinueLoop(3)
                                         EndIf
                                     EndIf
@@ -67,9 +67,8 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                             Next
                         EndIf
 
-                        clickPoint(CreateArr(($aAstromons[$iEvo-1])[0][0], ($aAstromons[$iEvo-1])[0][1]), 3)
-                        clickPoint(getPointArg("monsters-evolution"))
-                        waitLocation("monsters-evolution", 3)
+                        clickPoint(CreateArr(($aAstromons[$iEvo-1])[0][0], ($aAstromons[$iEvo-1])[0][1]), 3, 200)
+                        clickUntil(getPointArg("monsters-evolution"), "isLocation", "monsters-evolution", 3, 200)
                         ContinueLoop
                     EndIf
                 EndIf
@@ -105,6 +104,8 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                 If $iEvo = 0 Or $aAstromons = Null Then
                     navigate("monsters")
                     ContinueLoop
+                Else
+                    clickPoint(CreateArr(($aAstromons[$iEvo-1])[0][0], ($aAstromons[$iEvo-1])[0][1]), 3, 200)
                 EndIf
 
                 Status(StringFormat("Awakening evo%d %s.", Number($iEvo), String($Farm_Gem_Astromon)), $LOG_PROCESS)
@@ -160,11 +161,11 @@ Func Farm_Gem($bParam = True, $aStats = Null)
 EndFunc
 
 Func Farm_Gem_Count($sName)
-    CaptureRegion("", 10, 100, 280, 350)
-    Local $aEvo1 = findImageMultiple($sName & "-evo-one", 80, 10, 10, 0, 10, 100, 280, 350, False)
-    Local $aEvo2 = findImageMultiple($sName & "-evo-two", 80, 10, 10, 0, 10, 100, 280, 350, False)
-    Local $aAwakenedEvo1 = findImageMultiple("misc-awakened-evo-one", 70, 10, 10, 0, 10, 100, 280, 350, False)
-    Local $aAwakenedEvo2 = findImageMultiple("misc-awakened-evo-two", 70, 10, 10, 0, 10, 100, 280, 350, False)
+    CaptureRegion()
+    Local $aEvo1 = findImageMultiple($sName & "-evo-one", 80, 10, 10, 16, 10, 100, 280, 350, False)
+    Local $aEvo2 = findImageMultiple($sName & "-evo-two", 80, 10, 10, 4, 10, 100, 280, 350, False)
+    Local $aAwakenedEvo1 = findImageMultiple("misc-awakened-evo-one", 70, 10, 10, 16, 10, 100, 280, 350, False)
+    Local $aAwakenedEvo2 = findImageMultiple("misc-awakened-evo-two", 70, 10, 10, 4, 10, 100, 280, 350, False)
     Return CreateArr($aEvo1, $aEvo2, $aAwakenedEvo1, $aAwakenedEvo2)
 EndFunc
 
@@ -180,12 +181,12 @@ Func Farm_Gem_Awaken()
         Local $sLocation = getLocation()
         Switch $sLocation
             Case "monsters-evolution"
-                If isPixel(getPixelArg("monsters-not-awakened-third"), 20, CaptureRegion()) > 0 Then ;Not selected
+                If isPixel(getPixelArg("monsters-not-awakened-third"), 20) > 0 Then ;Not selected
                     clickPoint(CreateArr($iX, $iY))
                     $iX += 65
                     If $iX > 741 Then ExitLoop
                 Else
-                    If isPixel(getPixelArg("monsters-awakened-enabled"), 20, CaptureRegion()) <= 0 Then 
+                    If isPixel(getPixelArg("monsters-awakened-enabled"), 20) <= 0 Then 
                         $bOutput = True
                         ExitLoop
                     EndIf
@@ -264,7 +265,9 @@ Func Farm_Gem_Release()
                 waitLocation("release-confirm", 5)
             Case "release-confirm"
                 clickPoint(getPointArg("release-confirm"), 3)
-                waitLocation("release-reward,hourly-reward", 5)
+                If waitLocation("release-reward,hourly-reward", 5) Then ContinueCase
+                $bOutput = True
+                ExitLoop
             Case "release-reward", "hourly-reward"
                 clickPoint(getPointArg("release-confirm"), 3)
                 $bOutput = True

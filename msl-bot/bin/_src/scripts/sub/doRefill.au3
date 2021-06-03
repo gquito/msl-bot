@@ -22,6 +22,8 @@ Func doRefill()
 	If $bOutput = 1 Then 
 		Cumulative_AddNum("Resource Used (Astrogems)", 30)
 		closeWindow()
+	ElseIf $bOutput = 2 Then
+		closeWindow()
 	EndIf
 	
 	Log_Add("Refill result: " & $bOutput, $LOG_DEBUG)

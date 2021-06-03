@@ -13,7 +13,7 @@
 ;       - $iTolerance: 0-100% matching.
 ;       - $iLeft, $iTop, $iWidth, $iHeight: Dimensions of the source image.
 ;       - $bCenter: Returns center of found image. Otherwise, returns left-top of location.
-;       - $bUpdateBMP: Updates source image. When false, uses $g_hHBitmap for source image.
+;       - $bUpdateBMP: Updates source image. When false, uses $g_hBitmap for source image.
 ;       - $sSourcePath: Path to source image.
 ;       - $bUseColor: Default uses a single channel. This option enables comparison for color channels.
 ;   Return:
@@ -44,13 +44,19 @@ Func _ImageSearch($sImage, $bMultiple = False, $iTolerance = 95, $iLeft = 0, $iT
     ;== Update bitmap ==
     If ($sSourcePath == "") Then
         ;Use HBITMAP
-        If ($bUpdateBMP) Then CaptureRegion("", $iLeft, $iTop, $iWidth, $iHeight)
+        If ($bUpdateBMP) Then 
+            CaptureRegion("", $iLeft, $iTop, $iWidth, $iHeight)
+        Else
+            $g_hTimer_CaptureRegion = TimerInit()
+            CaptureRegion("", $iLeft, $iTop, $iWidth, $iHeight)
+        EndIf
     Else
         ;Use string path to source image file.
         If ($bUpdateBMP) Then
             CaptureRegion($sSourcePath, $iLeft, $iTop, $iWidth, $iHeight)
         Else
-            saveHBitmap($sSourcePath)
+            $g_hTimer_CaptureRegion = TimerInit()
+            CaptureRegion($sSourcePath, $iLeft, $iTop, $iWidth, $iHeight)
         EndIf
     EndIf
 
@@ -174,7 +180,7 @@ Func _FindImage($sSourcePath = "", $sImage = "", $iTolerance = 95, $iLeft = 0, $
 
     Local $aResult ;Raw results
     If $sSourcePath == "" Then
-        $aResult = DllCall(Eval("g_hImageSearch"), "wstr:cdecl", "FindImageEX", "handle", $g_hHBitmap, "int", $iWidth, "int", $iHeight, "str", $sImage, "int", $iTolerance, "bool", Not($bUseColor), "bool", True, "bool", True)
+        $aResult = DllCall(Eval("g_hImageSearch"), "wstr:cdecl", "FindImageEX", "handle", $g_hBitmap, "int", $iWidth, "int", $iHeight, "str", $sImage, "int", $iTolerance, "bool", Not($bUseColor), "bool", True, "bool", True)
     Else
         $aResult = DllCall(Eval("g_hImageSearch"), "wstr:cdecl", "FindImage", "str", @ScriptDir & $sSourcePath, "str", $sImage, "int", $iTolerance, "bool", Not($bUseColor), "bool", True, "bool", True)
     EndIf

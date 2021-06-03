@@ -29,7 +29,7 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 			Case "map-stage"
 				If $bFoundMap > 0 Then
 					Local $hTimer2 = TimerInit()
-					While isArray(findImage("misc-stage-" & StringLower($sDifficulty), 90, 0)) = False
+					While isArray(findImage("misc-stage-" & StringLower($sDifficulty), 90, 0, 611, 62, 737-611, 92-62, True)) = False
 						If TimerDiff($hTimer2) > 5000 Then
 							Log_Add("Could not select stage level.", $LOG_ERROR)
 							ExitLoop(2)

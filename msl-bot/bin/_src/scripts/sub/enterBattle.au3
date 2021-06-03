@@ -22,6 +22,7 @@ Func enterBattle()
 					ADB_SendESC(2)
 				EndIf
 
+				CaptureRegion()
 				Local $aRestart = findImage("misc-restart")
 				If isArray($aRestart) > 0 Then 
 					clickPoint($aRestart, 3)

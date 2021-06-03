@@ -9,6 +9,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
     Global $Status, $Runs, $Win_Rate, $Average_Time, $Astrogems_Used, $Gold_Earned, $Gems_Kept, $Eggs_Found
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
+                    CreateArr("Text",       "Location"), _
                     CreateArr("Ratio",      "Runs",             "Farm_Golem_Runs"), _
                     CreateArr("Percent",    "Win_Rate",         "Runs"), _
                     CreateArr("Time",       "Average_Time",     "Runs"), _
@@ -47,6 +48,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                     waitLocation("map-battle", 10)
                 Else
                     clickDrag($g_aSwipeDown)
+                    If _Sleep(500) Then ExitLoop
                 EndIf
             Case "map-battle", "battle-end"
                 If $Farm_Golem_Runs <> 0 And $Runs >= $Farm_Golem_Runs Then ExitLoop
@@ -96,6 +98,9 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                     Switch $aGem[0]
                         Case "GOLD"
                             clickPoint(getPointArg("battle-sell-item-okay"))
+                            If _Sleep(200) Then ExitLoop
+                            Status("Clicking third item.")
+                            clickPoint(getPointArg("battle-sell-item-third"))
                             ContinueLoop
                         Case "EGG"
                             $Eggs_Found += 1
@@ -126,7 +131,7 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                     Status("Targeting boss.")
                     waitLocation("battle,battle-auto", 2)
                     If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
-                    clickPoint("395, 317")
+                    clickPoint(getPointArg("boss"))
                 EndIf
             Case "map-gem-full", "battle-gem-full"
                 If $General_Sell_Gems == "" Then

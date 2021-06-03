@@ -12,6 +12,7 @@ Global $g_sImagesPath = @ScriptDir & "\bin\images\" ;Path to images
 
 Global $g_sOldTime = ""
 Global $g_sLocation = "" ;Global current location. Used for antiStuck
+Global $Location = "" ;For status
 Global $g_sLogFilter = "Information,Error,Process" ;Log filter
 
 Global $g_sStatus = "" ;Saves old status to prevent spam. Used in Status() function in /handlers/Stats.au3

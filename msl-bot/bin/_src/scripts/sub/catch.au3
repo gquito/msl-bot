@@ -25,24 +25,15 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
         Switch $sLocation
             Case "catch-mode"
                 If UBound($aPoints) = 0 Then
-                    Local $aCheck[0] ;Store mon indication
-                    While UBound($aCheck) = 0
-                        If _Sleep(200) Or TimerDiff($hTimer) > 60000 Then ExitLoop(2)
-                        $aCheck = findImageMultiple("misc-catch", 80, 100, 5, 4, 0, 350, 800, 100)
-                    WEnd
-
-                    For $i = 0 To UBound($aCheck)-1
-                        Local $aDimensions = [$aCheck[$i][0]-75, 260, 150, 220]
-                        CaptureRegion("", $aDimensions[0], $aDimensions[1], $aDimensions[2], $aDimensions[3])
-                        For $x = 0 To UBound($CATCH)-1
-                            Local $aFound = findImage("catch-" & $CATCH[$x], 90, 0, $aDimensions[0], $aDimensions[1], $aDimensions[2], $aDimensions[3], False)
-                            If isArray($aFound) > 0 Then
-                                _ArrayAdd($aPoints, CreateArr($aFound[0], $aFound[1], $CATCH[$x]), 0, "|", @CRLF, 1)
-                                ExitLoop
-                            EndIf
-                        Next
+                    CaptureRegion()
+                    For $x = 0 To UBound($CATCH)-1
+                        Local $aFound = findImageMultiple("catch-" & $CATCH[$x], 90, 20, 20, 4, 0, 312, 800, 457-312, False)
+                        If isArray($aFound) > 0 Then
+                            For $i = 0 To UBound($aFound)-1
+                                _ArrayAdd($aPoints, CreateArr($aFound[$i][0], $aFound[$i][1], $CATCH[$x]), 0, "|", @CRLF, 1)
+                            Next
+                        EndIf
                     Next
-
                 EndIf
 
                 If $iCurrent = -1 Then

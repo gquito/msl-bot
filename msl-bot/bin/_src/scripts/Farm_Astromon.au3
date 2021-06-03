@@ -12,6 +12,7 @@ Func Farm_Astromon($bParam = True, $aStats = Null)
     Global $Status, $Runs, $Astrogems_Used, $Legendary, $Super_Rare, $Exotic, $Rare, $Variant, $Total_Legendary, $Total_Super_Rare, $Total_Exotic, $Total_Rare, $Total_Variant
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
+                    CreateArr("Text",       "Location"), _
                     CreateArr("Number",     "Runs"), _
                     CreateArr("Ratio",      "Astrogems_Used",                                   "Farm_Astromon_Refill"), _
                     CreateArr("Ratio",      StringReplace($Farm_Astromon_Astromon, "-", "_"),   "Farm_Astromon_Amount"), _

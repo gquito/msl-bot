@@ -24,15 +24,6 @@ Global Const $ALIGN_LEFT = 0, $ALIGN_RIGHT = 1
 Global Const $REFILL_TIMEOUT = -1, $REFILL_NOGEMS = -2, $REFILL_MAX = -3
 Global Const $CATCH_MODE_NORMAL = 1, $CATCH_MODE_EXOTIC = 2
 
-#Region Expedition
-    Global Const $EXPEDITION_LUCK_LOW = 0
-    Global Const $EXPEDITION_LUCK_MEDIUM = 1
-    Global Const $EXPEDITION_LUCK_HIGH = 2
-
-    Global Const $EXPEDITION_HOUR_2 = 0
-    Global Const $EXPEDITION_HOUR_4 = 1
-    Global Const $EXPEDITION_HOUR_8 = 2
-#EndRegion
 
 #Region Log
     Global Const $LOG_INFORMATION = "Information"

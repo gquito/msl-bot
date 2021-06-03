@@ -1,37 +1,37 @@
 #include-once
 
-#cs
-    Function: Retrieves Color from bitmap handle and converts to 0xFFFFFF hex format
-    Parameter:
-        $iX: y-Coordinate
-        $iY: x-Coordinate
-        $hBitmap: Bitmap handle
-    Return: Hex String => 0xFFFFFF.
-#ce
-Func getColor($iX, $iY, $hBitmap = $g_hBitmap)
-    Return "0x" & Hex(_GDIPlus_BitmapGetPixel($hBitmap, $iX, $iY), 6)
+Func getColor($iX, $iY, $aMap = $g_aMap)
+    Local $sHex = Hex(DllStructGetData($aMap, 1, ($EMULATOR_WIDTH * $iY + $iX) + 1), 6)
+    Return "0x" & $sHex
 EndFunc
 
-#cs
-    Function: Checks if pixel(s) equal or fit within the range of variation inside Bitmap
-    Parameters:
-        $vArg: Can be formated to be: [[x, y, color], [...]] or ["x, y, color", "..."] or "x,y,color|..."
-        $iVariation: The maximum color variation compared to the actual pixel.
-        $hBitmap: Bitmap to compare the pixels for.
-    Returns: Boolean => if pixel(s) meet condition.
-    Extended: List of color1, color2, and their variations.
-#ce
-Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap, $bDebug = False)
+Func _getColor($iX, $iY, $aMap = $g_aMap)
+    Return DllStructGetData($aMap, 1, ($EMULATOR_WIDTH * $iY + $iX) + 1)
+EndFunc
+
+Func compareColors($iColor1, $iColor2)
+    Local $iRed = Abs(_ColorGetRed($iColor1) - _ColorGetRed($iColor2))
+	Local $iGreen = Abs(_ColorGetGreen($iColor1) - _ColorGetGreen($iColor2))
+	Local $iBlue = Abs(_ColorGetBlue($iColor1) - _ColorGetBlue($iColor2))
+
+	Return _Max($iRed, _Max($iGreen, $iBlue))
+EndFunc
+
+Func TestIsPixel($x)
+    Local $hTimer = TimerInit()
+    CaptureRegion()
+    For $i = 0 To $x
+        isPixel("98,471,0x322013|231,464,0x805632|312,478,0x8E6037|701,471,0x321E11/98,471,0x352213|231,464,0x775030|312,478,0x6D4424|701,471,0x321E11", 3)
+    Next
+    Return TimerDiff($hTimer)
+EndFunc
+
+Func isPixel($vArg, $iVariation = 5, $aMap = $g_aMap)
     Local $aPixels[0] ;pixels to check
 
     If ((isArray($vArg) <= 0 And $vArg == "") Or (isArray($vArg) > 0 And UBound($vArg) <= 0) Or $vArg = -1) Then ;returns early if vArg is empty
-        $g_sErrorMessage = "isPixel() => No Arguments Found."
         Return -1
     EndIf
-
-    Local $aDebug[0][4]
-    $g_vDebug = $aDebug
-    _ArrayAdd($g_vDebug, "Point|Color 1|Color 2|Variation")
 
     If (Not(isArray($vArg)) And StringLeft($vArg,1) == "%") Then $vArg = getPixelArg(StringTrimLeft($vArg,1))
     ;Fixing argument format to [[x, y, color], [...]]
@@ -39,7 +39,7 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap, $bDebug = False)
         If (isArray($vArg[0])) Then
             ;Expected format: "[[x, y, color], [...]]"
             Local $aPixel = $vArg
-            Return comparePixels($aPixels, $iVariation, $hBitmap, $bDebug)
+            Return comparePixels($aPixels, $iVariation, $aMap)
         Else
             If (StringInStr($vArg[0], ",")) Then
                 ;Expected format: ["x,y,color", "..."]
@@ -59,7 +59,7 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap, $bDebug = False)
                     ReDim $aPixels[UBound($aPixels)+1]
                     $aPixels[UBound($aPixels)-1] = $t_aFormatedPixel
                 Next
-                Return comparePixels($aPixels, $iVariation, $hBitmap, $bDebug)
+                Return comparePixels($aPixels, $iVariation, $aMap)
             Else
                 ;Expected format: ["x", "y", "color"]
                 If (UBound($vArg) <> 3) Then 
@@ -71,40 +71,35 @@ Func isPixel($vArg, $iVariation = 10, $hBitmap = $g_hBitmap, $bDebug = False)
                 ReDim $aPixels[UBound($aPixels)+1]
                 $aPixels[UBound($aPixels)-1] = $t_aFormatedPixel
                 
-                Return comparePixels($aPixels, $iVariation, $hBitmap, $bDebug)
+                Return comparePixels($aPixels, $iVariation, $aMap)
             EndIf
         EndIf
     Else
         If (StringInStr($vArg,'/', $STR_NOCASESENSE) <> 0) Then
             Local $t_aPixelOrSet = StringSplit($vArg,'/', $STR_NOCOUNT)
-            Local $bOutput = False
             For $i = 0 To UBound($t_aPixelOrSet)-1
                 $aPixels = splitPixelString($t_aPixelOrSet[$i])
-                Local $bCompared = comparePixels($aPixels, $iVariation, $hBitmap, $bDebug)
-                _ArrayAdd($g_vDebug, "-|-|-|-")
-                If $bCompared > 0 Then $bOutput = True
-                If $bDebug = 0 And $bOutput > 0 Then Return True
+                Local $bCompared = comparePixels($aPixels, $iVariation, $aMap)
+                If $bCompared > 0 Then Return True
             Next
-            Return $bOutput
+            Return False
         Else
             ;Expected format: "x,y,color|..."
             $aPixels = splitPixelString($vArg)
-            Local $bCompared = comparePixels($aPixels, $iVariation, $hBitmap, $bDebug)
+            Local $bCompared = comparePixels($aPixels, $iVariation, $aMap)
             Return $bCompared
         EndIf
     EndIf
 EndFunc
 
-Func comparePixels($aPixels, $iVariation, $hBitmap, $bDebug = False)
+Func comparePixels($aPixels, $iVariation, $aMap = $g_aMap)
     ;checking if pixel is within variation
     Local Const $iTotalPixels = UBound($aPixels) ;Total pixels
-
     If $iTotalPixels = 0 Then
         Log_Add("isPixel(): Invalid pixel data", $LOG_ERROR)
         Return -1
     EndIf
 
-    Local $bOutput = True
     For $i = 0 To $iTotalPixels-1
         Local $t_aCurrPixel = $aPixels[$i]
 
@@ -115,19 +110,16 @@ Func comparePixels($aPixels, $iVariation, $hBitmap, $bDebug = False)
 
         Local $t_iX = $t_aCurrPixel[0] ;x coordinate
         Local $t_iY = $t_aCurrPixel[1] ;y coordinate
-        Local $t_cColor = $t_aCurrPixel[2] ;color
+        Local $t_cColor = Dec(Hex($t_aCurrPixel[2])) ;color
 
-        Local $t_cColor2 = getColor($t_iX, $t_iY, $hBitmap) ;current color in position
+        Local $t_cColor2 = _getColor($t_iX, $t_iY, $aMap) ;current color in position
         Local $t_iColorDifference = compareColors($t_cColor, $t_cColor2)
-        
-        _ArrayAdd($g_vDebug, StringFormat("(%s, %s)", $t_iX, $t_iY) & "|" & $t_cColor & "|" & $t_cColor2 & "|" & $t_iColorDifference)
-        ;====================================================
 
-        If ($t_iColorDifference > $iVariation) Then $bOutput = False
-        If $bDebug = 0 And $bOutput = 0 Then Return False
+        ;====================================================
+        If ($t_iColorDifference > $iVariation) Then Return False
     Next
 
-    Return $bOutput
+    Return True
 EndFunc
 
 Func splitPixelString($sPixels)
@@ -150,83 +142,6 @@ Func splitPixelString($sPixels)
     Next
     
     Return $aPixels
-EndFunc
-
-#cs
-    Function: Calculates difference of two color.
-    Parameter:
-        $cColor1: First color.
-        $cColor2: Second color.
-        $nRetType: Return type.
-    Returns: $nRetType:: 1=Returns max variation. 0=Returns array of max variation between Red, Green, Blue
-#ce
-Func compareColors($nColor1, $nColor2, $nRetType=1)
-	Local $nRet[3]
-	$nRet[0] = Abs(_ColorGetRed($nColor1) - _ColorGetRed($nColor2))
-	$nRet[1] = Abs(_ColorGetGreen($nColor1) - _ColorGetGreen($nColor2))
-	$nRet[2] = Abs(_ColorGetBlue($nColor1) - _ColorGetBlue($nColor2))
-	If ($nRetType = 1) Then Return _Max($nRet[0], _Max($nRet[1], $nRet[2]))
-
-    Return $nRet
-EndFunc
-
-Func Pixel_TotalVar($nColor1, $nColor2, $nRetType=1)
-	Local $nRet[3]
-	$nRet[0] = Abs(_ColorGetRed($nColor1) - _ColorGetRed($nColor2))
-	$nRet[1] = Abs(_ColorGetGreen($nColor1) - _ColorGetGreen($nColor2))
-	$nRet[2] = Abs(_ColorGetBlue($nColor1) - _ColorGetBlue($nColor2))
-	If ($nRetType = 1) Then Return $nRet[0]+$nRet[1]+$nRet[2]
-
-    Return $nRet
-EndFunc
-;So we have a the predefined x and y and color. 
-;We also have the real time color from getColor
-Func Pixel($iX, $iY, $nColor)
-    Return Pixel_TotalVar($nColor, getColor($iX, $iY))
-EndFunc
-
-;[[x, y, c], ...]
-; [][3]
-;Percent of pixel fit variation
-Func Pixels($aPixels)
-    Local $iCounter = 0
-    Local $iSize = UBound($aPixels)
-    For $i = 0 To $iSize-1
-        Local $iCur = Pixel($aPixels[$i][0], $aPixels[$i][1], $aPixels[$i][2])
-        $iCounter += ((150-$iCur)/150) ;The lower the value the greater the effect
-    Next
-    Local $iResult = ($iCounter/$iSize)*100
-    If $iResult < 0 Then Return 0
-    Return $iResult
-EndFunc
-
-;[][][3]
-Func PixelSet($aPixelSet)
-    Local $iSize = UBound($aPixelSet)
-    Local $iHighest = -1
-    For $i = 0 To $iSize-1
-        Local $aPixels = $aPixelSet[$i]
-        Local $iResult = Pixels($aPixels)
-        If $iHighest < $iResult Then $iHighest = $iResult
-    Next
-    Return $iHighest
-EndFunc
-
-Func CreateLocationArr($iIndex)
-    Local $sRaw = $g_aLocations[$iIndex][1]
-    Local $aPixelSet = StringSplit($sRaw, "/", 2)
-    For $i = 0 To UBound($aPixelSet)-1
-        Local $aPixelsRaw = StringSplit($aPixelSet[$i], "|", 2)
-        Local $aPixels[UBound($aPixelsRaw)][3]
-        For $x = 0 To UBound($aPixelsRaw)-1
-            Local $aPixel = StringSplit($aPixelsRaw[$x], ",", 2)
-            $aPixels[$x][0] = $aPixel[0]
-            $aPixels[$x][1] = $aPixel[1]
-            $aPixels[$x][2] = $aPixel[2]
-        Next
-        $aPixelSet[$i] = $aPixels
-    Next
-    Return $aPixelSet
 EndFunc
 
 #cs

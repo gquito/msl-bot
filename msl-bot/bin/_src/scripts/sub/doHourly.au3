@@ -25,19 +25,19 @@ EndFunc
 ;Helper functions
 
 Func Close_Village_Interface()
-    If getLocation() <> "village" Then Return False
-    If clickWhile(getPointArg("village-missions-popup-close"), "isPixel", CreateArr(getPixelArg("village-missions-popup")), 5, 200, "CaptureRegion()") <= 0 Then Return False
-    If clickWhile(getPointArg("village-events-close"), "isPixel", CreateArr(getPixelArg("village-events")), 5, 200, "CaptureRegion()") <= 0 Then Return False
-    If clickWhile(getPointArg("village-pack-close"), "isPixel", CreateArr(getPixelArg("village-pack")), 5, 200, "CaptureRegion()") <= 0 Then Return False
-    Return True
+    CaptureRegion()
+    If isPixel(getPixelArg("village-missions-popup")) = True Then clickPoint(getPointArg("village-missions-popup-close"))
+    If isPixel(getPixelArg("village-events")) = True Then clickPoint(getPointArg("village-events-close"))
+    If isPixel(getPixelArg("village-pack")) = True Then clickPoint(getPointArg("village-pack-close"))
 EndFunc
 
 Func Get_Village_Pos()
     Local $iPos = -1
     Local $iTries = 0
 
-    If getLocation() <> "village" Then navigate("village")
+    navigate("village")
     While $iPos = -1 And $iTries < 5
+        CaptureRegion()
         Close_Village_Interface()
 
         $iPos = getVillagePos()
@@ -49,7 +49,6 @@ Func Get_Village_Pos()
             navigate("village")
 
             If _Sleep(2000) Then ExitLoop
-            Close_Village_Interface()
         Else
             Log_Add("Airship position detected: " & $iPos & ".", $LOG_DEBUG)
         EndIf
@@ -96,7 +95,7 @@ Func Collect_Hiddens()
             EndSwitch
         WEnd
         $g_bLogEnabled = $bLog
-        If TimerDiff($hTimer) >= 10000 Then Return False
+        ;If TimerDiff($hTimer) >= 10000 Then Return False
     Next
     Return True
 EndFunc

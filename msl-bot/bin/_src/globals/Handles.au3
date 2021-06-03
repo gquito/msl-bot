@@ -1,8 +1,8 @@
 #include-once
 
 Global $g_hScriptTimer = Null ;Timer for script
-Global $g_hHBitmap = Null ;WINAPI bitmap handle.
-Global $g_hBitmap = Null ;GDIPlus bitmap handle.
+Global $g_hBitmap = Null ;WINAPI bitmap handle.
+Global $g_aMap = Null ;Image color map
 Global $g_hWindow = Null ;Handle for emulator window
 Global $g_hControl = Null ;Handle for control window
 Global $g_hLogWindow = Null
@@ -90,6 +90,12 @@ Global $g_hLV_Schedule = Null
 Global $g_hLV_FunctionLevels = Null
 Global $g_idLV_FunctionLevels = Null
 Global $g_old_hControl = Null
+
+Global $g_idPic = Null
+Global $g_hPic = Null
+Global $g_idLbl_BotView = Null
+Global $g_idBtn_CaptureRegion = Null
+Global $g_hBtn_CaptureRegion = Null
 
 ;Timer Handles
 Global $g_hTimerLocation = Null ;Global timer for location. Used for antiStuck

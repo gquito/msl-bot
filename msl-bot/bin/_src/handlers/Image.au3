@@ -13,7 +13,7 @@
 	On image found - Returns array
 	On image not found - Returns -1
 #ce
-Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = $EMULATOR_WIDTH, $iHeight = $EMULATOR_HEIGHT, $bUpdate = True, $bUseColor = True)
+Func findImage($sImage, $iTolerance = 90, $iDuration = 100, $iLeft = 0, $iTop = 0, $iWidth = $EMULATOR_WIDTH, $iHeight = $EMULATOR_HEIGHT, $bUpdate = False, $bUseColor = True)
 	If (StringInStr($sImage, "-")) Then $sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage ;image with specified folder
 
 	Local $aImages[0] ;images list to find
@@ -68,7 +68,7 @@ Note:
 	Width and Height tolerance exist because multiple images of the 'same' image are being scanned and could be scanned at the same spot multiple
 		times. The same instance could also be scanned not at the same exact point, but in the same area within 1-2 pixels at times.
 #ce
-Func findImageMultiple($sImage, $iTolerance = 90, $iWidthTolerance = 5, $iHeightTolerance = 5, $iLimit = 0, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552, $bUpdate = True, $bUseColor = False)
+Func findImageMultiple($sImage, $iTolerance = 90, $iWidthTolerance = 5, $iHeightTolerance = 5, $iLimit = 0, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552, $bUpdate = False, $bUseColor = False)
 	If (StringInStr($sImage, "-")) Then $sImage = StringSplit($sImage, "-", 2)[0] & "\" & $sImage
 
 	Local $aImages[0] ;images list to find

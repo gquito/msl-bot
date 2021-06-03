@@ -6,6 +6,7 @@
         $iDuration: Amount of time to sleep in milliseconds
     Returns: True if script needs to be stopped.
 #ce
+Global $g_hTimer_TimeLabel = TimerInit()
 Func _Sleep($iDuration = 0)
     Local $hTimer = TimerInit()
     Do
@@ -14,11 +15,9 @@ Func _Sleep($iDuration = 0)
         If $g_bRunning > 0 Then
             If $iDuration = 0 And $g_bRestarting = 0 Then ExitLoop
             If $g_hScriptTimer <> Null Then
-                Local $sTime = getTimeString(TimerDiff($g_hScriptTimer)/1000)
-                If $sTime <> $g_sOldTime And Not(WinGetState($g_hParent) = 0x16) Then ;$WIN_STATE_MINIMIZED
-                    $g_sOldTime = $sTime
-
-                    GUICtrlSetData($g_idLbl_ScriptTime, "Time: " & $sTime)
+                If (BitAnd(WinGetState($g_hParent), $WIN_STATE_MINIMIZED) = False And TimerDiff($g_hTimer_TimeLabel) > 1000) And _GUICtrlTab_GetCurSel($g_hTb_Main) = 1 Then
+                    GUICtrlSetData($g_idLbl_ScriptTime, "Time: " & getTimeString(TimerDiff($g_hScriptTimer)/1000))
+                    $g_hTimer_TimeLabel = TimerInit()
                 EndIf
 
                 If $g_bRestarting = 0 Then _AntiStuck()
@@ -34,6 +33,7 @@ Func _Sleep($iDuration = 0)
             $g_hTimerLocation = Null
             Return True
         EndIf
+        Sleep(50)
     Until (TimerDiff($hTimer) > $iDuration)
     Return False
 EndFunc
@@ -55,16 +55,16 @@ Func _AntiStuck()
         EndIf
     EndIf
     
-    If Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, 30) = 0 And TimerDiff($g_hGameCheckCD) > 2000 Then
-        $g_hGameCheckCD = TimerInit()
-        If ADB_isWorking() > 0 And ADB_IsGameRunning() <= 0 Then
-            Log_Add("AntiStuck: Game is not running. Restarting Game.", $LOG_ERROR)
+    ;If Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, 30) = 0 And TimerDiff($g_hGameCheckCD) > 2000 Then
+    ;    $g_hGameCheckCD = TimerInit()
+    ;    If ADB_isWorking() > 0 And ADB_IsGameRunning() <= 0 Then
+    ;        Log_Add("AntiStuck: Game is not running. Restarting Game.", $LOG_ERROR);
 
-            $bOutput =_AntiStuck_Restart()
-            If $bOutput <= 0 Then Stop()
-        EndIf
+    ;        $bOutput =_AntiStuck_Restart()
+    ;        If $bOutput <= 0 Then Stop()
+    ;    EndIf
 
-    EndIf
+    ;EndIf
 
     ;AntiStuck sequence
     If $Config_Location_Stuck_Timeout > 0 Then

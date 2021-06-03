@@ -79,7 +79,7 @@ Func Schedule_HandleQueue()
         If $g_bScheduleBusy > 0 Then ExitLoop
         Local $iFlag = $g_aSchedulesQueue[$i][$SCHEDULE_QUEUE_FLAG]
 
-        If BitAND($iFlag, $SCHEDULE_FLAG_RunImmediately) And $g_bRunning = 0 Then
+        If BitAND($iFlag, $SCHEDULE_FLAG_RunImmediately) Or $g_bRunning = 0 Then
             Schedule_PerformAction($i)
         Else
             If isLocation("battle-end,village,map") Then 
