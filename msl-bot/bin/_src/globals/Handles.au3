@@ -70,6 +70,7 @@ Global $g_idLV_OverallStats = Null
 Global $g_hLV_OverallStats = Null
 Global $g_idLbl_Donate = Null
 Global $g_idLbl_Discord = Null
+Global $g_idLbl_List = Null
 Global $g_hLV_Log = Null ;Log Listview Handle
 Global $g_hLV_Stat = Null ;Stats Listview Handle
 Global $g_hEditConfig = Null ;Handle for the edit control created when editing a setting.

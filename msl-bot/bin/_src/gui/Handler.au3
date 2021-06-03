@@ -40,7 +40,7 @@ Func GUI_HANDLE_MESSAGE($iCode)
                     ShellExecute("https://paypal.me/GkevinOD/10")
                 Case $g_idLbl_Discord
                     ShellExecute("https://discord.gg/UQGRnwf")
-                Case $idLbl_List
+                Case $g_idLbl_List
                     MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL Donator Features", "Completed: " & @CRLF & "- Astroleague, champion league, daily quests, expedition, bingo, gold dungeon, special dungeon, dragon dungeons, guided auto.")
                 Case $g_idCkb_Information, $g_idCkb_Error, $g_idCkb_Process, $g_idCkb_Debug
                     Local $sFilter = ""
