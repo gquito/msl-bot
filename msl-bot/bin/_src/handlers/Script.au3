@@ -114,7 +114,7 @@ EndFunc
 
 Func _Schedule_Guardian()
     Local $aValues = Stats_Values_GetSpecific(Stats_GetValues($g_aStats), CreateArr("Guardians", "Astrogems_Used"))
-    Local $aParam = CreateArr($Guardian_Guardian_Mode, IsDeclared($g_sScript & "_Refill")?Eval($g_sScript & "_Refill"):0, 0, $Guardian_Guided_Auto, $Guardian_Target_Boss)
+    Local $aParam = CreateArr($Guardian_Guardian_Mode, IsDeclared($g_sScript & "_Refill")?Eval($g_sScript & "_Refill"):0, 0, $Guardian_Target_Boss)
     _RunScript("Farm_Guardian", $aParam, $aValues)
 
     navigate("map")
