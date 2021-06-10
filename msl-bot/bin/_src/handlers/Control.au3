@@ -37,7 +37,7 @@ Func clickDrag($aPoints, $iAmount = 1, $iDelay = $Delay_Swipe_Delay, $iSwipeMode
         Case $SWIPE_CONTROL
             ControlClickDrag($g_hControl, CreateArr($aPoints[0], $aPoints[1]), $aPoints[2]-$aPoints[0], $aPoints[3]-$aPoints[1], 100)
         EndSwitch
-        If (_Sleep($iDelay)) Then Return False
+        If _Sleep($iDelay, True) Then Return False
         $iSwipes += 1
     WEnd
     Return True
@@ -77,6 +77,7 @@ EndFunc
 Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mouse_Mode, $hWindow = $g_hWindow, $hControl = $g_hControl)
     Local $bLog = $g_bLogEnabled
     If $g_bLogEnabled <> False Then $g_bLogEnabled = $Config_Log_Clicks
+    ;$g_bLogEnabled = True ;Debug
     Local $aPoint[2] ;Point array
     Local $bOutput = False
 
@@ -107,17 +108,19 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mou
         For $i = 0 To $iAmount-1
             Switch $iMouseMode
                 Case $MOUSE_REAL ;clicks using real mouse.
-                    WinActivate($hWindow)
+                    ;WinActivate($hWindow)
+                    
+                    If $i = 0 Then
+                        $aPoint[0] = $aPoint[0]/($Config_Display_Scaling/100)
+                        $aPoint[1] = $aPoint[1]/($Config_Display_Scaling/100)
 
-                    $aPoint[0] = $aPoint[0]/($Config_Display_Scaling/100)
-                    $aPoint[1] = $aPoint[1]/($Config_Display_Scaling/100)
-
-                    Local $t_aDesktopPoint = WinGetPos($hControl)
-                    If isArray($t_aDesktopPoint) = True Then
-                        $aPoint[0] += $t_aDesktopPoint[0]
-                        $aPoint[1] += $t_aDesktopPoint[1]
-                    Else
-                        Log_Add("Could not find emulator position.", $LOG_ERROR)
+                        Local $t_aDesktopPoint = WinGetPos($hControl)
+                        If isArray($t_aDesktopPoint) = True Then
+                            $aPoint[0] += $t_aDesktopPoint[0]
+                            $aPoint[1] += $t_aDesktopPoint[1]
+                        Else
+                            Log_Add("Could not find emulator position.", $LOG_ERROR)
+                        EndIf
                     EndIf
 
                     Log_Add("Click point: " & _ArrayToString($aPoint), $LOG_DEBUG)
@@ -135,7 +138,7 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mou
                     ExitLoop(2)
             EndSwitch
 
-            If _Sleep($iInterval) Then ExitLoop(2)
+            If _Sleep($iInterval, True) Then ExitLoop(2)
         Next
 
         $bOutput = True
@@ -162,16 +165,16 @@ Func clickMultiple($aPoints, $iInterval = 0, $iMouseMode = $Config_Mouse_Mode, $
         Case $MOUSE_REAL, $MOUSE_CONTROL
             For $i = 0 To UBound($aPoints)-1
                 clickPoint($aPoints[$i][0] & "," & $aPoints[$i][1], $aPoints[$i][2], $aPoints[$i][3], $iMouseMode, $hWindow, $hControl)
-                If _Sleep($iInterval) Then Return -1
+                If _Sleep($iInterval, True) Then Return -1
             Next
         Case $MOUSE_ADB
             ;Generating click commands for ADB
-            Local $sCommand = ';input tap "' & $aPoint[0][0] & " " & $aPoint[0][1]
+            Local $sCommand = ';input tap ' & $aPoints[0][0] & " " & $aPoints[0][1]
             For $i = 1 To UBound($aPoints)-1
-                $sCommand &= ";input tap " & $aPoint[$i][0] & " " & $aPoint[$i][1]
+                $sCommand &= ';input tap ' & $aPoints[$i][0] & " " & $aPoints[$i][1]
             Next
             $sCommand = StringMid($sCommand, 2)
-            $sCommand &= 'shell ' & $sCommand
+            $sCommand = 'shell ' & $sCommand
 
             ADB_Command($sCommand)
     EndSwitch
@@ -215,7 +218,7 @@ Func clickUntil($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
             clickPoint($aPoint, 1, 0, $iMouseMode, $hWindow, $hControl)
             $iClicked += 1
         Else
-            If _Sleep(50) Then ExitLoop
+            If _Sleep(50, True) Then ExitLoop
         EndIf
     WEnd
     $Config_Log_Clicks = $bLogClicks
@@ -262,7 +265,7 @@ Func clickWhile($aPoint, $sBooleanFunction, $vArg = Null, $iAmount = 5, $iInterv
             clickPoint($aPoint, 1, 0, $iMouseMode, $hWindow, $hControl)
             $iClicked += 1
         Else
-            If _Sleep(50) Then ExitLoop
+            If _Sleep(50, True) Then ExitLoop
         EndIf
     WEnd
     $Config_Log_Clicks = $bLogClicks

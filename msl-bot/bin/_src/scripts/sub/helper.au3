@@ -312,7 +312,7 @@ Func getStone()
 	For $sCurElement In $aElements
 		For $sCurGrade In $aGrades
 			If isPixel(getPixelArg("stone-" & $sCurElement & "-" & $sCurGrade)) > 0 Or findImage("stone-" & $sCurElement & "-" & $sCurGrade, 90, 0, 359, 131, 80, 80, False) <> -1 Then
-				If FileExists(@ScriptDir & "\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade) = 0 Then
+				If FileExists(@ScriptDir & "\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade & ".bmp") = 0 Then
 					CaptureRegion("\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade, 382, 145, 35, 45)
 				EndIf
 				$sElement = $sCurElement

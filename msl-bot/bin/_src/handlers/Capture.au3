@@ -121,10 +121,15 @@ Func GetColorMap(ByRef $aMap, $hBitmap = $g_hBitmap)
 EndFunc
 
 ;Assuming 800x552 dimension
-Func GetPixelSum($aMap = $g_aMap, $iSkip = 100)
+Func GetPixelSum($aMap = $g_aMap, $iSkip = 200, $iLeft = 0, $iTop = 0, $iWidth = 800, $iHeight = 552)
     Local $iSum = 0
-    For $i = 0 To 800*552 Step $iSkip
-        $iSum += DllStructGetData($aMap, 1, $i + 1)
+
+    For $i = 0 To ($iWidth*$iHeight) - 1 Step $iSkip
+        Local $x = $iLeft + Mod($i, $iWidth)
+        Local $y = $iTop + Int($i / $iWidth)
+        
+        Local $iColor = _getColor($x, $y, $aMap)
+        $iSum += _ColorGetRed($iColor) + _ColorGetGreen($iColor) + _ColorGetBlue($iColor)
     Next
 
     Return $iSum

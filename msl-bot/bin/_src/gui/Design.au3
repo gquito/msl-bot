@@ -413,6 +413,8 @@ Func UpdatePicture($aCursor = $g_aPoint_UpdatePicture_Cache)
                                          ", Cursor:" & $aPointer[0] & "," & $aPointer[1] & _
                                          ", Color: " & $iColor & ")")
         
-        Return CreateArr($aPointer[0], $aPointer[1], $iColor)
+        Local $aResult = CreateArr($aPointer[0], $aPointer[1], $iColor)
+        ;ClipPut(_ArrayToString($aResult, ",")) ;DEBUG
+        Return $aResult
     EndIf
 EndFunc

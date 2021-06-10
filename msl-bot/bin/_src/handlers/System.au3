@@ -7,7 +7,7 @@
     Returns: True if script needs to be stopped.
 #ce
 Global $g_hTimer_TimeLabel = TimerInit()
-Func _Sleep($iDuration = 0)
+Func _Sleep($iDuration = 0, $bPrecise = False)
     Local $hTimer = TimerInit()
     Do
         If (UBound($g_aLog) > $g_iLOG_Processed) Then Log_Display()
@@ -33,7 +33,7 @@ Func _Sleep($iDuration = 0)
             $g_hTimerLocation = Null
             Return True
         EndIf
-        Sleep(50)
+        If $bPrecise = False Then Sleep(50)
     Until (TimerDiff($hTimer) > $iDuration)
     Return False
 EndFunc

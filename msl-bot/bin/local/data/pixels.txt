@@ -2,12 +2,12 @@ monsters-awakened-enabled:425,394,0xE4B05C
 monsters-evolve-enabled:656,393,0x0A1414
 refill-free:337,413,0x0C817E
 astroleague-refill-free:170,417,0x097A7A
-super-lab-forge-fire:530,278,0xFF0456
-super-lab-forge-water:538,275,0x00197E
-super-lab-forge-wood:553,286,0x31D01E
-super-lab-forge-light:562,292,0xFDCF28
-super-lab-forge-dark:557,283,0x9F0BD7
-super-lab-forge-craft:550,433,0x0C807D
+super-lab-forge-fire:530,278,0xEA0D62
+super-lab-forge-water:538,275,0x00A73
+super-lab-forge-wood:553,286,0x22CC11
+super-lab-forge-light:562,292,0xFFC930
+super-lab-forge-dark:557,283,0x9E0CD7
+super-lab-forge-craft:550,433,0x0C807D/550,433,0x0xC7F7D
 super-lab-forge-time-reduction:621,429,0x0E847F
 village-summon-egg-ad:452,453,0x077879
 inbox-accept-all:612,165,0x0D827E
@@ -18,4 +18,10 @@ battle-auto-animation:653,387,0x8F7366|637,444,0x5A338E
 hero-dungeon-done:197,99,0x9B9B9B
 towers-elemental-available:693,19,0xFFF609
 clan-shop-donate:220, 118,0xB16138
-clan-shop-donate-confirm:416, 305,0xC1812D
+clan-shop-donate-confirm:416,305,0xC1812D
+elusive-dungeon-slots:633,234,0x565758|458,299,0x0C817D|250,329,0x6E3D2C
+elusive-dungeon-battle:43,458,0xCC7345|33,458,0xCC7544|37,444,0x753624
+elusive-dungeon-results:400,97,0x304A56|317,84,0x2E3647|465,119,0xF7F2ED
+elusive-dungeon-no-clues:447,305,0x077378|599,376,0x4B4C3A|583,379,0x16100E
+apex-battles-defeat:313,108,0x7991FF|449,108,0x7991FF|384,107,0x7992FF
+apex-battles-slots:519,307,0x65382C|397,187,0x545C5C|377,194,0x565959|39,430,0x595044|348,298,0x0C827F

@@ -1,4 +1,4 @@
-Global $aVersion = [4, 3, 0] ;Major, Minor, Build
+Global $aVersion = [4, 3, 1] ;Major, Minor, Build
 
 #pragma compile(Out, "msl-donator.exe")
 #pragma compile(x64, False)
@@ -6,8 +6,8 @@ Global $aVersion = [4, 3, 0] ;Major, Minor, Build
 #pragma compile(ProductName, "Monster Super League Bot")
 #pragma compile(FileDescription, "Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot")
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 4.3.0)
-#pragma compile(ProductVersion, 4.3.0)
+#pragma compile(FileVersion, 4.3.1)
+#pragma compile(ProductVersion, 4.3.1)
 #pragma compile(OriginalFilename, "msl-bot.exe")
 #pragma compile(AutoItExecuteAllowed, True)
 
@@ -41,8 +41,8 @@ Func Initialize()
     $g_aImageLocations = getArgsFromFile($g_sLocalDataFolder & $g_sImageLocations)
     If @error Then MsgBox($MB_ICONERROR, "MSL-Bot Error", "Could not read file: " & $g_sLocalDataFolder & $g_sImageLocations)
 
-            Script_SetData($g_sLocalFolder & $g_sScriptsSettings)
-    
+    Script_SetData($g_sLocalFolder & $g_sScriptsSettings)
+
     mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sLocations), $g_aLocations)
     mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sLocationsMap), $g_aLocationsMap)
     mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sNezzPositions), $g_aNezzPos)

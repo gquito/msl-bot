@@ -84,13 +84,13 @@ guided-3-mon-second:400,200
 guided-3-mon-third-chibi:500,223
 guided-3-mon-third:500,200
 guided-4-mon-first-chibi:250,233
-guided-4-mon-first:249,210
+guided-4-mon-first:249,215
 guided-4-mon-fourth-chibi:565,233
-guided-4-mon-fourth:541,210
+guided-4-mon-fourth:541,215
 guided-4-mon-second-chibi:350,233
-guided-4-mon-second:350,210
+guided-4-mon-second:350,215
 guided-4-mon-third-chibi:454,233
-guided-4-mon-third:447,210
+guided-4-mon-third:451,215
 inbox-accept-all-confirm:323,323
 inbox-accept-all:640,175
 leagues-astromon:243,283

@@ -75,7 +75,7 @@ Func Collect_Hiddens()
 
         Local $bLog = $g_bLogEnabled
         $g_bLogEnabled = False
-        While TimerDiff($hTimer) < 10000 ;Ten seconds max
+        While TimerDiff($hTimer) < 10000 ;10 seconds max
             If _Sleep(200) Then Return False
             Switch getLocation()
                 Case "village"
@@ -86,16 +86,13 @@ Func Collect_Hiddens()
                     navigate("village")
                     ExitLoop
                 Case Else
-                    If navigate("village", False, 3) = 0 Then 
+                    If navigate("village", False, 3) = False Then 
                         $g_bLogEnabled = $bLog
                         Return False
-                    Else
-                        $hTimer = TimerInit()
                     EndIf
             EndSwitch
         WEnd
         $g_bLogEnabled = $bLog
-        ;If TimerDiff($hTimer) >= 10000 Then Return False
     Next
     Return True
 EndFunc

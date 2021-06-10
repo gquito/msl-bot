@@ -164,7 +164,7 @@
 	[text:
 		name: "Swipe Delay",
 		description: "The amount of time in MILLISECONDS that the bot waits after swiping the screen to do anything.",
-		default: "300"
+		default: "700"
 	]
 
 	[text:
@@ -380,7 +380,7 @@
 		name: "Map",
 		description: "Enter map which hosts the astromon.",
 		default: "Phantom Forest",
-		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Sky Falls,Slumbering City,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
 	]
 	
 	[combo:
@@ -507,7 +507,7 @@
 		name: "Map",
 		description: "Enter map which hosts the astromon.",
 		default: "Phantom Forest",
-		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Sky Falls,Slumbering City,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
 	]
 	
 	[combo:
@@ -571,7 +571,7 @@
 		name: "Map",
 		description: "Enter map which hosts the astromon.",
 		default: "Phantom Forest",
-		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Slumbering City,Sky Falls,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
+		data: "Phantom Forest,Lunar Valley,Aria Lake,Mirage Ruins,Pagos Coast,Seabed Caves,Magma Crags,Star Sanctuary,Sky Falls,Slumbering City,Glacial Plains,Aurora Plateau,Deserted Battlefield,Terrestrial Rift"
 	]
 	
 	[combo:

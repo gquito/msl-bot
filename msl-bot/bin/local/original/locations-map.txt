@@ -1,7 +1,9 @@
 ancient-colossus-dungeon:golem-dungeons,map
 anvil:village
+apex-battles:apex-battles-vs,map,map-battle
+apex-battles-vs:apex-battles
 association:association-expedition,buy-gem,buy-gold,map,refill
-association-expedition:association,buy-gem,buy-gold,map,refill
+association-expedition:association,buy-gem,buy-gold,expedition-cancel,map,refill
 astroleague:map,map-battle
 astroleague-defeat:battle-end,pvp-battle-end
 astroleague-victory:battle-end,pvp-battle-end
@@ -11,7 +13,7 @@ awakened-success:monsters-astromon,monsters-awaken,monsters-evolution,monsters-e
 battle:astroleague-defeat,astroleague-victory,battle-auto,battle-boss,battle-end-exp,catch-mode,championleague-victory,champion-league-defeat,pause,pvp-battle-end
 battle-auto:astroleague-defeat,astroleague-victory,battle,battle-boss,battle-end-exp,catch-mode,championleague-victory,champion-league-defeat,pause,pvp-battle-end
 battle-boss:battle,battle-auto
-battle-end:battle,battle-auto,loading,map,map-astromon-full,map-battle,monsters,refill,village
+battle-end:apex-battles-vs,battle,battle-auto,loading,map,map-astromon-full,map-battle,monsters,refill,village
 battle-end-exp:battle-end,battle-sell,battle-sell-item
 battle-sell:battle-end,battle-sell-item,pvp-battle-end
 battle-sell-item:battle-sell
@@ -30,6 +32,7 @@ colossus-dungeons:golem-dungeons,map,map-battle
 dragon-dungeons:map,map-battle
 dungeon-info:clan-dungeons,extra-dungeons,gold-dungeons,guardian-dungeons,map,special-guardian-dungeons,starstone-dungeons,wood-dungeons
 elemental-dungeons:dungeon-info,gold-dungeons,guardian-dungeons,map,map-battle,special-guardian-dungeons,starstone-dungeons
+expedition-cancel:association-expedition
 event-list:village
 exotic-festival:exotic-ticket-claim,village
 exotic-ticket-claim:exotic-festival,village
@@ -47,9 +50,9 @@ inbox:friend-gifts,village
 leagues:astroleague,map
 loading:astroleague,battle,battle-auto,map,titans-battle,village
 manage:gem-upgrade-not-upgrading,monsters,monsters-evolution,monsters-level-up,monsters-level-up-max,sell-gems-confirm
-map:association,astroleague,clan-battle,clan-dungeons,dialogue-skip,dialogue-skip,dragon-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,golem-dungeons,guardian-dungeons,hero-dungeons,leagues,loading,map-stage,refill,special-guardian-dungeons,starstone-dungeons,towers,village
+map:apex=battles,association,astroleague,clan-battle,clan-dungeons,dialogue-skip,dialogue-skip,dragon-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,golem-dungeons,guardian-dungeons,hero-dungeons,leagues,loading,map-stage,refill,special-guardian-dungeons,starstone-dungeons,towers,village
 map-astromon-full:battle-end
-map-battle:astroleague,astromon-full,autobattle-prompt,battle,battle-auto,clan-dungeons,colossus-dungeons,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc,towers,towers-elemental
+map-battle:apex-battles,astroleague,astromon-full,autobattle-prompt,battle,battle-auto,clan-dungeons,colossus-dungeons,dragon-dungeons,extra-dungeons,golem-dungeons,loading,map-battle-autofill,map-stage,refill,refill-astrochips-popup,starstone-dungeons,starstone-dungeons,toc,towers,towers-elemental
 map-battle-autofill:map-battle,refill-astrochips-popup
 map-stage:map,map-battle
 monsters:awakened-success,buy-gem,buy-gold,hourly-reward,manage,monsters-astromon,monsters-awaken,monsters-evolution,monsters-evolve,monsters-level-up,monsters-level-up-max,release-confirm,release-reward,village
@@ -72,7 +75,8 @@ special-guardian-dungeons:clan-dungeons,dungeon-info,elemental-dungeons,extra-du
 starstone-dungeons:clan-dungeons,dungeon-info,elemental-dungeons,extra-dungeons,gold-dungeons,guardian-dungeons,map,map-battle,special-guardian-dungeons
 summon-astromon-popup:village-summon
 super-lab:super-lab-forge,village
-super-lab-forge:super-lab
+super-lab-forge:super-lab,super-lab-forge-confirm
+super-lab-forge-confirm:super-lab-forge
 tap-to-start:event-list
 titans:clan-shop,map,roll-call,titans-monsters
 titans-battle:pause,titans-result
