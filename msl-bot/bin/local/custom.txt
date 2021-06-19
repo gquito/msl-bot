@@ -152,7 +152,7 @@
 	]
 ]
 
-[_Delays:
+[_Delay:
 	[description: "Delay settings"]
 
 	[text:
@@ -622,7 +622,7 @@
 		name: "Idle Time",
 		description: "Bot will remain idle to wait for more guardian dungeons.",
 		default: "30 minutes",
-		data: "Never,30 Minutes,60 Minutes,120 Minutes,240 Minutes"
+		data: "Never,10 Minutes,30 Minutes,60 Minutes,120 Minutes,240 Minutes"
 	]
 
 	[combo:

@@ -13,6 +13,8 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
         EndIf
     Next
 
+    ;Local $bScreenshot = False
+
     Local $iCurrent = -1
     Local $iNumCatch = 0
     Local $aPoints[0]
@@ -46,6 +48,22 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                 EndIf
 
                 If isArray($aPoints) > 0 And $iCurrent <> -1 Then
+                    #cs
+                    If $bScreenshot = False And clickUntil("737,123", "isLocation", "battle,battle-auto", 3, 500) Then
+                        $bScreenshot = True
+                        If _Sleep(2000) Then ExitLoop
+                        CaptureRegion()
+                        If isArray(findImage("catch-guided-rare", 70)) = False Then
+                            HandleMenu($M_Capture_Full_Screenshot)
+                        Else
+                            CaptureRegion("Found" & Random(0, 10000, 1))
+                        EndIf
+                        clickUntil("739,277", "isLocation", "catch-mode", 3, 500)
+                        If _Sleep(3000) Then ExitLoop
+                        CaptureRegion()
+                    EndIf
+                    #ce
+
                     Log_Add(StringFormat("Catching astromon: %s at (%s)", ($aPoints[$iCurrent])[2], _ArrayToString($aPoints[$iCurrent], ",", 0, 1)), $LOG_DEBUG)
 
                     clickPoint($aPoints[$iCurrent], 3)

@@ -45,7 +45,9 @@ EndFunc
         $hControl: Control to take a bitmap image from.
     Return: Handle of bitmap in memory.
 #ce
+Global $g_bBGR = False
 Func getBitmapHandles(ByRef $hBitmap, $iBackgroundMode = $Config_Capture_Mode, $hControl = $g_hControl)
+    $g_bBGR = False
     If $hBitmap <> 0  Then
         _WinAPI_DeleteObject($hBitmap)
         $hBitmap = 0
@@ -72,12 +74,23 @@ Func getBitmapHandles(ByRef $hBitmap, $iBackgroundMode = $Config_Capture_Mode, $
                 $hBitmap = _ScreenCapture_Capture("", $aNewPoint[0], $aNewPoint[1], $aNewPoint[0] + $EMULATOR_WIDTH - 1, $aNewPoint[1] + $EMULATOR_HEIGHT - 1, False)
             EndIf
         Case $BKGD_ADB
+            $g_bBGR = True
             $g_bLogEnabled = False
-            ;Data in from adb is in ABGR format must be converted to ARGB when used as HBITMAP. Done in RGBAToHBITMAP
             ADB_Command("shell screencap " & $ADB_Android_Shared & "\" & $Config_Emulator_Title & ".rgba")
             $g_bLogEnabled = True
-            RGBAToHBITMAP($hBitmap, $ADB_PC_Shared & "\" & $Config_Emulator_Title & ".rgba", $EMULATOR_WIDTH, $EMULATOR_HEIGHT, 0, 0, $EMULATOR_WIDTH, $EMULATOR_HEIGHT)
-            If @error Then Log_Add("Could not load DLL: " & $g_sMSLHelperPath, $LOG_ERROR)
+
+            Local $hFile = _WinAPI_CreateFile($ADB_PC_Shared & "\" & $Config_Emulator_Title & ".rgba", 2, 2)
+            If $hFile <> 0 Then
+                Local $iSize = $EMULATOR_WIDTH*$EMULATOR_HEIGHT*4
+                Local $pBuffer = DllStructCreate("byte[" & $iSize & "]")
+                Local $nBytes ;Temp
+
+                _WinAPI_SetFilePointer($hFile, 12)
+                _WinAPI_ReadFile($hFile, $pBuffer, $iSize, $nBytes)
+                _WinAPI_CloseHandle($hFile)
+    
+                $hBitmap = _WinAPI_CreateBitmap($EMULATOR_WIDTH, $EMULATOR_HEIGHT, 1, 32, $pBuffer)
+            EndIf
     EndSwitch
 EndFunc
 
@@ -90,27 +103,10 @@ EndFunc
 Func saveHBitmap($sName, $hBitmap = $g_hBitmap)
     $sName = StringReplace($sName, ".bmp", "")
     If (StringInStr($sName,":\")) Then
-        _WinAPI_SaveHBITMAPToFile($sName & ".bmp", $hBitmap)
+        _WinAPI_SaveHBITMAPToFile($sName & ".bmp", $hBitmap, 2834, 2834)
     Else
-        _WinAPI_SaveHBITMAPToFile(@ScriptDir & "\" & $sName & ".bmp", $hBitmap)
+        _WinAPI_SaveHBITMAPToFile(@ScriptDir & "\" & $sName & ".bmp", $hBitmap, 2834, 2834)
     EndIf
-EndFunc
-
-Global $g_hMSLHelper = -1
-Func RGBAToHBITMAP(ByRef $hBitmap, $sPath, $iWidth, $iHeight, $iCropX, $iCropY, $iCropWidth, $iCropHeight)
-    If $g_hMSLHelper <= 0 Then
-        $g_hMSLHelper = DllOpen($g_sMSLHelperPath)
-        If @error Then Return SetError(1, 0, False)
-    EndIf
-
-    Local $aResult = DllCall($g_hMSLHelper, "int:cdecl", "RGBAToHBITMAP", "handle*", $hBitmap, "str", $sPath, "int", $iWidth, "int", $iHeight, "int", $iCropX, "int", $iCropY, "int", $iCropWidth, "int", $iCropHeight)
-    If isArray($aResult) And $aResult[0] = 1 Then 
-        _WinAPI_DeleteObject($hBitmap)
-
-        $hBitmap = $aResult[1]
-        Return True
-    EndIf
-    Return False
 EndFunc
 
 ;For 800x552 dimension
@@ -138,37 +134,21 @@ EndFunc
 Func CropHBITMAP(ByRef $hBitmap, $iWidth, $iHeight, $iCropX, $iCropY, $iCropWidth, $iCropHeight)
     If ($iCropWidth - $iCropX = $iWidth And $iCropHeight - $iCropY = $iHeight) Then Return $hBitmap
 
-    ;Log_Add("Crop: " & _ArrayToString(CreateArr($iCropX, $iCropY, $iCropWidth, $iCropHeight), ","), $LOG_DEBUG)
-
-    If $g_hMSLHelper <= 0 Then
-        $g_hMSLHelper = DllOpen($g_sMSLHelperPath)
-        If @error Then Log_Add("Could not open DLL: " & $g_sMSLHelperPath, $LOG_ERROR)
-    EndIf
-
     $g_aCache_CropHBITMAP = CreateArr($iCropX, $iCropY, $iCropWidth, $iCropHeight)
-    If $g_hMSLHelper > 0 Then
-        Local $aResult = DllCall($g_hMSLHelper, "handle:cdecl", "CropHBITMAP", "handle*", $hBitmap, "int", $iWidth, "int", $iHeight, "int", $iCropX, "int", $iCropY, "int", $iCropWidth, "int", $iCropHeight)
-        If @error Then SetError(3, 0, -1)
-        If isArray($aResult) Then 
-            Return $aResult[0]
-        EndIf
-        Return SetError(4, 0, -1)
-    Else
-        Local $srcDC = _WinAPI_CreateCompatibleDC(Null)
-        Local $newDC = _WinAPI_CreateCompatibleDC(Null)
-    
-        Local $hBitmap_cropped = _WinAPI_CreateBitmap($iCropWidth, $iCropHeight, 1, 32, Null)
-    
-        Local $srcBitmap = _WinAPI_SelectObject($srcDC, $hBitmap)
-        Local $newBitmap = _WinAPI_SelectObject($newDC, $hBitmap_cropped)
-    
-        _WinAPI_BitBlt($newDC, 0, 0, $iCropX + $iCropWidth, $iCropY + $iCropHeight, $srcDC, $iCropX, $iCropY, 0x00CC0020) ;SRCCOPY
-    
-        _WinAPI_SelectObject($srcDC, $srcBitmap)
-        _WinAPI_SelectObject($newDC, $newBitmap)
-    
-        _WinAPI_DeleteDC($srcDC)
-        _WinAPI_DeleteDC($newDC)
-        Return $hBitmap_cropped
-    EndIf
+    Local $srcDC = _WinAPI_CreateCompatibleDC(Null)
+    Local $newDC = _WinAPI_CreateCompatibleDC(Null)
+
+    Local $hBitmap_cropped = _WinAPI_CreateBitmap($iCropWidth, $iCropHeight, 1, 32, Null)
+
+    Local $srcBitmap = _WinAPI_SelectObject($srcDC, $hBitmap)
+    Local $newBitmap = _WinAPI_SelectObject($newDC, $hBitmap_cropped)
+
+    _WinAPI_BitBlt($newDC, 0, 0, $iCropX + $iCropWidth, $iCropY + $iCropHeight, $srcDC, $iCropX, $iCropY, 0x00CC0020) ;SRCCOPY
+
+    _WinAPI_SelectObject($srcDC, $srcBitmap)
+    _WinAPI_SelectObject($newDC, $newBitmap)
+
+    _WinAPI_DeleteDC($srcDC)
+    _WinAPI_DeleteDC($newDC)
+    Return $hBitmap_cropped
 EndFunc

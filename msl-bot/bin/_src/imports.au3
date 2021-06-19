@@ -1,17 +1,20 @@
 #include-once
 
+#include <Constants.au3>
+#include <WindowsConstants.au3>
+#include <GUIConstants.au3>
+#include <InetConstants.au3>
+
 #include <WinAPIProc.au3>
 #include <WinAPIDiag.au3>
 #include <WinAPIGdi.au3>
 #include <ScreenCapture.au3>
-#include <StringConstants.au3>
 #include <Color.au3>
 #include <Math.au3>
 #include <GDIPlus.au3>
 #include <Array.au3>
 #include <IE.au3>
 #include <String.au3>
-#include <InetConstants.au3>
 #include <Date.au3>
 #include <File.au3>
 #include <Misc.au3>
@@ -20,7 +23,6 @@
 #include <GUIRichEdit.au3>
 #include <GUIEdit.au3>
 #include <GUIListView.au3>
-#include <GUIConstants.au3>
 #include <GUIComboBox.au3>
 #include <GUIButton.au3>
 #include <GUIMenu.au3>

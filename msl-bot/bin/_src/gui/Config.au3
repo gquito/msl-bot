@@ -35,22 +35,15 @@ Func Config_Save($sConfig = "", $sPath = "")
     Config_Update()
 EndFunc
 
-Func Config_Update()
-    Local $aConfigSettings = formatArgs(Script_DataByName("_Config")[2]) 
-    Local $aADBSettings = formatArgs(Script_DataByName("_ADB")[2])
-    Local $aDelaySettings = formatArgs(Script_DataByName("_Delays")[2])
-    Local $aGeneralSettings = formatArgs(Script_DataByName("_General")[2])
-    Local $aHourlySettings = formatArgs(Script_DataByName("_Hourly")[2])
-    Local $aGuardianSettings = formatArgs(Script_DataByName("_Guardian")[2])
-    Local $aFilterSettings = formatArgs(Script_DataByName("_Filter")[2])
+Func Config_Update($bForce = False)
+    If $g_bRunning = True Or $bForce Then Return False ;Prevent settings changing during runtime
 
-    Config_CreateGlobals($aConfigSettings, "Config")
-    Config_CreateGlobals($aADBSettings, "ADB")
-    Config_CreateGlobals($aDelaySettings, "Delay")
-    Config_CreateGlobals($aGeneralSettings, "General")
-    Config_CreateGlobals($aHourlySettings, "Hourly")
-    Config_CreateGlobals($aGuardianSettings, "Guardian")
-    Config_CreateGlobals($aFilterSettings, "Filter")
+    Local Const $aSettings = ["_Config", "_General", "_ADB", "_Delay", "_Hourly", "_Guardian", "_Filter", _
+                              "Farm_Rare", "Farm_Golem", "Farm_Gem", "Farm_Astromon", "Farm_Guardian", "Farm_Starstone"]
+    For $sSetting In $aSettings
+        Local $aSetting = formatArgs(Script_DataByName($sSetting)[$CONFIG_SETTINGLIST])
+        Config_CreateGlobals($aSetting, $sSetting)
+    Next 
 
     ;Emulator Console ADB and Shared folder
     Global $Config_Console_ADB
@@ -70,42 +63,17 @@ Func Config_Update()
     EndSwitch
 
     ;parsing settings
-    Switch $Config_Location_Stuck_Timeout
-        Case "Never"
-            $Config_Location_Stuck_Timeout = -1
-        Case Else
-            $Config_Location_Stuck_Timeout = Int(StringMid($Config_Location_Stuck_Timeout, 1, StringLen($Config_Location_Stuck_Timeout) - StringLen(" Minutes")))
-    EndSwitch
-
-    Switch $Config_Screen_Frozen_Check
-        Case "Never"
-            $Config_Screen_Frozen_Check = -1
-        Case Else
-            $Config_Screen_Frozen_Check = Int(StringMid($Config_Screen_Frozen_Check, 1, StringLen($Config_Screen_Frozen_Check) - StringLen(" Seconds")))
-    EndSwitch
-
-    Switch $Config_Another_Device_Timeout
-        Case "Never"
-            $Config_Another_Device_Timeout = -1
-        Case "Immediately"
-            $Config_Another_Device_Timeout = 0
-        Case Else
-            $Config_Another_Device_Timeout = Int(StringMid($Config_Another_Device_Timeout, 1, StringLen($Config_Another_Device_Timeout) - StringLen(" Minutes")))
-    EndSwitch
-
-    $Config_Maintenance_Timeout = Int(StringMid($Config_Maintenance_Timeout, 1, StringLen($Config_Maintenance_Timeout) - StringLen(" Minutes")))
-
     $Config_Capture_Mode = Eval("BKGD_" & $Config_Capture_Mode)
     $Config_Mouse_Mode = Eval("MOUSE_" & $Config_Mouse_Mode)
     $Config_Swipe_Mode = Eval("SWIPE_" & $Config_Swipe_Mode)
     $Config_Back_Mode = Eval("BACK_" & $Config_Back_Mode)
 
-    $Guardian_Check_Intervals = Int(StringMid($Guardian_Check_Intervals, 1, StringLen($Guardian_Check_Intervals) - StringLen(" Minutes")))
-
     ;Cumulative
     If FileExists($g_sProfileFolder & "\" & $Config_Profile_Name & "\Cumulative") > 0 And $g_hLV_OverallStats <> Null Then
         Cumulative_Load()
     EndIf
+
+    Return True
 EndFunc
 
 Func Config_Display(ByRef $hListView, $aScript) ;displayScriptData
@@ -134,7 +102,19 @@ Func Config_Parse($sValue)
     Switch $sValue
         Case "Enabled", "Disabled"
             Return $sValue == "Enabled"
+        Case "Never"
+            Return -1
+        Case "Immediately"
+            Return 0
         Case Else
+            If StringInStr($sValue, "Hours") Then
+                $sValue = Int(StringMid($sValue, 1, StringLen($sValue) - StringLen(" Hours")))
+            ElseIf StringInStr($sValue, "Minutes") Then
+                $sValue = Int(StringMid($sValue, 1, StringLen($sValue) - StringLen(" Minutes")))
+            ElseIf StringInStr($sValue, "Seconds") Then
+                $sValue = Int(StringMid($sValue, 1, StringLen($sValue) - StringLen(" Seconds")))
+            EndIf
+
             Return $sValue
     EndSwitch
 EndFunc
@@ -142,10 +122,8 @@ EndFunc
 Func Config_CreateGlobals($aSetting, $sName)
     For $i = 0 To UBound($aSetting)-1
         If $aSetting[$i][1] == "~DEFAULT" Then ContinueLoop
-
-        ;If isDeclared($sName & "_" & $aSetting[$i][0]) = 0 Then Log_Add($sName & "_" & $aSetting[$i][0] & " was not declared.", $LOG_ERROR)
-        ;Log_Add($sName & "_" & $aSetting[$i][0] & " = " & Config_Parse($aSetting[$i][1]), $LOG_DEBUG)
-
+        
+        If StringLeft($sName, 1) == "_" Then $sName = StringMid($sName, 2)
         Assign($sName & "_" & $aSetting[$i][0], Config_Parse($aSetting[$i][1]), $ASSIGN_FORCEGLOBAL)
     Next
 EndFunc

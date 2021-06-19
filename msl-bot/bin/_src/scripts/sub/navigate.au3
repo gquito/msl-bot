@@ -122,30 +122,22 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                             If navigate("village", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
                 Case "catch-mode"
-                    If isArray(findImage("misc-no-astrochips")) > 0 Then ExitLoop
+                    If isArray(findImage("misc-no-astrochips", 90, 0, 625, 50, 799-625, 329-100)) = True Then ExitLoop
                     
                     Switch $sLocation
                         Case "battle-auto"
-                            Local $aRound = getRound()
-                            clickBattle()
-                            clickPoint(getPointArg("battle-catch"))
-
-                            If waitLocation("unknown,catch-mode,battle", 5, False) == "unknown" Then
-                                Local $aRound2 = getRound()
-                                If isArray($aRound) > 0 And isArray($aRound2) > 0 Then
-                                    If $aRound[0] <> $aRound2[0] Then
-                                        waitLocation("battle-auto,battle", 5)
-                                        clickPoint(getPointArg("battle-catch"))
-                                        waitLocation("catch-mode", 5)
-                                    EndIf
-                                EndIf
-                            EndIf
+                            If isPixel(getPixelArg("catch-mode-available")) = True Then clickPoint(getPointArg("battle-catch"))
+                            If waitLocation("battle", 1) = False Then clickBattle()
                         Case "battle", "catch-success"
+                            If isPixel(getPixelArg("catch-mode-available")) = True Then
                             clickPoint(getPointArg("battle-catch"))
+                            EndIf
                         Case "pause"
                             clickPoint(getPointArg("battle-continue"))
                         Case "battle-end-exp", "battle-sell", "battle-sell-item", "battle-end"
                             ExitLoop
+                        Case "unknown"
+                            If waitLocation("battle-auto,battle,catch-mode", 5) = False Then ExitLoop
                         Case Else
                             goBack()
                     EndSwitch

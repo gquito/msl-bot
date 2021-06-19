@@ -24,6 +24,8 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
     Local $bIdle = False
     Local $hIdle = Null
 
+    Local $bScrolled = False
+
     navigate("guardian-dungeons", True)
     While $g_bRunning = True
         If _Sleep($Delay_Script_Loop) Then ExitLoop
@@ -50,37 +52,34 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
         Local $sLocation = getLocation()
         Common_Stuck($sLocation)
 
+        If $sLocation <> "guardian-dungeons" Then $bScrolled = False
         Switch $sLocation
             Case "guardian-dungeons"
                 Status("Searching for dungeons.")
+                If $bScrolled = False Then
+                    $bScrolled = True
+                    clickPoint($g_aSwipeUpFast)
+                    If _Sleep(1000) Then ExitLoop
+                    clickDrag($g_aSwipeUpFast)
+                    If _Sleep(2000) Then ExitLoop
+                EndIf
 
 				Local $aPoint = findGuardian($Farm_Guardian_Mode)
                 If isArray($aPoint) > 0 Then
                     clickPoint($aPoint)
-                    waitLocation("map-battle", 5)
+                    If waitLocation("map-battle,unknown", 5, False) == "unknown" Then 
+                        navigate("map") ;Prevent stuck when dungeon is expired
+                    EndIf
                 Else
                     ;Check for more dungeons
-                    CaptureRegion()
-                    Local $aCount = findImageMultiple("level-any", 80, 5, 5, 3, 615, 263, 46, 207, False)
-                    If isArray($aCount) And UBound($aCount) < 3 Then
-                        Log_Add("No guardian dungeons remaining.")
-                                $bIdle = True
-                                ContinueLoop
-                        Else
-                        Local $iFirst = getColor(581, 430, CaptureRegion()) + getColor(581, 358) + getColor(581, 286)
-                        clickDrag($g_aSwipeUp)
+                    Local $iFirst = GetPixelSum(CaptureRegion(), 1, 572, 270, 593-572, 478-270)
+                    clickDrag($g_aSwipeDown)
                         If _Sleep(1000) Then ExitLoop
-                        Local $iSecond = getColor(581, 430, CaptureRegion()) + getColor(581, 358) + getColor(581, 286)
+                    Local $iSecond = GetPixelSum(CaptureRegion(), 1, 572, 270, 593-572, 478-270)
                         If $iFirst = $iSecond Then
                             Log_Add("No guardian dungeons remaining.")
                         $bIdle = True
                         EndIf
-
-                        ContinueLoop
-                    EndIf
-
-                    clickDrag($g_aSwipeUp)
-                    If _Sleep(1000) Then ExitLoop
                 EndIf
             Case "map-battle"
                 If enterBattle() > 0 Then

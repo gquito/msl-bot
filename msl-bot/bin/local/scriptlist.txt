@@ -1,6 +1,6 @@
 _General
 _ADB
-_Delays
+_Delay
 _Hourly
 _Guardian
 _Filter

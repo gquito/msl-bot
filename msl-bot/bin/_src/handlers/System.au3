@@ -145,42 +145,33 @@ Func _HighPrecisionSleep($iMicroSeconds,$hDll=False)
     ;If $bLoaded Then DllClose($hDll)
 EndFunc
 
-#cs
-    Function: Displays global debug variable.
-    Parameter:
-        $vDebug: Data containing debug information.
-#ce
-Func DisplayDebug($vDebug = $g_vDebug)
-    If isArray($vDebug > 0) Then
-        _ArrayDisplay($vDebug)
-        MsgBox(0, "MSL Bot DEBUG", "Error Message:" & @CRLF & $g_sErrorMessage)
-    Else
-        MsgBox(0, "MSL Bot DEBUG", $vDebug & @CRLF & "Error Message:" & @CRLF & $g_sErrorMessage)
-    EndIf
-EndFunc
 
 ;calls for debug prompt
-Func Debug()
-    If $g_bRunning = 0 Then
-        $g_sScript = "_Debug"
-        Start()
+Global $g_hDebugInput = Null
+Global $g_aDebugInput_History[0]
+Global $g_hDebugInput_listHistory = Null
+Func DebugInput_CreateGUI()
+    If $g_hDebugInput <> Null Then
+        GUIDelete($g_hDebugInput)
+        $g_hDebugInput = Null
     EndIf
-EndFunc
 
-Func _Debug()
-    Log_Level_Add("_Debug")
-    Log_Add("Debug Input has started.")
+    $g_hDebugInput = GUICreate("MSL Bot Debug Input", 402, 138, -1, -1, -1, -1, $g_hParent)
+    Global $g_idDebugInput_editMain = GUICtrlCreateEdit("", 8, 24, 257, 105)
+    Global $g_idDebugInput_lblExpression = GUICtrlCreateLabel("Enter an expression:", 8, 6, 100, 17)
+    Global $g_idDebugInput_listHistory = GUICtrlCreateListView("", 272, 24, 121, 71, $LVS_SINGLESEL+$LVS_NOCOLUMNHEADER, $LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES+$WS_EX_CLIENTEDGE+$LVS_EX_FLATSB)
+    _GUICtrlListView_AddColumn($g_idDebugInput_listHistory, "History", 300)
+    $g_hDebugInput_listHistory = GUICtrlGetHandle($g_idDebugInput_listHistory)
+    Global $g_idDebugInput_btnRun = GUICtrlCreateButton("Run", 272, 104, 123, 25)
+    Global $g_idDebugInput_lblHistory = GUICtrlCreateLabel("History", 314, 6, 36, 17)
+    GUISetState(@SW_SHOW)
 
-    ;Prompting for code
-    Local $aLines = StringSplit(InputBox("Debug Input", "Enter an expression: " & @CRLF & "- Lines of expressions can be separated by '~' delimeter.", default, default, default, 150), "~", $STR_NOCOUNT)
-
-    $g_bAntiStuck = False
-    _ProcessLines($aLines)
-    $g_bAntiStuck = True
-
-    Log_Add("Debug Input has stopped.")
-    Log_Level_Remove()
-    Stop()
+    For $sExpression In $g_aDebugInput_History
+        _GUICtrlListView_AddItem($g_idDebugInput_listHistory, $sExpression)
+        If GUICtrlRead($g_idDebugInput_editMain) == "" Then
+            GUICtrlSetData($g_idDebugInput_editMain, StringReplace($sExpression, "|", @CRLF))
+        EndIf
+    Next
 EndFunc
 
 Func _ProcessLines($aLines, $bDisplayArray = True, $bLog = True)
@@ -202,44 +193,4 @@ Func _ProcessLines($aLines, $bDisplayArray = True, $bLog = True)
             If $bLog Then Log_Add(String($sResult) & " <= " & $aLines[$i], $LOG_INFORMATION)
         EndIf
     Next
-EndFunc
-
-Func RunDebug($sCommand, $sLogLevel)
-    Log_Level_Add($sLogLevel)
-    Log_Add("Running command: " & $sCommand)
-    _GUICtrlTab_ClickTab($g_hTb_Main, 1)
-    Local $aLines = StringSplit($sCommand, "~", $STR_NOCOUNT)
-    For $i = 0 To UBound($aLines, $UBOUND_ROWS)-1
-        If ($aLines[$i] == "") Then ContinueLoop
-        Local $sResult = Execute($aLines[$i])
-        If (Not(isArray($sResult)) And String($sResult) == "") Then $sResult = "N/A"
-
-        If (isArray($sResult)) Then
-            _ArrayDisplay($sResult)
-            Log_Add("{Array} <= " & $aLines[$i], $LOG_INFORMATION)
-        Else
-            Log_Add(String($sResult) & " <= " & $aLines[$i], $LOG_INFORMATION)
-        EndIf
-
-    Next
-    Log_Add("Command " & $sCommand & " finished")
-    Log_Level_Remove()
-    Stop()
-EndFunc
-
-Func _DebugFunction()
-    If $g_bRunning = 0 Then
-        $g_sScript = "_DebugFunction"
-
-        Start()
-        ;Start test here:
-        Emulator_Restart()
-        ;End TEST
-    EndIf
-EndFunc
-
-Func Custom_Function()
-    While Sleep(50)
-        CaptureRegion()
-    WEnd
 EndFunc

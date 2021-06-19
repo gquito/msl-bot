@@ -29,10 +29,10 @@ Func Script_ChangeProfile($sName)
         Script_SetData($g_sLocalCacheFolder & $g_sScriptsSettings)
     EndIf
     
-
     For $i = 0 To UBound($g_aScripts, $UBOUND_ROWS)-1
         Local $aConfig = $g_aScripts[$i]
-        If FileExists($g_sProfileFolder & "\" & $sName & "\" & $aConfig[$CONFIG_NAME]) > 0 Then 
+
+        If FileExists($g_sProfileFolder & "\" & $sName & "\" & $aConfig[$CONFIG_NAME]) = True Then 
             Script_SetConfigByFile($aConfig[$CONFIG_NAME], $g_sProfileFolder & "\" & $sName & "\")
         EndIf
     Next
@@ -46,13 +46,37 @@ Func Script_ChangeProfile($sName)
 EndFunc
 
 Func Script_SetConfigByFile($sName, $sPath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\")
-    $sName = StringReplace($sName, " ", "_")
     Local $iIndex = Script_IndexByName($sName)
     If $iIndex = -1 Then Return -1
 
     Local $aConfig2D = getArgsFromFile($sPath & "\" & $sName) ;2D array [[Name, Value], ...]
+
+    Local $sAssign = $sName
+    If StringLeft($sAssign, 1) == "_" Then $sAssign = StringMid($sAssign, 2)
+
     For $i = 0 To UBound($aConfig2D)-1
-        Script_SetSetting($sName, $aConfig2D[$i][0], $aConfig2D[$i][1])
+        If isArray(Script_DataByName($sName)) = False Then 
+            Log_Add("Could not find data for: " & $sName, $LOG_ERROR)
+            ContinueLoop
+        EndIf
+
+        Local $aConfig_SettingList = (Script_DataByName($sName)[$CONFIG_SETTINGLIST])
+        If isArray($aConfig_SettingList) = False Or UBound($aConfig_SettingList) <= $i Then
+            Log_Add("Could not set config: " & $sName, $LOG_ERROR) 
+            ContinueLoop
+        EndIf
+
+        Local $sType = ($aConfig_SettingList[$i])[$SETTING_TYPE]
+        Local $sData = ($aConfig_SettingList[$i])[$SETTING_DATA]
+
+        Local $sValue = $aConfig2D[$i][1]
+        If ($sType <> "text" And $sType <> "list" And $sType <> "setting") And _
+           (StringInStr($sData, $sValue) = False Or $sValue == "") Then
+
+            $sValue = Eval("Default_" & $sAssign & "_" & $aConfig2D[$i][0])
+        EndIf
+
+        Script_SetSetting($sName, $aConfig2D[$i][0], $sValue)
     Next
 EndFunc
 

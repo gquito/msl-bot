@@ -34,7 +34,7 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 							Log_Add("Could not select stage level.", $LOG_ERROR)
 							ExitLoop(2)
 						EndIf
-
+						
 						
 						Log_Add("Changing difficulty to " & $sDifficulty & ".")
 						clickPoint(getPointArg("map-stage-mode"), 2)

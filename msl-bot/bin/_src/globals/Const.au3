@@ -13,10 +13,10 @@ Global Const $EMULATOR_WIDTH = 800, $EMULATOR_HEIGHT = 552, $EMULATOR_DPI = 160
 #EndRegion
 
 #Region Control
-    Global Const $BKGD_NONE = 0, $BKGD_WINAPI = 1, $BKGD_ADB = 2
-    Global Const $MOUSE_REAL = 0, $MOUSE_CONTROL = 1, $MOUSE_ADB = 2
-    Global Const $SWIPE_CONTROL = 0, $SWIPE_ADB = 1, $SWIPE_REAL = 2
-    Global Const $BACK_REAL = 0, $BACK_CONTROL = 1, $BACK_ADB = 2
+    Global Const $BKGD_NONE = 0, $BKGD_WINAPI = 1, $BKGD_ADB = 2, $BKGD_STR[3] = ["None", "WinAPI", "ADB"]
+    Global Const $MOUSE_REAL = 0, $MOUSE_CONTROL = 1, $MOUSE_ADB = 2, $MOUSE_STR[3] = ["Real", "Control", "ADB"]
+    Global Const $SWIPE_CONTROL = 0, $SWIPE_ADB = 1, $SWIPE_REAL = 2, $SWIPE_STR[3] = ["Control", "ADB", "Real"]
+    Global Const $BACK_REAL = 0, $BACK_CONTROL = 1, $BACK_ADB = 2, $BACK_STR[3] = ["Real", "Control", "ADB"]
 #EndRegion
 
 Global Const $ALIGN_LEFT = 0, $ALIGN_RIGHT = 1

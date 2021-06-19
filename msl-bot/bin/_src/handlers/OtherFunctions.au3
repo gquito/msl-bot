@@ -30,15 +30,58 @@ Func GetWorkingDirectory($sFullPath)
 EndFunc
 
 Func TestFunction()
-    Local $MousePos = MouseGetPos()
-    Local $GamePos = WinGetPos(ControlGetHandle(WinGetHandle($Config_Emulator_Title), "", $Config_Emulator_Property))
-
-    Local $Rel = [$MousePos[0] - $GamePos[0], $MousePos[1] - $GamePos[1]]
     CaptureRegion()
+    ScriptTest_CreateGui("TEST RIGHT NOW", $g_hBitmap)
+EndFunc
 
-    Log_Add($Rel[0] & "," & $Rel[1] & "," & GetColor($Rel[0], $Rel[1]), $LOG_INFORMATION)
-    ClipPut($Rel[0] & "," & $Rel[1] & "," & GetColor($Rel[0], $Rel[1]))
-    $g_bRunning = True
-    ;navigate("map")
-    $g_bRunning = False
+Func ClipSave_Bitmap()
+    Local $sInput = InputBox("Save image", "Enter name for image")
+    $sInput &= ".bmp"
+
+    _ClipBoard_Open(0)
+    Local $hBitmap = _ClipBoard_GetDataEx(2) ;CF_BITMAP
+    _ClipBoard_Close()
+    If $hBitmap = 0 Then Return SetError(1, 0, False)
+    
+    Local $aSplit = StringSplit($sInput, "-", $STR_NOCOUNT)
+    If UBound($aSplit) = 0 Then Return SetError(2, 0, False)
+
+    Local $sFolder = $aSplit[0]
+    Local $iResult = _WinAPI_SaveHBITMAPToFile(@ScriptDir & "\bin\images\" & $sFolder & "\" & $sInput, $hBitmap, 2834, 2834)
+
+    Return $iResult
+EndFunc
+
+Func ClipPut_Bitmap(ByRef $hBitmap)
+    If _ClipBoard_Open(0) = False Then Return SetError(1, 0, False)
+    If _ClipBoard_Empty() = False Then Return SetError(2, 0, False)
+    Local $bResult = _ClipBoard_SetDataEx($hBitmap, 2) ;CF_BITMAP
+    _Clipboard_Close()
+
+    Return $bResult
+EndFunc
+
+;Handles only titan active attack.
+Func Titans_Fast()
+    Local $iColorSP = 0x37BECF 
+    Local $iColorNOSP = 0xC0F18 
+    Local $aPoint = CreateArr(545, 42)
+
+    Local $bAntiStuck_Temp = $g_bAntiStuck
+    $g_bAntiStuck = False
+
+    Local $bScheduleBusy = $g_bScheduleBusy
+    $g_bScheduleBusy = False
+    While Not(_Sleep(100, True))
+        CaptureRegion()
+
+        If isPixel(CreateArr($aPoint[0], $aPoint[1], $iColorSP), 20) = True Then 
+            If _Sleep(500) Then ExitLoop
+
+            clickPoint("39,459", 3, 20) ;Pause
+            clickPoint("325,331", 10, 100) ;Continue
+        EndIf
+    WEnd
+    $g_bAntiStuck = $bAntiStuck_Temp
+    $g_bScheduleBusy = $bScheduleBusy
 EndFunc

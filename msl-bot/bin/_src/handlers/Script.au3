@@ -1,6 +1,6 @@
 #include-once
 
-Func Start()
+Func Start($bSchedule = True)
     Log_Level_Add("PREPROCESS")
     Log_Add("Initializing scripts and checking preconditions.", $LOG_DEBUG)
 
@@ -74,7 +74,7 @@ Func Start()
         EndIf
         ;========================================
         Cumulative_Load()
-        Start_Schedule()
+        If $bSchedule = True Then Start_Schedule()
     EndIf
 
     Log_Add("Start result: " & $bOutput & ".", $LOG_DEBUG)
@@ -174,6 +174,8 @@ EndFunc
 
 ;Includes tests to see if all features are working properly.
 Func ScriptTest()
+    If $g_hCompatibilityTest <> Null Then GUI_HANDLE_MESSAGE(CreateArr($GUI_EVENT_CLOSE, $g_hCompatibilityTest))
+
     Log_Level_Add("SCRIPT_TEST")
     Local $aTempLOG[0]
     _ArrayAdd($aTempLOG, "== Starting Compatibility Test ==")
@@ -199,10 +201,10 @@ Func ScriptTest()
     _ArrayAdd($aTempLOG, "  -Emulator Title: " & $Config_Emulator_Title)
     _ArrayAdd($aTempLOG, "  -Emulator Property: " & $Config_Emulator_Property)
     _ArrayAdd($aTempLOG, "  -Display Scaling: " & $Config_Display_Scaling)
-    _ArrayAdd($aTempLOG, "  -Capture Mode: " & $Config_Capture_Mode)
-    _ArrayAdd($aTempLOG, "  -Mouse Mode: " & $Config_Mouse_Mode)
-    _ArrayAdd($aTempLOG, "  -Swipe Mode: " & $Config_Swipe_Mode)
-    _ArrayAdd($aTempLOG, "  -Back Mode: " & $Config_Back_Mode)
+    _ArrayAdd($aTempLOG, "  -Capture Mode: " & $BKGD_STR[$Config_Capture_Mode])
+    _ArrayAdd($aTempLOG, "  -Mouse Mode: " & $MOUSE_STR[$Config_Mouse_Mode])
+    _ArrayAdd($aTempLOG, "  -Swipe Mode: " & $SWIPE_STR[$Config_Swipe_Mode])
+    _ArrayAdd($aTempLOG, "  -Back Mode: " & $BACK_STR[$Config_Back_Mode])
 
     ;Test window and control handle.
     ScriptTest_Handles()
@@ -309,21 +311,40 @@ Func ScriptTest()
         $sError &= @CRLF & @CRLF & "- The file \bin\images\misc\misc-test1.bmp or \bin\images\misc\misc-test2.bmp is missing. Could not check imagesearch status."
     EndIf
     _WinAPI_DeleteObject($t_hBitmap)
-
     _ArrayAdd($aTempLOG, "== Finished Compatibility Test ==")
-
-    Local $idResult = MsgBox($MB_ICONINFORMATION+$MB_YESNO, "MSL Compatibility Test", _ArrayToString($aTempLOG, @CRLF) & $sError & @CRLF & @CRLF & "Would you like to copy this information?")
-    If ($idResult = $IDYES) Then 
-        ClipPut(_ArrayToString($aTempLOG, @CRLF) & $sError)
-        MsgBox($MB_ICONINFORMATION, "MSL Compatibility Test", "Information has been copied to your clipboard.")
-    EndIf
 
     For $i = UBound($aTempLOG)-1 To 0 Step -1
         Log_Add($aTempLOG[$i])
     Next
     Log_Level_Remove()
 
+    CaptureRegion()
+    ScriptTest_CreateGui(_ArrayToString($aTempLog, @CRLF) & $sError, $g_hBitmap)
     Return "COMPLETE"
+EndFunc
+
+Global $g_hCompatibilityTest = Null
+Func ScriptTest_CreateGui($sMessage, ByRef $hBitmap)
+    If $g_hCompatibilityTest <> Null Then Return SetError(1, 0, False)
+    $g_hCompatibilityTest = GUICreate("MSL-Bot Compatibility Test", 823, 367, -1, -1, -1, -1, $g_hParent)
+    Global $g_idCompatibilityTest_editMain = GUICtrlCreateEdit($sMessage, 10, 10, 296, 307, $WS_VSCROLL, -1)
+    Global $g_idCompatibilityTest_picMain = GUICtrlCreatePic("", 309, 10, 507, 350, -1, -1)
+    Global $g_idCompatibilityTest_btnClose = GUICtrlCreateButton("Close", 260, 330, 46, 30, -1, -1)
+    Global $g_idCompatibilityTest_btnCopyText = GUICtrlCreateButton("Copy Text", 10, 330, 80, 30, -1, -1)
+    Global $g_idCompatibilityTest_btnCopyImage = GUICtrlCreateButton("Copy as Image", 96, 330, 160, 30, -1, -1)
+    
+    GUISetState(@SW_SHOW, $g_hCompatibilityTest)
+
+    Local $tagSize = _WinAPI_GetBitmapDimension($hBitmap)
+    Local $aImageSize = [DllStructGetData($tagSize, 'X'), DllStructGetData($tagSize, 'Y')]
+    If $aImageSize[0] = 0 Or $aImageSize[1] = 0 Then Return SetError(2, 0, False)
+
+    Local $hAdjusted = _WinAPI_AdjustBitmap($hBitmap, 507, 350)
+
+    _WinAPI_DeleteObject(GUICtrlSendMsg($g_idCompatibilityTest_picMain, $STM_SETIMAGE, $IMAGE_BITMAP, $hAdjusted))
+    _WinAPI_DeleteObject($hAdjusted)
+
+    Return $g_hCompatibilityTest
 EndFunc
 
 Func ScriptTest_Handles()

@@ -52,12 +52,7 @@ Func HandleMenu($iCode)
                 Start()
             EndIf
         Case $M_General_Debug_Input
-            If $g_bRunning > 0 Then
-                MsgBox($MB_ICONERROR, "Compatibility Test", "Stop any running script before running Compatibility Test.", 30)
-            Else
-                $g_sScript = "_Debug"
-                Start()
-            EndIf
+            If $g_hDebugInput = Null Then DebugInput_CreateGUI()
         Case $M_General_Compatibility_Test
             If $g_bRunning > 0 Then
                 MsgBox($MB_ICONERROR, "Compatibility Test", "Stop any running script before running Compatibility Test.", 30)
@@ -104,8 +99,8 @@ Func HandleMenu($iCode)
             If $g_bRunning > 0 Then
                 MsgBox($MB_ICONWARNING, "Navigate", "A script is currently running.")
             Else
-                $g_sScript = "Custom_Function"
-                If Start() > 0 Then navigate(InputBox("Navigate", "Enter a location:"), True)
+                Start()
+                navigate(InputBox("Navigate", "Enter a location:"), True)
                 Stop()
             EndIf
         Case $M_Location_Get_Location

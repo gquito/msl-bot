@@ -445,8 +445,64 @@ Func GUI_HANDLE_MESSAGE($iCode)
         Case $g_hMessageBox
             Switch $iCode[0]
                 Case $GUI_EVENT_CLOSE
-                    $g_hMessageBox = Null
                     GUIDelete($g_hMessageBox)
+            EndSwitch
+        Case $g_hCompatibilityTest
+            Switch $iCode[0]
+                Case $GUI_EVENT_CLOSE, $g_idCompatibilityTest_btnClose
+                    GUIDelete($g_hCompatibilityTest)
+                    $g_hCompatibilityTest = Null
+                Case $g_idCompatibilityTest_btnCopyImage
+                    Local $hBitmap = _ScreenCapture_CaptureWnd("", $g_hCompatibilityTest, 0, 0, -1, -1, False)
+                    Local $bResult = ClipPut_Bitmap($hBitmap)
+                    If @error Then MsgBox($MB_ICONERROR+$MB_OK, "MSL-Bot Compatibility Test", "Could not copy to clipboard.", 10)
+                    If $bResult Then MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL-Bot Compatibility Test", "Image copied to clipboard.", 10)
+                    _WinAPI_DeleteObject($hBitmap)
+                Case $g_idCompatibilityTest_btnCopyText
+                    Local $bResult = ClipPut(GUICtrlRead($g_idCompatibilityTest_editMain))
+                    If $bResult = False Then MsgBox($MB_ICONERROR+$MB_OK, "MSL-Bot Compatibility Test", "Could not copy to clipboard.", 10)
+                    If $bResult Then MsgBox($MB_ICONINFORMATION+$MB_OK, "MSL-Bot Compatibility Test", "Text copied to clipboard.", 10)
+            EndSwitch
+        Case $g_hDebugInput
+            Switch $iCode[0]
+                Case $GUI_EVENT_CLOSE
+                    GUIDelete($g_hDebugInput)
+                    $g_hDebugInput = Null
+                Case $g_idDebugInput_btnRun
+                    Local $sData = GUICtrlRead($g_idDebugInput_editMain)
+                    Local $aExpressions = StringSplit($sData, @CRLF, $STR_NOCOUNT)
+
+                    If UBound($g_aDebugInput_History) = 0 Then
+                        _GUICtrlListView_AddItem($g_idDebugInput_listHistory, StringReplace($sData, @CRLF, "|"))
+                        _ArrayAdd($g_aDebugInput_History, StringReplace($sData, @CRLF, "|"), 0, "", "", $ARRAYFILL_FORCE_SINGLEITEM)
+                    Else
+                        If StringReplace($sData, @CRLF, "|") <> $g_aDebugInput_History[0] Then
+                            Local $iFind = -1
+                            For $i = 1 To UBound($g_aDebugInput_History)-1
+                                Local $sExpression = $g_aDebugInput_History[$i]
+                                If StringReplace($sData, @CRLF, "|") == $sExpression Then
+                                    $iFind = $i
+                                    ExitLoop
+                                EndIf  
+                            Next
+
+                            If $iFind <> -1 Then
+                                _GUICtrlListView_DeleteItem($g_idDebugInput_listHistory, $iFind)
+                                _ArrayDelete($g_aDebugInput_History, $iFind)
+                            EndIf
+
+                            _GUICtrlListView_InsertItem($g_idDebugInput_listHistory, StringReplace($sData, @CRLF, "|"), 0)
+                            _ArrayInsert($g_aDebugInput_History, 0, StringReplace($sData, @CRLF, "|"), 0, "", "", $ARRAYFILL_FORCE_SINGLEITEM)
+                        EndIf
+                    EndIf
+
+                    If $g_bRunning = False Then
+                        Start()
+                        _ProcessLines($aExpressions)
+                        Stop()
+                    Else
+                        _ProcessLines($aExpressions)
+                    EndIf
             EndSwitch
     EndSwitch
 
@@ -559,6 +615,12 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
                 Case $NM_RCLICK
                     Local $item = _GUICtrlListView_SubItemHitTest($g_hLV_Log)
                     If ($item[0] <> -1) Then ClipPut(_GUICtrlListView_GetItemText($g_hLV_Log,$item[0],1))
+            EndSwitch
+        Case $g_hDebugInput_listHistory
+            Switch $iCode
+                Case $NM_DBLCLK
+                    Local $item = _GUICtrlListView_SubItemHitTest($g_hDebugInput_listHistory)
+                    If ($item[0] <> -1) Then GUICtrlSetData($g_idDebugInput_editMain, StringReplace(_GUICtrlListView_GetItemText($g_hDebugInput_listHistory,$item[0], 0), "|", @CRLF))
             EndSwitch
     EndSwitch
     Return $GUI_RUNDEFMSG

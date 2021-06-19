@@ -1,12 +1,16 @@
 #include-once
 
 Func getColor($iX, $iY, $aMap = $g_aMap)
-    Local $sHex = Hex(DllStructGetData($aMap, 1, ($EMULATOR_WIDTH * $iY + $iX) + 1), 6)
+    Local $sHex = Hex(_getColor($iX, $iY, $aMap), 6)
     Return "0x" & $sHex
 EndFunc
 
 Func _getColor($iX, $iY, $aMap = $g_aMap)
-    Return DllStructGetData($aMap, 1, ($EMULATOR_WIDTH * $iY + $iX) + 1)
+    Local $iColor = DllStructGetData($aMap, 1, ($EMULATOR_WIDTH * $iY + $iX) + 1)
+    If $g_bBGR = True Then
+        $iColor = _WinAPI_SwitchColor($iColor)
+    EndIf
+    Return $iColor
 EndFunc
 
 Func compareColors($iColor1, $iColor2)

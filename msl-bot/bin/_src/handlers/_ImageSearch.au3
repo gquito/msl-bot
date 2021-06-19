@@ -180,9 +180,9 @@ Func _FindImage($sSourcePath = "", $sImage = "", $iTolerance = 95, $iLeft = 0, $
 
     Local $aResult ;Raw results
     If $sSourcePath == "" Then
-        $aResult = DllCall(Eval("g_hImageSearch"), "wstr:cdecl", "FindImageEX", "handle", $g_hBitmap, "int", $iWidth, "int", $iHeight, "str", $sImage, "int", $iTolerance, "bool", Not($bUseColor), "bool", True, "bool", True)
+        $aResult = DllCall(Eval("g_hImageSearch"), "wstr:cdecl", "FindImageEX", "handle", $g_hBitmap, "int", $iWidth, "int", $iHeight, "str", $sImage, "int", $iTolerance, "bool", Not($bUseColor) Or $g_bBGR, "bool", True, "bool", True)
     Else
-        $aResult = DllCall(Eval("g_hImageSearch"), "wstr:cdecl", "FindImage", "str", @ScriptDir & $sSourcePath, "str", $sImage, "int", $iTolerance, "bool", Not($bUseColor), "bool", True, "bool", True)
+        $aResult = DllCall(Eval("g_hImageSearch"), "wstr:cdecl", "FindImage", "str", @ScriptDir & $sSourcePath, "str", $sImage, "int", $iTolerance, "bool", Not($bUseColor) Or $g_bBGR, "bool", True, "bool", True)
     EndIf
 
     If (@error <> 0) Then
