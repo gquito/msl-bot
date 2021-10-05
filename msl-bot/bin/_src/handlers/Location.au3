@@ -58,9 +58,9 @@ Func getLocation($bUpdate = True, $bSkipImage = False)
 	;Image locations, consumes lots of power
 	If TimerDiff($g_hTimer_ImageLocation) > 5000 Then
 		$g_hTimer_ImageLocation = TimerInit()
-		If $bSkipImage <= 0 And $g_iLocationIndex = -1 Then
+		If $bSkipImage = False And $g_iLocationIndex = -1 Then
 			;$g_aImageLocation = [[NAME, 'x,y,w,h,"image"|x,y,w,h,"image"|...'], [...]]
-			If isArray($g_aImageLocations) > 0 Then
+			If isArray($g_aImageLocations) = True Then
 				For $i = 0 To UBound($g_aImageLocations)-1
 					If UBound($g_aImageLocations, 2) <> 2 Then ExitLoop
 	
@@ -68,12 +68,12 @@ Func getLocation($bUpdate = True, $bSkipImage = False)
 					Local $aLocationData_Set = StringSplit($g_aImageLocations[$i][1], "|", 2)
 					For $sLocationData In $aLocationData_Set
 						Local $aLocationData = StringSplit($sLocationData, ",", 2)
-						If isArray($aLocationData) <= 0 And UBound($aLocationData) <> 5 Then ExitLoop
+						If isArray($aLocationData) = False And UBound($aLocationData) <> 5 Then ExitLoop
 						
 						Local $sImage = StringReplace($aLocationData[4], '"', "")
 						Local $aImage = findImage($sImage, 90, 0, $aLocationData[0], $aLocationData[1], $aLocationData[2], $aLocationData[3], False, True)
 	
-						If isArray($aImage) > 0 Then
+						If isArray($aImage) Then
 							$g_sLocation = $sLocation
 							$Location = $sLocation & " (" & getTimeString(TimerDiff($g_hTimerLocation)/1000) & ")"
 							Return $g_sLocation
@@ -103,11 +103,18 @@ EndFunc
 		$bReturnBool: If false, returns the location string found.
 	Returns: String or Boolean depending on $bReturnBool
 #ce
-Func waitLocation($vLocations, $iSeconds, $iDelay = 200, $bReturnBool = True)
+Func waitLocation($vLocations, $iSeconds, $iDelay = 200, $bReturnBool = True, $bCheckGame = False)
 	Local $bOutput = ($bReturnBool? False : "")
 	Log_Level_Add("waitLocation()")
 	Local $iTimerInit = TimerInit()	
 	While TimerDiff($iTimerInit) < $iSeconds*1000
+		If $bCheckGame Then
+			If ADB_isGameRunning() = False Then
+				$bOutput = "$game_not_running"
+				ExitLoop
+			EndIf
+		EndIf
+
 		$bOutput = isLocation($vLocations, $bReturnBool)
 		If ($bOutput) Then ExitLoop
 
@@ -190,13 +197,16 @@ Func setLocation($sLocation, $aData = Null, $bUpdate = True)
 	Else
 		;Creates local version of the location. This location will be prioritized versus the remote location.
 		Local $sPixelSet = $aLocation
-		If (StringInStr($sPixelSet, "/")) Then $sPixelSet = StringSplit($sPixelSet, "/", $STR_NOCOUNT)[0]
+		If (StringInStr($sPixelSet, "/")) Then
+			$sPixelSet = StringSplit($sPixelSet, "/", $STR_NOCOUNT)
+			$sPixelSet = $sPixelSet[UBound($sPixelSet) - 1] ;Latest entry
+		EndIf
 
 		Local $aPixels = StringSplit($sPixelSet, "|", $STR_NOCOUNT)
 		ReDim $aPoints[UBound($aPixels)][2]
 		For $i = 0 To UBound($aPixels)-1
 			Local $aPixel = StringSplit($aPixels[$i], ",", $STR_NOCOUNT)
-			If UBound($aPixel) <> 2 Then Return -1
+			If UBound($aPixel) < 2 Then Return SetError(1, 0, False)
 
 			$aPoints[$i][0] = Int($aPixel[0])
 			$aPoints[$i][1] = Int($aPixel[1])

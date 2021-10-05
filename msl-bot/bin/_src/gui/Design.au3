@@ -39,6 +39,8 @@ Func CreateGUI()
                                                 GUICtrlCreateMenuItem("", $Menu_General)
     Global $M_General_Debug_Input =             GUICtrlCreateMenuItem("Debug Input...", $Menu_General)
     Global $M_General_Compatibility_Test =      GUICtrlCreateMenuItem("Compatibility Test...", $Menu_General)
+                                                GUICtrlCreateMenuItem("", $Menu_General)
+    Global $M_General_Toggle_Hidden =           GUICtrlCreateMenuItem("Toggle Hidden", $Menu_General)                                          
 
     Global $Menu_ADB =                      GUICtrlCreateMenu("ADB", $Menu_Debug)
     Global $M_ADB_Run_Command =                 GUICtrlCreateMenuItem("Run Command...", $Menu_ADB)
@@ -52,6 +54,9 @@ Func CreateGUI()
     Global $M_Location_Set_Location =           GUICtrlCreateMenuItem("Set Location...", $Menu_Location)
     Global $M_Location_Test_Location =          GUICtrlCreateMenuItem("Test Location", $Menu_Location)
 
+    Global $Menu_Gem =                  GUICtrlCreateMenu("Gem")
+    Global $M_Gem_Gem_Window =              GUICtrlCreateMenuItem("Gem Window...", $Menu_Gem)
+
     Global $Menu_Pixel =                    GUICtrlCreateMenu("Pixel", $Menu_Debug)
     Global $M_Pixel_Check_Pixel =               GUICtrlCreateMenuItem("Check Pixel...", $Menu_Pixel)
     Global $M_Pixel_Set_Pixel =                 GUICtrlCreateMenuItem("Set Pixel...", $Menu_Pixel)
@@ -59,8 +64,13 @@ Func CreateGUI()
     
     Global $Menu_Scripts =              GUICtrlCreateMenu("Scripts")
     Global $M_Scripts_Hourly =              GUICtrlCreateMenuItem("Hourly", $Menu_Scripts)
+    Global $M_Scripts_Expedition =          GUICtrlCreateMenuItem("Expedition", $Menu_Scripts)
     Global $M_Scripts_Collect_Quest =       GUICtrlCreateMenuItem("Collect Quest", $Menu_Scripts)
+    Global $M_Scripts_Collect_Inbox =       GUICtrlCreateMenuItem("Collect Inbox", $Menu_Scripts)
     Global $M_Scripts_Guardian_Dungeon =    GUICtrlCreateMenuItem("Guardian Dungeon", $Menu_Scripts)
+                                            GUICtrlCreateMenuItem("", $Menu_Scripts)
+    Global $M_Scripts_Titans_Fast =         GUICtrlCreateMenuItem("Toggle Titans Fast", $Menu_Scripts)
+
 
     Global $Menu_Capture =              GUICtrlCreateMenu("Capture")
     Global $M_Capture_Full_Screenshot =     GUICtrlCreateMenuItem("Full Screenshot", $Menu_Capture)
@@ -417,4 +427,123 @@ Func UpdatePicture($aCursor = $g_aPoint_UpdatePicture_Cache)
         ;ClipPut(_ArrayToString($aResult, ",")) ;DEBUG
         Return $aResult
     EndIf
+EndFunc
+
+Global $g_hCompatibilityTest = Null
+Func ScriptTest_CreateGui($sMessage, ByRef $hBitmap)
+    If $g_hCompatibilityTest <> Null Then Return SetError(1, 0, False)
+    $g_hCompatibilityTest = GUICreate("MSL-Bot Compatibility Test", 823, 367, -1, -1, -1, -1, $g_hParent)
+    Global $g_idCompatibilityTest_editMain = GUICtrlCreateEdit($sMessage, 10, 10, 296, 307, $WS_VSCROLL, -1)
+    Global $g_idCompatibilityTest_picMain = GUICtrlCreatePic("", 309, 10, 507, 350, -1, -1)
+    Global $g_idCompatibilityTest_btnClose = GUICtrlCreateButton("Close", 260, 330, 46, 30, -1, -1)
+    Global $g_idCompatibilityTest_btnCopyText = GUICtrlCreateButton("Copy Text", 10, 330, 80, 30, -1, -1)
+    Global $g_idCompatibilityTest_btnCopyImage = GUICtrlCreateButton("Copy as Image", 96, 330, 160, 30, -1, -1)
+    
+    GUISetState(@SW_SHOW, $g_hCompatibilityTest)
+
+    Local $tagSize = _WinAPI_GetBitmapDimension($hBitmap)
+    Local $aImageSize = [DllStructGetData($tagSize, 'X'), DllStructGetData($tagSize, 'Y')]
+    If $aImageSize[0] = 0 Or $aImageSize[1] = 0 Then Return SetError(2, 0, False)
+
+    Local $hAdjusted = _WinAPI_AdjustBitmap($hBitmap, 507, 350)
+
+    _WinAPI_DeleteObject(GUICtrlSendMsg($g_idCompatibilityTest_picMain, $STM_SETIMAGE, $IMAGE_BITMAP, $hAdjusted))
+    _WinAPI_DeleteObject($hAdjusted)
+
+    Return $g_hCompatibilityTest
+EndFunc
+
+Global $g_hGemWindow = Null
+Global $g_aGemWindow_GemsFound[0]
+Global $g_iGemWindow_GemsFound = 0
+Func GemWindow_CreateGui()
+    If $g_hGemWindow <> Null Then Return SetError(1, 0, False)
+    $g_hGemWindow = GUICreate("Gem Window", 327, 286, -1, -1, -1, -1, $g_hParent)
+    Global $g_idGemWindow_tabMain = GUICtrlCreateTab(3, 1, 322, 282)
+    GUICtrlSetResizing(-1, $GUI_DOCKAUTO+$GUI_DOCKWIDTH+$GUI_DOCKHEIGHT)
+    Global $g_idGemWindow_pageFilter = GUICtrlCreateTabItem("Filter")
+    Global $g_idGemWindow_lblAction = GUICtrlCreateLabel("Action:", 16, 33, 37, 17)
+    Global $g_idGemWindow_cmbAction = GUICtrlCreateCombo("", 56, 31, 185, 25, BitOR($CBS_DROPDOWNLIST,$CBS_AUTOHSCROLL))
+    GUICtrlSetData(-1, "Create...|Remove...|Save...|Help...", "Create...")
+    Global $g_idGemWindow_btnGo = GUICtrlCreateButton("Go", 244, 29, 71, 25)
+    Global $g_idGemWindow_lblCurrent = GUICtrlCreateLabel("Current Filter:", 16, 64, 66, 17)
+
+    ;Combo items from files in gem_filters
+    Global $g_idGemWindow_cmbFilter = GUICtrlCreateCombo("", 84, 62, 230, 25, BitOR($CBS_DROPDOWNLIST,$CBS_AUTOHSCROLL))
+    Local $aFiles = _FileListToArray($g_sFilterFolder)
+    If isArray($aFiles) = True And $aFiles[0] > 0 Then
+        GUICtrlSetData(-1, _ArrayToString($aFiles, "|", 1), $aFiles[1])
+    EndIf
+
+    ;Set edit to file contents if it exists
+    Local $sCurrent = GUICtrlRead(-1)
+    Global $g_idGemWindow_editFilter = GUICtrlCreateEdit("", 10, 88, 306, 188, BitOR($ES_AUTOHSCROLL, $ES_WANTRETURN, $WS_HSCROLL))
+    If $sCurrent <> "" Then
+        Local $sContent = FileRead($g_sFilterFolder & $sCurrent)
+        If @error Then GUICtrlSetData(-1, "Error: Could not load filter.")
+        If @error = 0 Then GUICtrlSetData(-1, $sContent)
+    EndIf
+
+    GUICtrlSetFont(-1, 12, 400, 0, "MS Reference Sans Serif")
+    Global $g_idGemWindow_pageGemsFound = GUICtrlCreateTabItem("Gems Found")
+    Global $g_idGemWindow_btnNext = GUICtrlCreateButton("Next", 190, 250, 100, 25)
+    Global $g_idGemWindow_btnPrevious = GUICtrlCreateButton("Previous", 37, 250, 100, 25)
+    Global $g_idGemWindow_lblGemsFilter = GUICtrlCreateLabel("Filter:", 15, 36, 29, 17)
+    Global $g_idGemWindow_inpFilter = GUICtrlCreateInput("Does not work yet", 44, 34, 190, 21)
+    GUICtrlSetState(-1, $GUI_DISABLE)
+    Global $g_idGemWindow_btnFilter = GUICtrlCreateButton("Filter", 237, 32, 75, 25)
+    GUICtrlSetState(-1, $GUI_DISABLE)
+    Global $g_idGemWindow_editGem = GUICtrlCreateEdit("", 11, 59, 304, 186, BitOR($ES_READONLY,$ES_WANTRETURN))
+    GUICtrlSetData(-1, StringFormat("Gem #: 0/0\r\nStatus: N/A\r\nGrade: N/A\r\nShape: N/A\r\nStat: N/A\r\nSub1: N/A\r\nSub2: N/A\r\nSub3: N/A\r\nSub4: N/A"))
+    GUICtrlSetFont(-1, 11, 400, 0, "MS Reference Sans Serif")
+
+    GUISetState(@SW_SHOW)
+
+    Return $g_hGemWindow
+EndFunc
+
+; [[handle, close_event_function]]
+Global $g_hListEditor[0][2]
+; [[listview, btn_moveup, btn_down, btn_remove, btn_add, combo]]
+Global $g_hListEditor_Controls[0][6]
+Func ListEditor_CreateGui($aCurrent, $aDefault, $sFunction)
+    Local $aWinPos = WinGetPos($g_hParent)
+    Local $x = -1, $y = -1
+    If isArray($aWinPos) = True Then 
+        $x = $aWinPos[0]+(($aWinPos[2]-150)/2)
+        $y = $aWinPos[1]+(($aWinPos[3]-150)/2)
+    EndIf
+    Local $hListEditor = GUICreate("Edit List", 150, 182, $x, $y, -1, $WS_EX_TOPMOST, $g_hParent)
+    
+    Local $idListEditor_listMain = GUICtrlCreateListView("", 2, 2, 146, 100, $LVS_SINGLESEL+$LVS_REPORT+$LVS_NOSORTHEADER+$WS_BORDER, $LVS_EX_DOUBLEBUFFER+$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
+    _GUICtrlListView_AddColumn($idListEditor_listMain, "-Included Values-", 125, 2)
+    ControlDisable("", "", HWnd(_GUICtrlListView_GetHeader($idListEditor_listMain))) ;Prevents changing column size
+
+    Local $idlistEditor_btnMoveUp = GUICtrlCreateButton("Move up", 2, 104, 72)
+    Local $idlistEditor_btnMoveDown = GUICtrlCreateButton("Move down", 75, 104, 72)
+    Local $idlistEditor_btnRemove = GUICtrlCreateButton("Remove", 2, 129, 145)
+    Local $idlistEditor_btnAdd = GUICtrlCreateButton("Add", 2, 154, 42)
+
+    Local $idlistEdit_cmbMain = GUICtrlCreateCombo("", 46, 155, 100, -1, $CBS_DROPDOWNLIST)
+    _GUICtrlComboBox_SetItemHeight($idlistEdit_cmbMain, 17)
+
+    ;Set values for listview and combo
+    For $i = 0 To UBound($aCurrent)-1
+        If ($aCurrent[$i] <> "") Then _GUICtrlListView_AddItem($idListEditor_listMain, $aCurrent[$i])
+
+        ;Removing existing values from default to add those non exisiting in a combo later.
+        For $j = UBound($aDefault)-1 To 0 Step -1
+            If ($aDefault[$j] = $aCurrent[$i]) Then _ArrayDelete($aDefault, $j)
+        Next
+    Next
+
+    If isArray($aDefault) Then GUICtrlSetData($idlistEdit_cmbMain, _ArrayToString($aDefault))
+    _GUICtrlComboBox_SetCurSel($idlistEdit_cmbMain, 0)
+
+    GUISetState(@SW_SHOW, $hListEditor)
+
+    _WinAPI_SetFocus($hListEditor)
+    _ArrayAdd($g_hListEditor, _ArrayToString(CreateArr($hListEditor, $sFunction)))
+    _ArrayAdd($g_hListEditor_Controls, _ArrayToString(CreateArr($idListEditor_listMain, $idlistEditor_btnMoveUp, $idlistEditor_btnMoveDown, $idlistEditor_btnRemove, $idlistEditor_btnAdd, $idlistEdit_cmbMain)))
+    Return $hListEditor
 EndFunc

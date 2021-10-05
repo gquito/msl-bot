@@ -30,13 +30,12 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
     While $g_bRunning = True
         If _Sleep($Delay_Script_Loop) Then ExitLoop
 
-        If $bIdle > 0 Then
-            If $Farm_Guardian_Idle_Time = 0 Then ExitLoop
+        If $bIdle = True Then
+            If $Farm_Guardian_Idle_Time = $CONFIG_NEVER Then ExitLoop
 
             $g_hTimerLocation = Null
             If getLocation() <> "village" Then navigate("village")
 
-            If $Farm_Guardian_Idle_Time = 0 Then ExitLoop
             If $hIdle = Null Then $hIdle = TimerInit()
 
             Local $iSeconds = $Farm_Guardian_Idle_Time*60 - Int((TimerDiff($hIdle)/1000))

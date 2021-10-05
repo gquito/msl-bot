@@ -188,6 +188,15 @@ Func HandleMenu($iCode)
                 $g_sScript = "doHourly"
                 Start()
             EndIf
+        Case $M_Scripts_Expedition
+            If $g_bRunning > 0 Then
+                If MsgBox($MB_ICONWARNING+$MB_YESNO, "Expedition", "Script is currently running, would you like to continue?", 30) = $IDYES Then
+                    doExpedition()
+                EndIf
+            Else
+                $g_sScript = "doExpedition"
+                Start()
+            EndIf
         Case $M_Scripts_Collect_Quest
             If $g_bRunning > 0 Then
                 If MsgBox($MB_ICONWARNING+$MB_YESNO, "Collect Quest", "Script is currently running, would you like to continue?", 30) = $IDYES Then
@@ -197,15 +206,26 @@ Func HandleMenu($iCode)
                 $g_sScript = "collectQuest"
                 Start()
             EndIf
-        Case $M_Scripts_Guardian_Dungeon
+        Case $M_Scripts_Collect_Inbox
             If $g_bRunning > 0 Then
-                If MsgBox($MB_ICONWARNING+$MB_YESNO, "Guardian Dungeon", "Script is currently running, would you like to continue?", 30) = $IDYES Then
-                    _Schedule_Guardian()
+                If MsgBox($MB_ICONWARNING+$MB_YESNO, "Collect Inbox", "Script is currently running, would you like to continue?", 30) = $IDYES Then
+                    Collect_Inbox()
                 EndIf
             Else
-                $g_sScript = "_Schedule_Guardian"
+                $g_sScript = "Collect_Inbox"
                 Start()
             EndIf
+        Case $M_Scripts_Titans_Fast
+                If $g_bRunning > 0 Then
+                    If $g_bTitansFast Or MsgBox($MB_ICONWARNING+$MB_YESNO, "Titans_Fast", "Script is currently running, would you like to continue?", 30) = $IDYES Then
+                        Titans_Fast()
+                    EndIf
+                Else
+                    $g_sScript = "Titans_Fast"
+                    Start()
+                EndIf
+        Case $M_General_Toggle_Hidden
+            Toggle_Hidden()
         Case $M_Capture_Full_Screenshot
             If FileExists(@ScriptDir & "\screenshots\" & $Config_Profile_Name) = 0 Then DirCreate(@ScriptDir & "\screenshots\" & $Config_Profile_Name)
             Local $sName = StringRegExpReplace(_NowCalc() , "(\/|\s|\:)", "")
@@ -227,6 +247,8 @@ Func HandleMenu($iCode)
             Else
                 MsgBox($MB_ICONWARNING, "Open Screenshot Folder", "The screenshot folder does not exist.")
             EndIf
+        Case $M_Gem_Gem_Window
+            GemWindow_CreateGui()
         Case $Dummy_Test_Function
             TestFunction()
     EndSwitch

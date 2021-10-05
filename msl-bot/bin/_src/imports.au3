@@ -70,6 +70,7 @@
 #include "scripts/Farm_Guardian.au3"
 #include "scripts/Farm_Starstone.au3"
 
+#include "scripts/sub/doExpedition.au3"
 #include "scripts/sub/helper.au3"
 #include "scripts/sub/handlers.au3"
 #include "scripts/sub/navigate.au3"

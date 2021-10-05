@@ -8,73 +8,97 @@
 		- If one of the items are missing then return -1
 #ce
 Func getGemData($bCapture = True)
-	Local $aGemData[6] = ["-", "-", "-", "-", "-", "-"] ;Stores current gem data
-	If (isLocation("battle-sell-item")) Then
-		Select ;grade
-			Case isPixel(getPixelArg("battle-item-egg"), 20)
-				$aGemData[0] = "EGG"
-				Return $aGemData
-			Case isPixel(getPixelArg("battle-item-gold"), 20)
-				$aGemData[0] = "GOLD"
-				Return $aGemData
-			Case isPixel("406,144,0x261612")
-				$aGemData[0] = 1
-			Case isPixel("413,144,0x261612")
-				$aGemData[0] = 2
-			Case isPixel("418,144,0x261612")
-				$aGemData[0] = 3
-			Case isPixel("423,144,0x261612")
-				$aGemData[0] = 4
-			Case isPixel("428,144,0x261714")
-				$aGemData[0] = 5
-			Case Else
-				$aGemData[0] = 6
-		EndSelect
+	Local $aGemData[7] = ["-", "-", "-", "-", "-", "-", "-"] ;Stores current gem data
+	CaptureRegion()
+	Select ;grade
+		Case isPixel(getPixelArg("battle-item-egg"), 20)
+			$aGemData[0] = "EGG"
+			Return $aGemData
+		Case isPixel(getPixelArg("battle-item-gold"), 20)
+			$aGemData[0] = "GOLD"
+			Return $aGemData
+		Case isPixel("406,144,0x261612")
+			$aGemData[0] = 1
+		Case isPixel("413,144,0x261612")
+			$aGemData[0] = 2
+		Case isPixel("418,144,0x261612")
+			$aGemData[0] = 3
+		Case isPixel("423,144,0x261612")
+			$aGemData[0] = 4
+		Case isPixel("428,144,0x261714")
+			$aGemData[0] = 5
+		Case Else
+			$aGemData[0] = 6
+	EndSelect
 
-		Select ;shape
-			Case Not(isPixel("413,159,0x261612"))
-				$aGemData[1] = "S"
-			Case Not(isPixel("414,168,0x261612"))
-				$aGemData[1] = "D"
-			Case Else
-				$aGemData[1] = "T"
-		EndSelect
+	Select ;shape
+		Case Not(isPixel("413,159,0x261612"))
+			$aGemData[1] = "S"
+		Case Not(isPixel("414,168,0x261612"))
+			$aGemData[1] = "D"
+		Case Else
+			$aGemData[1] = "T"
+	EndSelect
 
-		For $strType In $g_aGem_pixelTypes ;types
-			Local $sType = StringSplit($strType, ":", 2)
-			If (isPixel($sType[1], 20)) Then
-				$aGemData[2] = $sType[0]
-				ExitLoop
-			EndIf
-		Next
-
-		For $strStat In $g_aGem_pixelStats ;main stats
-			Local $aStat = StringSplit($strStat, ":", 2)
-			If (isPixel($aStat[1], 20)) Then
-				$aGemData[3] = $aStat[0]
-				ExitLoop
-			EndIf
-		Next
-
-		If (isArray(findColor("350,329", "50,1", "0xE9E3DE", 20))) Then ;number of substats
-			$aGemData[4] = "4"
-		ElseIf (isArray(findColor("350,311", "50,1", "0xE9E3DE", 20))) Then
-			$aGemData[4] = "3"
-		ElseIf (isArray(findColor("350,296", "50,1", "0xE9E3DE", 20))) Then
-			$aGemData[4] = "2"
-		ElseIf (isArray(findColor("350,329", "50,1", "0xE9E3DE", 20))) Then
-			$aGemData[4] = "1"
+	For $strType In $g_aGem_pixelTypes ;types
+		Local $sType = StringSplit($strType, ":", 2)
+		If (isPixel($sType[1], 20)) Then
+			$aGemData[2] = $sType[0]
+			ExitLoop
 		EndIf
+	Next
 
-		;Handles if gem is unknown
-		If (($aGemData[0] == "-") Or ($aGemData[1] == "-") Or ($aGemData[2] == "-") Or ($aGemData[3] == "-") Or ($aGemData[4] == "-")) Then
-			$g_sErrorMessage = "getGemData() => Something is missing: " & _ArrayToString($aGemData)
-			Return -1
+	For $strStat In $g_aGem_pixelStats ;main stats
+		Local $aStat = StringSplit($strStat, ":", 2)
+		If (isPixel($aStat[1], 20)) Then
+			$aGemData[3] = $aStat[0]
+			ExitLoop
 		EndIf
+	Next
 
-		$aGemData[5] = getGemPrice($aGemData)
+	If (isArray(findColor("350,329", "50,1", "0xE9E3DE", 20))) Then ;number of substats
+		$aGemData[4] = "4"
+	ElseIf (isArray(findColor("350,311", "50,1", "0xE9E3DE", 20))) Then
+		$aGemData[4] = "3"
+	ElseIf (isArray(findColor("350,296", "50,1", "0xE9E3DE", 20))) Then
+		$aGemData[4] = "2"
+	ElseIf (isArray(findColor("350,329", "50,1", "0xE9E3DE", 20))) Then
+		$aGemData[4] = "1"
 	EndIf
+
+	;Handles if gem is unknown
+	If (($aGemData[0] == "-") Or ($aGemData[1] == "-") Or ($aGemData[2] == "-") Or ($aGemData[3] == "-") Or ($aGemData[4] == "-")) Then
+		Return SetError(1, 0, -1)
+	EndIf
+
+	$aGemData[5] = getGemPrice($aGemData)
+	$aGemData[6] = getGemSubs()
+
 	Return $aGemData
+EndFunc
+
+Func getGemSubs()
+	Local Const $aSubstats = ["attack", "critdmg", "critrate", "defense", "hp", "recovery", "resist"]
+	Local $aSubFound[0]
+
+	Local $aPercentages = findImageMultiple("gem-percent", 85, 5, 5, 4, 322, 266, 461-322, 344-266)
+	For $sSubstat in $aSubstats
+		Local $aFind = findImageMultiple("gem-" & $sSubstat, 85, 5, 5, 2, 322, 266, 461-322, 344-266)
+		For $i = 0 To UBound($aFind)-1
+			Local $bPercent = False
+			For $x = 0 To UBound($aPercentages)-1
+				If Abs($aFind[$i][1] - $aPercentages[$x][1]) <= 5 Then
+					_ArrayDelete($aPercentages, $x)
+					$bPercent = True
+					ExitLoop
+				EndIf
+			Next
+			_ArrayAdd($aSubFound, $sSubstat & (($bPercent)?"%":"+"))
+			If UBound($aSubFound) = 4 Then ExitLoop(2)
+		Next
+	Next
+
+	Return $aSubFound
 EndFunc
 
 #cs
@@ -119,7 +143,7 @@ EndFunc
 	Returns:
 		If the gem meets the criteria returns true; otherwise, returns false.
 #ce
-Func filterGem($aGemData, $bCheckDragonGems = False)
+Func old_filterGem($aGemData, $bCheckDragonGems = False)
 	If ($bCheckDragonGems And StringInStr("leech,pugilist,siphon", $aGemData[2])) Then
 		Local $iGrade = $aGemData[0]
 		Local $t_bFilter = Eval("DragonFilter_" & $iGrade & "_Star_Filter")
@@ -137,6 +161,204 @@ Func filterGem($aGemData, $bCheckDragonGems = False)
 	If (Not($t_bFilter) Or Not($t_bFilterTypes) Or Not($t_bFilterStats) Or Not($t_bFilterSubStats)) Then Return False
 
 	Return True
+EndFunc
+
+;Return name of filter that passes it
+;Return false if it does not pass filter
+Func filterGem($aGemData, $aFilters)
+	If isArray($aFilters) = False Then $aFilters = StringSplit($aFilters, ",", $STR_NOCOUNT)
+	If isArray($aFilters) = False Then $aFilters = CreateArr($aFilters)
+
+	For $i = 0 To UBound($aFilters)-1
+		Local $sFilter = $aFilters[$i]
+		If ($sFilter <> "_Filter") And FileExists($g_sFilterFolder & $sFilter) = False Then
+			Log_Add("Filter does not exist: " & $sFilter, $LOG_ERROR)
+			ContinueLoop
+		EndIf
+
+		Local $bResult = _filterGem($aGemData, $sFilter)
+		If @error = 0 Then
+			If $bResult = True Then Return $sFilter
+		Else
+			Local $iError = @error
+			Log_Add("Filter did not work: " & $FILTERGEM_ERROR_STRING[$iError], $LOG_ERROR)
+			Return SetError(1, $iError, "Error")
+		EndIf
+	Next
+
+	Return False
+EndFunc
+
+Global $FILTERGEM_ERROR_STRING = _
+								["No error.", _
+								"Invalid gem data.", _
+								"Unable to parse gem data.", _
+								"Could not get filter data.", _
+								"Invalid filter data.", _
+								"Invalid filter value."]
+Func _filterGem($aGemData, $sFilter)
+	If isArray($aGemData) = False Or UBound($aGemData) <> 7 Then Return SetError(1, 0, True) ;Invalid gem data.
+
+	If $sFilter == "_Filter" Then
+		Return old_filterGem($aGemData, True)
+	Else
+		Local $aGem = Null
+		If UBound($aGemData) = 7 Then $aGem = parseGem($aGemData)
+		;_ArrayDisplay($aGem)
+		IF isArray($aGem) = False Or UBound($aGem) <> 8 Then Return SetError(2, 0, True) ;Invalid gem data.
+
+		Local $aCurrentSub[0]
+		For $i = 4 To 7
+			If $aGem[$i] <> "" Then _ArrayAdd($aCurrentSub, $aGem[$i])
+		Next
+
+		Local $aFilter = getFilter($sFilter)
+		If @error Then 
+			Return SetError(3, @error, True) ;Could not get filter
+		EndIf
+		
+		Local $aFilterSub[0]
+		For $x = 0 To UBound($aFilter)-1
+			Local $aData = StringSplit($aFilter[$x], ":", $STR_NOCOUNT)
+			If isArray($aData) = False Or UBound($aData) <> 2 Then Return SetError(4, 0, True) ;Invalid filter
+
+			$aData[0] = StringLower(StringStripWS($aData[0], $STR_STRIPALL))
+			$aData[1] = StringLower(StringStripWS($aData[1], $STR_STRIPALL))
+			If StringInStr($aData[1], ",") Then 
+				$aData[1] = StringSplit($aData[1], ",", $STR_NOCOUNT)
+			Else
+				$aData[1] = CreateArr($aData[1])
+			EndIf
+			
+			Local $sType = $aData[0]
+			Local $aValue = $aData[1]
+			If isArray($aValue) = False Or UBound($aValue) = 0 Then Return SetError(5, 0, True) ;Invalid value
+			
+			Local $sCurrent = $aGem[Eval("GEM_PARSED_" & StringUpper($sType))]
+			Switch $aData[0]
+				Case "grade", "shape", "type"
+					If $aValue[0] == "any" Then ContinueLoop ;Accepts any of that data type
+					Local $aFind = _ArrayFindAll($aValue, $sCurrent)
+					If isArray($aFind) = False Then Return SetExtended(1, False) ;Not Found
+				Case "stat"
+					If $aValue[0] == "any" Then ContinueLoop ;Accepts any of that data type
+					Local $aFind = _ArrayFindAll($aValue, $sCurrent)
+					If isArray($aFind) = False Then $aFind = _ArrayFindAll($aValue, StringMid($sCurrent, 1, StringLen($sCurrent) - 1))
+					If isArray($aFind) = False Then
+						Local $bFound = False
+						Local $aFindP = _ArrayFindAll($aValue, "any%")
+						Local $aFindF = _ArrayFindAll($aValue, "any+")
+
+						If isArray($aFindP) = True And StringRight($sCurrent, 1) == "%" Then $bFound = True
+						If $bFound = False And (isArray($aFindF) And StringRight($sCurrent, 1) == "+") Then $bFound = True
+
+						If $bFound = False Then Return SetExtended(2, False)
+					EndIf
+				Case Else ;handles substats
+					_ArrayAdd($aFilterSub, $aValue, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
+			EndSwitch
+		Next
+		
+		;handle substats
+		If UBound($aCurrentSub) < UBound($aFilterSub) Then Return SetExtended(3, False) ;minimum substat
+
+		Local $aPermutedCurrent = _ArrayPermute($aCurrentSub, "|")
+		Local $bFits = False ;Fits filter
+		For $z = 1 To $aPermutedCurrent[0]
+			$aCurrentSub = StringSplit($aPermutedCurrent[$z], "|", $STR_NOCOUNT)
+			If isArray($aCurrentSub) = False Then $aCurrentSub = CreateArr($aPermutedCurrent[$z])
+
+			Local $aFilterSub_Inner = $aFilterSub
+			For $x = UBound($aCurrentSub)-1 To 0 Step -1
+				Local $sSub = $aCurrentSub[$x]
+				Local $bFound = False
+				For $y = 0 To UBound($aFilterSub_Inner)-1
+					Local $aSub = $aFilterSub_Inner[$y]
+					If $aSub[0] == "any" Then 
+						$bFound = True
+						ExitLoop
+					EndIf
+
+					Local $aFind = _ArrayFindAll($aSub, $sSub)
+					If isArray($aFind) = False Then $aFind = _ArrayFindAll($aSub, StringMid($sSub, 1, StringLen($sSub)-1))
+					If isArray($aFind) = False Then
+						Local $aFindP = _ArrayFindAll($aSub, "any%")
+						Local $aFindF = _ArrayFindAll($aSub, "any+")
+
+						If isArray($aFindP) = True And StringRight($sSub, 1) == "%" Then $bFound = True
+						If $bFound = False And (isArray($aFindF) = True And StringRight($sSub, 1) == "+") Then $bFound = True
+					Else
+						$bFound = True
+					EndIf
+
+					If $bFound = True Then ExitLoop
+				Next
+
+				If UBound($aFilterSub_Inner) > 0 And $bFound = True Then
+					_ArrayDelete($aFilterSub_Inner, $y)
+					_ArrayDelete($aCurrentSub, $x)
+				EndIf
+			Next
+
+			If UBound($aFilterSub_Inner) = 0 Then 
+				$bFits = True
+				ExitLoop
+			EndIf
+		Next
+
+		If $bFits = False Then Return SetExtended(4, False)
+	EndIf
+
+	Return SetExtended(1, True) ;Fits the criteria
+EndFunc
+
+Func getFilter($sFilter)
+	Local $sContent = FileRead($g_sFilterFolder & $sFilter)
+	If @error Then Return SetError(1, 0, False)
+	If _GemWindow_isValid($sContent) = False Then SetError(2, @error, False)
+
+	Local $aFilter = StringSplit($sContent, @CRLF, $STR_NOCOUNT)
+	For $i = UBound($aFilter)-1 To 0 Step -1
+		If $aFilter[$i] == "" Then _ArrayDelete($aFilter, $i)
+	Next
+
+	Return $aFilter
+EndFunc
+
+Global Const	$GEM_PARSED_GRADE = 0, $GEM_PARSED_SHAPE = 1, $GEM_PARSED_TYPE = 2, $GEM_PARSED_STAT = 3, _
+				$GEM_PARSED_SUB1 = 4, $GEM_PARSED_SUB2 = 5, $GEM_PARSED_SUB3 = 6, $GEM_PARSED_SUB4 = 7
+Func parseGem($aGemData)
+	If isArray($aGemData) = False Or UBound($aGemData) < 7 Then Return SetError(1, 0, False)
+	
+	Local $aGem[8];[grade, shape, type, stat, sub1, sub2, sub3, sub4]
+	$aGem[$GEM_PARSED_GRADE] = $aGemData[0]
+	If $aGemData[1] == "S" Then $aGem[$GEM_PARSED_SHAPE] = "square"
+	If $aGemData[1] == "T" Then $aGem[$GEM_PARSED_SHAPE] = "triangle"
+	If $aGemData[1] == "D" Then $aGem[$GEM_PARSED_SHAPE] = "square"
+	$aGem[$GEM_PARSED_TYPE] = StringLower($aGemData[2])
+	If StringLeft($aGemData[3], 2) == "F." Then
+		$aGem[$GEM_PARSED_STAT] = StringLower(StringMid($aGemData[3], 3)) & "+"
+	ElseIf StringLeft($aGemData[3], 2) == "P." Then
+		$aGem[$GEM_PARSED_STAT] = StringLower(StringMid($aGemData[3], 3)) & "%"
+	Else
+		$aGem[$GEM_PARSED_STAT] = StringLower(StringStripWS($aGemData[3], $STR_STRIPALL)) & "%"
+	EndIf
+	Switch StringLeft($aGem[$GEM_PARSED_STAT], 3)
+		Case "atk"
+			$aGem[$GEM_PARSED_STAT] = "attack" & StringRight($aGem[$GEM_PARSED_STAT], 1)
+		Case "def"
+			$aGem[$GEM_PARSED_STAT] = "defense" & StringRight($aGem[$GEM_PARSED_STAT], 1)
+		Case "rec"
+			$aGem[$GEM_PARSED_STAT] = "recovery" & StringRight($aGem[$GEM_PARSED_STAT], 1)
+	EndSwitch
+
+	Local $aSubs = $aGemData[6]
+	For $i = 0 To UBound($aSubs)-1
+		If $aSubs[$i] == "" Then ContinueLoop
+		$aGem[4+$i] = $aSubs[$i]
+	Next
+
+	Return $aGem
 EndFunc
 
 #cs
@@ -175,7 +397,7 @@ Func stringGem($aGemData)
 	$sSub = $aGemData[4] & " Substat"
 	If ($aGemData[4] > 1) Then $sSub &= "s"
 
-	Return $aGemData[0] & "*; " & $sShape & "; " & $sType & "; " & $sStat & "; " & $sSub
+	Return $aGemData[0] & "*; " & $sShape & "; " & $sType & "; " & $sStat & "; " & $sSub & "; " & _ArrayToString($aGemData[6])
 EndFunc
 
 #cs
@@ -213,13 +435,16 @@ Func findLevel($iLevel)
 EndFunc
 
 Func findBLevel($iLevel)
-	Local $aPoint0 = findImage("level-b" & ($iLevel-1<10?"0":"") & $iLevel-1 , 90, 0, 310, 160, 50, 330, True, True)
-	Local $aPoint1 = findImage("level-b" & ($iLevel<10?"0":"") & $iLevel , 90, 0, 310, 160, 50, 330, ($iLevel <= 1), True)
+	Local $aPoint0, $aPoint1
 
-	If isArray($aPoint1) = False Then Return -1
-	If ($iLevel > 1) Then
-		If isArray($aPoint0) = False Then Return -1
-		If Abs($aPoint0[1]-$aPoint1[1]) < 10 Then Return -1
+	If $iLevel > 1 Then $aPoint0 = findImage("level-b" & ($iLevel-1<10?"0":"") & $iLevel-1 , 90, 0, 310, 160, 50, 330, True)
+	$aPoint1 = findImage("level-b" & ($iLevel<10?"0":"") & $iLevel , 90, 0, 310, 160, 50, 330, ($iLevel <= 1))
+
+	If isArray($aPoint1) = False Or UBound($aPoint1) < 2 Then Return SetError(1, 0, False) ;Could not find
+	If $iLevel > 1 Then
+		If isArray($aPoint0) = False Or UBound($aPoint0) < 2 Then Return SetError(2, 0, False) ;Partner could not find
+		If Abs($aPoint0[1]-$aPoint1[1]) < 30 Then Return SetError(3, 0, False) ;Same position
+		If $aPoint0[1] > $aPoint1[1] Then Return SetError(4, 0, False) ;Incorrect position
 	EndIf
 	
 	$aPoint1[0] = 626 ;x coordinate for left side of button
@@ -261,7 +486,7 @@ Func getVillagePos()
 
 	;Traverse through idShip checking the pixel sets.
 	For $i = 0 To UBound($g_aVillagePos)-1
-		If isPixel($g_aVillagePos[$i], 20) Then Return $i
+		If isPixel($g_aVillagePos[$i], 10) Then Return $i
 	Next
 
 	;Return -1 if ship not found.
@@ -312,9 +537,6 @@ Func getStone()
 	For $sCurElement In $aElements
 		For $sCurGrade In $aGrades
 			If isPixel(getPixelArg("stone-" & $sCurElement & "-" & $sCurGrade)) > 0 Or findImage("stone-" & $sCurElement & "-" & $sCurGrade, 90, 0, 359, 131, 80, 80, False) <> -1 Then
-				If FileExists(@ScriptDir & "\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade & ".bmp") = 0 Then
-					CaptureRegion("\bin\images\stone\stone-" & $sCurElement & "-" & $sCurGrade, 382, 145, 35, 45)
-				EndIf
 				$sElement = $sCurElement
 				$sGrade = $sCurGrade
 
@@ -328,7 +550,6 @@ Func getStone()
 		While FileExists(@ScriptDir & "\bin\images\stone\stone-unknown" & $iCounter & ".bmp")
 			$iCounter += 1
 		WEnd
-		CaptureRegion("\bin\images\stone\stone-unknown" & $iCounter, 382, 145, 35, 45)
 		Log_Add("Could not get Element or Grade", $LOG_ERROR)
 		Return -1
 	EndIf
@@ -560,10 +781,10 @@ Func anotherDevice()
 		Log_Add("Another device detected!", $LOG_INFORMATION)
 
 		Switch $Config_Another_Device_Timeout
-			Case -1
+			Case $CONFIG_NEVER
 				Log_Add("Restart time set to Never, Stopping script.", $LOG_INFORMATION)
 				Stop()
-			Case 0
+			Case $CONFIG_IMMEDIATELY
 				Log_Add("Restart time set to Immediately", $LOG_INFORMATION)
 			Case Else
 				Local $iMinutes = $Config_Another_Device_Timeout
@@ -588,21 +809,25 @@ EndFunc
 Func appMaintenance()
 	Log_Level_Add("appMaintenance")
 
-	If getLocation() == "app-maintenance" Then
+	Local $bAntiStuck = $g_bAntiStuck
+	$g_bAntiStuck = False
+	Local $bScheduleBusy = $g_bScheduleBusy
+	$g_bScheduleBusy = True
+	While waitLocation("app-maintenance", 10)
 		Local $iMinutes = $Config_Maintenance_Timeout
 		Log_Add("Maintenance found. Waiting " & ($Config_Maintenance_Timeout) & " minutes then restarting game.", $LOG_INFORMATION)
 
 		Local $hTimer = TimerInit()
-		$g_bAntiStuck = False
 		While TimerDiff($hTimer) < ($iMinutes*60000)
 			Local $iSeconds = Int(($iMinutes*60) - (TimerDiff($hTimer)/1000))
 			Status("Restarting in: " & getTimeString($iSeconds))
-			If _Sleep(1000) Then ExitLoop
+			If _Sleep(1000) Then ExitLoop(2)
 		WEnd
-		$g_bAntiStuck = True
-
-		If $g_bRestarting = False Then Emulator_RestartGame()
-	EndIf
+		
+		Emulator_RestartGame()
+	WEnd
+	$g_bScheduleBusy = $bScheduleBusy
+	$g_bAntiStuck = $bAntiStuck
 	
 	Log_Level_Remove()
 EndFunc
@@ -612,11 +837,15 @@ Func appUpdate()
 
 	Local $bOutput = True
 	Local $hTimer = Null
+
+	Local $bAntiStuck = $g_bAntiStuck
 	$g_bAntiStuck = False
+	Local $bScheduleBusy = $g_bScheduleBusy
+	$g_bScheduleBusy = True
 	While $g_bRunning
 		If _Sleep(2000) Then ExitLoop
 
-		Local $sLocation = getLocation()
+		Local $sLocation = waitLocation("app-update,app-google-update,app-google-open,app-update-ok,popup-window,tap-to-start", 200, False)
 		If $sLocation <> "unknown" Then $hTimer = Null
 		Switch $sLocation
 			Case "app-update"
@@ -625,8 +854,10 @@ Func appUpdate()
 				clickPoint(findImage("misc-google-update"))
 			Case "app-google-open"
 				clickPoint(findImage("misc-google-open"))
-			Case "app-update-ok"
+			Case "app-update-ok", "popup-window"
 				clickPoint(findImage("misc-ok"))
+			Case "tap-to-start"
+				ExitLoop
 			Case "unknown"
 				If $hTimer = Null Then $hTimer = TimerInit()
 				If TimerDiff($hTimer) > 300000 Then
@@ -636,7 +867,8 @@ Func appUpdate()
 				EndIf
 		EndSwitch
 	WEnd
-	$g_bAntiStuck = True
+	$g_bScheduleBusy = $bScheduleBusy
+	$g_bAntiStuck = $bAntiStuck
 
 	Log_Level_Remove()
 	If $bOutput = False Then Stop()

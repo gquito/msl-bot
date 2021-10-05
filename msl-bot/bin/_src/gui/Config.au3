@@ -98,14 +98,15 @@ EndFunc
 
 ;Helper Functions----------------------------------------------------------------------
 
+Global Const $CONFIG_NEVER = -1, $CONFIG_IMMEDIATELY = 0
 Func Config_Parse($sValue)
     Switch $sValue
         Case "Enabled", "Disabled"
             Return $sValue == "Enabled"
         Case "Never"
-            Return -1
+            Return $CONFIG_NEVER
         Case "Immediately"
-            Return 0
+            Return $CONFIG_IMMEDIATELY
         Case Else
             If StringInStr($sValue, "Hours") Then
                 $sValue = Int(StringMid($sValue, 1, StringLen($sValue) - StringLen(" Hours")))
@@ -121,9 +122,11 @@ EndFunc
 
 Func Config_CreateGlobals($aSetting, $sName)
     For $i = 0 To UBound($aSetting)-1
-        If $aSetting[$i][1] == "~DEFAULT" Then ContinueLoop
-        
+        If $aSetting[$i][1] == "~DEFAULT" Then 
+            Assign($sName & "_" & $aSetting[$i][0], Config_Parse(Eval("Default_" & $sName & "_" & $aSetting[$i][0])), $ASSIGN_FORCEGLOBAL)
+        Else
         If StringLeft($sName, 1) == "_" Then $sName = StringMid($sName, 2)
         Assign($sName & "_" & $aSetting[$i][0], Config_Parse($aSetting[$i][1]), $ASSIGN_FORCEGLOBAL)
+        EndIf
     Next
 EndFunc

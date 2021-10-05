@@ -32,6 +32,7 @@ Func Emulator_Restart($iAttempt = 1, $sPackageName = $g_sPackageName)
     Log_Level_Add("Emulator Restart")
     Log_Add("Restarting emulator process.")
     $g_bRestarting = True
+    Local $aSavePos = WinGetPos($g_hWindow)
 
     Local $bOutput = 0
     While $iAttempt >= 1
@@ -77,6 +78,7 @@ Func Emulator_Restart($iAttempt = 1, $sPackageName = $g_sPackageName)
         Do
             $g_bLogEnabled = True
             ResetHandles()
+            If $g_hWindow <> 0 Then WinMove($g_hWindow, "", $aSavePos[0], $aSavePos[1])
             _Emulator_Console_RunApp($Config_Emulator_Title, $sPackageName)
 
             If ($g_hWindow <> 0 And $g_hControl <> 0) And getLocation() == "tap-to-start" Then 
@@ -93,7 +95,7 @@ Func Emulator_Restart($iAttempt = 1, $sPackageName = $g_sPackageName)
         ScriptTest_Handles()
         If ADB_isWorking() > 0 Then
             Log_Add("Successfully connected to ADB Server.")
-            If ADB_isGameRunning() = 0 Then
+            If ADB_isGameRunning() = False Then
                 $bOutput = Emulator_RestartGame($iAttempt, $sPackageName)
                 ExitLoop
             EndIf
@@ -105,7 +107,11 @@ Func Emulator_Restart($iAttempt = 1, $sPackageName = $g_sPackageName)
         EndIf
 
         ResetHandles()
+        If $g_hWindow <> 0 Then WinMove($g_hWindow, "", $aSavePos[0], $aSavePos[1])
+
         $bOutput = navigate("village", True, 5)
+        If @extended = 1 Then ExitLoop ;app-maintenance or app-update
+
         $iAttempt -= 1
     WEnd
     
@@ -115,26 +121,55 @@ Func Emulator_Restart($iAttempt = 1, $sPackageName = $g_sPackageName)
     Return $bOutput
 EndFunc
 
-Func Emulator_RestartGame($iAttempt = 1, $sPackageName = $g_sPackageName)
+Func Emulator_RestartGame($iAttempt = 1, $sPackageName = $g_sPackageName, $bUseADB = $ADB_ADB_Restart_Game, $sActivity = $g_sPackageActivity)
     Log_Level_Add("Emulator_RestartGame")
     Log_Add("Restarting game.")
     $g_bRestarting = True
     $bOutput = False
 
+    Local $bScheduleBusy = $g_bScheduleBusy
+    $g_bScheduleBusy = True
+    Local $iCounter = 1
     While $iAttempt > 0
+        Status("Restarting game attempt #" & $iCounter, $LOG_INFORMATION)
+        $iCounter += 1
+
         $g_hTimerLocation = Null ;Prevent AntiStuck restart
         If $bOutput > 0 Or _Sleep(500) Then ExitLoop
-
-        If _Emulator_Console_KillApp($Config_Emulator_Title, $sPackageName) = -1 Then ExitLoop
-        If _Sleep(2000) Then ExitLoop
-        If _Emulator_Console_RunApp($Config_Emulator_Title, $sPackageName) = -1 Then ExitLoop
+        If $bUseADB = False Then
+            ;Use emulator console to restart game.
+            If _Emulator_Console_KillApp($Config_Emulator_Title, $sPackageName) = -1 Then ExitLoop
+            If _Sleep(2000) Then ExitLoop
+            If _Emulator_Console_RunApp($Config_Emulator_Title, $sPackageName) = -1 Then ExitLoop
+        Else
+            ;Use adb to restart game.
+            If ADB_Command("shell am force-stop " & $sPackageName) = False Then ExitLoop
+            If _Sleep(2000) Then ExitLoop
+            If ADB_Command("shell am start -n " & $sPackageName & "/" & $sActivity) = False Then ExitLoop
+        EndIf
+        If _Sleep(10000) Then ExitLoop
 
         ResetHandles()
-        $bOutput = navigate("village", True, 5)
+        clickPoint(getPointArg("tap")) ; Closes app crash window
+
+        Status("Waiting for game to load.")
+        Local $sWait = waitLocation("tap-to-start,app-maintenance,app-update", 240, 5000, False, True) ;4 minutes wait
+        If $sWait <> "$game_not_running" Then
+            $bOutput = ($sWait == "tap-to-start")
+            If $bOutput = True Then
+                ExitLoop
+            Else
+                If $sWait == "app-update" Or $sWait == "app-maintenance" Then 
+                    ExitLoop ;app-maintenance or app-update
+                EndIf
+            EndIf
+        EndIf
+
         $iAttempt -= 1
     WEnd
-
+    $g_bScheduleBusy = $bScheduleBusy
     $g_bRestarting = False
+
     Log_Add("Restart game result: " & $bOutput, $LOG_DEBUG)
     Log_Level_Remove()
     Return $bOutput

@@ -28,6 +28,13 @@
 		data: "Never,30 Seconds,60 Seconds,120 Seconds,180 Seconds"
 	]
     
+	[combo:
+		name: "ADB Game Check",
+		description: "Uses ADB to check if the game is open or not.",
+		default: "30 Seconds",
+		data: "Never,30 Seconds,60 Seconds,120 Seconds,180 Seconds"
+	]
+    
     [combo:
 		name: "Another Device Timeout",
 		description: "Number of minutes it takes until bot app decides to re-login to the game.",
@@ -150,6 +157,13 @@
 		description: "Folder to shared folder between Android and PC. Only used when Capture Mode is set to ADB.",
 		default: "~AUTO"
 	]
+
+	[combo:
+		name: "ADB Restart Game",
+		description: "Restart game using ADB instead of Emulator Console.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
 ]
 
 [_Delay:
@@ -205,7 +219,7 @@
 		name: "Collect Quests",
 		description: "When a quest has been completed, the script will go to village after the round and collect the quest, then goes back to farming.",
 		default: "Enabled",
-		data: "Enabled,Disabled"
+		data: "Enabled,Only On Capture,Disabled"
 	]
   
 	[list:
@@ -238,11 +252,25 @@
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
+
+	[combo:
+		name: "Collect Inbox",
+		description: "Collect inbox and friends gift. Will not collect things that are not collected by Accept All button.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
 	
 	[combo:
 		name: "Click Nezz",
 		description: "Attempts to click positions where nezz usually spawns. This system is not perfect, but is able to click on nezz most of the time. Note: newer ships might not have nezz positions.",
 		default: "Disabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Expedition",
+		description: "Enable or disable expedition script.",
+		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
 ]
@@ -403,7 +431,7 @@
 		default: "Legendary,Exotic,Super Rare,Rare,Variant",
 		data: "Legendary,Exotic,Super Rare,Rare,Variant"
 	]
-	
+
   [text:
 		name: "Refill",
 		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
@@ -432,6 +460,13 @@
 		description: "Enter golem dungeon level.",
 		default: "8",
 		data: "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15"
+	]
+
+	[listfunction:
+		name: "Filter",
+		description: "Select filters to use.",
+		default: "_Filter",
+		data: "_Gem_Filter"
 	]
 
     [text:
@@ -662,7 +697,7 @@
 		default: "10",
 		data: "1,2,3,4,5,6,7,8,9,10"
 	]
-	
+
 	[combo:
 		name: "Stone Element",
 		description: "Enter which element to count. This will count towards the High, Mid, Low stones stats.",

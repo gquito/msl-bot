@@ -1,0 +1,6 @@
+grade:6
+shape:any
+type:ruin,valor,intuition,pugilist
+stat:hp%,attack%,defense%,critrate
+sub1:resist
+sub2:hp%,defense%,attack%,critrate

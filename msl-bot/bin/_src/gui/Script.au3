@@ -45,6 +45,7 @@ Func Script_ChangeProfile($sName)
     Script_ChangeConfig()
 EndFunc
 
+
 Func Script_SetConfigByFile($sName, $sPath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\")
     Local $iIndex = Script_IndexByName($sName)
     If $iIndex = -1 Then Return -1
@@ -54,25 +55,22 @@ Func Script_SetConfigByFile($sName, $sPath = $g_sProfileFolder & "\" & $Config_P
     Local $sAssign = $sName
     If StringLeft($sAssign, 1) == "_" Then $sAssign = StringMid($sAssign, 2)
 
+    Local $aSaveConfigs[0]
     For $i = 0 To UBound($aConfig2D)-1
         If isArray(Script_DataByName($sName)) = False Then 
-            Log_Add("Could not find data for: " & $sName, $LOG_ERROR)
+            MsgBox($MB_ICONWARNING+$MB_OK, "Set Config Error", "Could not find data for: " & $sName)
             ContinueLoop
         EndIf
 
         Local $aConfig_SettingList = (Script_DataByName($sName)[$CONFIG_SETTINGLIST])
-        If isArray($aConfig_SettingList) = False Or UBound($aConfig_SettingList) <= $i Then
-            Log_Add("Could not set config: " & $sName, $LOG_ERROR) 
-            ContinueLoop
+        Local $sValue = "", $sType = "combo", $sData = ""
+        If Not(isArray($aConfig_SettingList) = False Or UBound($aConfig_SettingList) <= $i) Then
+            $sType = ($aConfig_SettingList[$i])[$SETTING_TYPE]
+            $sData = ($aConfig_SettingList[$i])[$SETTING_DATA]
+            $sValue = $aConfig2D[$i][1]
         EndIf
 
-        Local $sType = ($aConfig_SettingList[$i])[$SETTING_TYPE]
-        Local $sData = ($aConfig_SettingList[$i])[$SETTING_DATA]
-
-        Local $sValue = $aConfig2D[$i][1]
-        If ($sType <> "text" And $sType <> "list" And $sType <> "setting") And _
-           (StringInStr($sData, $sValue) = False Or $sValue == "") Then
-
+        If ($sType == "combo") And (StringInStr($sData, $sValue) = False Or $sValue == "") Then
             $sValue = Eval("Default_" & $sAssign & "_" & $aConfig2D[$i][0])
         EndIf
 
@@ -126,15 +124,19 @@ Func Script_SetData($sPath, $sCachePath = "")
     Local $sData ;Contains unparsed data
     If FileExists($sPath) Then
         $sData = FileRead($sPath)
-    Else
-        $sData = BinaryToString(InetRead($sPath, $INET_FORCERELOAD))
-        If $sCachePath <> "" Then
-            Local $hFile = FileOpen($sCachePath, $FO_OVERWRITE+$FO_CREATEPATH)
-            FileWrite($hFile, $sData)
-            FileClose($hFile)
+        If @error Then
+            MsgBox($MB_ICONERROR+$MB_OK, "Settings", "Could not read file: " & $sPath)
+            Return SetError(1, 0, False)
         EndIf
+    Else
+        MsgBox($MB_ICONERROR+$MB_OK, "Settings", "File does not exist: " & $sPath)
+        Return SetError(2, 0, False)
     EndIf
-    If ($sData == "") Then Return -1
+
+    If ($sData == "") Then 
+        MsgBox($MB_ICONERROR+$MB_OK, "Settings", "Could not read any data.")
+        Return SetError(3, 0, False)
+    EndIf
 
     Local $c = StringSplit($sData, "", $STR_NOCOUNT)
 
@@ -161,7 +163,7 @@ Func Script_SetData($sPath, $sCachePath = "")
                     Switch $cur_sField
                         Case "description"
                             $t_aScript[1] = _Script_GetNextString($c, $i)
-                        Case "text", "combo", "setting", "list"
+                        Case "text", "combo", "setting", "list", "listfunction"
                             $t_aConfig[3] = $cur_sField
                             While $c[$i] <> "]"
                                 _Script_NextValidChar($c, $i)
@@ -176,8 +178,8 @@ Func Script_SetData($sPath, $sCachePath = "")
                                     Case "data"
                                         $t_aConfig[4] = _Script_GetNextString($c, $i)
                                     Case Else
-                                        MsgBox(0, "", "Unknown field: " & $sField)
-                                        Return -1
+                                        MsgBox($MB_ICONERROR+$MB_OK, "Settings", "Unknown field: " & $sField)
+                                        Return SetError(4, 0, False)
                                 EndSwitch
                             WEnd
 
@@ -185,6 +187,9 @@ Func Script_SetData($sPath, $sCachePath = "")
                                 ReDim $t_aConfigs[UBound($t_aConfigs)+1]
                                 $t_aConfigs[UBound($t_aConfigs)-1] = $t_aConfig
                             EndIf
+                        Case Else
+                            MsgBox($MB_ICONERROR+$MB_OK, "Settings", "Unknown type: " & $cur_sField)
+                            Return SetError(5, 0, False)
                     EndSwitch
                 Case "]"
                     $t_aScript[2] = $t_aConfigs
@@ -203,6 +208,7 @@ Func Script_SetData($sPath, $sCachePath = "")
     Next
 
     $g_aScripts = $t_aScripts
+    Return True
 EndFunc
 
 

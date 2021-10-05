@@ -24,12 +24,10 @@ Func HandleCommonLocations($sCurrLocation)
             _Sleep(100)
             Return True
         Case "app-maintenance"
-            appMaintenance()
-            Return True
+            Return SetExtended(1, True)
         Case "app-update"
-            appUpdate()
-            Return True
-        Case "another-device0"
+            Return SetExtended(2, True)
+        Case "another-device"
             anotherDevice()
             Return True
         Case "dragon-dungeons-popup", "dragon-astral-essence", "exotic-ticket-claim"
@@ -37,7 +35,7 @@ Func HandleCommonLocations($sCurrLocation)
         Case "monsters"
             clickUntil(getPointArg("monsters-grid"), "isPixel", CreateArr("133,30,0xF6C02A"), 5, 200, "CaptureRegion()")
             clickUntil(getPointArg("monsters-recent"), "isPixel", CreateArr("265,473,0x45F5A7"), 5, 200, "CaptureRegion()")
-        Case "association-expedition"
+        Case "expedition"
             clickPoint("698,380")
         Case "map-limit"
             clickPoint(findImage("misc-ok"))

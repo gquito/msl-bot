@@ -83,10 +83,9 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mou
 
     ;Fixing format to [x, y]
     While True
-        If isArray($vPoint) = 0 Then
+        If isArray($vPoint) = False Then
             If ($vPoint == "" Or $vPoint = -1) Then
-                Log_Add("Invalid points: " & $vPoint, $LOG_ERROR)
-                $g_sErrorMessage = "clickPoint() => Invalid points."
+                Log_Add("Invalid points (1): " & $vPoint, $LOG_ERROR)
                 ExitLoop
             EndIf
 
@@ -95,8 +94,7 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mou
             $aPoint[1] = StringStripWS($t_aPoint[1], $STR_STRIPLEADING + $STR_STRIPTRAILING)
         Else
             If (UBound($vPoint) < 2) Then 
-                Log_Add("Invalid points: " & _ArrayToString($vPoint), $LOG_ERROR)
-                $g_sErrorMessage = "clickPoint() => Invalid points."
+                Log_Add("Invalid points (2): " & _ArrayToString($vPoint), $LOG_ERROR)
                 ExitLoop
             EndIf
             
@@ -134,7 +132,6 @@ Func clickPoint($vPoint, $iAmount = 1, $iInterval = 0, $iMouseMode = $Config_Mou
                     ADB_Command("shell input tap " & $aPoint[0] & " " & $aPoint[1])
                 Case Else
                     Log_Add("Invalid mouse mode: " & $iMouseMode, $LOG_ERROR)
-                    $g_sErrorMessage = "clickPoint() => Invalid mouse mode: " & $iMouseMode
                     ExitLoop(2)
             EndSwitch
 
@@ -316,4 +313,52 @@ Func SendBack($iCount = 1, $iSpeed = 50, $iMode = $Config_Back_Mode)
         Sleep($iSpeed)
     WEnd
     Log_Level_Remove()
+EndFunc
+
+Func waitUntil($sFunction, $aParameters, $sResult, $iSeconds, $iInterval = 50, $sExecute = "")
+    If isArray($aParameters) = False Or UBound($aParameters) = 0 Then 
+        $aParameters = CreateArr("CallArgArray")
+    Else
+        _ArrayInsert($aParameters, 0, "CallArgArray")
+    EndIf
+
+    If $sExecute <> "" Then Execute($sExecute)
+    Local $sCallResult = Call($sFunction, $aParameters)
+    If (@error = 0xDEAD And @extended = 0xBEEF) Then Return SetError(1, 0, False)
+
+    Local $hTimer = TimerInit()
+    While ($sCallResult <> $sResult)
+        If $sExecute <> "" Then Execute($sExecute)
+        If TimerDiff($hTimer) > $iSeconds*1000 Then ExitLoop
+        If _Sleep($iInterval, True) Then ExitLoop
+
+        $sCallResult = Call($sFunction, $aParameters)
+        If (@error = 0xDEAD And @extended = 0xBEEF) Then Return SetError(2, 0, False)
+    WEnd
+
+    Return ($sCallResult = $sResult)
+EndFunc
+
+Func waitWhile($sFunction, $aParameters, $sResult, $iSeconds, $iInterval = 50, $sExecute = "")
+    If isArray($aParameters) = False Or UBound($aParameters) = 0 Then 
+        $aParameters = CreateArr("CallArgArray")
+    Else
+        _ArrayInsert($aParameters, 0, "CallArgArray")
+    EndIf
+
+    If $sExecute <> "" Then Execute($sExecute)
+    Local $sCallResult = Call($sFunction, $aParameters)
+    If (@error = 0xDEAD And @extended = 0xBEEF) Then Return SetError(1, 0, False)
+
+    Local $hTimer = TimerInit()
+    While ($sCallResult = $sResult)
+        If $sExecute <> "" Then Execute($sExecute)
+        If TimerDiff($hTimer) > $iSeconds*1000 Then ExitLoop
+        If _Sleep($iInterval, True) Then ExitLoop
+
+        $sCallResult = Call($sFunction, $aParameters)
+        If (@error = 0xDEAD And @extended = 0xBEEF) Then Return SetError(2, 0, False)
+    WEnd
+
+    Return ($sCallResult <> $sResult)
 EndFunc

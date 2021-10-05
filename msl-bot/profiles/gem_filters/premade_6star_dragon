@@ -1,0 +1,7 @@
+grade:6
+shape:any
+type:pugilist,siphon,leech
+stat:hp%,defense%,attack%,critrate,critdmg
+sub1:any%
+sub2:any%
+sub3:any%

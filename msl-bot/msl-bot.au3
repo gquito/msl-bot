@@ -1,4 +1,4 @@
-Global $aVersion = [4, 3, 2] ;Major, Minor, Build
+Global $aVersion = [4, 3, 3] ;Major, Minor, Build
 
 #pragma compile(Out, "msl-donator.exe")
 #pragma compile(x64, False)
@@ -6,8 +6,8 @@ Global $aVersion = [4, 3, 2] ;Major, Minor, Build
 #pragma compile(ProductName, "Monster Super League Bot")
 #pragma compile(FileDescription, "Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot")
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 4.3.2)
-#pragma compile(ProductVersion, 4.3.2)
+#pragma compile(FileVersion, 4.3.3)
+#pragma compile(ProductVersion, 4.3.3)
 #pragma compile(OriginalFilename, "msl-bot.exe")
 #pragma compile(AutoItExecuteAllowed, True)
 
@@ -51,6 +51,7 @@ Func Initialize()
 
     CreateLocationsMap($g_aLocationsMap, $g_aLocations)
 
+    Config_Update()
     ;Found existing profile..
     Local $aFolders = _FileListToArray($g_sProfileFolder)
     If isArray($aFolders) > 0 Then
@@ -62,7 +63,6 @@ Func Initialize()
         Next
     EndIf
 
-    Config_Update()
     CreateGUI()
 EndFunc
 

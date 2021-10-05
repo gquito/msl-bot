@@ -15,15 +15,26 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
     Log_Add("Navigating to " & $sFind & ".")
 
     $sFind = StringStripWS(StringLower($sFind), $STR_STRIPALL)
-
+    Local $iExtended = 0
     While $iAttempt > 0
         $iAttempt -= 1
 
         Local $hTimer = TimerInit()
         While TimerDiff($hTimer) < $Delay_Navigation_Timeout*1000
-            If $sFind == getLocation() Or _Sleep(300) Then ExitLoop(2)
-            If HandleCommonLocations(getLocation()) > 0 Then ContinueLoop
-                
+            If _Sleep($Delay_Script_Loop) Then ExitLoop(2)
+
+            Local $sCurrent = getLocation()
+            If $sFind == $sCurrent Then ExitLoop(2)
+
+            If HandleCommonLocations($sCurrent) Then 
+                $iExtended = @extended
+                If $iExtended Then 
+                    ExitLoop(2)
+                EndIf
+
+                ContinueLoop
+            EndIf
+
             Switch getLocation()
                 Case "defeat" 
                     clickPoint(getPointArg("battle-give-up"))
@@ -122,22 +133,19 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                             If navigate("village", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
                 Case "catch-mode"
-                    If isArray(findImage("misc-no-astrochips", 90, 0, 625, 50, 799-625, 329-100)) = True Then ExitLoop
-                    
                     Switch $sLocation
-                        Case "battle-auto"
-                            If isPixel(getPixelArg("catch-mode-available")) = True Then clickPoint(getPointArg("battle-catch"))
-                            If waitLocation("battle", 1) = False Then clickBattle()
-                        Case "battle", "catch-success"
-                            If isPixel(getPixelArg("catch-mode-available")) = True Then
-                            clickPoint(getPointArg("battle-catch"))
+                        Case "battle", "battle-auto", "catch-success", "unknown"
+                            Local $aPixels = getPixelArg("catch-mode-available")
+                            Local $aPoint = getPointArg("battle-catch")
+                            If isPixel($aPixels, 30) = True Then
+                                clickWhile($aPoint, "isPixel", CreateArr($aPixels, 30), 10, 300, "CaptureRegion()")
+                            Else
+                                If isArray(findImage("misc-no-astrochips", 90, 0, 625, 50, 799-625, 329-100)) = True Then ExitLoop
                             EndIf
                         Case "pause"
                             clickPoint(getPointArg("battle-continue"))
                         Case "battle-end-exp", "battle-sell", "battle-sell-item", "battle-end"
                             ExitLoop
-                        Case "unknown"
-                            If waitLocation("battle-auto,battle,catch-mode", 5) = False Then ExitLoop
                         Case Else
                             goBack()
                     EndSwitch
@@ -222,6 +230,43 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                         Case Else
                             If navigate("dungeons", $bForceSurrender) = 0 Then ExitLoop
                     EndSwitch
+                Case "expedition"
+                    Switch $sLocation
+                        Case "village"
+                            Local $iVillage = getVillagePos()
+                            If $iVillage = -1 Or $g_aExpeditionPos[$iVillage] = -1 Then
+                                navigate("map", $bForceSurrender)
+                                ContinueLoop
+                            Else
+                                clickPoint($g_aExpeditionPos[$iVillage])
+                                waitLocation("expedition", 3)
+                            EndIf
+                        Case "popup-window", "expedition-explore"
+                            goBack()
+                        Case Else
+                            If navigate("village", $bForceSurrender) = 0 Then ExitLoop
+                    EndSwitch
+                Case "inbox"
+                    Switch $sLocation
+                        Case "village"
+                            Local $aInbox = findImage("misc-inbox", 90, 0, 0, 180, 60, 40)
+                            If isArray($aInbox) > 0 Then
+                                clickPoint(getPointArg("tab-inbox"))
+                            Else
+                                clickPoint(getPointArg("tab-expand"))
+                            EndIf
+                        Case "friend-gifts"
+                            clickPoint(getPointArg("inbox-inbox"))
+                        Case Else
+                            If navigate("village", $bForceSurrender) = 0 Then ExitLoop
+                    EndSwitch
+                Case "friend-gifts"
+                    Switch $sLocation
+                        Case "inbox"
+                            clickPoint(getPointArg("inbox-friend-gifts"))
+                        Case Else
+                            If navigate("inbox", $bForceSurrender) = 0 Then ExitLoop
+                    EndSwitch
                 Case Else
                     Log_Add($sFind & " is not navigable.", $LOG_ERROR)
                     ExitLoop
@@ -232,5 +277,5 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
     Local $bOutput = (getLocation() == $sFind)
     Log_Add("Navigating result: " & $bOutput, $LOG_DEBUG)
     Log_Level_Remove()
-    Return $bOutput
+    Return SetExtended($iExtended, $bOutput)
 EndFunc

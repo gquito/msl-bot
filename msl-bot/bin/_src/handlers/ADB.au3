@@ -6,12 +6,11 @@ Global $g_iADBInputDevice = ""
 
 ;Run CMD session to send ADB command.
 ;Output will be retrieved after command has been executed.
-Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sDevice = "~AUTO")
+Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sDevice = $ADB_Device)
 	Log_Level_Add("ADB_Command")
 	Log_Add("ADB command: " & $sCommand, $LOG_DEBUG)
 
 	If $Config_Emulator_Path <> "" Then
-		;MsgBox(0, "", $Config_Emulator_Path & "\" & $sConsole_Command & '"' & $sCommand & '"')
 		Local $iPID = -1
 		Local $sResult ;Holds ADB output
 
@@ -19,7 +18,7 @@ Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sDevice = "~AUTO")
 		If $sDevice == "~AUTO" Then
 			$iPID = Run($Config_Emulator_Path & "\" & $Config_Console_ADB & '"' & $sCommand & '"', "", @SW_HIDE, $STDERR_MERGED)
 		Else
-			$iPID = Run($Config_Emulator_Path & "\adb.exe -s " & $ADB_Device & '"' & $sCommand & '"', "", @SW_HIDE, $STDERR_MERGED)
+			$iPID = Run($Config_Emulator_Path & "\adb.exe -s " & $sDevice & '"' & $sCommand & '"', "", @SW_HIDE, $STDERR_MERGED)
 		EndIf
 
 		Local $hTimer = TimerInit()
@@ -39,8 +38,8 @@ Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sDevice = "~AUTO")
 
     ProcessClose($iPID)
     If ($sResult <> "") Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
-    Log_Level_Remove()
-    Return $sResult
+	Log_Level_Remove()
+    Return (($sResult=="")?(True):($sResult))
 EndFunc   ;==>ADB_Command
 
 ;Send ESC through ADB.
@@ -98,9 +97,15 @@ EndFunc   ;==>ADB_isWorking
 Func ADB_isGameRunning($sPackageName = $g_sPackageName)
     If $g_bADBWorking = 0 Then Return SetError(1, 0, False)
 
+	Local $bRunning = True ;Default true if adb command fails.
+
 	$g_bLogEnabled = False
-	Local $bRunning = (StringInStr(ADB_Command("shell ps"), $sPackageName) > 0)
+	Local $sResult = ADB_Command("shell dumpsys window windows")
 	$g_bLogEnabled = True
+
+	If StringInStr($sResult, "mCurrentFocus") = True Then
+		$bRunning = StringRegExp($sResult, "mCurrentFocus.*" & $sPackageName)
+	EndIf
 
 	If (Not($bRunning)) Then Log_Add("Is game running: " & $bRunning, $LOG_DEBUG)
 	Return $bRunning

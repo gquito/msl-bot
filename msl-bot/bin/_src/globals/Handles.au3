@@ -31,9 +31,6 @@ Global $g_idScheduleAdd_Cancel = Null
 Global $g_idScheduleAdd_Preset = Null
 Global $g_iScheduleType = Null
 
-Global $g_hMessageBox = Null
-Global $g_idEditMessage = Null
-
 Global $g_hCurrentEdit = Null
 
 ;UI Handles
@@ -101,7 +98,6 @@ Global $g_hBtn_CaptureRegion = Null
 ;Timer Handles
 Global $g_hTimerLocation = Null ;Global timer for location. Used for antiStuck
 Global $g_hGetLocationCoolDown = TimerInit() ;Cooldown for getLocation function
-Global $g_hTimerScheduledRestart = Null ;Global timer for schedules restart.
 
 Global $g_hGameCheckCD = TimerInit()
 

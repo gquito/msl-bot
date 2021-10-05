@@ -5,7 +5,7 @@ Func doHourly()
     Log_Add("Performing hourly tasks")
     
     Local $hTimer = TimerInit()
-    Local $aTurn = ["Collect_Hiddens", "Click_Nezz"]
+    Local $aTurn = ["Collect_Hiddens", "Collect_Inbox", "Click_Nezz", "Expedition"]
     For $i = 0 To UBound($aTurn)-1
         If _Sleep(100) Then ExitLoop
 
@@ -26,9 +26,9 @@ EndFunc
 
 Func Close_Village_Interface()
     CaptureRegion()
-    If isPixel(getPixelArg("village-missions-popup")) = True Then clickPoint(getPointArg("village-missions-popup-close"))
-    If isPixel(getPixelArg("village-events")) = True Then clickPoint(getPointArg("village-events-close"))
-    If isPixel(getPixelArg("village-pack")) = True Then clickPoint(getPointArg("village-pack-close"))
+    If isPixel(getPixelArg("village-missions-popup"), 30) = True Then clickPoint(getPointArg("village-missions-popup-close"), 2)
+    If isPixel(getPixelArg("village-events"), 30) = True Then clickPoint(getPointArg("village-events-close"), 2)
+    If isPixel(getPixelArg("village-pack"), 30) = True Then clickPoint(getPointArg("village-pack-close"), 2)
 EndFunc
 
 Func Get_Village_Pos()
@@ -125,4 +125,29 @@ Func Click_Nezz()
     EndIf
 
     Return False
+EndFunc
+
+Func Collect_Inbox()
+    Log_Add("Collecting inbox.")
+
+    If navigate("inbox", False, 3) > 0 Then
+        If isPixel(getPixelArg("inbox-accept-all"), 10, CaptureRegion()) > 0 Then
+            clickPoint(getPixelArg("inbox-accept-all"), 3)
+            waitLocation("unknown", 5)
+            clickPoint(getPointArg("inbox-confirm"), 3)
+        EndIf
+    EndIf
+
+    If navigate("friend-gifts", False, 3) > 0 Then
+        If isPixel(getPixelArg("inbox-accept-all"), 10, CaptureRegion()) > 0 Then
+            clickPoint(getPixelArg("inbox-accept-all"), 3)
+        EndIf
+    EndIf
+
+    navigate("village")
+    Return True
+EndFunc
+
+Func Expedition()
+    Return doExpedition()
 EndFunc

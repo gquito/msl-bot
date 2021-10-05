@@ -20,6 +20,8 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
     Local $aPoints[0]
     Local $hTimer = TimerInit()
     Log_Add("Trying to catch " & _ArrayToString($aImages, ",") & (($iMaxCatch <> -1)?", Max: " & $iMaxCatch & ".":"."), $LOG_DEBUG)
+    $g_bCaptureQuest = True ; Trigger quest
+
     While TimerDiff($hTimer) < 60000
         If _Sleep(100) Then ExitLoop
 
@@ -47,7 +49,7 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                     Next
                 EndIf
 
-                If isArray($aPoints) > 0 And $iCurrent <> -1 Then
+                If UBound($aPoints) > 0 And $iCurrent <> -1 Then
                     #cs
                     If $bScreenshot = False And clickUntil("737,123", "isLocation", "battle,battle-auto", 3, 500) Then
                         $bScreenshot = True
@@ -73,7 +75,25 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
 
                         SendBack(2, 100)
                         clickPoint(getPointArg("battle-continue"), 3, 200)
-                        clickUntil(getPointArg("tap"), "isLocation", "catch-mode,catch-success,battle-auto,battle", 50, 100)
+                        ;Local $iCounter = 0
+                        ;While (FileExists(@ScriptDir & "\legendary" & $iCounter & ".bmp"))
+                        ;    $iCounter += 1
+                        ;WEnd
+
+                        Local $hTempTimer = TimerInit()
+                        While(isLocation("catch-mode,catch-success,battle-auto,battle") = False)
+                            clickPoint(getPointArg("tap"))
+
+                            If _Sleep(100) Then ExitLoop(2)
+                            If TimerDiff($hTempTimer) > 7000 Then ExitLoop
+
+                        ;    If ($aPoints[$iCurrent])[2] == "legendary" Then
+                        ;        CaptureRegion(($aPoints[$iCurrent])[2] & $iCounter)
+                        ;        $iCounter += 1
+                        ;    EndIf
+                        WEnd
+                        
+                        ;clickUntil(getPointArg("tap"), "isLocation", "catch-mode,catch-success,battle-auto,battle", 50, 100)
                     Else
                         Log_Add("Could not detect catch status", $LOG_ERROR)
                         _ArrayDelete($aPoints, $iCurrent)

@@ -2,7 +2,7 @@
 
 Func Farm_Golem($bParam = True, $aStats = Null) 
     If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Golem")[2]), "Farm_Golem")
-    ;Runs, Dungeon Level, Refill, Gold Goal, Target Boss
+    ;Runs, Dungeon Level, Filter, Refill, Gold Goal, Target Boss
 
     Log_Level_Add("Farm_Golem")
 
@@ -107,9 +107,13 @@ Func Farm_Golem($bParam = True, $aStats = Null)
                             Status("Found egg x" & $Eggs_Found)
                             Cumulative_AddNum("Resource Collected (Egg)", 1)
                         Case Else
-                            If filterGem($aGem) <= 0 Then
+                            Local $sFilter = filterGem($aGem, $Farm_Golem_Filter)
+                            If $sFilter = False Then
                                 $bSold = True
                                 clickPoint(getPointArg("battle-sell-item-sell"))
+                                _GemWindow_AddFound($aGem, "Sold")
+                            Else
+                                _GemWindow_AddFound($aGem, "Kept (" & $sFilter & ")")
                             EndIf
 
                             If $bSold = 0 Then 

@@ -27,3 +27,5 @@ Global $g_aGemsToSell = Null
 Global $g_iLocationIndex = -1 ;Location map index
 
 Global $g_aStatsCD = TimerInit() ;Cooldown timer handle for updating stats listview
+
+Global $g_bCaptureQuest = False

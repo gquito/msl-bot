@@ -16,6 +16,22 @@ Func enterBattle()
 				clickPoint(getPointArg("map-battle-play"))
 				waitLocation("loading,unknown,refill", 5)
 			Case "battle-end"
+				If $General_Collect_Quests = True And isPixel(getPixelArg("battle-end-quest"), 10) Then
+					If $General_Collect_Quests == "Only On Capture" Then
+						If $g_bCaptureQuest = True Then
+							$g_bCaptureQuest = False
+							
+							Log_Add("Capture and quest detected, collecting quests.", $LOG_INFORMATION)
+							collectQuest()
+							ExitLoop
+						EndIf
+					Else
+						Log_Add("Completed quests detected, collecting quests.", $LOG_INFORMATION)
+						collectQuest()
+						ExitLoop
+					EndIf
+				EndIf
+
 				If TimerDiff($hTimer) > 15000 Then
 					clickPoint("99,261")
 					If _Sleep(500) Then ExitLoop

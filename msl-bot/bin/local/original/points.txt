@@ -4,7 +4,6 @@ ancient-dungeon-golem:184,219
 app-data-download:370,327
 app-update:379,314
 astrochips-popup-refill:396,311
-astrochips-refill:737,306
 astroleague-confirm:399,309
 astroleague-draw-confirm:327,311
 astroleague-draw:729,281
@@ -134,7 +133,6 @@ monsters-grid:133,24
 monsters-level-up:731,139
 monsters-manage:740,200
 monsters-recent:266,471
-no-astrochips-refill:327,311
 pause-close:260,320
 play-again:529,284
 play-store-open:700,260

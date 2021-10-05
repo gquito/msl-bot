@@ -84,7 +84,7 @@ Func isPixel($vArg, $iVariation = 5, $aMap = $g_aMap)
             For $i = 0 To UBound($t_aPixelOrSet)-1
                 $aPixels = splitPixelString($t_aPixelOrSet[$i])
                 Local $bCompared = comparePixels($aPixels, $iVariation, $aMap)
-                If $bCompared > 0 Then Return True
+                If $bCompared > 0 Then Return SetExtended($i, True)
             Next
             Return False
         Else
@@ -243,4 +243,103 @@ Func setPixel($sPixels, $aData = Null, $bUpdate = True)
 
 	mergeArgFromTo(getArgsFromFile($g_sLocalDataFolder & $g_sPixels), $g_aPixels, "/")
 	Return $bOutput
+EndFunc
+
+Func rankLocations($iThreshold = 14)
+    CaptureRegion()
+    Local $iLocationSize = UBound($g_aLocations)
+    Local $aRank[$iLocationSize][3]
+    For $i = 0 To $iLocationSize - 1
+        $aRank[$i][0] = -1
+        $aRank[$i][2] = -1
+    Next
+
+    For $i = 0 To $iLocationSize - 1
+        Local $sName = $g_aLocations[$i][0]
+        $aRank[$i][1] = $sName
+
+        Local $sData = "/" & $g_aLocations[$i][1]
+        Local $aPixelSet = StringSplit($sData, "/", $STR_NOCOUNT)
+        Local $iPixelNum = 0
+        For $y = 1 To UBound($aPixelSet) - 1
+            Local $iVariation = 0
+            Local $iVariation2 = 0
+
+            Local $sPixelData = $aPixelSet[$y]
+            Local $aPixels = StringSplit($sPixelData, "|", $STR_NOCOUNT)
+            Local $iPixelsSize = UBound($aPixels)
+            For $z = 0 To $iPixelsSize - 1
+                $iPixelNum = $iPixelNum + 1
+
+                Local $sPixel =  $aPixels[$z]
+                Local $aPixel = StringSplit($sPixel, ",", $STR_NOCOUNT)
+
+                Local $iX = $aPixel[0]
+                Local $iY = $aPixel[1]
+                Local $iColor = Int($aPixel[2])
+                Local $aRGB = _ColorGetRGB($iColor)
+                
+                Local $iColor2 = Int(getColor($iX, $iY))
+                Local $aRGB2 = _ColorGetRGB($iColor2)
+
+                ;Sum all variations
+                Local $iRedDifference = Abs($aRGB[0] - $aRGB2[0])
+                Local $iGreenDifference = Abs($aRGB[0] - $aRGB2[0])
+                Local $iBlueDifference = Abs($aRGB[0] - $aRGB2[0])
+                Local $iMax = _Max($iRedDifference, _Max($iGreenDifference, $iBlueDifference))
+                Local $iSum = $iRedDifference + $iGreenDifference + $iBlueDifference
+                Local $iAverage = $iSum / 3
+
+                If $iAverage <= $iThreshold Then
+                    $iVariation2 = $iVariation + 1 + Abs($iMax - $iThreshold) / _Max($iMax, $iThreshold)
+                Else
+                    $iVariation2 += Abs($iMax - $iThreshold) / _Max($iMax, $iThreshold)
+                EndIf
+
+                If $iMax <= $iThreshold Then
+                    $iVariation = $iVariation + 1 + Abs($iMax - $iThreshold) / _Max($iMax, $iThreshold)
+                Else
+                    $iVariation += Abs($iMax - $iThreshold) / _Max($iMax, $iThreshold)
+                EndIf
+            Next
+            $iVariation = $iVariation / $iPixelsSize
+            $iVariation2 = $iVariation2 / $iPixelsSize
+
+            If $iVariation > $aRank[$i][0] Or $aRank[$i][0] = -1 Then
+                $aRank[$i][0] = $iVariation
+            EndIf
+
+            If $iVariation2 > $aRank[$i][2] Or $aRank[$i][2] = -1 Then
+                $aRank[$i][2] = $iVariation2
+            EndIf
+        Next
+    Next
+
+    _ArraySort($aRank, True)
+    Return $aRank
+EndFunc
+
+Func newLocation($iThreshold = 0.97)
+    Local $sLocation = "unknown"
+
+    Local $aRank = rankLocations()
+    $sLocation = $aRank[0][1]
+
+    If $aRank[0][1] == "battle-auto" Then
+        If $aRank[1][1] == "battle" And $aRank[1][0] >= 0.97 Then
+            $sLocation = "battle"
+        EndIf
+    EndIf
+
+    If $aRank[0][0] < $iThreshold Then
+        $sLocation = "unknown"
+    EndIf
+
+    Return $sLocation
+EndFunc
+
+Func testNewLocation()
+    While (_Sleep(50) = False)
+        Log_Add(newLocation(), $LOG_INFORMATION)
+    WEnd
 EndFunc

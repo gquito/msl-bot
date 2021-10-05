@@ -1,0 +1,6 @@
+grade:6
+shape:any
+type:ruin,intuition,conviction,protection,valor,life
+stat:attack%,hp%,defense%,critrate,critdmg
+sub1:attack%,hp%,defense%,critrate,critdmg,resist
+sub2:attack%,hp%,defense%,critrate,critdmg,resist

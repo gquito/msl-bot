@@ -37,6 +37,7 @@ Global Const $g_sLocalOriginalFolder = $g_sLocalFolder & "original\"
 Global Const $g_sLocalDataFolder = $g_sLocalFolder & "data\"
 Global Const $g_sProfileFolder = @ScriptDir & "\profiles\"
 Global Const $g_sRemoteUrl = "https://raw.githubusercontent.com/GkevinOD/msl-bot/version-check/data/"
+Global Const $g_sFilterFolder = $g_sProfileFolder & "gem_filters\"
 
 Global Const $g_sScriptListFile = @ScriptDir & "\bin\local\scriptlist.txt"
 
@@ -54,6 +55,12 @@ Global Const $g_sAirshipTrees =     "airship-trees.txt"
 Global Const $g_sScripts =          "free_scripts_4.2.0.txt"
 
 Global Const $g_sPackageName =      "com.ftt.msleague_gl"
+Global Const $g_sPackageActivity =  "kr.co.smartstudy.tamagorpg.TamagoMainActivity"
+
+Global Const $g_aGem_Grade = ["6", "5", "4", "3", "2", "1", "any"]
+Global Const $g_aGem_Shape = ["square", "triangle", "diamond", "any"]
+Global Const $g_aGem_Type = ["leech", "siphon", "pugilist", "ruin", "intuition", "conviction", "protection", "valor", "vitality", "tenacity", "fortitude", "healing", "ferocity", "life", "any"]
+Global Const $g_aGem_Stat = ["hp", "attack", "defense", "recovery", "critrate", "critdmg", "resist", "any"]
 
 Global Const $g_aGemRanks = ["LEECH,SIPHON,PUGILIST", "RUIN", "INTUITION", "CONVICTION,PROTECTION,VALOR,VITALITY,TENACITY,FORTITUDE,HEALING,FEROCITY", "LIFE"]
 Global Const $g_aGemGrade6Price = [[39600,37799,36000,34199], [24750,23624,22500,21374], [19800,18899,18000,17099]]
@@ -73,8 +80,8 @@ Global Const $g_aGem_pixelTypes = [ _
                             "PUGILIST:414,219,0xDDA456|415,223,0xE9AE5A|419,223,0xDCA456|431,229,0xA17341|434,229,0xDFA657|438,219,0xD29C52", _
                             "SIPHON:418,219,0xDDA356|420,225,0xD69D54|422,224,0xD69D54|430,224,0xDCA356|446,224,0xE2A858", _
                             "RUIN:323,224,0xE8AE5A|411,223,0xEAAF5B|435,225,0xDCA456/363,223,0xE8AE5A|403,223,0xEFB45C|411,223,0xEAAF5B", _
-                            "FEROCITY:352,223,0xE4AA58|400,223,0xEBB05B|446,224,0xE5AB59", _
                             "FORTITUDE:348,223,0xE8AE5A|396,223,0xEBB05B|446,224,0xF0B45D", _
+                            "FEROCITY:352,223,0xE4AA58|400,223,0xEBB05B|446,224,0xE5AB59", _
                             "HEALING:354,224,0xE0A757|402,223,0xF0B45C|444,225,0xDFA657", _
                             "VALOR:360,224,0xE8AE5A|391,224,0xECB15B|436,225,0xECB15B", _
                             "INTUITION:351,223,0xDDA556|390,222,0xF4B75E|399,223,0xDAA255", _
@@ -107,6 +114,18 @@ Global Const $g_aVillagePos = [ _
     "232,348,0x363630|390,147,0x434F3D|710,388,0x134B66/565,238,0x6D6D56|94,211,0x9E418B|359,104,0x146961/648,344,0x443A23|540,95,0x5F7479|182,468,0x363333", _
     "150,430,0x7F4863|34,334,0xD298D5|635,182,0xDB82C9/790,350,0x00FFFF|4,381,0xC1C1AF|331,163,0x02FFFF/661,62,0x44575E|573,398,0x565D46|357,360,0x444D3F", _
     "221,87,0x44687A|41,395,0x00FFFF|476,163,0x01FFFF/221,87,0x424B44|41,395,0x00FFFF|476,163,0x00FFFF/104,451,0x44332E|784,401,0xC0C0AF|507,75,0x0885C7/104,451,0x44332E|784,401,0xC4C4B2|507,75,0x1079A7/272,374,0x444B44|755,457,0x4A4A39|8,194,0x2F3D46/272,374,0x444B44|755,457,0x0F0D0A|8,194,0x2D2D29"]
+
+; 0,1,2: Normal | 3,4: Windsinger | 5,6: Albatross | 7,8: Hanamura
+Global Const $g_aExpeditionPos = [ _ ; Use getVillagePos() function
+    "231,246", _ ;      Index = 0
+    "-1", _      ;      Index = 1
+    "327,185", _ ;      Index = 2
+    "-1", _ ; Needed.   Index = 3
+    "-1", _ ; Needed.   Index = 4
+    "-1", _ ; Needed.   Index = 5
+    "-1", _ ; Needed.   Index = 6
+    "299,254", _ ;      Index = 7
+    "463,315"] ;        Index = 8
 
 Global Const $g_aVillageTrees = [ _
     "296,115|486,67|683,107|685,289", _

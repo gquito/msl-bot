@@ -33,17 +33,18 @@ Func _Sleep($iDuration = 0, $bPrecise = False)
             $g_hTimerLocation = Null
             Return True
         EndIf
-        If $bPrecise = False Then Sleep(50)
+        If $bPrecise = False Then Sleep(5)
     Until (TimerDiff($hTimer) > $iDuration)
     Return False
 EndFunc
 
 Func _AntiStuck()
-    If $g_bAntiStuck = 0 Then Return True
+    If $g_bAntiStuck = False Or $g_bRestarting = True Then Return True
     Log_Level_Add("_AntiStuck")
     Local $bOutput = False
-
-    If $Config_Screen_Frozen_Check > 0 Then
+    
+    $g_bAntiStuck = False
+    If $Config_Screen_Frozen_Check <> $CONFIG_NEVER Then
         If Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, $Config_Screen_Frozen_Check) = 0 And TimerDiff($g_hGameCheckCD) > 2000 Then
             $g_hGameCheckCD = TimerInit()
             If _AntiStuck_Frozen() = True Then
@@ -54,20 +55,8 @@ Func _AntiStuck()
             EndIf
         EndIf
     EndIf
-    
-    ;If Mod(Int(TimerDiff($g_hScriptTimer)/1000)+1, 30) = 0 And TimerDiff($g_hGameCheckCD) > 2000 Then
-    ;    $g_hGameCheckCD = TimerInit()
-    ;    If ADB_isWorking() > 0 And ADB_IsGameRunning() <= 0 Then
-    ;        Log_Add("AntiStuck: Game is not running. Restarting Game.", $LOG_ERROR);
 
-    ;        $bOutput =_AntiStuck_Restart()
-    ;        If $bOutput <= 0 Then Stop()
-    ;    EndIf
-
-    ;EndIf
-
-    ;AntiStuck sequence
-    If $Config_Location_Stuck_Timeout > 0 Then
+    If $Config_Location_Stuck_Timeout <> $CONFIG_NEVER Then
         If $g_hTimerLocation <> Null Then
             If TimerDiff($g_hTimerLocation) > (60000 * $Config_Location_Stuck_Timeout) Then
                 $g_hTimerLocation = Null
@@ -80,6 +69,17 @@ Func _AntiStuck()
             EndIf
         EndIf
     EndIf
+
+    IF $Config_ADB_Game_Check <> $CONFIG_NEVER And $g_sLocation == "unknown" Then
+        If Mod(Int(TimerDiff($g_hScriptTimer)/1000), $Config_ADB_Game_Check) = 0 Then
+            If ADB_isGameRunning() = False Then
+                Log_Add("AntiStuck: Game is not running. Restarting Game.", $LOG_ERROR)
+                $bOutput =_AntiStuck_Restart()
+                If $bOutput = False Then Stop()
+            EndIf
+        EndIf
+    EndIf
+    $g_bAntiStuck = True
 
     Log_Level_Remove()
     Return $bOutput
@@ -107,8 +107,8 @@ EndFunc
 
 Func _AntiStuck_Restart()
     Local $bOutput = True
-    If Emulator_RestartGame(3) <= 0 Then
-        If Emulator_Restart(3) <= 0 Then
+    If Emulator_RestartGame(3) = False Then
+        If Emulator_Restart(3) = False Then
             Log_Add("AntiStuck: Could not restart emulator.", $LOG_ERROR)
             $bOutput = False
         EndIf
@@ -180,7 +180,7 @@ Func _ProcessLines($aLines, $bDisplayArray = True, $bLog = True)
         Local $sResult = Execute($aLines[$i])
 
         If (@error) Then
-            If $bLog Then Log_Add("ERROR <= " & $aLines[$i], $LOG_INFORMATION)
+            If $bLog Then Log_Add("ERROR (" & @error & "," & @extended & ") <= " & $aLines[$i], $LOG_INFORMATION)
             ContinueLoop
         EndIf
 

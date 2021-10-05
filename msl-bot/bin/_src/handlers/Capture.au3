@@ -55,12 +55,13 @@ Func getBitmapHandles(ByRef $hBitmap, $iBackgroundMode = $Config_Capture_Mode, $
 
     Switch $iBackgroundMode
         Case $BKGD_WINAPI
-            Local $hDC_Capture = _WinAPI_GetWindowDC($hControl)
+            Local $hDC_Capture = _WinAPI_GetDC($hControl)
             Local $hMemDC = _WinAPI_CreateCompatibleDC($hDC_Capture)
             $hBitmap = _WinAPI_CreateCompatibleBitmap($hDC_Capture, $EMULATOR_WIDTH, $EMULATOR_HEIGHT)
             Local $hObjectOld = _WinAPI_SelectObject($hMemDC, $hBitmap)
 
-            DllCall("user32.dll", "int", "PrintWindow", "hwnd", $hControl, "handle", $hMemDC, "int", 0)
+            _WinAPI_PrintWindow($g_hWindow, $hMemDC, True)
+
             _WinAPI_SelectObject($hMemDC, $hBitmap)
             _WinAPI_BitBlt($hMemDC, 0, 0, $EMULATOR_WIDTH, $EMULATOR_HEIGHT, $hDC_Capture, 0, 0, 0x00CC0020)
 

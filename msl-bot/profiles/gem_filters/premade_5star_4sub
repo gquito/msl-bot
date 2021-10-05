@@ -1,0 +1,8 @@
+grade:5
+shape:any
+type:leech,siphon,pugilist,ruin,intuition,conviction,protection,valor,life
+stat:critrate,critdmg,hp%,attack%,defense%
+sub1:critrate,critdmg,resist,hp%,attack%,defense%
+sub2:critrate,critdmg,resist,hp%,attack%,defense%
+sub3:critrate,critdmg,resist,hp%,attack%,defense%
+sub4:critrate,critdmg,resist,hp%,attack%,defense%

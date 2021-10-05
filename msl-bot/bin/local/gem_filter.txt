@@ -1,0 +1,76 @@
+== Filter Format ==
+TYPE:VALUE
+===================
+
+== Types ==
+grade, shape, type, stat, sub1, sub2, sub3, sub4
+===========
+
+== Values ==
+• GRADE - any, 6, 5, 4, 3, 2, 1
+
+• SHAPE - any, square, triangle, diamond
+
+• TYPE - any, leech, siphon, pugilist, ruin, intuition, conviction, protection, valor, vitality, tenacity, fortitude, healing, ferocity, life
+
+• STAT - any, any%, any+, critrate, critdmg, resist, hp, hp%, hp+, attack, attack%, attack+, defense, defense%, defense+, recovery, recovery%, recovery+
+
+• SUB# - same as stat
+============
+
+Remarks:
+If a type is not used, it will use 'any' by default.
+The number of 'sub#' will determine the minimum number of substats.
+
+== Example 1 ==
+grade:6,5
+shape:any
+type:ruin,valor
+stat:any%
+sub1:critrate
+sub2:critdmg
+===============
+Explanation: Any 6 or 5 star gem of any shape. Gem must have either ruin or valor set. It must have any type of percent main stat. It must have at least 2 substats with crit rate and crit dmg.
+	
+== Example 2 ==
+grade:6
+shape:square
+type:any
+stat:critrate
+sub1:atk%
+sub2:critdmg
+sub3:any
+sub4:any
+===============
+Explanation: Any 6 star square gem with crit rate as its main stat. It must have 4 substats and two of them must be atk% and critdmg.
+
+== Example 3 ==
+grade:5
+shape:triangle,diamond
+type:ruin,intuition,valor
+stat:atk%,critdmg
+sub1:critrate,critdmg
+sub2:resist
+sub3:any%
+sub4:any%
+===============
+Explanation: A 5 star triangle or diamond gem. Must have either ruin, intuition, or valor. Its main stat must either be atk% or critdmg. It must have 4 substats. One substat must either be crit rate or crit damage. Another substat must be resist. The other 2 substat can be any other percent stat.
+
+== Example 4 ==
+grade:6
+shape:any
+type:any
+stat:any%
+sub1:any%
+sub2:any%
+sub3:any%
+===============
+Explanation: Any 6 star gem of any set with a percent main stat. Must have at least 3 percent substats.
+
+== Example 5 ==
+grade:6
+shape:any
+type:type
+stat:any%
+===============
+Explanation: Any 6 star gem of any set with a percent main stat.

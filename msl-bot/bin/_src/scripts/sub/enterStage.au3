@@ -67,11 +67,6 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 			Case "refill"
 				ExitLoop
 			Case "map-battle"
-				If isPixel(getPixelArg("map-battle-autofill-on"), 20, CaptureRegion()) <= 0 Then
-					clickPoint(getPointArg("astrochips-refill"))
-					ContinueLoop
-				EndIf
-
 				enterBattle()
 			Case "autobattle-prompt", "popup-window"
 				closeWindow()

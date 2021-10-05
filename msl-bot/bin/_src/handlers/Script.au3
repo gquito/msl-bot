@@ -86,35 +86,52 @@ Func Start_Schedule()
     If StringLeft($g_sScript, 4) == "Farm" Or StringLeft($g_sScript, 6) == "Attack" Then
         Local $aStructure = ""
         Local $aAction = ""
-        If $Hourly_Hourly_Script > 0 Then
+        If $Hourly_Hourly_Script = True Then
             $aStructure = CreateArr(CreateArr("*", "*", "*", "00", "*"))
             $aAction = CreateArr("doHourly()")
             Schedule_Add("_Hourly", $aAction, $SCHEDULE_TYPE_DATE, "*", $aStructure, $SCHEDULE_FLAG_RunSafe, 60, True, False)
         EndIf
 
-        If $General_Collect_Quests > 0 Then
-            $aStructure = CreateArr(CreateArr(CreateArr('$g_sLocation = "battle-end"', 'isPixel(getPixelArg("battle-end-quest"), 10, CaptureRegion())')), True)
-            $aAction = CreateArr("collectQuest()")
-            Schedule_Add("_Quest", $aAction, $SCHEDULE_TYPE_CONDITION, "*", $aStructure, $SCHEDULE_FLAG_RunSafe, 5, True, False)
-        EndIf   
-
-        If $Guardian_Guardian_Script > 0 Then
+        If $Guardian_Guardian_Script = True Then
             $aStructure = CreateArr(TimerInit(), $Guardian_Check_Intervals*60)
             $aAction = CreateArr('_Schedule_Guardian()')
             Schedule_Add("_Guardian", $aAction, $SCHEDULE_TYPE_TIMER, "*", $aStructure, $SCHEDULE_FLAG_RunSafe, 0, True, False)
         EndIf
+
+        ;Scheduled Restart
+        If $Config_Scheduled_Restart <> $CONFIG_NEVER Then
+            Local $aRestart = StringSplit($Config_Scheduled_Restart, ":", $STR_NOCOUNT)
+            If isArray($aRestart) = True And UBound($aRestart) = 2 Then
+                $aRestart[1] = StringReplace($aRestart[1], "H", "")
+                $aStructure = CreateArr(TimerInit(), $aRestart[1]*60*60)
+                If $aRestart[0] == "Game" Then $aAction = CreateArr('Emulator_RestartGame(2)')
+                If $aRestart[0] == "Emulator" Then $aAction = CreateArr('Emulator_Restart(2)')
+                Schedule_Add("_Restart", $aAction, $SCHEDULE_TYPE_TIMER, "*", $aStructure, $SCHEDULE_FLAG_RunImmediately, 0, True, False)
+            EndIf 
+        EndIf
+
+        ;App maintenance and and app update
+        $aStructure = CreateArr(CreateArr(CreateArr('$g_sLocation == "app-maintenance"')), True)
+        $aAction = CreateArr('appMaintenance()')
+        Schedule_Add("_Maintenance", $aAction, $SCHEDULE_TYPE_CONDITION, "*", $aStructure, $SCHEDULE_FLAG_RunImmediately, 0, True, False)
+    
+        $aStructure = CreateArr(CreateArr(CreateArr('$g_sLocation == "app-update"')), True)
+        $aAction = CreateArr('appUpdate()')
+        Schedule_Add("_Update", $aAction, $SCHEDULE_TYPE_CONDITION, "*", $aStructure, $SCHEDULE_FLAG_RunImmediately, 0, True, False)
     EndIf
 EndFunc
 
 Func _Schedule_Stop()
     Schedule_RemoveByName("_Hourly")
-    Schedule_RemoveByName("_Quest")
     Schedule_RemoveByName("_Guardian")
+    Schedule_RemoveByName("_Restart")
+    Schedule_RemoveByName("_Maintenance")
+    Schedule_RemoveByName("_Update")
 EndFunc
 
 Func _Schedule_Guardian()
     Local $aValues = Stats_Values_GetSpecific(Stats_GetValues($g_aStats), CreateArr("Guardians", "Astrogems_Used"))
-    Local $aParam = CreateArr($Guardian_Guardian_Mode, IsDeclared($g_sScript & "_Refill")?Eval($g_sScript & "_Refill"):0, 0, $Guardian_Target_Boss)
+    Local $aParam = CreateArr($Guardian_Guardian_Mode, IsDeclared($g_sScript & "_Refill")?Eval($g_sScript & "_Refill"):0, $CONFIG_NEVER, $Guardian_Target_Boss)
     _RunScript("Farm_Guardian", $aParam, $aValues)
 
     navigate("map")
@@ -129,6 +146,7 @@ Func Stop()
     $g_hScriptTimer = Null
     $g_sScript = ""
     $g_bAntiStuck = False
+    $g_bTitansFast = False
 
 ;Removing Schedules
     _Schedule_Stop()
@@ -321,30 +339,6 @@ Func ScriptTest()
     CaptureRegion()
     ScriptTest_CreateGui(_ArrayToString($aTempLog, @CRLF) & $sError, $g_hBitmap)
     Return "COMPLETE"
-EndFunc
-
-Global $g_hCompatibilityTest = Null
-Func ScriptTest_CreateGui($sMessage, ByRef $hBitmap)
-    If $g_hCompatibilityTest <> Null Then Return SetError(1, 0, False)
-    $g_hCompatibilityTest = GUICreate("MSL-Bot Compatibility Test", 823, 367, -1, -1, -1, -1, $g_hParent)
-    Global $g_idCompatibilityTest_editMain = GUICtrlCreateEdit($sMessage, 10, 10, 296, 307, $WS_VSCROLL, -1)
-    Global $g_idCompatibilityTest_picMain = GUICtrlCreatePic("", 309, 10, 507, 350, -1, -1)
-    Global $g_idCompatibilityTest_btnClose = GUICtrlCreateButton("Close", 260, 330, 46, 30, -1, -1)
-    Global $g_idCompatibilityTest_btnCopyText = GUICtrlCreateButton("Copy Text", 10, 330, 80, 30, -1, -1)
-    Global $g_idCompatibilityTest_btnCopyImage = GUICtrlCreateButton("Copy as Image", 96, 330, 160, 30, -1, -1)
-    
-    GUISetState(@SW_SHOW, $g_hCompatibilityTest)
-
-    Local $tagSize = _WinAPI_GetBitmapDimension($hBitmap)
-    Local $aImageSize = [DllStructGetData($tagSize, 'X'), DllStructGetData($tagSize, 'Y')]
-    If $aImageSize[0] = 0 Or $aImageSize[1] = 0 Then Return SetError(2, 0, False)
-
-    Local $hAdjusted = _WinAPI_AdjustBitmap($hBitmap, 507, 350)
-
-    _WinAPI_DeleteObject(GUICtrlSendMsg($g_idCompatibilityTest_picMain, $STM_SETIMAGE, $IMAGE_BITMAP, $hAdjusted))
-    _WinAPI_DeleteObject($hAdjusted)
-
-    Return $g_hCompatibilityTest
 EndFunc
 
 Func ScriptTest_Handles()

@@ -440,7 +440,7 @@ Func GUI_HANDLE_MESSAGE($iCode)
                 Case $g_idPromptsWindow_Help
                     If $g_hPromptsWindow_HelpWindow <> Null Then GUIDelete($g_hPromptsWindow_HelpWindow)
                     Local $aWinPos = WinGetPos($g_hPromptsWindow)
-                    $g_hPromptsWindow_HelpWindow = CreateMessageBox("Schedule Add Help", $g_sPromptsWindow_Help, $aWinPos[0]+$aWinPos[2], $aWinPos[1]+(($aWinPos[3]-300)/2))
+                    $g_hPromptsWindow_HelpWindow = CreateMessageBox("Schedule Add Help", $g_sPromptsWindow_Help, 300, 300, $aWinPos[0]+$aWinPos[2], $aWinPos[1]+(($aWinPos[3]-300)/2), $g_hPromptsWindow)
             EndSwitch
         Case $g_hMessageBox
             Switch $iCode[0]
@@ -504,9 +504,214 @@ Func GUI_HANDLE_MESSAGE($iCode)
                         _ProcessLines($aExpressions)
                     EndIf
             EndSwitch
+        Case $g_hGemWindow
+            Switch $iCode[0]
+                Case $GUI_EVENT_CLOSE
+                    GUIDelete($g_hGemWindow)
+                    $g_hGemWindow = Null
+                Case $g_idGemWindow_btnGo ;Action button
+                    Switch GUICtrlRead($g_idGemWindow_cmbAction)
+                        Case "Create..."
+                            Local $sInput = InputBox("Gem Window - Create", "Enter new filter name:", "New Filter")
+                            If $sInput <> "" And @error = 0 Then
+                                If FileExists($g_sFilterFolder & $sInput) = True Then
+                                    MsgBox($MB_ICONWARNING+$MB_OK, "Gem Window - Create", "Filter already exists.")
+                                    GUI_HANDLE_MESSAGE($iCode)
+                                Else
+                                    Local $hFile = FileOpen($g_sFilterFolder & $sInput, $FO_CREATEPATH+$FO_OVERWRITE)
+                                    If $hFile <> -1 Then
+                                        Local $iResult = FileWrite($hFile, StringFormat("grade:6\r\nshape:any\r\ntype:ruin,valor\r\nstat:any%\r\nsub1:critrate%\r\nsub2:any%\r\nsub3:any\r\nsub4:any"))
+                                        If $iResult = 1 Then
+                                            GUICtrlSetData($g_idGemWindow_cmbFilter, $sInput, $sInput)
+                                            GUI_HANDLE_MESSAGE(CreateArr($g_idGemWindow_cmbFilter, $g_hGemWindow))
+                                            MsgBox($MB_ICONINFORMATION+$MB_OK, "Gem Window - Create", "Created new filter: " & $sInput & ".")
+                                        Else
+                                            MsgBox($MB_ICONERROR+$MB_OK, "Gem Window - Create", "Could not create filter file.")
+                                        EndIf
+                                        FileClose($hFile)
+                                    Else
+                                        MsgBox($MB_ICONERROR+$MB_OK, "Gem Window - Create", "Could not create filter file.")
+                                    EndIf
+                                EndIf
+                            EndIf
+                        Case "Remove..."
+                            Local $sCurrent = GUICtrlRead($g_idGemWindow_cmbFilter)
+                            If FileExists($g_sFilterFolder & $sCurrent) = True And $sCurrent <> "" Then
+                                Local $iResponse = MsgBox($MB_ICONWARNING+$MB_YESNO, "Gem Window - Remove", "Are you sure you want to delete: " & $sCurrent)
+                                If $iResponse = $IDYES Then
+                                    If FileDelete($g_sFilterFolder & $sCurrent) = 0 Then
+                                        MsgBox($MB_ICONERROR, "Gem Window - Remove", "Could not remove filter.")
+                                    Else
+                                        _GUICtrlComboBox_DeleteString($g_idGemWindow_cmbFilter, _GUICtrlComboBox_GetCurSel($g_idGemWindow_cmbFilter))
+                                        _GUICtrlComboBox_SetCurSel($g_idGemWindow_cmbFilter, -1)
+                                        GUICtrlSetData($g_idGemWindow_editFilter, "")
+                                    EndIf
+                                EndIf
+                            Else
+                                MsgBox($MB_ICONWARNING+$MB_OK, "Gem Window - Remove", "A filter has not been selected.")
+                            EndIf
+                        Case "Save..."
+                            Local $sCurrent = GUICtrlRead($g_idGemWindow_cmbFilter)
+                            If FileExists($g_sFilterFolder & $sCurrent) = True And $sCurrent <> "" Then
+                                If $sCurrent == "" Or FileExists($g_sFilterFolder & $sCurrent) = False Then
+                                    MsgBox($MB_ICONERROR+$MB_OK, "Gem Window - Save", "Could not save filter.")
+                                Else
+                                    Local $sContent = GUICtrlRead($g_idGemWindow_editFilter)
+                                    Local $bValid = _GemWindow_isValid($sContent)
+                                    If $bValid = True Then
+                                        Local $hFile = FileOpen($g_sFilterFolder & $sCurrent, $FO_CREATEPATH+$FO_OVERWRITE)
+                                        If $hFile <> -1 Then
+                                            Local $iResult = FileWrite($hFile, $sContent)
+                                            If $iResult = 1 Then
+                                                MsgBox($MB_ICONINFORMATION+$MB_OK, "Gem Window - Save", "Filter has been saved: " & $sCurrent)
+                                            Else
+                                                MsgBox($MB_ICONERROR+$MB_OK, "Gem Window - Save", "Could not write to file.")
+                                            EndIf 
+                                            FileClose($hFile)
+                                        Else
+                                            MsgBox($MB_ICONERROR+$MB_OK, "Gem Window - Save", "Could not safe filter.")
+                                        EndIf
+                                    Else
+                                        Local $iError = @error
+                                        Local $iExtended = @extended
+
+                                        Local $sError = _GUICtrlEdit_GetLine($g_idGemWindow_editFilter, $iExtended-1)
+                                        MsgBox($MB_ICONERROR+$MB_OK, "Gem Window - Save", $sError & @CRLF & @CRLF & "Error in line " & $iExtended & ": '" & $_GemWindow_isValid_ErrorString[$iError] & "'")
+                                    EndIf
+                                EndIf
+                            Else
+                                MsgBox($MB_ICONWARNING+$MB_OK, "Gem Window - Save", "A filter has not been selected.")
+                            EndIf
+                        Case "Help..."
+                            Local $iFind = _MessageBox_FindTitle("Gem Window - Help")
+                            If $iFind = -1 Then
+                                Local $sHelp = FileRead($g_sLocalFolder & "gem_filter.txt")
+                                If @error Then 
+                                    MsgBox($MB_ICONERROR+$MB_OK, "Gem Window - Help", "Could not open help file.")
+                                Else
+                                    CreateMessageBox("Gem Window - Help", $sHelp, 400, 600, -1, -1, $iCode[1])
+                                EndIf
+                            Else
+                                WinActivate($g_hMessageBox[$iFind])
+                            EndIf
+                        Case Else
+                            MsgBox($MB_ICONERROR+$MB_OK, "Gem Window - Action", "Invalid action.")
+                    EndSwitch
+                Case $g_idGemWindow_cmbFilter ;Change current filter
+                    Local $sContent = FileRead($g_sFilterFolder & GUICtrlRead($g_idGemWindow_cmbFilter))
+                    If @error Then GUICtrlSetData($g_idGemWindow_editFilter, "Error: Could not load filter.")
+                    If @error = 0 Then GUICtrlSetData($g_idGemWindow_editFilter, $sContent)
+                Case $g_idGemWindow_tabMain
+                    If GUICtrlRead($g_idGemWindow_tabMain) = 1 Then ;2nd Tab
+                        _GemWindow_UpdateFound($g_iGemWindow_GemsFound)
+                    EndIf
+                Case $g_idGemWindow_btnNext
+                    $g_iGemWindow_GemsFound += 1
+                    If $g_iGemWindow_GemsFound >= UBound($g_aGemWindow_GemsFound) Then
+                        $g_iGemWindow_GemsFound = 0
+                    EndIf
+                    _GemWindow_UpdateFound($g_iGemWindow_GemsFound)
+                Case $g_idGemWindow_btnPrevious
+                    $g_iGemWindow_GemsFound -= 1
+                    If $g_iGemWindow_GemsFound < 0 Then
+                        $g_iGemWindow_GemsFound = UBound($g_aGemWindow_GemsFound)-1
+                    EndIf
+                    _GemWindow_UpdateFound($g_iGemWindow_GemsFound)
+            EndSwitch
+        Case Else
+            #Region MessageBox
+                For $i = UBound($g_hMessageBox)-1 To 0 Step -1
+                    Local $hMessageBox = $g_hMessageBox[$i]
+                    If $iCode[1] = $hMessageBox Then
+                        If $iCode[0] = $GUI_EVENT_CLOSE Then
+                            GUIDelete($hMessageBox)
+                            _ArrayDelete($g_hMessageBox, $i)
+                        EndIf
+                        Return True
+                    EndIf
+                Next
+            #EndRegion
+
+            #Region ListEditor
+                If UBound($g_hListEditor) <> UBound($g_hListEditor_Controls) Then
+                    MsgBox($MB_ICONERROR+$MB_OK, "ListEditor", "Something went wrong with the List Editor GUI.", 10)
+                    Return SetError(1, 0, False)
+                EndIf
+
+                For $i = UBound($g_hListEditor)-1 To 0 Step -1
+                    Local $hListEditor = $g_hListEditor[$i][0]
+                    If $iCode[1] = $hListEditor Then
+                        Local $idListEditor_listMain = $g_hListEditor_Controls[$i][0]
+                        Local $idListEditor_cmbMain = $g_hListEditor_Controls[$i][5]
+
+                        Switch $iCode[0]
+                            Case $GUI_EVENT_CLOSE
+                                Local $aItems[0]
+                                Local $iSize = _GUICtrlListView_GetItemCount($idListEditor_listMain)
+                                For $x = 0 To $iSize-1
+                                   _ArrayAdd($aItems, _GUICtrlListView_GetItemText($idListEditor_listMain, $x))
+                                Next
+                                Call($g_hListEditor[$i][1], (UBound($aItems) > 0)?($aItems):(""))
+
+                                GUIDelete($hListEditor)
+                                _ArrayDelete($g_hListEditor, $i)
+                                _ArrayDelete($g_hListEditor_Controls, $i)
+                            Case $g_hListEditor_Controls[$i][1] ;Button Move Up
+                                Local $aData = _GUICtrlListView_GetSelectedIndices($idListEditor_listMain, True)
+                                If ($aData[0] > 0) Then
+                                    If ($aData[1] > 0) Then
+                                        Local $sTemp = _GUICtrlListView_GetItemText($idListEditor_listMain, $aData[1]-1)
+                                        _GUICtrlListView_SetItemText($idListEditor_listMain, $aData[1]-1, _GUICtrlListView_GetItemText($idListEditor_listMain, $aData[1]))
+                                        _GUICtrlListView_SetItemText($idListEditor_listMain, $aData[1], $sTemp)
+                                        
+                                        _GUICtrlListView_SetItemSelected($idListEditor_listMain, $aData[1]-1, True, True)
+                                        _WinAPI_SetFocus(GUICtrlGetHandle($idListEditor_listMain))
+                                    Else
+                                        _GUICtrlListView_SetItemSelected($idListEditor_listMain, $aData[1], True, True)
+                                        _WinAPI_SetFocus(GUICtrlGetHandle($idListEditor_listMain))
+                                    EndIf
+                                EndIf
+                            Case $g_hListEditor_Controls[$i][2] ;Button Move Down
+                                Local $aData = _GUICtrlListView_GetSelectedIndices($idListEditor_listMain, True)
+                                If ($aData[0] > 0) Then
+                                    If ($aData[1] < _GUICtrlListView_GetItemCount($idListEditor_listMain) - 1) Then
+                                        Local $sTemp = _GUICtrlListView_GetItemText($idListEditor_listMain, $aData[1]+1)
+                                        _GUICtrlListView_SetItemText($idListEditor_listMain, $aData[1]+1, _GUICtrlListView_GetItemText($idListEditor_listMain, $aData[1]))
+                                        _GUICtrlListView_SetItemText($idListEditor_listMain, $aData[1], $sTemp)
+                                        
+                                        _GUICtrlListView_SetItemSelected($idListEditor_listMain, $aData[1]+1, True, True)
+                                        _WinAPI_SetFocus(GUICtrlGetHandle($idListEditor_listMain))
+                                    Else
+                                        _GUICtrlListView_SetItemSelected($idListEditor_listMain, $aData[1], True, True)
+                                        _WinAPI_SetFocus(GUICtrlGetHandle($idListEditor_listMain))
+                                    EndIf
+                                EndIf
+                            Case $g_hListEditor_Controls[$i][3] ;Button Remove
+                                Local $aData = _GUICtrlListView_GetSelectedIndices($idListEditor_listMain, True)
+                                If ($aData[0] > 0) Then
+                                    Local $sSelected = _GUICtrlListView_GetItemText($idListEditor_listMain, $aData[1])
+                                    GUICtrlSetData($idListEditor_cmbMain, $sSelected, $sSelected)
+                                    _GUICtrlListView_DeleteItemsSelected($idListEditor_listMain)
+                                    _GUICtrlListView_SetItemSelected($idListEditor_listMain, $aData[1], True, True)
+                                EndIf
+                            Case $g_hListEditor_Controls[$i][4] ;Button Add
+                                Local $sText = GUICtrlRead($idListEditor_cmbMain)
+                                If ($sText <> "") Then
+                                    _GUICtrlListView_AddItem($idListEditor_listMain, $sText)
+
+                                    _GUICtrlComboBox_DeleteString($idListEditor_cmbMain, _GUICtrlComboBox_GetCurSel($idListEditor_cmbMain))
+                                    _GUICtrlComboBox_SetCurSel($idListEditor_cmbMain, 0)
+                                EndIf
+                        EndSwitch
+
+                        Return True
+                    EndIf
+                Next
+            #EndRegion
     EndSwitch
 
     If $g_aComboMenu <> Null Then handleCombo($iCode[0], $g_hLV_ScriptConfig)
+    Return True
 EndFunc
 
 Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
@@ -600,7 +805,23 @@ Func WM_NOTIFY($hWnd, $iMsg, $wParam, $lParam)
                             ;Shows edit in the position.
                             createEdit($g_hEditConfig, $g_iEditConfig, $g_hLV_ScriptConfig)
                         Case "list"
-                            createListEditor($g_hParent, $g_hLV_ScriptConfig, $iIndex)
+                            Local $aCurrent = StringSplit(_GUICtrlListView_GetItemText($g_hLV_ScriptConfig, $iIndex, 1), ",", $STR_NOCOUNT)
+                            Local $aDefault = StringSplit(_GUICtrlListView_GetItemText($g_hLV_ScriptConfig, $iIndex, 4), ",", $STR_NOCOUNT)
+                            
+                            $g_iListEditor_Index = $iIndex
+                            GUISetState(@SW_DISABLE, $g_hParent)
+                            ListEditor_CreateGui($aCurrent, $aDefault, "_ListEditor_Config_Close")
+                        Case "listfunction"
+                            Local $aCurrent = StringSplit(_GUICtrlListView_GetItemText($g_hLV_ScriptConfig, $iIndex, 1), ",", $STR_NOCOUNT)
+                            Local $sFunction = _GUICtrlListView_GetItemText($g_hLV_ScriptConfig, $iIndex, 4)
+                            Local $aDefault = Call($sFunction)
+                            If @error = 0xDEAD And @extended = 0xBEEF Then 
+                                MsgBox($MB_ICONERROR+$MB_OK, "MSL Bot Config Error", "Function not found: " & $sFunction)
+                            Else
+                                $g_iListEditor_Index = $iIndex
+                                GUISetState(@SW_DISABLE, $g_hParent)
+                                ListEditor_CreateGui($aCurrent, $aDefault, "_ListEditor_Config_Close")
+                            EndIf
                         Case "setting"
                             Local $sText = _GUICtrlListView_GetItemText($g_hLV_ScriptConfig, $iIndex, 1)
                             Local $iScriptIndex = _GUICtrlComboBox_FindString($g_hCmb_Scripts, $sText)
@@ -758,15 +979,35 @@ Func GeneratePromptsWindow(ByRef $hParent, $sTitle, $aPrompts, $aPreset, $sHelp 
 EndFunc
 
 ;Returns message handle
-Func CreateMessageBox($sTitle, $sMessage, $iX = -1, $iY = -1)
-    $g_hMessageBox = GUICreate($sTitle, 300, 300, $iX, $iY, $WS_SIZEBOX+$WS_MINIMIZEBOX+$WS_MAXIMIZEBOX)
-    GUISetFont(8.5, 0, 0, "Lucida Console", $g_hMessageBox)
-    $g_idEditMessage = GUICtrlCreateEdit($sMessage, 0, 0, 300, 275, $ES_READONLY+$WS_VSCROLL)
+Global $g_hMessageBox[0]
+Func CreateMessageBox($sTitle, $sMessage, $iWidth = 300, $iHeight = 300, $iX = -1, $iY = -1, $hParent = 0)
+    If $hParent <> 0 Then
+        Local $aWinPos = WinGetPos($hParent)
+        If isArray($aWinPos) = True Then
+            If $iX = -1 Then $iX = $aWinPos[0] + $aWinPos[2]
+            If $iY = -1 Then $iY = $aWinPos[1] + Int(($aWinPos[3] - $iHeight) / 2)
+        EndIf
+    EndIf
+
+    Local $hMessageBox = GUICreate($sTitle, $iWidth, $iHeight, $iX, $iY, $WS_SIZEBOX+$WS_MINIMIZEBOX+$WS_MAXIMIZEBOX, -1, $hParent)
+    GUISetFont(8.5, 0, 0, "Lucida Console", $hMessageBox)
+    Global $g_idEditMessage = GUICtrlCreateEdit($sMessage, 0, 0, $iWidth, $iHeight-25, $ES_READONLY+$WS_VSCROLL)
 
     GUICtrlSetResizing($g_idEditMessage, $GUI_DOCKBORDERS)
-    GUISetState(@SW_SHOW, $g_hMessageBox)
+    GUISetState(@SW_SHOW, $hMessageBox)
     _GUICtrlEdit_SetSel($g_idEditMessage, 0, 0)
-    Return $g_hMessageBox
+
+    _ArrayAdd($g_hMessageBox, $hMessageBox)
+    Return $hMessageBox
+EndFunc
+
+Func _MessageBox_FindTitle($sTitle)
+    For $i = 0 To UBound($g_hMessageBox)-1
+        If WinGetTitle($g_hMessageBox[$i]) == $sTitle Then
+            Return $i
+        EndIf
+    Next
+    Return -1
 EndFunc
 
 ;Handles the combo config contextmenu
@@ -843,156 +1084,6 @@ Func _endEdit()
     HotKeySet("{ENTER}")
 EndFunc
 
-Func createListEditor($g_hParent, $hListView, $iIndex)
-    Opt("GUIOnEventMode", 1)
-    ; [gui handle, listview inside gui, combo handle, combo values, parent handle, listview handle, item index]
-    Local $aCurrent = StringSplit(_GUICtrlListView_GetItemText($hListView, $iIndex, 1), ",", $STR_NOCOUNT)
-    Local $aDefault = StringSplit(_GUICtrlListView_GetItemText($hListView, $iIndex, 4), ",", $STR_NOCOUNT)
-
-    Local $t_aListEditor[7] ;Holds the array items from comment above.
-    Local $t_aPos = WinGetPos($g_hParent)
-    $t_aListEditor[0] = GUICreate("Edit List", 150, 182, $t_aPos[0]+(($t_aPos[2]-150)/2), $t_aPos[1]+(($t_aPos[3]-150)/2), -1, $WS_EX_TOPMOST, $g_hParent)
-    $t_aListEditor[1] = GUICtrlCreateListView("", 2, 2, 146, 100, $LVS_SINGLESEL+$LVS_REPORT+$LVS_NOSORTHEADER+$WS_BORDER)
-    Local $t_hListView = GUICtrlGetHandle($t_aListEditor[1])
-
-    _GUICtrlListView_SetExtendedListViewStyle($t_hListView, $LVS_EX_DOUBLEBUFFER+$LVS_EX_FULLROWSELECT+$LVS_EX_GRIDLINES)
-    _GUICtrlListView_AddColumn($t_hListView, "-Included Values-", 125, 2)
-    ControlDisable("", "", HWnd(_GUICtrlListView_GetHeader($t_hListView))) ;Prevents changing column size
-
-    ;adding current items.
-    For $i = 0 To UBound($aCurrent, $UBOUND_ROWS)-1
-        If ($aCurrent[$i] <> "") Then _GUICtrlListView_AddItem($t_hListView, $aCurrent[$i])
-
-        ;Removing existing values from default to add those non exisiting in a combo later.
-        For $j = 0 To UBound($aDefault, $UBOUND_ROWS)-1
-            If ($aDefault[$j] = $aCurrent[$i]) Then $aDefault[$j] = Null
-        Next
-    Next
-
-    $t_aListEditor[4] = $g_hParent
-    $t_aListEditor[5] = $hListView
-    $t_aListEditor[6] = $iIndex
-
-    GUICtrlCreateButton("Move up", 2, 104, 72)
-    GUICtrlSetOnEvent(-1, "ListEditor_btnMoveUp")
-    GUICtrlCreateButton("Move down", 75, 104, 72)
-    GUICtrlSetOnEvent(-1, "ListEditor_btnMoveDown")
-
-    GUICtrlCreateButton("Remove", 2, 129, 145)
-    GUICtrlSetOnEvent(-1, "ListEditor_btnRemove")
-
-    GUICtrlCreateButton("Add", 2, 154, 42)
-    GUICtrlSetOnEvent(-1, "ListEditor_btnAdd")
-
-    $t_aListEditor[2] = GUICtrlCreateCombo("", 46, 155, 100, -1, $CBS_DROPDOWNLIST)
-    _GUICtrlComboBox_SetItemHeight(GUICtrlGetHandle($t_aListEditor[2]), 17)
-
-    Local $sComboItems = "" ;stores excluded items in combo item format.
-    For $i = 0 To UBound($aDefault, $UBOUND_ROWS)-1
-        If ($aDefault[$i] <> Null) Then $sComboItems &= "|" & $aDefault[$i]
-    Next
-    $sComboItems = StringMid($sComboItems, 2)
-    GUICtrlSetData($t_aListEditor[2], $sComboItems)
-    If ($sComboItems <> "") Then _GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($t_aListEditor[2]), 0)
-
-    $t_aListEditor[3] = $sComboItems
-
-    $g_aListEditor = $t_aListEditor
-    GUISetOnEvent($GUI_EVENT_CLOSE, "ListEditor_Close", $g_aListEditor[0])
-
-    GUISetState(@SW_SHOW, $g_aListEditor[0])
-    GUISetState(@SW_DISABLE, $g_aListEditor[4])
-
-    _WinAPI_SetFocus($g_aListEditor[0])
-EndFunc
-
-;Moves selected item up index
-Func ListEditor_btnMoveUp()
-    Local $aData = _GUICtrlListView_GetSelectedIndices($g_aListEditor[1], True)
-    If ($aData[0] > 0) Then
-        If ($aData[1] > 0) Then
-            Local $sTemp = _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1]-1)
-            _GUICtrlListView_SetItemText($g_aListEditor[1], $aData[1]-1, _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1]))
-            _GUICtrlListView_SetItemText($g_aListEditor[1], $aData[1], $sTemp)
-            
-            _GUICtrlListView_SetItemSelected($g_aListEditor[1], $aData[1]-1, True, True)
-            _WinAPI_SetFocus(GUICtrlGetHandle($g_aLIstEditor[1]))
-        Else
-            _GUICtrlListView_SetItemSelected($g_aListEditor[1], $aData[1], True, True)
-            _WinAPI_SetFocus(GUICtrlGetHandle($g_aLIstEditor[1]))
-        EndIf
-    EndIf
-EndFunc
-
-;Moves selected item down in index
-Func ListEditor_btnMoveDown()
-    Local $aData = _GUICtrlListView_GetSelectedIndices($g_aListEditor[1], True)
-    If ($aData[0] > 0) Then
-        If ($aData[1] < _GUICtrlListView_GetItemCount($g_aListEditor[1]) - 1) Then
-            Local $sTemp = _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1]+1)
-            _GUICtrlListView_SetItemText($g_aListEditor[1], $aData[1]+1, _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1]))
-            _GUICtrlListView_SetItemText($g_aListEditor[1], $aData[1], $sTemp)
-            
-            _GUICtrlListView_SetItemSelected($g_aListEditor[1], $aData[1]+1, True, True)
-            _WinAPI_SetFocus(GUICtrlGetHandle($g_aListEditor[1]))
-        Else
-            _GUICtrlListView_SetItemSelected($g_aListEditor[1], $aData[1], True, True)
-            _WinAPI_SetFocus(GUICtrlGetHandle($g_aLIstEditor[1]))
-        EndIf
-    EndIf
-EndFunc
-
-;Removes item selected from listview and adds to combobox
-Func ListEditor_btnRemove()
-    Local $aData = _GUICtrlListView_GetSelectedIndices($g_aListEditor[1], True)
-    If ($aData[0] > 0) Then
-        $g_aListEditor[3] &= "|" &  _GUICtrlListView_GetItemText($g_aListEditor[1], $aData[1])
-
-        If (StringMid($g_aListEditor[3], 1, 1) == "|") Then $g_aListEditor[3] = StringMid($g_aListEditor[3], 2)
-
-        GUICtrlSetData($g_aListEditor[2], "")
-        GUICtrlSetData($g_aListEditor[2], $g_aListEditor[3])
-
-        _GUICtrlListView_DeleteItemsSelected($g_aListEditor[1])
-        _GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($g_aListEditor[2]), 0)
-    EndIf
-EndFunc
-
-;Adds item from combobox to listview 
-Func ListEditor_btnAdd()
-    Local $sText = GUICtrlRead($g_aListEditor[2])
-    If ($sText <> "") Then
-        _GUICtrlListView_AddItem($g_aListEditor[1], $sText)
-
-        $g_aListEditor[3] = StringReplace(StringReplace($g_aListEditor[3], $sText, ""), "||", "|")
-        GUICtrlSetData($g_aListEditor[2], "")
-        GUICtrlSetData($g_aListEditor[2], $g_aListEditor[3])
-        _GUICtrlComboBox_SetCurSel(GUICtrlGetHandle($g_aListEditor[2]), 0)
-    EndIf
-EndFunc
-
-;Destroys Window and saves data into listview item
-Func ListEditor_Close()
-    Opt("GUIOnEventMode", 0)
-    ; Saves changed settings to the listview.
-    Local $sNew = "";
-    Local $iSize = _GUICtrlListView_GetItemCount($g_aListEditor[1])
-    For $i = 0 To $iSize-1
-        $sNew &= "," & _GUICtrlListView_GetItemText($g_aListEditor[1], $i)
-    Next
-    $sNew = StringMid($sNew, 2) 
-
-    _GUICtrlListView_SetItemText($g_aListEditor[5], $g_aListEditor[6], $sNew, 1)
-
-    _WinAPI_DestroyWindow($g_aListEditor[0])
-    GUISetState(@SW_ENABLE, $g_aListEditor[4])
-
-    _GUICtrlListView_SetItemSelected($g_aListEditor[5], $g_aListEditor[6], True, True)
-    _WinAPI_SetFocus($g_aListEditor[5])
-
-    Config_Save()
-EndFunc
-
 ; Show a menu in a given GUI window which belongs to a given GUI ctrl
 Func ShowMenu($hWnd, $idContext)
     Local $aPos, $x, $y
@@ -1010,3 +1101,135 @@ EndFunc   ;==>ShowMenu
 Func TrackPopupMenu($hWnd, $hMenu, $x, $y)
     DllCall("user32.dll", "int", "TrackPopupMenuEx", "hwnd", $hMenu, "int", 0, "int", $x, "int", $y, "hwnd", $hWnd, "ptr", 0)
 EndFunc   ;==>TrackPopupMenu
+
+;Other Helper Functions ===============================================
+
+; Check if data is valid for use.
+Global Const $_GemWindow_isValid_ErrorString = _
+    ["No error.", _ 
+     "Invalid format.", _ 
+     "Duplicate data type.", _ 
+     "Empty value.", _
+     "Other values being used when 'any' is used in 'grade'.", _ 
+     "Other values being used when 'any' is used in 'shape'.", _ 
+     "Other values being used when 'any' is used in 'type'.", _ 
+     "Invalid data type.", _ 
+     "Invalid value.", _ 
+     "Duplicate values."]
+Func _GemWindow_isValid($sFilter)
+    Local $aData = StringSplit($sFilter, @CRLF, $STR_NOCOUNT)
+    If isArray($aData) = False Then $aData = CreateArr($aData)
+
+    ;Remove empty entries
+    For $i = UBound($aData)-1 To 0 Step -1
+        If $aData[$i] == "" Then _ArrayDelete($aData, $i)
+    Next
+
+    For $i = 0 To UBound($aData)-1
+        Local $sData = $aData[$i]
+        $sData = StringStripWS($sData, $STR_STRIPALL)
+        $sData = StringLower($sData)
+
+        ;Check data types
+        Local $aType = StringSplit($sData, ":", $STR_NOCOUNT)
+        If isArray($aType) = False Or UBound($aType) <> 2 Then Return SetError(1, $i+1, False) ;Not valid type
+
+        Local $aDuplicate = _ArrayFindAll($aData, $sData)
+        If isArray($aDuplicate) = True And UBound($aDuplicate) <> 1 Then Return SetError(2, $i+1, False) ;Duplicates types
+
+        ;Check values
+        If $aType[1] == "" Then Return SetError(3, 0, False) ;Empty value
+
+        Local $aValues = StringSplit($aType[1], ",", $STR_NOCOUNT)
+        If isArray($aValues) = False Then $aValues = CreateArr($aType[1])
+            
+        For $sValue In $aValues
+            Local $aFind = Null
+            Switch $aType[0]
+                Case "grade"
+                    If $sValue = "any" And UBound($aValues) > 1 Then Return SetError(4, $i+1, False) ;Used any already
+                    $aFind = _ArrayFindAll($g_aGem_Grade, $sValue)
+                Case "shape"
+                    If $sValue = "any" And UBound($aValues) > 1 Then Return SetError(5, $i+1, False) ;Used any already
+                    $aFind = _ArrayFindAll($g_aGem_Shape, $sValue)
+                Case "type"
+                    If $sValue = "any" And UBound($aValues) > 1 Then Return SetError(6, $i+1, False) ;Used any already
+                    $aFind = _ArrayFindAll($g_aGem_Type, $sValue)
+                Case "stat", "sub1", "sub2", "sub3", "sub4"
+                    If StringRight($sValue, 1) == "%" Or StringRight($sValue, 1) == "+" Then
+                        $sValue = StringMid($sValue, 1, StringLen($sValue) - 1)
+    EndIf
+                    $aFind = _ArrayFindAll($g_aGem_Stat, $sValue)
+                Case Else
+                    Return SetError(7, $i+1, False)
+            EndSwitch
+
+            If isArray($aFind) = False Then Return SetError(8, $i+1, False) ;Not valid value
+
+            $aDuplicate = _ArrayFindAll($aValues, $sValue)
+            If isArray($aDuplicate) = True And UBound($aDuplicate) <> 1 Then Return SetError(9, $i+1, False) ;Duplicates values
+        Next
+    Next
+            
+    Return True
+EndFunc
+
+;Config List Editor
+Global $g_iListEditor_Index = -1
+Func _ListEditor_Config_Close($aData = "")
+    If $g_iListEditor_Index = -1 Then 
+        MsgBox($MB_ICONERROR+$MB_OK, "ListEditor Config", "Could not save config.")
+        Return SetError(1, 0, False)
+    EndIf
+
+    Local $sData = ""
+    If isArray($aData) = True And UBound($aData) > 0 Then $sData = _ArrayToString($aData, ",")
+    _GUICtrlListView_SetItemText($g_hLV_ScriptConfig, $g_iListEditor_Index, $sData, 1)
+    GUISetState(@SW_ENABLE, $g_hParent)
+
+    _GUICtrlListView_SetItemSelected($g_hLV_ScriptConfig, $g_iListEditor_Index, True, True)
+    _WinAPI_SetFocus($g_hLV_ScriptConfig)
+
+    Config_Save()
+    Return True
+EndFunc
+
+;Return list for current available filters
+Func _Gem_Filter()
+    Local $aFilters = _FileListToArray($g_sFilterFolder)
+    If isArray($aFilters) = False Then Return SetError(1, 0, False)
+    _ArrayDelete($aFilters, 0) ; Remove count
+    _ArrayAdd($aFilters, "_Filter")
+    If isArray($aFilters) = False Then $aFilters = CreateArr()
+    Return $aFilters
+EndFunc
+
+Func _GemWindow_AddFound($aGemData, $sStatus)
+    Local $aGem = parseGem($aGemData)
+    If @error Then Return SetError(1, @error, False)
+
+    _ArrayInsert($aGem, 0, $sStatus)
+    _ArrayAdd($g_aGemWindow_GemsFound, $aGem, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
+
+    If $g_hGemWindow <> Null And GUICtrlRead($g_idGemWindow_tabMain) = 1 Then
+        _GemWindow_UpdateFound($g_iGemWindow_GemsFound)
+    EndIf
+EndFunc
+
+Func _GemWindow_UpdateFound($iIndex)
+    If isDeclared("g_idGemWindow_editGem") = False Then Return SetError(1, 0, False)
+
+    Local $iSize = UBound($g_aGemWindow_GemsFound)
+    If $iIndex < 0 Or $iIndex >= $iSize Then Return SetError(2, 0, False)
+
+    Local $aTexts[9] = ["Status", "Grade", "Shape", "Type", "Stat", "Sub1", "Sub2", "Sub3", "Sub4"]
+    Local $aGem = $g_aGemWindow_GemsFound[$iIndex]
+
+    Local $sFinal = "Gem #: " & $iIndex+1 & "/" & $iSize
+    For $i = 0 To UBound($aGem)-1
+        $sFinal &= @CRLF & $aTexts[$i] & ": " & (($aGem[$i] <> "")?($aGem[$i]):("N/A"))
+    Next
+
+    GUICtrlSetData($g_idGemWindow_editGem, $sFinal)
+    Return True
+EndFunc

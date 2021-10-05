@@ -1,0 +1,6 @@
+grade:6
+shape:any
+type:any
+stat:hp%,defense%
+sub1:recovery%
+sub2:hp%,defense%
