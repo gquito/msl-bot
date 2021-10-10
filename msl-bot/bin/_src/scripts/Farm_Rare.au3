@@ -38,21 +38,42 @@ Func Farm_Rare($bParam = True, $aStats = Null)
     Local $bSkip = False
 
     navigate("map", True)
+    Local $aRound[2] ; Store current rounds
     While $g_bRunning = True
         If _Sleep($Delay_Script_Loop) Then ExitLoop
         Local $sLocation = getLocation()
         Common_Stuck($sLocation)
 
+        Local $aCurrRound = getRound(False)
+        If isArray($aCurrRound) = True Then
+            If $aCurrRound[1] <> $aRound[1] Or _
+               $aCurrRound[0] <> $aRound[0] Then
+
+                $aRound = $aCurrRound
+            EndIf
+        EndIf
+
         Switch $sLocation
+            Case "battle-auto"
+                Local $aPixel = getPixelArg("battle-catch-exotic")
+                If isPixel($aPixel, 15) Then
+                    navigate("catch-mode", False, 3)
+                    ContinueLoop
+                EndIf
+
+                Status("Current round: " & $aRound[0] & "/" & $aRound[1], $LOG_DEBUG)
             Case "battle"
                 If waitLocation("battle-auto", 1) <= 0 Then 
-                    ;CaptureRegion(StringRegExpReplace(_NowCalc() , "(\/|\s|\:)", ""))
                     If navigate("catch-mode") <= 0 Then clickBattle()
                 EndIf
                 
-            Case "battle-auto"
-                Status("Currently in battle.")
-                ContinueLoop
+            Case "battle-boss"
+                If $Farm_Rare_Target_Boss > 0 Then
+                    Status("Targeting boss.")
+                    waitLocation("battle,battle-auto", 2)
+                    If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
+                    clickPoint(getPointArg("boss"))
+                EndIf
             Case "catch-mode"
                     Local $aResult = catch($aCapture, ($General_Max_Exotic_Chips < 3)?$General_Max_Exotic_Chips:3)
                     Local $iSize = UBound($aResult)
@@ -120,13 +141,6 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                 
                 Status("Match has ended, going to battle-end")
                 navigate("battle-end")
-            Case "battle-boss"
-                If $Farm_Rare_Target_Boss > 0 Then
-                    Status("Targeting boss.")
-                    waitLocation("battle,battle-auto", 2)
-                    If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
-                    clickPoint(getPointArg("boss"))
-                EndIf
             Case "astromon-full"
                 Status("Astromon inventory is full, stopping script.")
                 ExitLoop

@@ -20,7 +20,6 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
     Local $aPoints[0]
     Local $hTimer = TimerInit()
     Log_Add("Trying to catch " & _ArrayToString($aImages, ",") & (($iMaxCatch <> -1)?", Max: " & $iMaxCatch & ".":"."), $LOG_DEBUG)
-    $g_bCaptureQuest = True ; Trigger quest
 
     While TimerDiff($hTimer) < 60000
         If _Sleep(100) Then ExitLoop
@@ -30,11 +29,38 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
             Case "catch-mode"
                 If UBound($aPoints) = 0 Then
                     CaptureRegion()
-                    For $x = 0 To UBound($CATCH)-1
-                        Local $aFound = findImageMultiple("catch-" & $CATCH[$x], 90, 20, 20, 4, 0, 312, 800, 457-312, False)
-                        If isArray($aFound) > 0 Then
-                            For $i = 0 To UBound($aFound)-1
-                                _ArrayAdd($aPoints, CreateArr($aFound[$i][0], $aFound[$i][1], $CATCH[$x]), 0, "|", @CRLF, 1)
+                    For $x = 0 To UBound($CATCH) - 1
+                        Local $sCurrentAstromon = $CATCH[$x]
+                        Local $aFound = findImageMultiple("catch-" & $sCurrentAstromon, 90, 20, 20, 4, 0, 312, 800, 457-312, False)
+                        If isArray($aFound) = True Then
+                            For $i = 0 To UBound($aFound) - 1
+                                ; Check if there is already a match in that area
+                                Local $bOverlap = False
+                                For $j = 0 To UBound($aPoints) - 1
+                                    Local $aPoint = $aPoints[$j]
+
+                                    Local $iX1 = $aFound[$i][0]
+                                    Local $iY1 = $aFound[$i][1]
+                                    Local $iX2 = $aPoint[0]
+                                    Local $iY2 = $aPoint[1]
+
+                                    Local $iPixelDistance = Sqrt(($iX1 - $iX2) ^ 2 + ($iY1 - $iY2) ^ 2)
+                                    If $iPixelDistance < 100 Then
+                                        $bOverlap = True
+
+                                        ; If overlap is exotic contains exotic then astromon is exotic
+                                        If $aPoint[2] <> "exotic" And $sCurrentAstromon == "exotic" Then
+                                            Log_Add("Exotic overlap detected, replacing " & $aPoint[2] & " with exotic.", $LOG_DEBUG)
+                                            $aPoints[$j] = CreateArr($aFound[$i][0], $aFound[$i][1], $sCurrentAstromon)
+                                        EndIf
+                                        
+                                        ExitLoop
+                                    EndIf
+                                Next
+
+                                If $bOverlap = False Then ; No overlap with existing match
+                                    _ArrayAdd($aPoints, CreateArr($aFound[$i][0], $aFound[$i][1], $sCurrentAstromon), 0, "|", @CRLF, 1)
+                                EndIf
                             Next
                         EndIf
                     Next
@@ -50,50 +76,27 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                 EndIf
 
                 If UBound($aPoints) > 0 And $iCurrent <> -1 Then
-                    #cs
-                    If $bScreenshot = False And clickUntil("737,123", "isLocation", "battle,battle-auto", 3, 500) Then
-                        $bScreenshot = True
-                        If _Sleep(2000) Then ExitLoop
-                        CaptureRegion()
-                        If isArray(findImage("catch-guided-rare", 70)) = False Then
-                            HandleMenu($M_Capture_Full_Screenshot)
-                        Else
-                            CaptureRegion("Found" & Random(0, 10000, 1))
-                        EndIf
-                        clickUntil("739,277", "isLocation", "catch-mode", 3, 500)
-                        If _Sleep(3000) Then ExitLoop
-                        CaptureRegion()
-                    EndIf
-                    #ce
+                    Status(StringFormat("Attempting to catch astromon: %s at (%s)", ($aPoints[$iCurrent])[2], _ArrayToString($aPoints[$iCurrent], ",", 0, 1)), $LOG_DEBUG)
 
-                    Log_Add(StringFormat("Catching astromon: %s at (%s)", ($aPoints[$iCurrent])[2], _ArrayToString($aPoints[$iCurrent], ",", 0, 1)), $LOG_DEBUG)
-
-                    clickPoint($aPoints[$iCurrent], 3)
-                    If waitLocation("unknown", 5) > 0 Then
+                    If clickUntil($aPoints[$iCurrent], "isLocation", "unknown", 5, 1000) Then
                         If $iAstrochips > 1 Then $iAstrochips -= 1
+
                         If _Sleep(300) Then ExitLoop
 
-                        SendBack(2, 100)
-                        clickPoint(getPointArg("battle-continue"), 3, 200)
-                        ;Local $iCounter = 0
-                        ;While (FileExists(@ScriptDir & "\legendary" & $iCounter & ".bmp"))
-                        ;    $iCounter += 1
-                        ;WEnd
+                        SendBack(2, 100) ; Fast animation
+                        $g_bLogEnabled = False
+                        clickPoint(getPointArg("battle-continue"), 3, 200) ; Prevents stuck from fast animation
+                        $g_bLogEnabled = True
 
                         Local $hTempTimer = TimerInit()
                         While(isLocation("catch-mode,catch-success,battle-auto,battle") = False)
+                            $g_bLogEnabled = False
                             clickPoint(getPointArg("tap"))
+                            $g_bLogEnabled = True
 
                             If _Sleep(100) Then ExitLoop(2)
                             If TimerDiff($hTempTimer) > 7000 Then ExitLoop
-
-                        ;    If ($aPoints[$iCurrent])[2] == "legendary" Then
-                        ;        CaptureRegion(($aPoints[$iCurrent])[2] & $iCounter)
-                        ;        $iCounter += 1
-                        ;    EndIf
                         WEnd
-                        
-                        ;clickUntil(getPointArg("tap"), "isLocation", "catch-mode,catch-success,battle-auto,battle", 50, 100)
                     Else
                         Log_Add("Could not detect catch status", $LOG_ERROR)
                         _ArrayDelete($aPoints, $iCurrent)
@@ -105,6 +108,7 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                 EndIf
             Case "catch-success"
                 Log_Add("Successfully caught a " & ($aPoints[$iCurrent])[2] & ".", $LOG_DEBUG)
+                $g_bCaptureQuest = True ; Trigger quest
 
                 _ArrayAdd($aOutput, ($aPoints[$iCurrent])[2])
                 _ArrayDelete($aPoints, $iCurrent)

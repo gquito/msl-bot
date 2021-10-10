@@ -138,7 +138,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                             Local $aPixels = getPixelArg("catch-mode-available")
                             Local $aPoint = getPointArg("battle-catch")
                             If isPixel($aPixels, 30) = True Then
-                                clickWhile($aPoint, "isPixel", CreateArr($aPixels, 30), 10, 300, "CaptureRegion()")
+                                clickPoint($aPixels)
                             Else
                                 If isArray(findImage("misc-no-astrochips", 90, 0, 625, 50, 799-625, 329-100)) = True Then ExitLoop
                             EndIf

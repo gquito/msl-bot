@@ -19,5 +19,5 @@ towers-dark:186,217
 towers-fire:398,213
 towers-water:615,214
 elusive-dungeon:617,469
-auto-capture-option-ok:399,456
-auto-battle:653,420
+roll-call:704,444
+roll-call-close:774,92
