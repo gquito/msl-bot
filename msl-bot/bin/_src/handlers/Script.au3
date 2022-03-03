@@ -1,6 +1,7 @@
 #include-once
 
 Func Start($bSchedule = True)
+    $g_bLogEnabled = True
     Log_Level_Add("PREPROCESS")
     Log_Add("Initializing scripts and checking preconditions.", $LOG_DEBUG)
 
@@ -21,6 +22,10 @@ Func Start($bSchedule = True)
     Local $bOutput = True
     $g_bRunning = True
 
+    If isDeclared("Astrogems_Used") Then
+        $Astrogems_Used = 0
+    EndIF
+
     Config_Update()
     ResetHandles()
     ScriptTest_Handles() ;Debug info
@@ -32,12 +37,27 @@ Func Start($bSchedule = True)
     ;Pre Conditions
     If $g_hWindow = 0 Or $g_hControl = 0 Then
         Log_Add("Window handle not found.", $LOG_ERROR)
-        MsgBox($MB_ICONERROR+$MB_OK, "Window handle not found.", "Window handle (" & $Config_Emulator_Title & ") : " & $g_hWindow & @CRLF & @CRLF & "Control handle (" & $Config_Emulator_Property & ") : " & $g_hControl & @CRLF & @CRLF & "Tip: Check if Emulator Title and Resolution (800x552) are correct.")
+
+        Local $aCandidates = FindEmulatorCandidates()
+        Local $sCandidateMessage = ""
+        If UBound($aCandidates) > 0 Then
+            $sCandidateMessage = "Possible Emulator Title candidates: " & _ArrayToString($aCandidates, ", ")
+        EndIf
+
+        MsgBox($MB_ICONERROR+$MB_OK, _
+            "Window handle not found.", "Window handle (" & $Config_Emulator_Title & ") : " & $g_hWindow & @CRLF & @CRLF & _
+            "Control handle (" & $Config_Emulator_Property & ") : " & $g_hControl & @CRLF & @CRLF & _ 
+            "Tip: Check if Emulator Title and Resolution (800x552) are correct." & @CRLF & @CRLF & _
+            $sCandidateMessage)
+
         $bOutput = False
     EndIf
 
     ;Establish ADB controls
-    If $bOutput > 0 And ADB_Establish() <= 0 Then $bOutput = False
+    ;If $bOutput > 0 And ADB_Establish() <= 0 Then $bOutput = False
+    If ADB_Establish(False) = False Then
+        Log_Add("ADB is not working. Some features may not work properly.", $LOG_ERROR)
+    EndIf
 
     If ($g_bRunning > 0 And $bOutput > 0) And ($Config_Mouse_Mode = $MOUSE_REAL Or $Config_Swipe_Mode == $SWIPE_REAL) Then
         MsgBox($MB_ICONWARNING+$MB_OK, "Script is using real mouse.", "Mouse cursor will be moved automatically. To stop the script, press ESCAPE key.")
@@ -87,7 +107,7 @@ Func Start_Schedule()
         Local $aStructure = ""
         Local $aAction = ""
         If $Hourly_Hourly_Script = True Then
-            $aStructure = CreateArr(CreateArr("*", "*", "*", "00", "*"))
+            $aStructure = CreateArr(CreateArr("*", "*", "*", "01", "*"))
             $aAction = CreateArr("doHourly()")
             Schedule_Add("_Hourly", $aAction, $SCHEDULE_TYPE_DATE, "*", $aStructure, $SCHEDULE_FLAG_RunSafe, 60, True, False)
         EndIf
@@ -115,7 +135,7 @@ Func Start_Schedule()
         $aAction = CreateArr('appMaintenance()')
         Schedule_Add("_Maintenance", $aAction, $SCHEDULE_TYPE_CONDITION, "*", $aStructure, $SCHEDULE_FLAG_RunImmediately, 0, True, False)
     
-        $aStructure = CreateArr(CreateArr(CreateArr('$g_sLocation == "app-update"')), True)
+        $aStructure = CreateArr(CreateArr(CreateArr('$g_sLocation == "app-update"'), CreateArr('$g_sLocation == "app-update-ok"')), True)
         $aAction = CreateArr('appUpdate()')
         Schedule_Add("_Update", $aAction, $SCHEDULE_TYPE_CONDITION, "*", $aStructure, $SCHEDULE_FLAG_RunImmediately, 0, True, False)
     EndIf
@@ -138,6 +158,8 @@ Func _Schedule_Guardian()
 EndFunc
 
 Func Stop()
+    Log_Add("Stopping running scripts.", $LOG_INFORMATION)
+    $g_bLogEnabled = False
     HotKeySet("{Esc}") ;unbinds hotkey
 
 ;Resets variables
@@ -230,8 +252,20 @@ Func ScriptTest()
     _ArrayAdd($aTempLOG, "  -Window handle: " & $g_hWindow)
     _ArrayAdd($aTempLOG, "  -Control handle: " & $g_hControl)
 
-    If ($g_hWindow = 0) Then $sError &= @CRLF & @CRLF & "- Window handle was not found. Make sure the enter the correct Emulator Title in _Config."
-    If ($g_hWindow <> 0 And $g_hControl = 0) Then $sError &= @CRLF & @CRLF & "- Control handle was not found. Make sure to enter the correct Emulator Class and Emulator Instance in _Config."
+    If ($g_hWindow = 0) Then 
+        $sError &= @CRLF & @CRLF & "• Error: Window handle was not found."
+        $sError &= @CRLF & @CRLF & "- Tip: Make sure the emulator is running and has 800x552 resolution."
+
+        Local $aCandidates = FindEmulatorCandidates()
+        If UBound($aCandidates) > 0 Then
+            $sError &= @CRLF & @CRLF & "- Tip: Possible Emulator Title candidates: " & _ArrayToString($aCandidates, ", ")
+        EndIf
+    EndIf
+
+    If ($g_hWindow <> 0 And $g_hControl = 0) Then 
+        $sError &= @CRLF & @CRLF & "• Error: Control handle was not found."
+        $sError &= @CRLF & @CRLF & "- Tip: Make sure to enter the correct Emulator Property or use ~AUTO in _Config."
+    EndIf
 
     ;Test Capture and Clicks
     Local $bCaptureWorking = False
@@ -243,9 +277,11 @@ Func ScriptTest()
 
         _ArrayAdd($aTempLOG, "  -Current location: " & getLocation())
         If (String($cFirst) == "0x000000" Or String($cFirst) == "0xFFFFFF" Or Not(isLocation("map"))) Then
-            $sError &= @CRLF & @CRLF & "- Could not capture the emulator correctly. Make sure you are in MAP. If you are in the map, make sure the resolution of the emulator is 800x552 and is not maximized. " & _
-                "You can use the function `Emulator_Restart()` in the debug input (CTRL+D) to automatically set the resolution (this automatic method could fail). Change the GRAPHICS RENDERING MODE in the emulator settings or change the CAPTURE METHOD in _Config."
-            $sError &= @CRLF & @CRLF & "- Could not test click status because capture is not working."
+            $sError &= @CRLF & @CRLF & "• Error: Could not capture the emulator correctly. Make sure you are in MAP."
+            $sError &= @CRLF & @CRLF & "- Tip: If you are in the map, make sure the resolution of the emulator is 800x552 and is not maximized."
+            $sError &= @CRLF & @CRLF & "- Tip: You can use Debug->General->Restart Emulator in the menu to automatically set the resolution (this automatic method could fail)."
+            $sError &= @CRLF & @CRLF & "- Tip: Change the GRAPHICS RENDERING MODE in the emulator settings or change the CAPTURE METHOD in _Config."
+            $sError &= @CRLF & @CRLF & "• Error: Could not test click status because capture is not working."
 
             _ArrayAdd($aTempLOG, "  -Click working status: Unknown")
         Else
@@ -253,8 +289,12 @@ Func ScriptTest()
 
             ;Opens refill window
             If clickWhile("414,16", "isPixel", CreateArr("0,0," & $cFirst), 5, 2000, "CaptureRegion()") = 0 Then 
-                $sError &= @CRLF & @CRLF & "- Click is not working. Make sure you have the correct DISPLAY SCALING. You can check by right clicking in your desktop and clicking Display Settings. You will see" & _
-                    " the scaling. Set the setting DISPLAY SCALING in _Config as the same as the scaling in your display setting. You can also change the click method in _Config."
+                $sError &= @CRLF & @CRLF & "• Error: Click is not working."
+                $sError &= @CRLF & @CRLF & "- Tip: Control handle might not allow for clicking. Change Emulator Property."
+                $sError &= @CRLF & @CRLF & "- Tip: Make sure you have the correct DISPLAY SCALING."
+                $sError &= @CRLF & @CRLF & "- Tip: You can check by right clicking in your desktop and clicking Display Settings."
+                $sError &= @CRLF & @CRLF & "- Tip: Set the setting DISPLAY SCALING in _Config as the same as the scaling in your display setting."
+                $sError &= @CRLF & @CRLF & "- Tip: You can also try to change the click method in _Config."
             
                 _ArrayAdd($aTempLog, "  -Click working status: False")
             Else
@@ -263,7 +303,7 @@ Func ScriptTest()
         EndIf
         _ArrayAdd($aTempLog, "  -Capture working status: " & $bCaptureWorking)
     Else
-        $sError &= @CRLF & @CRLF & "- Could not test capture and click because window/control handles was not found."
+        $sError &= @CRLF & @CRLF & "• Error: Could not test capture and click because window/control handles was not found."
         _ArrayAdd($aTempLOG, "  -Capture working status: Unknown")
         _ArrayAdd($aTempLOG, "  -Click working status: Unknown")
     EndIf
@@ -273,27 +313,39 @@ Func ScriptTest()
     Local $bAdbWorking = ADB_IsWorking()
     _ArrayAdd($aTempLOG, "  -ADB working status: " & $bAdbWorking)
 
-    If $bAdbWorking <= 0 Then $sError &= @CRLF & @CRLF & "- ADB is not working. Make sure the ADB Path and ADB Device is correct. " & _
-        "ADB Path is the path to the adb executable which can be found in the Nox directory. Enter the complete path which includes '...adb.exe' at the end." & _
-        ' ADB Device can be found by typing `MsgBox(0, "", ADB_Command("devices"))` which will give you a list of available devices. Multiple emulators will need to guess which device goes with an emulator.'
+    If $bAdbWorking <= 0 Then 
+        $sError &= @CRLF & @CRLF & "• Error: ADB is not working."  
+        $sError &= @CRLF & @CRLF & "- Tip: Bot will still work without ADB by setting Mouse, Swipe, and Back control to Real or Control (_Config)."
+        $sError &= @CRLF & @CRLF & "- Tip: Bot will still work without ADB by setting ADB Restart Game to Disabled (_ADB)."
+        $sError &= @CRLF & @CRLF & "- Tip: Make sure the Emulator Path (in _Config) and Device (in _ADB) are correct or use ~AUTO."
+        $sError &= @CRLF & @CRLF & "- Tip: Emulator Path is the path to the emulator directory which contains the ADB executable: adb.exe."
+        $sError &= @CRLF & @CRLF & "- Tip: Get the Device list using Debug->ADB->Device List in the menu."
+        $sError &= @CRLF & @CRLF & "- Tip: For Multiple emulators will need to see which device goes with an emulator or use ~AUTO."
+    EndIf
 
     If $bAdbWorking > 0 And $bCaptureWorking > 0 Then
         If isLocation("map") > 0 Then
             Local $bAdbResponse = clickWhile("414,16", "isPixel", CreateArr("0,0," & getColor(0, 0)), 5, 2000, "CaptureRegion()", $MOUSE_ADB)
             _ArrayAdd($aTempLOG, "  -ADB response status: " & $bAdbResponse) ; Opens refill window using ADB
-            If $bAdbResponse = 0 Then $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
+            If $bAdbResponse = 0 Then 
+                $sError &= @CRLF & @CRLF & "• Error: Emulator is not responding to the ADB command." 
+                $sError &= @CRLF & @CRLF & "- Tip: The Device in _ADB might not be valid."
+                $sError &= @CRLF & @CRLF & "- Tip: Get the device list using Debug->ADB->Device List in the menu or use ~AUTO."
+            EndIf
         Else
             SendBack(1, 0, $BACK_ADB)
             If waitLocation("map", 5) = 0 Then
                 _ArrayAdd($aTempLOG, "  -ADB response status: False")
-                $sError &= @CRLF & @CRLF & '- Emulator is not responding to the ADB command. The ADB DEVICE in _Config might not be correct. Enter `MsgBox(0, "", ADB_Command("devices"))` in the debug input (Ctrl+D) to get the devices list.'
+                $sError &= @CRLF & @CRLF & "• Error: Emulator is not responding to the ADB command." 
+                $sError &= @CRLF & @CRLF & "- Tip: The Device in _ADB might not be valid."
+                $sError &= @CRLF & @CRLF & "- Tip: Get the device list using Debug->ADB->Device List in the menu or use ~AUTO."
             Else
                 _ArrayAdd($aTempLOG, "  -ADB response status: True")
             EndIf
         EndIf
     Else
         _ArrayAdd($aTempLOG, "  -ADB response status: Unknown")
-        $sError &= @CRLF & @CRLF & "- Could not test ADB response because ADB or Capture is not working."
+        $sError &= @CRLF & @CRLF & "• Error: Could not test ADB response because ADB or Capture is not working."
     EndIf
     
     ;Check Resolution
@@ -315,18 +367,20 @@ Func ScriptTest()
     
     ;Imagesearch test
     _ArrayAdd($aTempLOG, "Checking Imagesearch:")
-    Local $t_hBitmap = _WinAPI_LoadImage(0,  @ScriptDir & "\bin\images\misc\misc-test1.bmp", $IMAGE_BITMAP, 0, 0, $LR_LOADFROMFILE)
+    Local $t_hBitmap = _WinAPI_LoadImage(0, @ScriptDir & "\bin\images\misc\misc-test1.bmp", $IMAGE_BITMAP, 0, 0, $LR_LOADFROMFILE)
     If ($t_hBitmap <> 0) Then
         $g_hBitmap = $t_hBitmap
         If (isArray(findImage("misc-test2", 90, 0, 0, 0, 597, 348, False))) Then
             _ArrayAdd($aTempLOG, "  -Imagesearch working status: True")
         Else
             _ArrayAdd($aTempLOG, "  -Imagesearch working status: False")
-            $sError &= @CRLF & @CRLF & "- Imagesearch did not work. Make sure to have the file `\bin\dll\ImageSearchLibrary.dll`. Also make sure you are running the bot as x86 instead of x64."
+            $sError &= @CRLF & @CRLF & "• Error: Imagesearch did not work."
+            $sError &= @CRLF & @CRLF & "- Tip: Make sure to have the file `\bin\dll\ImageSearchLibrary.dll`."
+            $sError &= @CRLF & @CRLF & "- Tip: Make sure you are running the bot as an x86 script and NOT as an x64 script."
         EndIf
     Else
         _ArrayAdd($aTempLOG, "  -Imagesearch working status: Unknown")
-        $sError &= @CRLF & @CRLF & "- The file \bin\images\misc\misc-test1.bmp or \bin\images\misc\misc-test2.bmp is missing. Could not check imagesearch status."
+        $sError &= @CRLF & @CRLF & "• Error: The file \bin\images\misc\misc-test1.bmp or \bin\images\misc\misc-test2.bmp is missing. Could not check imagesearch status."
     EndIf
     _WinAPI_DeleteObject($t_hBitmap)
     _ArrayAdd($aTempLOG, "== Finished Compatibility Test ==")
@@ -353,6 +407,11 @@ EndFunc
 Func ResetHandles()
     Log_Level_Add("ResetHandles()")
     Local $aHandles = WinList($Config_Emulator_Title)
+    If $aHandles[0][0] = 0 Then
+        $g_hWindow = 0
+        $g_hControl = 0
+    EndIf
+
     For $i = 1 To $aHandles[0][0]
         If $Config_Emulator_Title <> $aHandles[$i][0] Then ContinueLoop
         $g_hWindow = $aHandles[$i][1]
@@ -366,20 +425,38 @@ Func ResetHandles()
         If $g_hControl <> 0 Then ExitLoop
     Next
 
-    If $g_hControl = 0 Then
-        $g_hWindow = $g_hControl
-        ;Log_Add("Error: Could not get control handle.", $LOG_ERROR)
-    Else
-        If $Config_Emulator_Path = "~AUTO" Then $Config_Emulator_Path = GetWorkingDirectory(_WinAPI_GetProcessFileName(WinGetProcess($g_hWindow)))
+    If $g_hControl <> 0 And $Config_Emulator_Path = "~AUTO" Then 
+        $Config_Emulator_Path = GetWorkingDirectory(_WinAPI_GetProcessFileName(WinGetProcess($g_hWindow)))
     EndIf
 
     Log_Level_Remove()
+
+    If $g_hWindow == "" Then $g_hWindow = 0
+    If $g_hControl == "" Then $g_hControl = 0
     Return ($g_hControl <> 0)
+EndFunc
+
+; Returns array of potential candidates for emulator titles.
+Func FindEmulatorCandidates()
+    Local $aCandidates[0]
+    Local $aWinList = WinList()
+    If isArray($aWinList) = False Then Return SetError(1, 0, $aCandidates)
+
+    For $i = 1 To $aWinList[0][0]
+        If $aWinList[$i][0] == "" Then ContinueLoop
+
+        Local $iPotentialHandle = RetrieveControlHandle($aWinList[$i][1])
+        If $iPotentialHandle <> 0 Then
+            _ArrayAdd($aCandidates, $aWinList[$i][0])
+        EndIf
+    Next
+
+    Return $aCandidates
 EndFunc
 
 Func RetrieveControlHandle($hWindow) ;Retrieves based on Emulator size
     Local $hChild = _WinAPI_GetWindow($hWindow, $GW_CHILD)
-    If $hChild = 0 Then Return 0
+    If @error Or $hChild = 0 Then Return 0
     Return _RetrieveControlHandle($hChild)
 EndFunc
 Func _RetrieveControlHandle($hCurrent, $hParent = CreateArr()) ;Visits each child window within main handle. Tree can be found using Spy++ tool in Visual Studio
@@ -397,8 +474,12 @@ Func _RetrieveControlHandle($hCurrent, $hParent = CreateArr()) ;Visits each chil
     Local $hNext = _WinAPI_GetWindow($hCurrent, $GW_HWNDNEXT)
     If $hNext <> 0 Then Return _RetrieveControlHandle($hNext, $hParent)
 
-    Local $hBack = $hParent[UBound($hParent)-1]
+    Local $hBack = 0
+    If UBound($hParent) > 0 Then
+        $hBack = $hParent[UBound($hParent)-1]
     If _ArrayDelete($hParent, UBound($hParent)-1) = 0 Then Return 0
+    EndIf
+
     Return _RetrieveControlHandle(_WinAPI_GetWindow($hBack, $GW_HWNDNEXT), $hParent)
 EndFunc
 

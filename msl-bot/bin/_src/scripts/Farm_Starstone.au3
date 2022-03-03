@@ -4,8 +4,14 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
     If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Starstone")[2]), "Farm_Starstone")
     ;Runs, Dungeon Type, Dungeon Level, Special Dungeon, Stone Element, High Stones, Mid Stones, Low Stones, Refill, Target Boss
 
-    Log_Level_Add("Farm_Starstone")
+    If StringIsInt($Farm_Starstone_Refill) = False Or Int($Farm_Starstone_Refill) < -1 Then
+        Log_Add("Error: Refill is invalid: " & $Farm_Starstone_Refill, $LOG_ERROR)
+        Return -1
+    Else
+        If $g_iMaxRefill = Null Then $g_iMaxRefill = Int($Farm_Starstone_Refill)
+    EndIf
 
+    Log_Level_Add("Farm_Starstone")
     Global $Status, $Runs, $Win_Rate, $Average_Time, $Astrogems_Used, $High_Stones, $Mid_Stones, $Low_Stones, $Eggs_Found
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
@@ -87,15 +93,27 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 Status("You have been defeated.", $LOG_INFORMATION)
                 navigate("battle-end", True)
             Case "refill"
-                If $Farm_Starstone_Refill <> 0 And $Astrogems_Used+30 > $Farm_Starstone_Refill Then ExitLoop
                 Status("Refilling energy.")
 
-                Local $iRefill = doRefill()
-                If $iRefill = -1 Then ExitLoop
-                If $iRefill = 1 Then $Astrogems_Used += 30
+                doRefill()
+                Switch @error
+                    Case $REFILL_ERROR_INSUFFICIENT
+                        Log_Add("Insufficient astrogems for refill, exiting script.", $LOG_INFORMATION)
+                        ExitLoop
+                    Case $REFILL_ERROR_LIMIT_REACHED
+                        Log_Add("Refill limit has been reached, exiting script.", $LOG_INFORMATION)
+                        ExitLoop
+                EndSwitch
             Case "battle", "battle-auto"
                 Status("Currently in battle.")
                 If $sLocation == "battle" And waitLocation("battle-auto", 0.3) <= 0 Then clickBattle()
+            Case "battle-boss"
+                If $Farm_Starstone_Target_Boss > 0 Then
+                    Status("Targeting boss.")
+                    waitLocation("battle,battle-auto", 2)
+                    If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
+                    clickPoint(getPointArg("boss"))
+                EndIf
             Case "pause"
                 Status("In pause screen, unpausing.")
                 clickPoint(getPointArg("battle-continue"))
@@ -136,13 +154,6 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                 EndIf
                 
                 navigate("battle-end", True)
-            Case "battle-boss"
-                If $Farm_Starstone_Target_Boss > 0 Then
-                    Status("Targeting boss.")
-                    waitLocation("battle,battle-auto", 2)
-                    If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
-                    clickPoint(getPointArg("boss"))
-                EndIf
             Case "battle-gem-full", "map-gem-full"
                 If $General_Sell_Gems == "" Then
                     Status("Gem inventory is full, stopping script.", $LOG_INFORMATION)
@@ -151,9 +162,6 @@ Func Farm_Starstone($bParam = True, $aStats = Null)
                     Status("Gem inventory is full, selling gems: " & $General_Sell_Gems, $LOG_INFORMATION)
                     sellGems($General_Sell_Gems)
                 EndIf
-            Case "buy-gem", "buy-gold"
-                Status("Not enough astrogems, stopping script.", $LOG_ERROR)
-                ExitLoop
             Case Else
                 If HandleCommonLocations($sLocation) = 0 And $sLocation <> "unknown" Then 
                     If waitLocation("battle,battle-auto,battle-boss", 5) = 0 Then

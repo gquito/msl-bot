@@ -171,8 +171,8 @@
 
 	[text:
 		name: "Script Loop",
-		description: "Delay between each script loop in MILLISECONDS. Default is 200ms.",
-		default: "200"
+		description: "Delay between each script loop in MILLISECONDS. Default is 500ms.",
+		default: "500"
 	]
 
 	[text:
@@ -270,6 +270,13 @@
 	[combo:
 		name: "Expedition",
 		description: "Enable or disable expedition script.",
+		default: "Enabled",
+		data: "Enabled,Disabled"
+	]
+
+	[combo:
+		name: "Collect Quest",
+		description: "Check for any quest rewards in hourly.",
 		default: "Enabled",
 		data: "Enabled,Disabled"
 	]
@@ -434,7 +441,7 @@
 
   [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		description: "Maximum astrogems used for refill. Enter 0 to DISABLE refill. Enter -1 to always refill.",
 		default: "300"
 	]
 	
@@ -471,7 +478,7 @@
 
     [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		description: "Maximum astrogems used for refill. Enter 0 to DISABLE refill. Enter -1 to always refill.",
 		default: "300"
 	]
     
@@ -495,7 +502,7 @@
 	[text:
 		name: "Astrogems",
 		description: "Enter the number of astrogems you wish to convert. Using 'g' as the first character will convert the amount of gold to the corresponding number of astrogems.",
-		default: "300"
+		default: "1000"
 	]
 	
 	[text:
@@ -533,7 +540,7 @@
 
 	[combo:
 		name: "Check Limit",
-		description: "Check for max interation limit which prevents farming more than 1000 astrogems a week. When enabled script will stop when quest is no longer giving rewards.",
+		description: "Check for max interation limit which prevents farming more than 1000 astrogems a week. When enabled script will stop when quest is no longer giving rewards for both Evo1 and Evo2. If the warning already appeared for the week then this condition will not work.",
 		default: "Disabled",
 		data: "Enabled,Disabled"
 	]
@@ -568,7 +575,7 @@
 	
   [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		description: "Maximum astrogems used for refill. Enter 0 to DISABLE refill. Enter -1 to always refill.",
 		default: "300"
 	]
 ]
@@ -632,7 +639,7 @@
 	
   [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		description: "Maximum astrogems used for refill. Enter 0 to DISABLE refill. Enter -1 to always refill.",
 		default: "300"
 	]
 ]
@@ -649,7 +656,7 @@
 	
     [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		description: "Maximum astrogems used for refill. Enter 0 to DISABLE refill. Enter -1 to always refill.",
 		default: "300"
 	]
 
@@ -725,7 +732,7 @@
 	
     [text:
 		name: "Refill",
-		description: "Enter the maximum amount of Astrogems the bot can use. Entering 0 will ignore this feature.",
+		description: "Maximum astrogems used for refill. Enter 0 to DISABLE refill. Enter -1 to always refill.",
 		default: "300"
 	]
 	

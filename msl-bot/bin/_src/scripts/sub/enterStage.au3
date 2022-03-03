@@ -22,7 +22,7 @@ Func enterStage($sMap, $sDifficulty = "Normal", $sStage = "Exp")
 			Case "map"
 				Log_Add("Searching for map.")
 				Local $aPoint = findMap($sMap)
-				If isArray($aPoint) > 0 Then
+				If isArray($aPoint) = True Then
 					clickPoint($aPoint) 
 					If waitLocation("map-stage", 5) Then $bFoundMap = True
 				EndIf

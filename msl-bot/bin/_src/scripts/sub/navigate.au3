@@ -24,8 +24,6 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
             If _Sleep($Delay_Script_Loop) Then ExitLoop(2)
 
             Local $sCurrent = getLocation()
-            If $sFind == $sCurrent Then ExitLoop(2)
-
             If HandleCommonLocations($sCurrent) Then 
                 $iExtended = @extended
                 If $iExtended Then 
@@ -35,6 +33,7 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                 ContinueLoop
             EndIf
 
+            If $sFind == $sCurrent Then ExitLoop(2)
             Switch getLocation()
                 Case "defeat" 
                     clickPoint(getPointArg("battle-give-up"))
@@ -58,7 +57,11 @@ Func navigate($sFind, $bForceSurrender = False, $iAttempt = 1)
                     EndIf
                     If $sFind <> "catch-mode" Then ExitLoop(2)
                 Case "battle-end-exp", "battle-sell", "astroleague-defeat", "astroleague-victory", "champion-defeat", "champion-victory"
-                    clickUntil(getPointArg("tap"), "isLocation", "battle-end", 10, 200)
+                    If $sFind == "battle-end" Then
+                        clickUntil(getPointArg("tap"), "isLocation", "battle-end", 50, 200)
+                    Else
+                        clickPoint(getPointArg("tap"))
+                    EndIf
                     ContinueLoop
                 Case "battle-sell-item"
                     clickPoint(getPointArg("battle-sell-item-cancel"))

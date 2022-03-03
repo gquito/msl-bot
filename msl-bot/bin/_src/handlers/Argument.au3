@@ -38,20 +38,33 @@ Func getPixelArg($sName)
 	Return getArg($g_aPixels, $sName)
 EndFunc
 
-
 Func getArgs($sData, $sDelimeter = ":")
-	Local $sPattern = "(.*)(?:\Q" & $sDelimeter & "\E)(.*)"
-	Local $aMatches = StringRegExp($sData, $sPattern, $STR_REGEXPARRAYGLOBALMATCH)
+	Local $aArgs[0][2]
+	If $sData == "" Then Return SetError(1, 0, $aArgs)
+	If $sDelimeter == "" Then Return SetError(2, 0, $aArgs)
 
-	Local $iSize = UBound($aMatches) / 2
-	Local $aArgs[$iSize][2]
-
-	If isArray($aMatches) = True Then
-		For $i = 0 To $iSize-1
-			$aArgs[$i][0] = $aMatches[$i*2]
-			$aArgs[$i][1] = StringReplace($aMatches[$i*2+1], '"', "")
-		Next
+	Local $aData = StringSplit($sData, @CRLF, $STR_NOCOUNT)
+	If isArray($aData) = False Then
+		$aData = CreateArr($sData)
 	EndIf
+
+	For $i = 0 To UBound($aData) - 1
+		Local $sCurrent = $aData[$i]
+		Local $aCurrent = StringSplit($sCurrent, $sDelimeter, $STR_NOCOUNT)
+		Local $iCurrentSize = UBound($aCurrent)
+		If $iCurrentSize < 2 Then ContinueLoop
+
+		Local $sLeft = $aCurrent[0]
+
+		Local $iPosition = StringInStr($sCurrent, $sDelimeter)
+		If $iPosition = False Then ContinueLoop
+
+		Local $sRight = StringMid($sCurrent, $iPosition + 1)
+		$sRight = StringReplace($sRight, '"', "")
+
+		Local $aAdd[1][2] = [[$sLeft, $sRight]]
+		_ArrayAdd($aArgs, $aAdd)
+	Next
 
 	Return $aArgs
 EndFunc

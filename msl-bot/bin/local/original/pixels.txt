@@ -74,3 +74,4 @@ village-events:737,79,0xDFCEAB
 village-missions-popup:68,325,0x754030
 village-pack:779,108,0xDFC9AC
 village-summon-egg:667,460,0x047075
+expedition-completed:120,441,0x1B3937|70,441,0x3D4C78|43,451,0x20384C

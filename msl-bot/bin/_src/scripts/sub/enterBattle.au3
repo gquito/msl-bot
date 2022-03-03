@@ -9,7 +9,7 @@ Func enterBattle()
 	Local $bOutput = False
 	Local $hTimer = TimerInit()
 	While TimerDiff($hTimer) < 60000
-		If _Sleep(300) Then ExitLoop
+		If _Sleep($Delay_Script_Loop) Then ExitLoop
 		Local $sLocation = getLocation()
 		Switch $sLocation
 			Case "map-battle"

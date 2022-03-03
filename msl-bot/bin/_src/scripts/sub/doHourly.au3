@@ -5,7 +5,7 @@ Func doHourly()
     Log_Add("Performing hourly tasks")
     
     Local $hTimer = TimerInit()
-    Local $aTurn = ["Collect_Hiddens", "Collect_Inbox", "Click_Nezz", "Expedition"]
+    Local $aTurn = ["Collect_Hiddens", "Collect_Inbox", "Click_Nezz", "Expedition", "Collect_Quest"]
     For $i = 0 To UBound($aTurn)-1
         If _Sleep(100) Then ExitLoop
 
@@ -28,7 +28,7 @@ Func Close_Village_Interface()
     CaptureRegion()
     If isPixel(getPixelArg("village-missions-popup"), 30) = True Then clickPoint(getPointArg("village-missions-popup-close"), 2)
     If isPixel(getPixelArg("village-events"), 30) = True Then clickPoint(getPointArg("village-events-close"), 2)
-    If isPixel(getPixelArg("village-pack"), 30) = True Then clickPoint(getPointArg("village-pack-close"), 2)
+    clickPoint(getPointArg("village-pack-close"))
 EndFunc
 
 Func Get_Village_Pos()
@@ -66,22 +66,32 @@ Func Collect_Hiddens()
 
     Log_Add("Collecting hidden rewards.")
     Local $aPoints = StringSplit($g_aVillageTrees[$iPos], "|", 2)
-    For $i = 0 To UBound($aPoints)-2
-        If _Sleep(100) Then Return False
+    Local $iSize = UBound($aPoints) - 1 ; Number of hiddens
 
-        Log_Add("Collecting hidden #" & $i+1)
+    Local $iCounter = 1
+    While $iCounter <= $iSize
+        If _Sleep($Delay_Script_Loop) Then Return False
+        Log_Add("Collecting hidden #" & $iCounter)
 
         Local $hTimer = TimerInit()
 
         Local $bLog = $g_bLogEnabled
         $g_bLogEnabled = False
-        While TimerDiff($hTimer) < 10000 ;10 seconds max
-            If _Sleep(200) Then Return False
+        
+        Local $bReward = False
+        While TimerDiff($hTimer) < 15000 ;15 seconds max
+            If _Sleep($Delay_Script_Loop) Then Return False
             Switch getLocation()
                 Case "village"
                     Close_Village_Interface()
-                    clickPoint($aPoints[$i])
+                    For $i = 0 To $iSize - 1
+                        If _Sleep(100) Then Return False
+                        clickPoint($aPoints[$i])
+                    Next
                 Case "hourly-reward"
+                    $iCounter += 1
+                    $bReward = True
+
                     Cumulative_AddNum("Collected (Hidden Trees)", 1)
                     navigate("village")
                     ExitLoop
@@ -89,11 +99,15 @@ Func Collect_Hiddens()
                     If navigate("village", False, 3) = False Then 
                         $g_bLogEnabled = $bLog
                         Return False
+                    Else
+                        $hTimer = TimerInit()
                     EndIf
             EndSwitch
         WEnd
+
+        If $bReward = False Then ExitLoop
         $g_bLogEnabled = $bLog
-    Next
+    WEnd
     Return True
 EndFunc
 
@@ -150,4 +164,8 @@ EndFunc
 
 Func Expedition()
     Return doExpedition()
+EndFunc
+
+Func Collect_Quest()
+    Return collectQuest()
 EndFunc

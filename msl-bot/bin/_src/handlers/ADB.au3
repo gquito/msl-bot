@@ -9,7 +9,8 @@ Global $g_iADBInputDevice = ""
 Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sDevice = $ADB_Device)
 	Log_Level_Add("ADB_Command")
 	Log_Add("ADB command: " & $sCommand, $LOG_DEBUG)
-
+	Local $iError = 0
+	Local $iExtended = 0
 	If $Config_Emulator_Path <> "" Then
 		Local $iPID = -1
 		Local $sResult ;Holds ADB output
@@ -21,16 +22,25 @@ Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sDevice = $ADB_Devi
 			$iPID = Run($Config_Emulator_Path & "\adb.exe -s " & $sDevice & '"' & $sCommand & '"', "", @SW_HIDE, $STDERR_MERGED)
 		EndIf
 
+		If $iPID = 0 Then
+			$iExtended = @error
+			$iError = 1	;Error in Run function.
+		EndIf
+
 		Local $hTimer = TimerInit()
 		While ProcessExists($iPID)
 			If _Sleep(10) Then ExitLoop
 			If TimerDiff($hTimer) > $iTimeout Then
 				$sResult = "Timed out."
+				$iError = 2 ; Timed out error
 				ProcessClose($iPID)
 				ExitLoop
 			EndIf
 		WEnd
-		If ($sResult <> "Timed out.") Then $sResult = StdoutRead($iPID)
+
+		If ($sResult <> "Timed out.") Then 
+			$sResult = StdoutRead($iPID)
+		EndIf
 		StdioClose($iPID)
 	Else
 		$sResult = "Error could not access Emulator Path."
@@ -39,7 +49,7 @@ Func ADB_Command($sCommand, $iTimeout = $Delay_ADB_Timeout, $sDevice = $ADB_Devi
     ProcessClose($iPID)
     If ($sResult <> "") Then Log_Add("ADB output: " & $sResult, $LOG_DEBUG)
 	Log_Level_Remove()
-    Return (($sResult=="")?(True):($sResult))
+    Return SetError($iError, $iExtended, (($sResult=="")?(True):($sResult)))
 EndFunc   ;==>ADB_Command
 
 ;Send ESC through ADB.
@@ -58,25 +68,31 @@ Func ADB_RestartServer()
 	ADB_Command("start-server")
 EndFunc
 
-Func ADB_Establish()
+Func ADB_Establish($bRetry = False)
 	Log_Level_Add("ADB_Establish")
 
 	Local $hTimer = TimerInit()
     Do
-        If ADB_isWorking() <= 0 Then
+		If TimerDiff($hTimer) > 120000 Then ExitLoop
+
+		Local $bWorking = ADB_isWorking()
+        If $bWorking = False Then
             Log_Add("Attempting to connect to ADB server", $LOG_DEBUG)
-			ADB_Command("connect 127.0.0.1", 60000)
+			ADB_RestartServer()
 
-			If _Sleep(5000) Or TimerDiff($hTimer) > 120000 Then ExitLoop
-
-            If ADB_isWorking() <= 0 Then
+			$bWorking = ADB_isWorking()
+            If $bWorking = False Then
                 Log_Add("Failed to connect to ADB server", $LOG_ERROR)
             Else
                 Log_Add("Successfully connected to ADB server", $LOG_DEBUG)
             EndIf
 		EndIf
-        $g_bADBWorking = ADB_isWorking()
-	Until ($g_bADBWorking > 0)
+
+        $g_bADBWorking = $bWorking
+		If $g_bADBWorking = False And $bRetry = True Then
+			If _Sleep(5000) Then ExitLoop
+		EndIf
+	Until ($g_bADBWorking Or Not($bRetry))
 
 	Log_Add("ADB_Establish Result: " & $g_bADBWorking, $LOG_DEBUG)
 	Log_Level_Remove()
@@ -87,20 +103,38 @@ EndFunc
 
 ;Returns working condition of ADB.
 Func ADB_isWorking()
-	Local $bStatus = (StringInStr(ADB_Command("shell help"), "error") = False)
-	Log_Add("Checking ADB status: " & $bStatus, $LOG_DEBUG)
+	Local $iExtended = 0
+	Local $bStatus = True
+	Local $sADBOutput = ADB_Command("shell help")
+	If @error Then 
+		$bStatus = False
+		$iExtended = 1
+	EndIf
+
+	If StringInStr($sADBOutput, "error") Then 
+		$bStatus = False
+		$iExtended = 2
+	EndIf
+
+	If StringInStr($sADBOutput, "failed") Then 
+		$bStatus = False
+		$iExtended = 3
+	EndIf
+
+	Log_Add("Checking ADB status: " & $bStatus & " (" & $iExtended & ")", $LOG_DEBUG)
 	$g_bAdbWorking = $bStatus
 
-	Return $bStatus
+	Return SetExtended($iExtended, $bStatus)
 EndFunc   ;==>ADB_isWorking
 
 Func ADB_isGameRunning($sPackageName = $g_sPackageName)
-    If $g_bADBWorking = 0 Then Return SetError(1, 0, False)
+    If $g_bADBWorking = False Then Return SetError(1, 0, True)
 
 	Local $bRunning = True ;Default true if adb command fails.
 
 	$g_bLogEnabled = False
 	Local $sResult = ADB_Command("shell dumpsys window windows")
+	If @error Then Return SetError(2, 0, True)
 	$g_bLogEnabled = True
 
 	If StringInStr($sResult, "mCurrentFocus") = True Then

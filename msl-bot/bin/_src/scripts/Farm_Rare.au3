@@ -4,9 +4,16 @@ Func Farm_Rare($bParam = True, $aStats = Null)
     If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Rare")[2]), "Farm_Rare")
     ;Runs, Map, Difficulty, Stage Level, Capture, Refill, Target Boss
 
-    Log_Level_Add("Farm_Rare")
+    If StringIsInt($Farm_Rare_Refill) = False Or Int($Farm_Rare_Refill) < -1 Then
+        Log_Add("Error: Refill is invalid: " & $Farm_Rare_Refill, $LOG_ERROR)
+        Return -1
+    Else
+        If $g_iMaxRefill = Null Then $g_iMaxRefill = Int($Farm_Rare_Refill)
+    EndIf
+    
     Local $aCapture = StringSplit($Farm_Rare_Capture, ",", 2)
 
+    Log_Level_Add("Farm_Rare")
     Global $Status, $Runs, $Win_Rate, $Average_Time, $Astrogems_Used, $Legendary, $Super_Rare, $Exotic, $Rare, $Variant, $Total_Legendary, $Total_Super_Rare, $Total_Exotic, $Total_Rare, $Total_Variant
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
@@ -63,8 +70,8 @@ Func Farm_Rare($bParam = True, $aStats = Null)
 
                 Status("Current round: " & $aRound[0] & "/" & $aRound[1], $LOG_DEBUG)
             Case "battle"
-                If waitLocation("battle-auto", 1) <= 0 Then 
-                    If navigate("catch-mode") <= 0 Then clickBattle()
+                If waitLocation("battle-auto", 1) = False Then 
+                    If navigate("catch-mode", False, 3) = False Then clickBattle()
                 EndIf
                 
             Case "battle-boss"
@@ -119,12 +126,17 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                     Cumulative_AddNum("Runs (Farm Rare)", 1)
                 EndIf
             Case "refill"
-                If $Farm_Rare_Refill <> 0 And $Astrogems_Used+30 > $Farm_Rare_Refill Then ExitLoop
                 Status("Refilling energy.")
 
-                Local $iRefill = doRefill()
-                If $iRefill = -1 Then ExitLoop
-                If $iRefill = 1 Then $Astrogems_Used += 30
+                doRefill()
+                Switch @error
+                    Case $REFILL_ERROR_INSUFFICIENT
+                        Log_Add("Insufficient astrogems for refill, exiting script.", $LOG_INFORMATION)
+                        ExitLoop
+                    Case $REFILL_ERROR_LIMIT_REACHED
+                        Log_Add("Refill limit has been reached, exiting script.", $LOG_INFORMATION)
+                        ExitLoop
+                EndSwitch
             Case "pause"
                 Status("In pause screen, unpausing.")
                 clickPoint(getPointArg("battle-continue"))
@@ -152,9 +164,6 @@ Func Farm_Rare($bParam = True, $aStats = Null)
                     Status("Gem inventory is full, selling gems: " & $General_Sell_Gems, $LOG_INFORMATION)
                     sellGems($General_Sell_Gems)
                 EndIf
-            Case "buy-gem", "buy-gold"
-                Status("Not enough astrogems, stopping script.", $LOG_ERROR)
-                ExitLoop
             Case Else
                 If HandleCommonLocations($sLocation) = 0 And $sLocation <> "unknown" Then 
                     If waitLocation("battle,battle-auto,battle-boss", 5) = 0 Then

@@ -40,7 +40,7 @@ Func HandleMenu($iCode)
                 EndIf
             Else
                 $g_sScript = "Emulator_Restart"
-                Start()
+                Start(False)
             EndIf
         Case $M_General_Restart_Game
             If $g_bRunning > 0 Then
@@ -49,7 +49,7 @@ Func HandleMenu($iCode)
                 EndIf
             Else
                 $g_sScript = "Emulator_RestartGame"
-                Start()
+                Start(False)
             EndIf
         Case $M_General_Debug_Input
             If $g_hDebugInput = Null Then DebugInput_CreateGUI()
@@ -58,7 +58,7 @@ Func HandleMenu($iCode)
                 MsgBox($MB_ICONERROR, "Compatibility Test", "Stop any running script before running Compatibility Test.", 30)
             Else
                 $g_sScript = "ScriptTest"
-                Start()
+                Start(False)
             EndIf
         Case $M_ADB_Run_Command
             Local $bRunning = $g_bRunning
@@ -73,7 +73,12 @@ Func HandleMenu($iCode)
             $g_bRunning = True
             If $g_bADBWorking = 0 Then ADB_Establish()
 
-            MsgBox($MB_ICONINFORMATION, "Device List", ADB_Command("devices"))
+            If $g_bADBWorking = False Then
+                MsgBox($MB_ICONWARNING, "Device List", "Could not retrieve device list because ADB is not working.")
+            Else
+                MsgBox($MB_ICONINFORMATION, "Device List", ADB_Command("devices"))
+            EndIf
+            
             $g_bRunning = $bRunning
         Case $M_ADB_Status
             Local $bRunning = $g_bRunning
@@ -99,7 +104,7 @@ Func HandleMenu($iCode)
             If $g_bRunning > 0 Then
                 MsgBox($MB_ICONWARNING, "Navigate", "A script is currently running.")
             Else
-                Start()
+                Start(False)
                 navigate(InputBox("Navigate", "Enter a location:"), True)
                 Stop()
             EndIf
@@ -145,7 +150,7 @@ Func HandleMenu($iCode)
                 MsgBox($MB_ICONWARNING, "Test Location", "A script is currently running.")
             Else
                 $g_sScript = "testLocation"
-                Start()
+                Start(False)
             EndIf
         Case $M_Pixel_Check_Pixel
             Local $sInput = InputBox("Check Pixel", "Enter pixel set:")
@@ -186,7 +191,7 @@ Func HandleMenu($iCode)
                 EndIf
             Else
                 $g_sScript = "doHourly"
-                Start()
+                Start(False)
             EndIf
         Case $M_Scripts_Expedition
             If $g_bRunning > 0 Then
@@ -222,7 +227,7 @@ Func HandleMenu($iCode)
                     EndIf
                 Else
                     $g_sScript = "Titans_Fast"
-                    Start()
+                    Start(False)
                 EndIf
         Case $M_General_Toggle_Hidden
             Toggle_Hidden()

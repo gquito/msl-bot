@@ -166,7 +166,23 @@ Func DebugInput_CreateGUI()
     Global $g_idDebugInput_lblHistory = GUICtrlCreateLabel("History", 314, 6, 36, 17)
     GUISetState(@SW_SHOW)
 
+    Local $sPath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\debug\history"
+    If UBound($g_aDebugInput_History) = 0 And FileExists($sPath) = True Then
+        Local $sData = FileRead($sPath)
+        $g_aDebugInput_History = StringSplit($sData, @CRLF, $STR_NOCOUNT)
+        For $i = UBound($g_aDebugInput_History)-1 To 0 Step -1
+            Local $sExpression = $g_aDebugInput_History[$i]
+            If $sExpression == "" Then
+                _ArrayDelete($g_aDebugInput_History, $i)
+            EndIf
+        Next
+        If isArray($g_aDebugInput_History) = False Then
+            $g_aDebugInput_History = CreateArr($sData)
+        EndIf
+    EndIf
+
     For $sExpression In $g_aDebugInput_History
+        If $sExpression == "" Then ContinueLoop
         _GUICtrlListView_AddItem($g_idDebugInput_listHistory, $sExpression)
         If GUICtrlRead($g_idDebugInput_editMain) == "" Then
             GUICtrlSetData($g_idDebugInput_editMain, StringReplace($sExpression, "|", @CRLF))

@@ -41,6 +41,7 @@ battle-third-friendly-mon:441,515
 bingo-accept:469,333
 bingo-accept-all:560,346
 bingo-button:600,346
+bingo-event:20,460
 bingo-icon:78,89
 bingo-reward:462,384
 boss:400,175
@@ -58,8 +59,9 @@ dungeons-starstone:110,175
 event-list-close:776,20
 exotic-festival-tickets:730,450
 exotic-ticket-claim-close:770,340
-expedition-autoselect:47,384
-expedition-explore:710,442
+expedition-explore:92,455
+expedition-reward:400,399
+expedition-confirm:399,307
 facebook-login-close:169,36
 free-1-3-summon:475,460
 free-3-5-summon:694,460

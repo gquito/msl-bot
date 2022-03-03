@@ -35,7 +35,11 @@ Func Emulator_Restart($iAttempt = 1, $sPackageName = $g_sPackageName)
     Local $aSavePos = WinGetPos($g_hWindow)
 
     Local $bOutput = 0
-    While $iAttempt >= 1
+    Local $iCounter = 1
+    While $iAttempt > 0
+        Status("Restarting emulator attempt #" & $iCounter, $LOG_INFORMATION)
+        $iCounter += 1
+
         $g_hTimerLocation = Null ;Prevent AntiStuck restart
         If $bOutput > 0 Or _Sleep(500) Then ExitLoop
 
@@ -76,33 +80,41 @@ Func Emulator_Restart($iAttempt = 1, $sPackageName = $g_sPackageName)
         Log_Add("Trying to connect to ADB Server...")
         $g_bLogEnabled = False
         Do
-            $g_bLogEnabled = True
             ResetHandles()
-            If $g_hWindow <> 0 Then WinMove($g_hWindow, "", $aSavePos[0], $aSavePos[1])
-            _Emulator_Console_RunApp($Config_Emulator_Title, $sPackageName)
+            If $g_hWindow <> 0 And UBound($aSavePos) >= 2 Then 
+                WinMove($g_hWindow, "", $aSavePos[0], $aSavePos[1])
+            EndIf
 
-            If ($g_hWindow <> 0 And $g_hControl <> 0) And getLocation() == "tap-to-start" Then 
+            _Emulator_Console_RunApp($Config_Emulator_Title, $sPackageName)
+            
+            $g_bLogEnabled = True
+            If ($g_hWindow <> 0 And $g_hControl <> 0) And getLocation() == "tap-to-start" Then
+                Log_Add("Game has loaded. Trying to connect to ADB once more.", $LOG_DEBUG)
+                $g_bLogEnabled = False
                 ADB_Establish()
-                ExitLoop()
+                $g_bLogEnabled = True
+                ExitLoop
             EndIf
 
             If _Sleep(5000) Then ExitLoop(2) 
             If TimerDiff($hTimer) > 180000 Then ExitLoop ;3 Minutes
             $g_bLogEnabled = False
-        Until (ADB_Establish() > 0)
+        Until (ADB_Establish() = True)
         $g_bLogEnabled = True
 
         ScriptTest_Handles()
-        If ADB_isWorking() > 0 Then
+        If ADB_isWorking() = True Then
             Log_Add("Successfully connected to ADB Server.")
             If ADB_isGameRunning() = False Then
                 $bOutput = Emulator_RestartGame($iAttempt, $sPackageName)
                 ExitLoop
             EndIf
         Else
-            Log_Add("Could not connect to ADB Server.")
+            Log_Add("Could not connect to ADB Server. Some features may not work properly.", $LOG_ERROR)
             If $g_sLocation <> "tap-to-start" Then
+                Log_Add("Could not load game.", $LOG_ERROR)
                 _Emulator_Console_RunApp($Config_Emulator_Title, $sPackageName)
+                ContinueLoop
             EndIf
         EndIf
 
@@ -136,7 +148,7 @@ Func Emulator_RestartGame($iAttempt = 1, $sPackageName = $g_sPackageName, $bUseA
 
         $g_hTimerLocation = Null ;Prevent AntiStuck restart
         If $bOutput > 0 Or _Sleep(500) Then ExitLoop
-        If $bUseADB = False Then
+        If $bUseADB = False Or ADB_isWorking() = False Then
             ;Use emulator console to restart game.
             If _Emulator_Console_KillApp($Config_Emulator_Title, $sPackageName) = -1 Then ExitLoop
             If _Sleep(2000) Then ExitLoop
@@ -154,12 +166,13 @@ Func Emulator_RestartGame($iAttempt = 1, $sPackageName = $g_sPackageName, $bUseA
 
         Status("Waiting for game to load.")
         Local $sWait = waitLocation("tap-to-start,app-maintenance,app-update", 240, 5000, False, True) ;4 minutes wait
-        If $sWait <> "$game_not_running" Then
+        If @extended = 0 Then ; Game is running
             $bOutput = ($sWait == "tap-to-start")
             If $bOutput = True Then
                 ExitLoop
             Else
-                If $sWait == "app-update" Or $sWait == "app-maintenance" Then 
+                If ($sWait == "app-update" Or $sWait == "app-maintenance") Or $sWait == "app-update-ok" Then
+                    $bOutput = True
                     ExitLoop ;app-maintenance or app-update
                 EndIf
             EndIf
@@ -167,6 +180,8 @@ Func Emulator_RestartGame($iAttempt = 1, $sPackageName = $g_sPackageName, $bUseA
 
         $iAttempt -= 1
     WEnd
+    If $bOutput = True Then navigate("village")
+
     $g_bScheduleBusy = $bScheduleBusy
     $g_bRestarting = False
 

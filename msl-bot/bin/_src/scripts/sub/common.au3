@@ -17,7 +17,7 @@ Func Common_Stuck(ByRef $sLocation)
     Switch $sLocation
         Case "unknown"
             CaptureRegion()
-            If isArray(getRound()) = 0 Then
+            If isArray(getRound()) = False Then
 
                 If TimerDiff($Common_Stuck_Unknown_Tap) > 5000 Then
                     clickPoint(getPointArg("tap"))
@@ -29,8 +29,8 @@ Func Common_Stuck(ByRef $sLocation)
             Else
                 ;In battle, but location cannot be found because Auto button is stuck
                 $Common_Stuck_Battle_Stuck = TimerInit()
-                If TimerDiff($Common_Stuck_Unknown_Battle) > 6000 Then $Common_Stuck_Unknown_Battle = TimerInit()
-                If TimerDiff($Common_Stuck_Unknown_Battle) > 5000 Then
+                If TimerDiff($Common_Stuck_Unknown_Battle) > 11000 Then $Common_Stuck_Unknown_Battle = TimerInit()
+                If TimerDiff($Common_Stuck_Unknown_Battle) > 10000 Then
                     Log_Add("Stuck in battle, trying to unstuck.", $LOG_DEBUG)
                     clickBattle()
                     If waitLocation("battle,battle-auto", 1) = 0 Then

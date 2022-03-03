@@ -145,3 +145,55 @@ Func LoadImage($sImage)
     _WinAPI_DeleteObject($g_hBitmap)
     $g_hBitmap = _WinAPI_LoadImage(0, @ScriptDir & "\" & $sImage, $IMAGE_BITMAP, 0, 0, $LR_LOADFROMFILE)
 EndFunc
+
+; Directory with respect to @ScriptDir
+Func ProgressiveCaptureRegion($sName, $sDir = "", $bCreateFolder = False)
+    Local $iCount = 0
+    Local $sFile = $sName
+    Local $sExtension = ".bmp"
+
+    Local $sFilePath = @ScriptDir & "/" & $sDir & "/" & $sName & $iCount & $sExtension
+    If $bCreateFolder = True Then
+        If FileExists(@ScriptDir & "/" & $sDir) = False Then
+            DirCreate(@ScriptDir & "/" & $sDir)
+        EndIf
+    EndIf
+    
+    While FileExists($sFilePath)
+        $iCount += 1
+        $sFilePath = @ScriptDir & "/" & $sDir & "/" & $sName & $iCount & $sExtension
+    WEnd
+
+    CaptureRegion($sDir & "/" & $sName & $iCount & $sExtension)
+EndFunc
+
+Func GetCurrentProfileFolder()
+    Return $g_sProfileFolder & $Config_Profile_Name & "\"
+EndFunc
+
+Func GetDistance($aPoint1, $aPoint2)
+    If UBound($aPoint1) < 2 Then Return SetError(1, 0, 0)
+    If Ubound($aPoint2) < 2 Then Return SetError(2, 0, 0)
+    Local $x = ($aPoint1[0] - $aPoint2[0])
+    Local $y = ($aPoint1[1] - $aPoint2[1])
+    Return Sqrt($x*$x + $y*$y)
+EndFunc
+
+Func SummonScript()
+    While True
+        If _Sleep($Delay_Script_Loop) Then ExitLoop
+
+        CaptureRegion()
+        Select
+            Case isPixel("102,510,0x22160F")
+                clickPoint("102,510")
+                clickPoint(getPointArg("tap"), 10, 500)
+            Case isPixel("771,20,0x563133|688,18,0x5A3131")
+                clickPoint("726,19")
+            Case isPixel("439,309,0x00686F|346,307,0x036E6F")
+                SendBack(4, 500)
+                navigate("monsters")
+                ExitLoop
+        EndSelect
+    WEnd
+EndFunc

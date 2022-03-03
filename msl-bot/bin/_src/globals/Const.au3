@@ -24,7 +24,6 @@ Global Const $ALIGN_LEFT = 0, $ALIGN_RIGHT = 1
 Global Const $REFILL_TIMEOUT = -1, $REFILL_NOGEMS = -2, $REFILL_MAX = -3
 Global Const $CATCH_MODE_NORMAL = 1, $CATCH_MODE_EXOTIC = 2
 
-
 #Region Log
     Global Const $LOG_INFORMATION = "Information"
     Global Const $LOG_ERROR = "Error"
@@ -52,7 +51,7 @@ Global Const $g_sLocationsMap =     "locations-map.txt"
 Global Const $g_sImageLocations =   "location-images.txt"
 Global Const $g_sAirshipPositions = "airship-positions.txt"
 Global Const $g_sAirshipTrees =     "airship-trees.txt"
-Global Const $g_sScripts =          "free_scripts_4.2.0.txt"
+Global Const $g_sScripts =          "scripts_1.5.5.txt"
 
 Global Const $g_sPackageName =      "com.ftt.msleague_gl"
 Global Const $g_sPackageActivity =  "kr.co.smartstudy.tamagorpg.TamagoMainActivity"
@@ -120,8 +119,8 @@ Global Const $g_aExpeditionPos = [ _ ; Use getVillagePos() function
     "231,246", _ ;      Index = 0
     "-1", _      ;      Index = 1
     "327,185", _ ;      Index = 2
-    "-1", _ ; Needed.   Index = 3
-    "-1", _ ; Needed.   Index = 4
+    "256,229", _ ;      Index = 3
+    "426,356", _ ;      Index = 4
     "-1", _ ; Needed.   Index = 5
     "-1", _ ; Needed.   Index = 6
     "299,254", _ ;      Index = 7
@@ -150,3 +149,38 @@ Global Const $g_aDungeonsSwipeDown =    [175, 186, 175, 452, "down"]
 Global Const $g_aDungeonsSwipeUp =      [175, 452, 175, 186, "up"]
 
 Global Const $g_sLocationSearchRegex = "(^|,)%s($|,)"
+
+Global Const $g_aMapMarkers = ["Astromon League", _ 
+                               "Aria Lake", _ 
+                               "Pagos Coast", _ 
+                               "Apex Battles", _ 
+                               "Ancient Dungeon", _ 
+                               "Sky Falls", _ 
+                               "Aurora Plateau", _ 
+                               "Dimensional Rift"]
+Global Const $g_aMapReference = [148, 175] ; Phantom Forest
+Global Const $g_aMapDimensions[24][3] = [ _ 
+    ["Ancient Dungeon",             "0,498,800,30", "1526,283"], _ 
+    ["Apex Battles",                "0,124,800,30", "1130,-66"], _ 
+    ["Aria Lake",                   "0,177,800,30", "291,42"], _ 
+    ["Astromasters Association",    "0,285,800,30", "532,114"], _ 
+    ["Astromon League",             "0,159,800,30", "479,-44"], _ 
+    ["Aurora Plateau",              "0,122,800,30", "2282,-49"], _ 
+    ["Clan Battle",                 "0,455,800,30", "510,289"], _ 
+    ["Deserted Battlefield",        "0,318,800,30", "2655,141"], _ 
+    ["Dimensional Rift",            "0,100,800,40", "2513,-55"], _ 
+    ["Dragon Dungeon",              "0,260,800,40", "1606,63"], _ 
+    ["Dungeons",                    "0,446,800,30", "41,295"], _ 
+    ["Glacial Plains",              "0,309,800,30", "2147,124"], _ 
+    ["Hero Dungeons",               "0,136,800,30", "670,-51"], _ 
+    ["Lunar Valley",                "0,131,800,30", "202,-78"], _ 
+    ["Magma Crags",                 "0,349,800,30", "1166,167"], _ 
+    ["Mirage Ruins",                "0,342,800,30", "256,174"], _ 
+    ["Pagos Coast",                 "0,294,800,30", "751,131"], _ 
+    ["Phantom Forest",              "0,171,800,30", "0,0"], _ 
+    ["Seabed Caves",                "0,145,800,30", "950,-32"], _ 
+    ["Sky Falls",                   "0,397,800,30", "1797,233"], _ 
+    ["Slumbering City",             "0,236,800,30", "1846,71"], _ 
+    ["Star Sanctuary",              "0,264,800,30", "1337,77"], _ 
+    ["Terrestrial Rift",            "0,241,800,30", "2825,74"], _ 
+    ["Towers",                      "0,443,800,30", "1002,307"]]

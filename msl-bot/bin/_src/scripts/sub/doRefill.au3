@@ -1,32 +1,94 @@
 #include-once
+Global Const $REFILL_ERROR_INSUFFICIENT = 1
+Global Const $REFILL_ERROR_INVALID_LOCATION = 2
+Global Const $REFILL_ERROR_LIMIT_REACHED = 3
 
-Func doRefill()
+Global $g_iMaxRefill = Null
+Func doRefill($bLimit = True)
 	Log_Level_Add("doRefill")
 
-	Local $bOutput = 0
+	Local $bOutput = False
 	Local $hTimer = TimerInit()
+
+	Local $iError = 0
+	Local $iExtended = 0
 	While TimerDiff($hTimer) < 10000
-		If $bOutput <> 0 Or _Sleep(300) Then ExitLoop
-		Switch getLocation()
+		If _Sleep($Delay_Script_Loop) Then ExitLoop
+		If $iError Or $bOutput Then ExitLoop
+
+		Local $sLocation = getLocation()
+		Local $bAdAvailable = False
+		If $sLocation == "refill" Then
+			$bAdAvailable = ($General_Refill_Advertisement > 0 And isPixel(getPixelArg("refill-free"), 10, CaptureRegion()) > 0)
+		EndIf
+
+		Switch $sLocation
 			Case "refill"
-				If $bOutput = 0 Then clickPoint(getPointArg("refill"), 3, 50)
+				If $bAdAvailable = True Then
+					clickPoint(getPixelArg("refill-free"))
+					waitLocation("unknown", 5)
+
+					If watchAd() <= 0 Then
+						Local $bTemp = $General_Refill_Advertisement
+						$General_Refill_Advertisement = 0
+						Local $bTemp2 = $g_bLogEnabled
+						$g_bLogEnabled = False
+
+						$bOutput = doRefill()
+						$iError = @error
+
+						$General_Refill_Advertisement = $bTemp
+						$g_bLogEnabled = $bTemp2
+					Else
+						$bOutput = True
+						$iExtended = 1
+					EndIf
+				Else
+					If $bLimit = True And $g_iMaxRefill > -1 Then
+						If isDeclared("Astrogems_Used") = True Then
+							If (($Astrogems_Used + 30) > $g_iMaxRefill) Or ($g_iMaxRefill = 0) Then
+								Log_Add("Refill limit has been reached.", $LOG_INFORMATION)
+
+								$iError = 3
+								ExitLoop
+							EndIf
+						EndIf
+					EndIf
+
+					If $bOutput = False Then
+						clickPoint(getPointArg("refill"))
+					EndIf
+				EndIf
 			Case "refill-confirm"
-				clickPoint(getPointArg("refill-confirm"), 3, 50)
-				$bOutput = 1
+				Local $sRatio = "Limit not set."
+				If isDeclared("Astrogems_Used") = True Then
+					$Astrogems_Used += 30
+					$sRatio = $Astrogems_Used
+					If $g_iMaxRefill >= 30 Then
+						$sRatio &= "/" & $g_iMaxRefill
+					EndIf
+				EndIf
+
+				Log_Add("Confirming Refill: " & $sRatio, $LOG_INFORMATION)
+				clickPoint(getPointArg("refill-confirm"))
+				$bOutput = True
 			Case "buy-gem", "buy-gold"
-				$bOutput = -1
+				$bOutput = False
+				$iError = 1
 			Case Else
-				$bOutput = -2
+				$bOutput = False
+				$iError = 2
 		EndSwitch
 	WEnd
-	If $bOutput = 1 Then 
-		Cumulative_AddNum("Resource Used (Astrogems)", 30)
-		closeWindow()
-	ElseIf $bOutput = 2 Then
+
+	If $bOutput = True Then 
+		If $iExtended = 0 Then
+			Cumulative_AddNum("Resource Used (Astrogems)", 30)
+		EndIf
 		closeWindow()
 	EndIf
 	
-	Log_Add("Refill result: " & $bOutput, $LOG_DEBUG)
+	Log_Add("Refill result: " & $bOutput & " (" & $iExtended & "," & $iError & ")", $LOG_DEBUG)
 	Log_Level_Remove()
-	Return $bOutput
+	Return SetError($iError, $iExtended, $bOutput)
 EndFunc

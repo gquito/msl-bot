@@ -11,7 +11,9 @@ inbox-friend-gifts:283,126
 inbox-confirm:329,323
 astrogem-refill:777,17
 gold-refill:666,17
-clan-battle-titans:229,280
+clan-battle-titans:399,295
+clan-battle-dimension:144,295
+clan-battle-conflict:661,295
 titans-buy-buff:569,203
 towers-light:616,390
 towers-wood:184,392

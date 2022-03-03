@@ -100,31 +100,36 @@ EndFunc
 	Parameters:
 		$vLocations: Array or stirng of locations. Format=["location", "..."] or "location,..."
 		$iSeconds: How long to wait for in seconds
-		$bReturnBool: If false, returns the location string found.
-	Returns: String or Boolean depending on $bReturnBool
+		$bBoolean: If false, returns the location string found.
+	Returns: String or Boolean depending on $bBoolean
 #ce
-Func waitLocation($vLocations, $iSeconds, $iDelay = 200, $bReturnBool = True, $bCheckGame = False)
-	Local $bOutput = ($bReturnBool? False : "")
+Func waitLocation($vLocations, $iSeconds, $iDelay = 200, $bBoolean = True, $bCheckGame = False)
 	Log_Level_Add("waitLocation()")
+
+	Local $bOutput = False
+	If $bBoolean = False Then $bOutput = ""
+
+	Local $iExtended = 0
 	Local $iTimerInit = TimerInit()	
+
 	While TimerDiff($iTimerInit) < $iSeconds*1000
-		If $bCheckGame Then
-			If ADB_isGameRunning() = False Then
-				$bOutput = "$game_not_running"
-				ExitLoop
-			EndIf
+		If $bCheckGame And (ADB_isGameRunning() = False) Then
+			$iExtended = 1 ;Game Not Running
+			ExitLoop
 		EndIf
 
-		$bOutput = isLocation($vLocations, $bReturnBool)
-		If ($bOutput) Then ExitLoop
+		$bOutput = isLocation($vLocations, $bBoolean)
+		If $bBoolean = True Then
+			If $bOutput <> "" Then ExitLoop
+		Else
+			If $bOutput = True Then ExitLoop
+		EndIf
 
-		If (_Sleep($iDelay)) Then ExitLoop
+		If _Sleep($iDelay) Then ExitLoop
 	WEnd
 
-	;Not found within timeframe
-	;Log_Add("waitLocation(" & $vLocations & ", " & $iSeconds*1000 & ", " & $iDelay & ", " & $bReturnBool & ") Result: " & $bOutput, $LOG_DEBUG)
 	Log_Level_Remove()
-	Return $bOutput
+	Return SetExtended($iExtended, $bOutput)
 EndFunc
 
 Func waitLocationMS($vLocations, $iMSeconds, $iDelay = 200, $bReturnBool = True)

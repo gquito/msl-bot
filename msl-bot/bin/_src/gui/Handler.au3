@@ -260,7 +260,10 @@ Func GUI_HANDLE_MESSAGE($iCode)
                     GUISetState(@SW_HIDE, $g_hParent)
                     CloseApp()
                 Case $g_idBtn_Stop
-                    If ($g_bRunning) Then Stop()
+                    If ($g_bRunning) Then 
+                        $g_iMaxRefill = Null
+                        Stop()
+                    EndIf
                 Case Else
                     HandleMenu($iCode[0])
             EndSwitch
@@ -496,8 +499,24 @@ Func GUI_HANDLE_MESSAGE($iCode)
                         EndIf
                     EndIf
 
+                    Local $iSize =  UBound($g_aDebugInput_History)
+                    If $iSize > 10 Then
+                        _ArrayDelete($g_aDebugInput_History, $iSize - 1)
+                    EndIf
+
+                    ;========== Update local file history ==========
+                    Local $sPath = $g_sProfileFolder & "\" & $Config_Profile_Name & "\debug"
+
+                    If FileExists($sPath) = False Then DirCreate($sPath)
+                    $sPath = StringReplace($sPath & "\history", "\\", "\")
+                    Local $hFile = FileOpen($sPath, $FO_OVERWRITE+$FO_CREATEPATH)
+
+                    FileWrite($hFile, _ArrayToString($g_aDebugInput_History, @CRLF, -1, -1, @CRLF))
+                    FileClose($hFile)
+                    ; ==========
+
                     If $g_bRunning = False Then
-                        Start()
+                        Start(False)
                         _ProcessLines($aExpressions)
                         Stop()
                     Else
@@ -724,6 +743,7 @@ Func WM_COMMAND($hWnd, $iMsg, $wParam, $lParam)
         Case $g_hBtn_Start
             If ($nNotifycode = $BN_CLICKED) Then
                 If ($g_hEditConfig <> Null) Then _endEdit()
+                $g_iMaxRefill = Null
                 Start()
             EndIf
         Case $g_hBtn_Pause
@@ -1199,7 +1219,7 @@ Func _Gem_Filter()
     Local $aFilters = _FileListToArray($g_sFilterFolder)
     If isArray($aFilters) = False Then Return SetError(1, 0, False)
     _ArrayDelete($aFilters, 0) ; Remove count
-    _ArrayAdd($aFilters, "_Filter")
+    _ArrayAdd($aFilters, "_Filter|_DragonFilter")
     If isArray($aFilters) = False Then $aFilters = CreateArr()
     Return $aFilters
 EndFunc
@@ -1210,6 +1230,9 @@ Func _GemWindow_AddFound($aGemData, $sStatus)
 
     _ArrayInsert($aGem, 0, $sStatus)
     _ArrayAdd($g_aGemWindow_GemsFound, $aGem, 0, "|", @CRLF, $ARRAYFILL_FORCE_SINGLEITEM)
+
+    ;Only saves if gem folder exist in profile.
+    CaptureRegion($g_sProfileFolder & $Config_Profile_Name & "\gem\" & $aGem[2] & "_" & NowTimeStamp())
 
     If $g_hGemWindow <> Null And GUICtrlRead($g_idGemWindow_tabMain) = 1 Then
         _GemWindow_UpdateFound($g_iGemWindow_GemsFound)

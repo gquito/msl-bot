@@ -1,4 +1,4 @@
-Global $aVersion = [4, 3, 3] ;Major, Minor, Build
+Global $aVersion = [4, 3, 4] ;Major, Minor, Build
 
 #pragma compile(Out, "msl-donator.exe")
 #pragma compile(x64, False)
@@ -6,8 +6,8 @@ Global $aVersion = [4, 3, 3] ;Major, Minor, Build
 #pragma compile(ProductName, "Monster Super League Bot")
 #pragma compile(FileDescription, "Open-sourced Monster Super League Bot - https://github.com/GkevinOD/msl-bot")
 #pragma compile(LegalCopyright, "Copyright (C) Kevin Quito")
-#pragma compile(FileVersion, 4.3.3)
-#pragma compile(ProductVersion, 4.3.3)
+#pragma compile(FileVersion, 4.3.4)
+#pragma compile(ProductVersion, 4.3.4)
 #pragma compile(OriginalFilename, "msl-bot.exe")
 #pragma compile(AutoItExecuteAllowed, True)
 
@@ -52,15 +52,30 @@ Func Initialize()
     CreateLocationsMap($g_aLocationsMap, $g_aLocations)
 
     Config_Update()
+    Local $sProfile = ""
+    If UBound($CMDLine) > 0 And $CMDLine[0] > 0 Then
+        $sProfile = $CMDLine[1]
+    EndIf
+
     ;Found existing profile..
     Local $aFolders = _FileListToArray($g_sProfileFolder)
     If isArray($aFolders) > 0 Then
+        Local $bLoaded = False
+        If $sProfile <> "" Then
+            If _ArraySearch($aFolders, $sProfile, 1) Then
+                Script_ChangeProfile($sProfile)
+                $bLoaded = True
+            EndIf
+        EndIf
+
+        If $bLoaded = False Then
         For $i = 1 To $aFolders[0]
             If $aFolders[$i] <> "schedule_presets" Then
                 Script_ChangeProfile($aFolders[$i])
                 ExitLoop
             EndIf
         Next
+        EndIf
     EndIf
 
     CreateGUI()

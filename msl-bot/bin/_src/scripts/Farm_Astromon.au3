@@ -4,11 +4,17 @@ Func Farm_Astromon($bParam = True, $aStats = Null)
     If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Astromon")[2]), "Farm_Astromon")
     ;Amount, Astromon, Finish Round, Final Round, Map, Difficulty, Stage Level, Capture, Refill
 
-    Log_Level_Add("Farm_Astromon")
-
+    If StringIsInt($Farm_Astromon_Refill) = False Or Int($Farm_Astromon_Refill) < -1 Then
+        Log_Add("Error: Refill is invalid: " & $Farm_Astromon_Refill, $LOG_ERROR)
+        Return -1
+    Else
+        If $g_iMaxRefill = Null Then $g_iMaxRefill = Int($Farm_Astromon_Refill)
+    EndIf
+    
     If $Farm_Astromon_Final_Round > 0 Then $Farm_Astromon_Finish_Round = True
     $Farm_Astromon_Capture = StringSplit($Farm_Astromon_Capture, ",", 2)
     
+    Log_Level_Add("Farm_Astromon")
     Global $Status, $Runs, $Astrogems_Used, $Legendary, $Super_Rare, $Exotic, $Rare, $Variant, $Total_Legendary, $Total_Super_Rare, $Total_Exotic, $Total_Rare, $Total_Variant
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
@@ -151,15 +157,17 @@ Func Farm_Astromon($bParam = True, $aStats = Null)
                     waitLocation("battle,battle-auto", 5)
                 EndIf
             Case "refill"
-                If $Farm_Astromon_Refill <> 0 And $Astrogems_Used+30 > $Farm_Astromon_Refill Then ExitLoop
-
                 Status("Refilling energy.")
-                Local $iRefill = doRefill()
-                If $iRefill = -1 Then ExitLoop
-                If $iRefill = 1 Then $Astrogems_Used += 30
-            Case "buy-gem", "buy-gold"
-                Status("Not enough astrogems, stopping script.", $LOG_ERROR)
-                ExitLoop
+
+                doRefill()
+                Switch @error
+                    Case $REFILL_ERROR_INSUFFICIENT
+                        Log_Add("Insufficient astrogems for refill, exiting script.", $LOG_INFORMATION)
+                        ExitLoop
+                    Case $REFILL_ERROR_LIMIT_REACHED
+                        Log_Add("Refill limit has been reached, exiting script.", $LOG_INFORMATION)
+                        ExitLoop
+                EndSwitch
             Case "battle-astromon-full", "map-astromon-full", "astromon-full"
                 Status("Astromon inventory is full, stopping script.")
                 ExitLoop

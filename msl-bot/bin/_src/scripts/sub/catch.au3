@@ -1,5 +1,7 @@
 #include-once
-
+Global Const $CATCH_X = 0
+Global Const $CATCH_Y = 1
+Global Const $CATCH_NAME = 2
 Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
     Log_Level_Add("catch")
     Local $aOutput[0]
@@ -17,7 +19,9 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
 
     Local $iCurrent = -1
     Local $iNumCatch = 0
-    Local $aPoints[0]
+    Local $aCatching[0][3] ; Catching astromon list
+    Local $iCatchingSize = 0
+
     Local $hTimer = TimerInit()
     Log_Add("Trying to catch " & _ArrayToString($aImages, ",") & (($iMaxCatch <> -1)?", Max: " & $iMaxCatch & ".":"."), $LOG_DEBUG)
 
@@ -27,7 +31,7 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
         Local $sLocation = getLocation()
         Switch $sLocation
             Case "catch-mode"
-                If UBound($aPoints) = 0 Then
+                If $iCatchingSize = 0 Then
                     CaptureRegion()
                     For $x = 0 To UBound($CATCH) - 1
                         Local $sCurrentAstromon = $CATCH[$x]
@@ -36,22 +40,22 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                             For $i = 0 To UBound($aFound) - 1
                                 ; Check if there is already a match in that area
                                 Local $bOverlap = False
-                                For $j = 0 To UBound($aPoints) - 1
-                                    Local $aPoint = $aPoints[$j]
-
+                                For $j = 0 To $iCatchingSize - 1
                                     Local $iX1 = $aFound[$i][0]
                                     Local $iY1 = $aFound[$i][1]
-                                    Local $iX2 = $aPoint[0]
-                                    Local $iY2 = $aPoint[1]
+                                    Local $iX2 = $aCatching[$j][$CATCH_X]
+                                    Local $iY2 = $aCatching[$j][$CATCH_Y]
 
                                     Local $iPixelDistance = Sqrt(($iX1 - $iX2) ^ 2 + ($iY1 - $iY2) ^ 2)
                                     If $iPixelDistance < 100 Then
                                         $bOverlap = True
 
                                         ; If overlap is exotic contains exotic then astromon is exotic
-                                        If $aPoint[2] <> "exotic" And $sCurrentAstromon == "exotic" Then
-                                            Log_Add("Exotic overlap detected, replacing " & $aPoint[2] & " with exotic.", $LOG_DEBUG)
-                                            $aPoints[$j] = CreateArr($aFound[$i][0], $aFound[$i][1], $sCurrentAstromon)
+                                        If $aCatching[$j][$CATCH_NAME] <> "exotic" And $sCurrentAstromon == "exotic" Then
+                                            Log_Add("Exotic overlap detected, replacing " & $aCatching[$j][$CATCH_NAME] & " with exotic.", $LOG_DEBUG)
+                                            $aCatching[$j][$CATCH_X] = $aFound[$i][0]
+                                            $aCatching[$j][$CATCH_Y] = $aFound[$i][1]
+                                            $aCatching[$j][$CATCH_NAME] = $sCurrentAstromon
                                         EndIf
                                         
                                         ExitLoop
@@ -59,7 +63,9 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                                 Next
 
                                 If $bOverlap = False Then ; No overlap with existing match
-                                    _ArrayAdd($aPoints, CreateArr($aFound[$i][0], $aFound[$i][1], $sCurrentAstromon), 0, "|", @CRLF, 1)
+                                    Local $aAdd[1][3] = [[$aFound[$i][0], $aFound[$i][1], $sCurrentAstromon]]
+                                    _ArrayAdd($aCatching, $aAdd)
+                                    $iCatchingSize += 1
                                 EndIf
                             Next
                         EndIf
@@ -67,18 +73,19 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                 EndIf
 
                 If $iCurrent = -1 Then
-                    For $i = 0 To UBound($aPoints)-1
-                        If _ArraySearch($aImages, ($aPoints[$i])[2]) <> -1 Then
+                    For $i = 0 To $iCatchingSize - 1
+                        If _ArraySearch($aImages, $aCatching[$i][$CATCH_NAME]) <> -1 Then
                             $iCurrent = $i
                             ExitLoop
                         EndIf
                     Next
                 EndIf
 
-                If UBound($aPoints) > 0 And $iCurrent <> -1 Then
-                    Status(StringFormat("Attempting to catch astromon: %s at (%s)", ($aPoints[$iCurrent])[2], _ArrayToString($aPoints[$iCurrent], ",", 0, 1)), $LOG_DEBUG)
+                If $iCurrent <> -1 And $iCurrent < $iCatchingSize Then
+                    Local $aPoint = CreateArr($aCatching[$iCurrent][$CATCH_X], $aCatching[$iCurrent][$CATCH_Y])
+                    Status(StringFormat("Attempting to catch astromon: %s at (%s)", $aCatching[$iCurrent][$CATCH_NAME], $aPoint[0] & "," & $aPoint[1]), $LOG_DEBUG)
 
-                    If clickUntil($aPoints[$iCurrent], "isLocation", "unknown", 5, 1000) Then
+                    If clickUntil($aPoint, "isLocation", "unknown", 5, 1000) Then
                         If $iAstrochips > 1 Then $iAstrochips -= 1
 
                         If _Sleep(300) Then ExitLoop
@@ -99,7 +106,10 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                         WEnd
                     Else
                         Log_Add("Could not detect catch status", $LOG_ERROR)
-                        _ArrayDelete($aPoints, $iCurrent)
+
+                        _ArrayDelete($aCatching, $iCurrent)
+                        $iCatchingSize -= 1 
+
                         $iCurrent = -1
                     EndIf
                 Else
@@ -107,41 +117,61 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
                     ExitLoop
                 EndIf
             Case "catch-success"
-                Log_Add("Successfully caught a " & ($aPoints[$iCurrent])[2] & ".", $LOG_DEBUG)
-                $g_bCaptureQuest = True ; Trigger quest
+                If $iCurrent <> -1 And $iCurrent < $iCatchingSize Then
+                    Log_Add("Successfully caught a " & $aCatching[$iCurrent][$CATCH_NAME] & ".", $LOG_DEBUG)
+                    $g_bCaptureQuest = True ; Trigger quest
 
-                _ArrayAdd($aOutput, ($aPoints[$iCurrent])[2])
-                _ArrayDelete($aPoints, $iCurrent)
-                $iNumCatch += 1
-                $iCurrent = -1
+                    _ArrayAdd($aOutput, $aCatching[$iCurrent][$CATCH_NAME])
 
-                If $iMaxCatch <> -1 And $iNumCatch = $iMaxCatch Then ExitLoop
-                waitLocation("catch-mode,battle-auto,battle", 10)
+                    _ArrayDelete($aCatching, $iCurrent)
+                    $iCatchingSize -= 1 
+
+                    $iNumCatch += 1
+                    $iCurrent = -1
+
+                    If $iMaxCatch <> -1 And $iNumCatch = $iMaxCatch Then ExitLoop
+                    waitLocation("catch-mode,battle-auto,battle", 10)
+                EndIf
             Case "battle-auto", "battle"
-                If $iCurrent <> -1 Then
-                    Log_Add("Failed to catch " & ($aPoints[$iCurrent])[2] & ".", $LOG_DEBUG)
+                Local $bCheckNormalRare = False
 
-                    If $bSaveMissed > 0 Then _ArrayAdd($aOutput, "-" & ($aPoints[$iCurrent])[2])
-                    _ArrayDelete($aPoints, $iCurrent)
+                If $iCurrent <> -1 And $iCurrent < $iCatchingSize Then
+                    Local $sName = $aCatching[$iCurrent][$CATCH_NAME]
+                    If $sName == "exotic" Then $bCheckNormalRare = True
+
+                    Log_Add("Failed to catch " & $sName & ".", $LOG_DEBUG)
+                    If $bSaveMissed > 0 Then _ArrayAdd($aOutput, "-" & $aCatching[$iCurrent][$CATCH_NAME])
+
+                    _ArrayDelete($aCatching, $iCurrent)
+                    $iCatchingSize -= 1
+
                     $iCurrent = -1
                 EndIf
 
                 If $iAstrochips <> -1 And $iAstrochips = 0 Then
-                    If $iCurrent <> -1 Then
-                        Log_Add("Failed to catch " & ($aPoints[$iCurrent])[2] & ".", $LOG_DEBUG)
+                    If $iCurrent <> -1 And $iCurrent < $iCatchingSize Then
+                        Log_Add("Failed to catch " & $aCatching[$iCurrent][$CATCH_NAME] & ".", $LOG_DEBUG)
                         
-                        If $bSaveMissed > 0 Then _ArrayAdd($aOutput, "-" & ($aPoints[$iCurrent])[2])
-                        _ArrayDelete($aPoints, $iCurrent)
+                        If $bSaveMissed > 0 Then _ArrayAdd($aOutput, "-" & $aCatching[$iCurrent][$CATCH_NAME]
+
+                        _ArrayDelete($aCatching, $iCurrent)
+                        $iCatchingSize -= 1
+
                         $iCurrent = -1
-                    EndIf 
+                    EndIf
+
                     ExitLoop
                 EndIf
-
-                If UBound($aPoints) <= 0 Then ExitLoop
+                
+                ; Handle check for regular rares after exotic
+                Local $aCheckAstromon = findImage("catch-guided-rare", 70, 0, 183, 0, 626-183, 222)
+                Local $bCheckAstromon = (isArray($aCheckAstromon) = True And $bCheckNormalRare = True)
+                If $iCatchingSize = 0 And $bCheckAstromon = False Then ExitLoop
 
                 clickPoint(getPointArg("battle-catch"), 2, 100)
                 If _Sleep(200) Then ExitLoop
-                If isPixel(getPixelArg("catch-mode-unavailable"), 20, CaptureRegion()) > 0 Then ExitLoop
+                
+                If isPixel(getPixelArg("catch-mode-unavailable"), 20, CaptureRegion()) = True Then ExitLoop
             Case "battle-end-exp", "battle-sell", "battle-sell-item", "battle-end"
                 ExitLoop
             Case "pause"
@@ -156,9 +186,9 @@ Func catch($aImages, $iAstrochips = -1, $iMaxCatch = -1, $bSaveMissed = True)
         EndSwitch
     WEnd
 
-    If $bSaveMissed > 0 And UBound($aPoints) > 0 Then
-        For $i = 0 To UBound($aPoints)-1
-            _ArrayAdd($aOutput, "-" & ($aPoints[$i])[2])
+    If $bSaveMissed > 0 And $iCatchingSize > 0 Then
+        For $i = 0 To $iCatchingSize - 1
+            _ArrayAdd($aOutput, "-" & $aCatching[$i][$CATCH_NAME])
         Next
     EndIf
 

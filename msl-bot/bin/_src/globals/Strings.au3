@@ -2,6 +2,9 @@
 
 Global $g_sAppTitle
 $g_sAppTitle = "MSL Bot v" & $aVersion[0] & "." & $aVersion[1] & "." & $aVersion[2] ;Bot app title
+If UBound($aVersion) > 3 Then
+    $g_sAppTitle &= "." & $aVersion[3]
+EndIf
 
 Global $g_sErrorMessage = "" ;Message when functions calls error code.
 Global $g_sScript = "" ;Current name of the running script.

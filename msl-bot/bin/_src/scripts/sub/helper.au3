@@ -199,7 +199,7 @@ Global $FILTERGEM_ERROR_STRING = _
 Func _filterGem($aGemData, $sFilter)
 	If isArray($aGemData) = False Or UBound($aGemData) <> 7 Then Return SetError(1, 0, True) ;Invalid gem data.
 
-	If $sFilter == "_Filter" Then
+	If $sFilter == "_Filter" Or $sFilter == "_DragonFilter" Then
 		Return old_filterGem($aGemData, True)
 	Else
 		Local $aGem = Null
@@ -729,6 +729,20 @@ Func CreateArr($o1 = Null, $o2 = Null, $o3 = Null, $o4 = Null, $o5 = Null, $o6 =
 	Return $arr
 EndFunc
 
+Func __ArraySearch2D($aArray, $sValue, $iColumn = 0)
+	If isArray($aArray) = False Then Return SetError(2, 0, -1)
+	If UBound($aArray, 0) <> 2 Then Return SetError(3, 0 -1)
+	If $iColumn >= UBound($aArray, 2) Then Return SetError(4, 0, -1)
+
+	For $i = 0 To UBound($aArray, 1) - 1
+		If $aArray[$i][$iColumn] = $sValue Then
+			Return $i
+		EndIf
+	Next
+
+	Return SetError(1, 0, -1)
+EndFunc
+
 Func clickBattle()
 	Local $sLocation = getLocation()
 	clickPoint(getPointArg("battle-auto"))
@@ -737,32 +751,104 @@ Func clickBattle()
 	Return waitLocation($sLocation, 1)
 EndFunc
 
-Func findMap($sMap)
-	If getLocation() <> "map" Then Return -1
-	$sMap = StringReplace(StringLower($sMap)," ","-")
+; Returns point of the map
+Func findMap($sMap, $bSwipe = True)
+	If getLocation() <> "map" Then Return SetError(1, 0, Null)
 
-	Local $aPoint = findImage("map-" & $sMap, 90, 0, 0, 100, 800, 430, False, True)
+	; Set map markers
+	Local $iIndex = __ArraySearch2D($g_aMapDimensions, $sMap)
+	If @error Then Return SetError(2, @error, Null)
+	Local $aMap = StringSplit($g_aMapDimensions[$iIndex][2], ",", $STR_NOCOUNT)
 
-	If isArray($aPoint) = 0 Then clickDrag($g_aSwipeRightFast)
-	While isArray($aPoint) = False
-		If _Sleep(200) Or getLocation() <> "map" Then ExitLoop
-		If $sMap == "astromon-league" Then
-			If findImage("map-astromon-league-disabled", 90, 0, 0, 100, 800, 430, False, True) Then
-				$aPoint = -1
-				ExitLoop
-			EndIf
+	Local $aMarker = Null
+	Local $aOffset = Null
+
+	For $i = 0 To UBound($g_aMapMarkers)-1
+		Local $sCurrent = StringReplace(StringLower($g_aMapMarkers[$i])," ","-")
+
+		Local $iDimensionIndex = __ArraySearch2D($g_aMapDimensions, $g_aMapMarkers[$i])
+		If @error Then Return SetError(3, @error, Null)
+
+		Local $aDimension = StringSplit($g_aMapDimensions[$iDimensionIndex][1], ",", $STR_NOCOUNT)
+		If UBound($aDimension) <> 4 Then
+			$aDimension = CreateArr(0, 0, 800, 552)
 		EndIf
 
-		$aPoint = findImage("map-" & $sMap, 90, 0, 0, 100, 800, 430, False, True)
-		If isArray(findImage("map-terrestrial-rift", 90, 0, 0, 100, 800, 430, False, True)) > 0 Then ExitLoop
-		
-		If isArray($aPoint) = 0 Then 
-			clickDrag($g_aSwipeLeft)
+		Local $aFound = findImage("map-" & $sCurrent, 90, 0, $aDimension[0], $aDimension[1], $aDimension[2], $aDimension[3], False, True)
+		If isArray($aFound) Then
+			$aOffset = StringSplit($g_aMapDimensions[$iDimensionIndex][2], ",", $STR_NOCOUNT)
+			$aMarker = $aFound
+			ExitLoop
+		EndIf
+	Next
+	If isArray($aMarker) = False Or isArray($aOffset) = False Then 
+		Return SetError(4, 0, Null)
+	EndIf
+
+	; Find stage relative to marker.
+	Local $aPoint = CreateArr($aMarker[0] - $aOffset[0] + $aMap[0], $g_aMapReference[1] + $aMap[1])
+	If $bSwipe = False Then Return $aPoint
+
+	If $aPoint[0] < 1 Then 
+		; Swipe Left
+		clickDrag(CreateArr(10, 550, _Max(-$aPoint[0] * 0.67, 350), 550))
+	ElseIf $aPoint[0] > 799 Then 
+		; Swipe Right
+		clickDrag(CreateArr(10, 550, _Min(-$aPoint[0] * 0.67, -360), 550))
+	Else
+		If $aPoint[0] > 558 And $aPoint[1] > 424 Then
+			; Prevent clicking event icons in bottom right.
+			clickDrag(CreateArr(10, 550, _Min(-$aPoint[0] * 0.67, -360), 550))
+		Else
+			Return $aPoint
+		EndIf
+	EndIf
+
+	Return findMap($sMap)
+EndFunc
+
+; Returns string of map with event
+Func findMapEvent($sImage)
+	Local $hTimer = TimerInit()
+
+	clickDrag($g_aSwipeRightFast)
+	While TimerDiff($hTimer) < 30000
+		If _Sleep($Delay_Script_Loop) Then Return SetError(1, 0, "")
+		If getLocation() <> "map" Then Return SetError(2, 0, "")
+		Local $aPoint = findImage($sImage, 90, 0)
+		If isArray($aPoint) = True Then
+			Local $iMapSize = UBound($g_aMapDimensions)
+			Local $iCandidateIndex = 0
+			Local $iCandidateDistance = 99999
+
+			Local $aReference = findMap("Phantom Forest", False)
+			If isArray($aReference) = False Then ContinueLoop
+
+			For $i = 0 To $iMapSize - 1
+				Local $aMap = StringSplit($g_aMapDimensions[$i][2], ",", $STR_NOCOUNT)
+				If isArray($aMap) = False Then ContinueLoop
+				$aMap[0] += $aReference[0]
+				$aMap[1] += $aReference[1]
+
+				Local $iDistance = getDistance($aMap, $aPoint)
+				If $iDistance < $iCandidateDistance Then
+					$iCandidateDistance = $iDistance
+					$iCandidateIndex = $i
+				EndIf
+			Next
+			If $iCandidateDistance < 150 Then
+				Return $g_aMapDimensions[$iCandidateIndex][0]
+			EndIf
+		Else
+			Local $aFinalMap = findImage("map-terrestrial-rift", 90, 0)
+			If isArray($aFinalMap) = True Then
+				Return SetError(3, 0, "")
+			EndIf
+			clickDrag(CreateArr(10, 550, -600, 550))
 		EndIf
 	WEnd
 
-	If $sMap == "ancient-dungeon" And isArray($aPoint) > 0 Then $aPoint[1] -= 100
-	Return $aPoint
+	Return SetError(4, 0, "")
 EndFunc
 
 Func goBack()
@@ -845,8 +931,10 @@ Func appUpdate()
 	While $g_bRunning
 		If _Sleep(2000) Then ExitLoop
 
-		Local $sLocation = waitLocation("app-update,app-google-update,app-google-open,app-update-ok,popup-window,tap-to-start", 200, False)
+		Local $sLocStr = "app-update,app-google-update,app-google-open,app-update-ok,popup-window,tap-to-start"
+		Local $sLocation = waitLocation($sLocStr, 200, 1000, False)
 		If $sLocation <> "unknown" Then $hTimer = Null
+
 		Switch $sLocation
 			Case "app-update"
 				clickPoint(findImage("misc-update"))

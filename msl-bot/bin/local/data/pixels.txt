@@ -18,25 +18,10 @@ battle-auto-animation:653,387,0x8F7366|637,444,0x5A338E
 hero-dungeon-done:197,99,0x9B9B9B
 towers-elemental-available:693,19,0xFFF609
 clan-shop-donate:220, 118,0xB16138
-clan-shop-donate-confirm:416,305,0xC1812D
+clan-shop-donate-confirm:416,305,0xC1812D/416,305,0xB6812E
 elusive-dungeon-slots:633,234,0x565758|458,299,0x0C817D|250,329,0x6E3D2C
 elusive-dungeon-battle:43,458,0xCC7345|33,458,0xCC7544|37,444,0x753624
 elusive-dungeon-results:400,97,0x304A56|317,84,0x2E3647|465,119,0xF7F2ED
 elusive-dungeon-no-clues:447,305,0x077378|599,376,0x4B4C3A|583,379,0x16100E
 apex-battles-defeat:313,108,0x7991FF|449,108,0x7991FF|384,107,0x7992FF
 apex-battles-slots:233,156,0x7D614D|208,180,0x1C1313/311,155,0x7D624B|284,180,0x1C1313/200,235,0x7B614F|176,259,0x1C1313/279,237,0x7D624D|253,260,0x1C1313
-auto-capture-option:652,385,0x47F19E
-auto-rare:326,233,0x35EB98
-auto-super-rare:420,232,0x37ED9A
-auto-legendary:514,233,0x39EF9C
-auto-exotic:594,232,0x37ED9A
-auto-variant:232,284,0x37ED9A
-auto-variant-rare:326,284,0x37ED9A
-auto-variant-super-rare:420,284,0x37ED9A
-auto-variant-legendary:514,284,0x37ED9A
-auto-variant-exotic:594,284,0x37ED9A
-auto-stop-full:594,351,0x37ED9A
-auto-sell-4:351,241,0x37ED9A
-auto-sell-5:485,241,0x37ED9A
-auto-stop-level:594,276,0x37ED9A
-auto-stop-lose:594,349,0x37ED9A

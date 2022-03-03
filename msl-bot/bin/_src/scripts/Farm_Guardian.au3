@@ -4,8 +4,14 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
     If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Guardian")[2]), "Farm_Guardian")
     ;Mode, Refill, Idle Time, Target Boss
 
-    Log_Level_Add("Farm_Guardian")
+    If StringIsInt($Farm_Guardian_Refill) = False Or Int($Farm_Guardian_Refill) < -1 Then
+        Log_Add("Error: Refill is invalid: " & $Farm_Guardian_Refill, $LOG_ERROR)
+        Return -1
+    Else
+        If $g_iMaxRefill = Null Then $g_iMaxRefill = Int($Farm_Guardian_Refill)
+    EndIf
 
+    Log_Level_Add("Farm_Guardian")
     Global $Status, $Guardians, $Astrogems_Used
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
@@ -18,7 +24,7 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
             Assign($aStats[$i][0], $aStats[$i][1])
         Next
     EndIf
-
+    
     Status("Farm Guardian has started.", $LOG_INFORMATION)
 
     Local $bIdle = False
@@ -66,19 +72,20 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
 				Local $aPoint = findGuardian($Farm_Guardian_Mode)
                 If isArray($aPoint) > 0 Then
                     clickPoint($aPoint)
-                    If waitLocation("map-battle,unknown", 5, False) == "unknown" Then 
+                    
+                    If waitLocation("map-battle", 10) = False Then 
                         navigate("map") ;Prevent stuck when dungeon is expired
                     EndIf
                 Else
                     ;Check for more dungeons
                     Local $iFirst = GetPixelSum(CaptureRegion(), 1, 572, 270, 593-572, 478-270)
                     clickDrag($g_aSwipeDown)
-                        If _Sleep(1000) Then ExitLoop
+                    If _Sleep(1000) Then ExitLoop
                     Local $iSecond = GetPixelSum(CaptureRegion(), 1, 572, 270, 593-572, 478-270)
-                        If $iFirst = $iSecond Then
-                            Log_Add("No guardian dungeons remaining.")
+                    If $iFirst = $iSecond Then
+                        Log_Add("No guardian dungeons remaining.")
                         $bIdle = True
-                        EndIf
+                    EndIf
                 EndIf
             Case "map-battle"
                 If enterBattle() > 0 Then
@@ -94,23 +101,20 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
                 Status("You have been defeated.", $LOG_INFORMATION)
                 navigate("battle-end", True)
             Case "refill"
-                If $Farm_Guardian_Refill <> 0 And $Astrogems_Used+30 > $Farm_Guardian_Refill Then ExitLoop
                 Status("Refilling energy.")
 
-                Local $iRefill = doRefill()
-                If $iRefill = -1 Then
-                    $bIdle = True
-                    ContinueLoop
-                EndIf
-                If $iRefill = 1 Then $Astrogems_Used += 30
+                doRefill()
+                Switch @error
+                    Case $REFILL_ERROR_INSUFFICIENT
+                        Log_Add("Insufficient astrogems for refill, exiting script.", $LOG_INFORMATION)
+                        ExitLoop
+                    Case $REFILL_ERROR_LIMIT_REACHED
+                        Log_Add("Refill limit has been reached, exiting script.", $LOG_INFORMATION)
+                        ExitLoop
+                EndSwitch
             Case "battle", "battle-auto"
                 Status("Currently in battle.")
                 If $sLocation == "battle" And waitLocation("battle-auto", 0.3) <= 0 Then clickBattle()
-            Case "pause"
-                Status("In pause screen, unpausing.")
-                clickPoint(getPointArg("battle-continue"))
-            Case "battle-end-exp", "battle-sell", "battle-sell-item"
-                navigate("battle-end")
             Case "battle-boss"
                 If $Farm_Guardian_Target_Boss > 0 Then
                     Status("Targeting boss.")
@@ -118,6 +122,11 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
                     If _Sleep($Delay_Target_Boss_Delay) Then ExitLoop
                     clickPoint(getPointArg("boss"))
                 EndIf
+            Case "pause"
+                Status("In pause screen, unpausing.")
+                clickPoint(getPointArg("battle-continue"))
+            Case "battle-end-exp", "battle-sell", "battle-sell-item"
+                navigate("battle-end")
             Case "map-gem-full", "battle-gem-full"
                 If $General_Sell_Gems == "" Then
                     Status("Gem inventory is full, stopping script.", $LOG_INFORMATION)
@@ -126,9 +135,6 @@ Func Farm_Guardian($bParam = True, $aStats = Null)
                     Status("Gem inventory is full, selling gems: " & $General_Sell_Gems, $LOG_INFORMATION)
                     sellGems($General_Sell_Gems)
                 EndIf
-            Case "buy-gem", "buy-gold"
-                Status("Not enough astrogems, stopping script.", $LOG_ERROR)
-                ExitLoop
             Case Else
                 If HandleCommonLocations($sLocation) = 0 And $sLocation <> "unknown" Then 
                     If waitLocation("battle,battle-auto,battle-boss", 5) = 0 Then

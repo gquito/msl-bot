@@ -1,4 +1,8 @@
 #include-once
+Global Const $ASTROMON_EVO1 = 0, _ 
+             $ASTROMON_EVO2 = 1, _
+             $ASTROMON_AWAKENED_EVO1 = 2, _
+             $ASTROMON_AWAKENED_EVO2 = 3
 
 Func Farm_Gem($bParam = True, $aStats = Null)
     If $bParam > 0 Then Config_CreateGlobals(formatArgs(Script_DataByName("Farm_Gem")[2]), "Farm_Gem")
@@ -6,8 +10,14 @@ Func Farm_Gem($bParam = True, $aStats = Null)
 
     $Farm_Gem_Astrogems = (StringLeft($Farm_Gem_Astrogems, 1)="g"?Int(StringMid($Farm_Gem_Astrogems, 2)/330000)*100:($Farm_Gem_Astrogems))
 
+    If StringIsInt($Farm_Gem_Refill) = False Or Int($Farm_Gem_Refill) < -1 Then
+        Log_Add("Error: Refill is invalid: " & $Farm_Gem_Refill, $LOG_ERROR)
+        Return -1
+    Else
+        If $g_iMaxRefill = Null Then $g_iMaxRefill = Int($Farm_Gem_Refill)
+    EndIf
+
     Log_Level_Add("Farm_Gem")
-    
     Global $Status, $Farmed_Gems, $Astrogems_Used
     Stats_Add(  CreateArr( _
                     CreateArr("Text",       "Status"), _
@@ -23,13 +33,15 @@ Func Farm_Gem($bParam = True, $aStats = Null)
     Local $aAstromons = Null
     Local $aFarm_Astromon_Stats = Null
 
+    ; Gem quest limits
+    Local $bEvo1Limit = False
+    Local $bEvo2Limit = False 
+
     navigate("village", True)
     While $g_bRunning = True
-        If $Farm_Gem_Check_Limit > 0 And isDeclared("g_bMaxIteration") > 0 Then
-            If Eval("g_bMaxIteration") > 0 Then
-                Log_Add("Evolution quest limit has been reached. Stopping script.", $LOG_INFORMATION)
-                ExitLoop
-            EndIf
+        If $Farm_Gem_Check_Limit = True And ($bEvo1Limit = True And $bEvo2Limit = True) Then
+            Log_Add("Evolution quest limit has been reached. Stopping script.", $LOG_INFORMATION)
+            ExitLoop
         EndIf
 
         If _Sleep($Delay_Script_Loop) Then ExitLoop
@@ -39,42 +51,50 @@ Func Farm_Gem($bParam = True, $aStats = Null)
         If $Farmed_Gems >= $Farm_Gem_Astrogems Then ExitLoop
         Switch $sLocation
             Case "monsters"
-                Status("Counting astromons.")
                 If $aAstromons = Null Then 
-                    clickPoint("48,429", 3)
+                    Status("Counting astromons", $LOG_DEBUG)
                     $aAstromons = Farm_Gem_Count($Farm_Gem_Astromon)
                 EndIf
 
-                If $aAstromons[0] <> -1 Or $aAstromons[1] <> -1 Then
-                    If UBound($aAstromons[0]) >= 4 Then $iEvo = 1
-                    If UBound($aAstromons[1]) >= 4 Then $iEvo = 2
-                    If $iEvo <> 0 Then
-                        If $aAstromons[$iEvo+1] <> -1 Then
-                            For $i = 0 To UBound($aAstromons[$iEvo-1])-1
-                                For $x = 0 To UBound($aAstromons[$iEvo+1])-1
-                                    Local $aMon = $aAstromons[$iEvo-1]
-                                    Local $aAwakened = $aAstromons[$iEvo+1]
-
-                                    If ($aMon[$i][0] > $aAwakened[$x][0]-30 And $aMon[$i][0] < $aAwakened[$x][0]+30) Then
-                                        If ($aMon[$i][1] > $aAwakened[$x][1]-30 And $aMon[$i][1] < $aAwakened[$x][1]+30) Then
-                                            clickPoint(CreateArr($aMon[$i][0], $aMon[$i][1]), 3, 200)
-                                            clickUntil(getPointArg("monsters-evolution"), "isLocation", "monsters-evolution", 3, 200)
-                                            ContinueLoop(3)
-                                        EndIf
-                                    EndIf
-
-                                Next
-                            Next
-                        EndIf
-
-                        clickPoint(CreateArr(($aAstromons[$iEvo-1])[0][0], ($aAstromons[$iEvo-1])[0][1]), 3, 200)
-                        clickUntil(getPointArg("monsters-evolution"), "isLocation", "monsters-evolution", 3, 200)
-                        ContinueLoop
-                    EndIf
+                If UBound($aAstromons) <> 4 Then
+                    Log_Add("Invalid astromon count array.", $LOG_ERROR)
+                    $aAstromons = Null
+                    ContinueLoop
                 EndIf
-        
-                Local $iCount_Evo1 = ($aAstromons[0]<>-1)?(UBound($aAstromons[0])):(0)
-                Local $iCount_Evo2 = ($aAstromons[1]<>-1)?(UBound($aAstromons[1])):(0)
+
+                Local $aEvo1 = $aAstromons[$ASTROMON_EVO1]
+                Local $aEvo2 = $aAstromons[$ASTROMON_EVO2]
+                Local $aAwakenedEvo1 = $aAstromons[$ASTROMON_AWAKENED_EVO1]
+                Local $aAwakenedEvo2 = $aAstromons[$ASTROMON_AWAKENED_EVO2]
+                Local $bSelectResult = False
+                
+                ;Handle Awakened Evo2 -> Evo3
+                $bSelectResult = _Farm_Gem_Select($aAwakenedEvo2, $Farm_Gem_Astromon, 2, True, 0)
+                $iEvo = @extended
+                If $iEvo = 0 Then $aAstromons[$ASTROMON_AWAKENED_EVO2] = -1
+                If $bSelectResult Then ContinueLoop
+
+                ;Handle Evo2 -> Evo3
+                $bSelectResult = _Farm_Gem_Select($aEvo2, $Farm_Gem_Astromon, 2, False, 3)
+                $iEvo = @extended
+                If $iEvo = 0 Then $aAstromons[$ASTROMON_EVO2] = -1
+                If $bSelectResult Then ContinueLoop
+
+                ;Handle Awakened Evo1 -> Evo2
+                $bSelectResult = _Farm_Gem_Select($aAwakenedEvo1, $Farm_Gem_Astromon, 1, True, 0)
+                $iEvo = @extended
+                If $iEvo = 0 Then $aAstromons[$ASTROMON_AWAKENED_EVO1] = -1
+                If $bSelectResult Then ContinueLoop
+
+                ;Handle Evo1 -> Evo2
+                $bSelectResult = _Farm_Gem_Select($aEvo1, $Farm_Gem_Astromon, 1, False, 3)
+                $iEvo = @extended
+                If $iEvo = 0 Then $aAstromons[$ASTROMON_EVO1] = -1
+                If $bSelectResult Then ContinueLoop
+
+                ;Handle else
+                Local $iCount_Evo1 = UBound($aEvo1)
+                Local $iCount_Evo2 = UBound($aEvo2)
                 Local $iTotal = $iCount_Evo1+($iCount_Evo2*4)
 
                 Local $iCalculated_Need = Ceiling((($Farm_Gem_Astrogems-$Farmed_Gems)/100)*16)
@@ -104,8 +124,6 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                 If $iEvo = 0 Or $aAstromons = Null Then
                     navigate("monsters")
                     ContinueLoop
-                Else
-                    clickPoint(CreateArr(($aAstromons[$iEvo-1])[0][0], ($aAstromons[$iEvo-1])[0][1]), 3, 200)
                 EndIf
 
                 Status(StringFormat("Awakening evo%d %s.", Number($iEvo), String($Farm_Gem_Astromon)), $LOG_PROCESS)
@@ -119,13 +137,20 @@ Func Farm_Gem($bParam = True, $aStats = Null)
                                     Farm_Gem_Release()
                                 EndIf
                             EndIf
-                            If collectQuest(3) <= 0 And $Farm_Gem_Check_Limit > 0 Then
-                                Log_Add("Evolution quest limit has been reached. Stopping script.", $LOG_INFORMATION)
-                                ExitLoop
+
+                            collectQuest(3)
+                            If @extended = 1 Then  ; Quest limit
+                                If $iEvo = 1 Then $bEvo1Limit = True
+                                If $iEvo = 2 Then $bEvo2Limit = True
+                            EndIf
+
+                            If $Farm_Gem_Check_Limit = True And ($bEvo1Limit = True And $bEvo2Limit = True) Then
+                                ContinueLoop ; Invokes quest limit condition to stop script.
                             EndIf
                         EndIf
+
                         If $iEvo = 2 Then 
-                            $Farmed_Gems += 100 ;10 and 60, but that causes some weird stuff
+                            $Farmed_Gems += 100
                             Cumulative_AddNum("Resource Earned (Astrogems)", 100)
                             Cumulative_AddNum("Resource Used (Gold)", 330000)
                         EndIf
@@ -164,9 +189,120 @@ Func Farm_Gem_Count($sName)
     CaptureRegion()
     Local $aEvo1 = findImageMultiple($sName & "-evo-one", 80, 10, 10, 16, 10, 100, 280, 350, False)
     Local $aEvo2 = findImageMultiple($sName & "-evo-two", 80, 10, 10, 4, 10, 100, 280, 350, False)
-    Local $aAwakenedEvo1 = findImageMultiple("misc-awakened-evo-one", 70, 10, 10, 16, 10, 100, 280, 350, False)
-    Local $aAwakenedEvo2 = findImageMultiple("misc-awakened-evo-two", 70, 10, 10, 4, 10, 100, 280, 350, False)
+
+    Local $aAwakenedEvo1 = findImageMultiple("misc-awakened-evo-one", 70, 10, 10, 16, 10, 100, 280, 350, False, True)
+    ; Delete incorrect evo level found.
+    For $i = UBound($aAwakenedEvo1) - 1 To 0 Step -1
+        Local $bFound = False
+        For $j = 0 To UBound($aEvo1) - 1
+            Local $aPoint1 = CreateArr($aAwakenedEvo1[$i][0], $aAwakenedEvo1[$i][1] - 23)
+            Local $aPoint2 = CreateArr($aEvo1[$j][0], $aEvo1[$j][1])
+            Local $iDistance = GetDistance($aPoint1, $aPoint2)
+            If $iDistance < 10 Then
+                $bFound = True
+                ExitLoop
+            EndIf
+        Next
+
+        If $bFound = False Then
+            _ArrayDelete($aAwakenedEvo1, $i)
+        EndIf
+    Next
+    If UBound($aAwakenedEvo1) = 0 Then $aAwakenedEvo1 = -1
+
+    Local $aAwakenedEvo2 = findImageMultiple("misc-awakened-evo-two", 70, 10, 10, 4, 10, 100, 280, 350, False, True)
+    ; Delete incorrect evo level found.
+    For $i = UBound($aAwakenedEvo2) - 1 To 0 Step -1
+        Local $bFound = False
+        For $j = 0 To UBound($aEvo2) - 1
+            Local $aPoint1 = CreateArr($aAwakenedEvo2[$i][0], $aAwakenedEvo2[$i][1] - 23)
+            Local $aPoint2 = CreateArr($aEvo2[$j][0], $aEvo2[$j][1])
+            Local $iDistance = GetDistance($aPoint1, $aPoint2)
+            If $iDistance < 10 Then
+                $bFound = True
+                ExitLoop
+            EndIf
+        Next
+
+        If $bFound = False Then
+            _ArrayDelete($aAwakenedEvo2, $i)
+        EndIf
+    Next
+    If UBound($aAwakenedEvo2) = 0 Then $aAwakenedEvo2 = -1
+
     Return CreateArr($aEvo1, $aEvo2, $aAwakenedEvo1, $aAwakenedEvo2)
+EndFunc
+
+Func Farm_Gem_Select($aPoint, $sAstromon, $iEvo, $bAwakened)
+    If $iEvo <> 1 And $iEvo <> 2 Then Return SetError(1, 0, False)
+    If UBound($aPoint) <> 2 Then Return SetError(2, 0, False)
+
+    Log_Level_Add("Farm_Gem_Select")
+    Status("Selecting Evo " & $iEvo & " astromon.", $LOG_PROCESS)
+    Local $bOutput = False
+    Local $hTimer = TimerInit()
+    While TimerDiff($hTimer) < 5000
+        If _Sleep($Delay_Script_Loop) Then ExitLoop
+
+        Switch getLocation()
+            Case "monsters"
+                clickPoint(getPointArg("monsters-evolution"))
+            Case "monsters-evolution"
+                Local $bTemp = $g_bLogEnabled
+                $g_bLogEnabled = False
+
+                clickPoint($aPoint)
+                Local $sEvo = ($iEvo = 1)?("one"):("two")
+
+                Local $bFoundAwakened = isPixel("367,210,0x49D8D8/367,209,0x38E3E5", 20)
+                Local $aFound = findImage($sAstromon & "-evo-" & $sEvo, 90, 0, 327, 147, 70, 70, False)
+
+                $g_bLogEnabled = $bTemp
+
+                If UBound($aFound) = 0 Then ContinueLoop
+                If $bAwakened = True And $bFoundAwakened = False Then ContinueLoop
+
+                $bOutput = True
+                ExitLoop
+            Case Else
+                ExitLoop
+        EndSwitch
+    WEnd
+
+    If $bOutput = False Then
+        Log_Add("Could not select Evo " & $iEvo & " astromon.", $LOG_ERROR)
+    EndIf
+
+    Log_Level_Remove()
+    Return $bOutput
+EndFunc
+
+Func _Farm_Gem_Select($aEvo, $sAstromon, $l_iEvo, $bAwakened, $iMin)
+    Local $iSize = UBound($aEvo)
+
+    If $iSize > $iMin Then
+        Local $iIndex = $iSize - 1
+        Status("Evolving " & (($bAwakened)?("awakened"):("")) & " evo" & $l_iEvo & " to evo" & $l_iEvo+1 & ".", $LOG_PROCESS)
+        If UBound($aEvo, $UBOUND_COLUMNS) = 2 Then
+            Local $iX = $aEvo[$iIndex][0]
+            Local $iY = $aEvo[$iIndex][1]
+            Local $bSelect = Farm_Gem_Select(CreateArr($iX, $iY), $sAstromon, $l_iEvo, $bAwakened)
+            If $bSelect = False Then 
+                $l_iEvo = 0
+            EndIf
+        Else
+            Log_Add("Invalid point array (1).", $LOG_ERROR)
+            $l_iEvo = 0
+        EndIf
+        
+        If $l_iEvo = 0 Then
+            $iIndex = ($l_iEvo - 1) + (($bAwakened)?(2):(0))
+        EndIf
+
+        Return SetExtended($l_iEvo, True)
+    EndIf
+
+    Return False
 EndFunc
 
 Func Farm_Gem_Awaken()
