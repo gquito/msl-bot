@@ -17,47 +17,21 @@ Func doRefill($bLimit = True)
 		If $iError Or $bOutput Then ExitLoop
 
 		Local $sLocation = getLocation()
-		Local $bAdAvailable = False
-		If $sLocation == "refill" Then
-			$bAdAvailable = ($General_Refill_Advertisement > 0 And isPixel(getPixelArg("refill-free"), 10, CaptureRegion()) > 0)
-		EndIf
-
 		Switch $sLocation
 			Case "refill"
-				If $bAdAvailable = True Then
-					clickPoint(getPixelArg("refill-free"))
-					waitLocation("unknown", 5)
+				If $bLimit = True And $g_iMaxRefill > -1 Then
+					If isDeclared("Astrogems_Used") = True Then
+						If (($Astrogems_Used + 30) > $g_iMaxRefill) Or ($g_iMaxRefill = 0) Then
+							Log_Add("Refill limit has been reached.", $LOG_INFORMATION)
 
-					If watchAd() <= 0 Then
-						Local $bTemp = $General_Refill_Advertisement
-						$General_Refill_Advertisement = 0
-						Local $bTemp2 = $g_bLogEnabled
-						$g_bLogEnabled = False
-
-						$bOutput = doRefill()
-						$iError = @error
-
-						$General_Refill_Advertisement = $bTemp
-						$g_bLogEnabled = $bTemp2
-					Else
-						$bOutput = True
-						$iExtended = 1
-					EndIf
-				Else
-					If $bLimit = True And $g_iMaxRefill > -1 Then
-						If isDeclared("Astrogems_Used") = True Then
-							If (($Astrogems_Used + 30) > $g_iMaxRefill) Or ($g_iMaxRefill = 0) Then
-								Log_Add("Refill limit has been reached.", $LOG_INFORMATION)
-
-								$iError = 3
-								ExitLoop
-							EndIf
+							$iError = 3
+							ExitLoop
 						EndIf
 					EndIf
+				EndIf
 
-					If $bOutput = False Then
-						clickPoint(getPointArg("refill"))
-					EndIf
+				If $bOutput = False Then
+					clickPoint(getPointArg("refill"))
 				EndIf
 			Case "refill-confirm"
 				Local $sRatio = "Limit not set."
